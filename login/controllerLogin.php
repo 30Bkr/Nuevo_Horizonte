@@ -1,0 +1,39 @@
+<?php
+include_once('../app/users.php');
+include_once('../global/utils.php');
+
+$email = $_POST['email'];
+$password = $_POST['password'];
+
+$contrasena = password_hash($_POST['password'], PASSWORD_BCRYPT, ['cost' => 12]);
+$email = $_POST["email"];
+$user = new Usuarios;
+$listaPersona = $user->consultar($email);
+// $info = $user->info($listaPersona[0]->nombre_usuario);
+
+// echo "<pre>";
+// var_dump($user->consultar($email));
+// var_dump($listaPersona[0]->contraseña);
+// var_dump($listaPersona[0]->id_persona);
+// var_dump($info);
+// var_dump($listaPersona);
+
+
+// echo "</pre>";
+// echo "<pre>";
+// var_dump($listaPersona);
+// echo "</pre>";
+if (password_verify($listaPersona[0]->contraseña, $contrasena) && ($listaPersona[0]->estado_cuenta === 0)) {
+  echo "aca2 si es la misma";
+  session_start();
+  $_SESSION['mensaje'] = "Bienvenido al sistema Nuevo Horizonte";
+  $_SESSION['icono'] = "success";
+  $_SESSION['sesion_email'] = $email;
+  header('Location:' . URL . '/admin/index.php');
+} else {
+  echo 'aca3 no es la misma';
+  session_start();
+  $_SESSION['mensaje'] = "Los datos introducidos son incorrectos";
+  header('Location: ' . URL . '/login/index.php');
+}
+// echo "<br>Usuario: $email<br>Contrasena: $contrasena";

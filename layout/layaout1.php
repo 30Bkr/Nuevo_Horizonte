@@ -1,3 +1,27 @@
+<?php
+include_once('./global/utils.php');
+include_once('../app/users.php');
+
+
+$esto = $_SESSION['sesion_email'];
+$user = new Usuarios;
+
+$info = $user->info($esto);
+// $mira = $_SESSION['nombre'];
+if (isset($_SESSION['sesion_email'])) {
+  // echo $info[0]->apellido;
+} else {
+  echo "EL usuario no paso por el login";
+  header('Location: ' . URL . '/login/index.php');
+}
+// session_start();
+// if (isset($_SESSION['email'])) {
+//   echo "EL usuario paso por el login";
+// } else {
+//   echo "EL usuario no paso por el login";
+//   header('Location: ' . URL . '/login/index.php');
+// }
+?>
 <!DOCTYPE html>
 <!--
 This is a starter template page. Use this page to start your new project from

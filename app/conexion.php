@@ -2,7 +2,7 @@
 class Conexion
 {
   private $hostname = 'localhost';
-  private $database = 'final';
+  private $database = 'nuevo';
   private $usuario = 'prueba1';
   private $password = '12345678';
   private $conn;

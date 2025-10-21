@@ -1,13 +1,13 @@
 <?php
-include_once('./global/utils.php');
-include_once('./layout/layaout1.php');
+include_once('../global/utils.php');
+include_once('../layout/layaout1.php');
 ?>
 
 <div class="content-wrapper">
   <div class="content">
     <div class="container-fluid">
       <div class="row">
-        <h1>Vista principal</h1>
+        <h1>Vista del administrador</h1>
       </div>
     </div>
   </div>
@@ -16,5 +16,5 @@ include_once('./layout/layaout1.php');
 
 
 <?php
-include_once('./layout/layaout2.php')
+include_once('../layout/layaout2.php')
 ?>
