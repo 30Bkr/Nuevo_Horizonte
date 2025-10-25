@@ -58,29 +58,34 @@ include_once('../global/utils.php');
             </div>
             <!-- /.col -->
             <div class="col-4">
-              <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+              <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
             </div>
             <!-- /.col -->
           </div>
         </form>
+        <?php
+        session_start();
+        if (isset($_SESSION['mensaje'])) {
+          $message = $_SESSION['mensaje'];
+        ?>
+          <script>
+            let mensaje = '<?= $message; ?>';
+            alert(mensaje);
+            Swal.fire({
+              position: "top-end",
+              icon: "error",
+              title: "<?= $message ?>",
+              showConfirmButton: false,
+              timer: 5000
+            });
+          </script>
+        <?php
+        }
+        session_destroy();
+        ?>
 
-        <div class="social-auth-links text-center mb-3">
-          <p>- OR -</p>
-          <a href="#" class="btn btn-block btn-primary">
-            <i class="fab fa-facebook mr-2"></i> Sign in using Facebook
-          </a>
-          <a href="#" class="btn btn-block btn-danger">
-            <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
-          </a>
-        </div>
         <!-- /.social-auth-links -->
 
-        <p class="mb-1">
-          <a href="forgot-password.html">I forgot my password</a>
-        </p>
-        <p class="mb-0">
-          <a href="register.html" class="text-center">Register a new membership</a>
-        </p>
       </div>
       <!-- /.login-card-body -->
     </div>

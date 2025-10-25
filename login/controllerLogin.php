@@ -26,10 +26,11 @@ $listaPersona = $user->consultar($email);
 if (password_verify($listaPersona[0]->contraseña, $contrasena) && ($listaPersona[0]->estado_cuenta === 0)) {
   echo "aca2 si es la misma";
   session_start();
-  $_SESSION['mensaje'] = "Bienvenido al sistema Nuevo Horizonte";
+  header('Location:' . URL . '/admin/index.php');
+  $_SESSION['mensaje'] = "Bienvenido al sistema Nuevo Horizonte nerd";
   $_SESSION['icono'] = "success";
   $_SESSION['sesion_email'] = $email;
-  header('Location:' . URL . '/admin/index.php');
+  echo $_SESSION['sesion_email'];
 } else {
   echo 'aca3 no es la misma';
   session_start();

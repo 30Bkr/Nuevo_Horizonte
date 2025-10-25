@@ -7,7 +7,7 @@ include_once('./layout/layaout1.php');
   <div class="content">
     <div class="container-fluid">
       <div class="row">
-        <h1>Vista principal</h1>
+        <h1>Dashboard del administrador</h1>
       </div>
     </div>
   </div>

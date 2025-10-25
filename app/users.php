@@ -1,6 +1,7 @@
 <?php
-include_once '../global/utils.php';
-include '../app/conexion.php';
+include_once '/xampp/htdocs/final/global/utils.php';
+include_once '/xampp/htdocs/final/app/conexion.php';
+
 
 class Usuarios
 {

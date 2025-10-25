@@ -1,8 +1,9 @@
 <?php
-include_once('./global/utils.php');
-include_once('../app/users.php');
+include_once('/xampp/htdocs/final/global/utils.php');
+include_once('/xampp/htdocs/final/app/users.php');
 
 
+session_start();
 $esto = $_SESSION['sesion_email'];
 $user = new Usuarios;
 
@@ -10,8 +11,12 @@ $info = $user->info($esto);
 // $mira = $_SESSION['nombre'];
 if (isset($_SESSION['sesion_email'])) {
   // echo $info[0]->apellido;
+  $_SESSION['mensaje'] = "Bienvenido al sistema Nuevo Horizonte nerd";
+  $_SESSION['icono'] = "success";
 } else {
   echo "EL usuario no paso por el login";
+  $_SESSION['mensaje'] = "Es necesario iniciar sesión";
+  $_SESSION['icono'] = "error";
   header('Location: ' . URL . '/login/index.php');
 }
 // session_start();
@@ -53,10 +58,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-          <a href="index3.html" class="nav-link">Home</a>
-        </li>
-        <li class="nav-item d-none d-sm-inline-block">
-          <a href="#" class="nav-link">Contact</a>
+          <a href="<?= URL; ?>/admin/index.php" class="nav-link">Inicio</a>
         </li>
       </ul>
 
@@ -187,8 +189,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
       <a href="index3.html" class="brand-link">
-        <img src="<?= URL; ?>/public/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-        <span class="brand-text font-weight-light">AdminLTE 3</span>
+        <img src="<?= URL; ?>/public/images/perfil.svg" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light"><?= NAME_PROJECT; ?></span>
       </a>
 
       <!-- Sidebar -->
@@ -196,10 +198,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
           <div class="image">
-            <img src="<?= URL; ?>/public/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+            <img src="<?= URL; ?>/public/images/perfil.svg" class="img-circle elevation-2" alt="User Image">
           </div>
           <div class="info">
-            <a href="#" class="d-block">Alexander Pierce</a>
+            <a href="#" class="d-block"><?php echo $info[0]->nombre . " " . $info[0]->apellido ?></a>
           </div>
         </div>
 
@@ -216,39 +218,139 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div>
 
         <!-- <!-- Sidebar Menu --90i        <nav class="mt-2"> -->
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <ul class=" mt-2 nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <li class="nav-item menu-open">
-            <a href="#" class="nav-link active">
-              <i class="nav-icon fas fa-tachometer-alt"></i>
-              <p>
-                Starter Pages2
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="#" class="nav-link active">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Active Page</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Inactive Page</p>
-                </a>
-              </li>
-            </ul>
-          </li>
+
+          <?php
+          if (true) { ?>
+            <li class="nav-item">
+              <a href="#" class="nav-link active">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-person-lines-fill">
+                  <img src="<?= URL; ?>/public/images/roles.svg" alt="Inscripcion">
+
+                </i>
+                <p>
+                  Roles
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/roles/index.php" class="nav-link active">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Listado de roles</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+          <?php
+          }
+          ?>
+
+          <?php
+          if (true) { ?>
+            <li class="nav-item">
+              <a href="#" class="nav-link active">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-mortarboard-fill">
+                  <img src="<?= URL; ?>/public/images/inscripcion.svg" alt="Inscripcion">
+
+                </i>
+                <p>
+                  Incripciones
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/inscripciones/primaria.php" class="nav-link active">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Primaria</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/inscripciones/secundaria.php" class="nav-link active">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Secundaria</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          <?php
+          }
+          ?>
+
+          <?php if (true) { ?>
+
+            <li class="nav-item ">
+              <a href="#" class="nav-link active">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-person-rolodex">
+                  <img src="<?= URL; ?>/public/images/profesor.svg" alt="Inscripcion">
+                </i>
+
+                <p>
+                  Docentes
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/docentes/index.php" class="nav-link active">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Listado de docentes</p>
+                  </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a href="/project/admin/roles/index.php" class="nav-link active">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Asignar materias</p>
+                    </a>
+                  </li> -->
+              </ul>
+            </li>
+
+          <?php
+          }
+          ?>
+
+          <?php if (true) { ?>
+            <li class="nav-item ">
+              <a href="#" class="nav-link active">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-card-list">
+                  <img src="<?= URL; ?>/public/images/secciones.svg" alt="Inscripcion">
+
+                </i>
+                <p>
+                  Cursos
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/cursos/index.php" class="nav-link active">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Listado de cursos</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+          <?php
+          }
+          ?>
           <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="nav-icon fas fa-th"></i>
-              <p>
-                Simple Link
-                <span class="right badge badge-danger">New</span>
-              </p>
+            <a href="<?= URL; ?>/login/logout.php" class="nav-link active" style="background-color: #d40e0eff;">
+              <!-- <img src="../../public/images/door-open.svg" alt="" class="nav-icon"> -->
+              <i class="nav-icon fas bi bi-door-open">
+                <img src="<?= URL; ?>/public/images/salir.svg" alt="Inscripcion">
+
+              </i>
+              <p>Cerrar sesión</p>
             </a>
           </li>
         </ul>
