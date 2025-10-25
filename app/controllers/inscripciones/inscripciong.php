@@ -51,4 +51,4 @@ $docente->id_grado_seccion = $_POST['gradopo'];
 $docente->inscribirPrimaria();
 
 
-// header('Location:' . URL . '/admin/inscripciones/index.php');
+header('Location:' . URL . '/admin/inscripciones/primaria.php');

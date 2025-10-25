@@ -16,7 +16,7 @@ $listaAnos = $cursos->mostrarAños();
         <h1>Creación de un nuevo curso <?php echo '(Grado)' ?></h1>
       </div>
       <br>
-      <form action="../../app/controllers/cursos/editGrado.php" method='post'>
+      <form action="http://localhost/final/app/controllers/cursos/createGrado.php" method='post'>
         <div class="row">
           <div class="col-md-10">
             <div class="card card-outline card-primary">
@@ -96,7 +96,7 @@ $listaAnos = $cursos->mostrarAños();
           <div class="col-md-10">
             <div class="form-group">
               <button class="btn btn-primary btn-lg">Registrar</button>
-              <a href="http://localhost/project/admin/estudiantes" class="btn btn-secondary btn-lg">Cancelar</a>
+              <a href="http://localhost/final/admin/index.php" class="btn btn-secondary btn-lg">Cancelar</a>
             </div>
           </div>
         </div>

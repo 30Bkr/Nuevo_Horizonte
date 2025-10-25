@@ -16,7 +16,7 @@ $edicion = $cursos->consultarGS($_GET['id_año_seccion']);
         <h1>Curso: <?php echo $edicion[0]->grado ?></h1>
       </div>
       <br>
-      <form action="../../app/controllers/cursos/editGrado.php" method='post'>
+      <form action="http://localhost/final/app/controllers/cursos/editAño.php" method='post'>
         <input type="hidden" name="id_persona" value="<?php echo $edicion[0]->id_grado_seccion ?>">
         <div class="row">
           <div class="col-md-10">

@@ -17,7 +17,7 @@ $listaAnos = $cursos->mostrarAños();
         <h1>Creación de un nuevo curso <?php echo '(Año)' ?></h1>
       </div>
       <br>
-      <form action="../../app/controllers/cursos/createAño.php" method='post'>
+      <form action="http://localhost/final/app/controllers/cursos/createAño.php" method='post'>
         <div class="row">
           <div class="col-md-10">
             <div class="card card-outline card-primary">
