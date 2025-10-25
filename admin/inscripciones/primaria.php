@@ -54,7 +54,7 @@ $docente = new Persona();
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="cedula">Documento de identidad</label>
-                      <input type="number" name="cedula" class="form-control" required>
+                      <input type="text" name="cedula" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
@@ -75,19 +75,19 @@ $docente = new Persona();
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="lugar_nac">Lugar de nacimiento</label>
-                      <input type="number" name="lugar_nac" class="form-control" required>
+                      <input type="text" name="lugar_nac" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="telefono">Telefono propio</label>
-                      <input type="number" name="telefono" class="form-control" required>
+                      <input type="text" name="telefono" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="telefono_hab">Telefono de habitación</label>
-                      <input type="number" name="telefono_hab" class="form-control" required>
+                      <input type="text" name="telefono_hab" class="form-control" required>
                     </div>
                   </div>
 
@@ -133,13 +133,13 @@ $docente = new Persona();
                   <div class="col-md-4">
                     <div class="form-group">
                       <label for="alergias">Alergías</label>
-                      <input type="textarea" name="alergias" class="form-control" required>
+                      <input type="text" name="alergias" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-4">
                     <div class="form-group">
                       <label for="condiciones">Condiciones</label>
-                      <input type="textarea" name="condiciones" class="form-control" required>
+                      <input type="text" name="condiciones" class="form-control" required>
                     </div>
                   </div>
 
@@ -217,28 +217,34 @@ $docente = new Persona();
 
                 </div>
                 <div class="row">
-                  <div class="col-md-3">
+                  <div class="col-md-2">
                     <div class="form-group">
                       <label for="fecha_nacr">Fecha de nacimiento</label>
                       <input type="date" name="fecha_nacr" class="form-control" required>
                     </div>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-2">
                     <div class="form-group">
                       <label for="lugar_nacr">Lugar de nacimiento</label>
-                      <input type="number" name="lugar_nacr" class="form-control" required>
+                      <input type="text" name="lugar_nacr" class="form-control" required>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label for="relacion">Relacion(Estudiante)</label>
+                      <input type="text" name="relacion" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="telefonor">Telefono propio</label>
-                      <input type="number" name="telefonor" class="form-control" required>
+                      <input type="text" name="telefonor" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="telefono_habr">Telefono de habitación</label>
-                      <input type="number" name="telefono_habr" class="form-control" required>
+                      <input type="text" name="telefono_habr" class="form-control" required>
                     </div>
                   </div>
                 </div>
@@ -306,13 +312,13 @@ $docente = new Persona();
                       <label for="">Nombre del rol</label>
                       <a href="http://localhost/project/admin/roles/create.php" style="margin-left: 5px" class="btn btn-primary btn-sm"><i class="bi bi-file-plus"></i></a>
                       <div class="form-inline">
-                        <select name="id_rol" id="" class="form-control">
+                        <select name="id_rolr" id="" class="form-control">
                           <?php
                           foreach ($listarRoles as $role) { ?>
                             <?php
                             if ($role->nombre_rol == "REPRESENTANTE") {
                             ?>
-                              <option value="<?= $role->id_rol; ?>" hidden><?php echo "$role->nombre_rol" ?></option>
+                              <option value="<?= $role->id_rol; ?>" selected><?php echo "$role->nombre_rol" ?></option>
                             <?php } else { ?>
                               <option value="<?= $role->id_rol; ?>"><?php echo "$role->nombre_rol" ?></option>
                             <?php } ?>

@@ -22,9 +22,10 @@ $docente->sexo = $_POST['sexo'];
 $docente->nacionalidad = $_POST['nacionalidad'];
 $docente->alergias = $_POST['alergias'];
 $docente->condiciones = $_POST['condiciones'];
+$docente->relacion = $_POST['relacion'];
 
 //Datos del representante: 
-$docente->id_rol = $_POST['id_rolr'];
+$docente->id_rol2 = $_POST['id_rolr'];
 
 $docente->nombres2 = $_POST['nombresr'];
 $docente->apellidos2 = $_POST['apellidosr'];
@@ -40,12 +41,14 @@ $docente->lugar_nac2 = $_POST['lugar_nacr'];
 $docente->fecha_nac2 = $_POST['fecha_nacr'];
 $docente->sexo2 = $_POST['sexor'];
 $docente->nacionalidad2 = $_POST['nacionalidadr'];
-$docente->nacionalidad2 = $_POST['ocupacionr'];
-$docente->nacionalidad2 = $_POST['lugar_trabajor'];
+$docente->ocupacion = $_POST['ocupacionr'];
+$docente->lugar_trabajo = $_POST['lugar_trabajor'];
 
 //DAtos del grado:
 
 $docente->id_grado_seccion = $_POST['gradopo'];
 
+$docente->inscribirPrimaria();
 
-// header('Location:' . URL . '/admin/docentes/index.php');
+
+// header('Location:' . URL . '/admin/inscripciones/index.php');

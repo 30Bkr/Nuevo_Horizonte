@@ -1,5 +1,8 @@
 <?php
 
+include_once('/xampp/htdocs/final/app/conexion.php');
+
+
 class Inscripcion
 {
   //datos del estudiante
@@ -45,10 +48,9 @@ class Inscripcion
 
 
 
-  public $especialidad;
   public $ocupacion;
 
-
+  public $relacion;
 
 
   //datos de la seccion
@@ -58,7 +60,6 @@ class Inscripcion
   public $id_estudiante_representante;
   public $id_grado_seccion;
   public $id_periodo;
-
 
 
   public function inscribirPrimaria()
@@ -89,15 +90,72 @@ class Inscripcion
       $stmt->bindParam(':casa', $this->casa);
 
       $stmt->execute();
-      $ultimaPersona = $objPersonas->lastInsertId();
+      $alumno = $objPersonas->lastInsertId();
 
-      $sql2 = "INSERT INTO profesores (id_persona, especialidad) 
-            VALUES (:id_persona, :especialidad);";
+      $sql2 = "INSERT INTO estudiantes (id_persona,alergias,condiciones)
+                VALUES (:id_persona,:alergias,:condiciones);";
       $stmt2 = $objPersonas->prepare($sql2);
-      $stmt2->bindParam(':id_persona', $ultimaPersona);
-      $stmt2->bindParam(':especialidad', $this->especialidad);
+      $stmt2->bindParam(':id_persona', $alumno);
+      $stmt2->bindParam(':alergias', $this->alergias);
+      $stmt2->bindParam(':condiciones', $this->condiciones);
       $stmt2->execute();
 
+      $ultimoAlumno = $objPersonas->lastInsertId();
+
+      $sql3 =  "INSERT INTO personas(id_rol, nombres, apellidos, correo, telefono, telefono_hab, fecha_nac, lugar_nac,cedula,sexo,nacionalidad,calle,casa,parroquia, estado)
+            VALUES (:id_rol, :nombres, :apellidos, :correo, :telefono, :telefono_hab, :fecha_nac, :lugar_nac, :cedula, :sexo, :nacionalidad, :calle, :casa, :parroquia, :estado);";
+      $stmt3 = $objPersonas->prepare($sql3);
+
+      $stmt3->bindParam(':id_rol', $this->id_rol2);
+      $stmt3->bindParam(':nombres', $this->nombres2);
+      $stmt3->bindParam(':apellidos', $this->apellidos2);
+      $stmt3->bindParam(':correo', $this->correo2);
+      $stmt3->bindParam(':telefono', $this->telefono2);
+      $stmt3->bindParam(':telefono_hab', $this->telefono_hab2);
+      $stmt3->bindParam(':cedula', $this->cedula2);
+      $stmt3->bindParam(':lugar_nac', $this->lugar_nac2);
+      $stmt3->bindParam(':fecha_nac', $this->fecha_nac2);
+      $stmt3->bindParam(':sexo', $this->sexo2);
+      $stmt3->bindParam(':nacionalidad', $this->nacionalidad2);
+      $stmt3->bindParam(':estado', $this->estado2);
+      $stmt3->bindParam(':parroquia', $this->parroquia2);
+      $stmt3->bindParam(':calle', $this->calle2);
+      $stmt3->bindParam(':casa', $this->casa2);
+
+      $stmt3->execute();
+      $representante = $objPersonas->lastInsertId();
+
+      $sql4 = "INSERT INTO representantes (id_persona,ocupacion,lugar_trabajo)
+                VALUES (:id_persona,:ocupacion,:lugar_trabajo);";
+      $stmt4 = $objPersonas->prepare($sql4);
+      $stmt4->bindParam(':id_persona', $representante);
+      $stmt4->bindParam(':ocupacion', $this->ocupacion);
+      $stmt4->bindParam(':lugar_trabajo', $this->lugar_trabajo);
+      $stmt4->execute();
+
+      $ultimoRepresentante = $objPersonas->lastInsertId();
+
+      echo "$ultimoRepresentante";
+      echo "$ultimoAlumno";
+
+      $sql5 = "INSERT INTO estudiante_representante (id_estudiante, id_representante, relacion)
+                VALUES (:id_estudiante, :id_representante,:relacion);";
+      $stmt5 = $objPersonas->prepare($sql5);
+      $stmt5->bindParam(':id_estudiante', $ultimoAlumno);
+      $stmt5->bindParam(':id_representante', $ultimoRepresentante);
+      $stmt5->bindParam(':relacion', $this->relacion);
+      $stmt5->execute();
+
+      $id_estudiante_repre = $objPersonas->lastInsertId();
+
+      $sql6 = "INSERT INTO inscripcion_inicial (id_estudiante_representante, id_grado_seccion, id_periodo)
+                VALUES (:id_estudiante_representante, :id_grado_seccion, :id_periodo)";
+      $ref  = 1;
+      $stmt6 = $objPersonas->prepare($sql6);
+      $stmt6->bindParam(':id_estudiante_representante', $id_estudiante_repre);
+      $stmt6->bindParam(':id_grado_seccion', $this->id_grado_seccion);
+      $stmt6->bindParam(':id_periodo', $ref);
+      $stmt6->execute();
       $stmt = null;
       $stmt2 = null;
       $conexion->desconectar();
