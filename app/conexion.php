@@ -3,8 +3,8 @@ class Conexion
 {
   private $hostname = 'localhost';
   private $database = 'nuevo';
-  private $usuario = 'prueba1';
-  private $password = '12345678';
+  private $usuario = 'root';
+  private $password = '';
   private $conn;
   public function conectar()
   {
