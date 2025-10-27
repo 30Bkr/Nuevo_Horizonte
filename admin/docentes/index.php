@@ -1,9 +1,14 @@
 <?php
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 include_once("/xampp/htdocs/final/app/personas.php");
+include_once("/xampp/htdocs/final/app/controllers/roles/roles.php");
+
 
 $persona = new Persona();
 $lista = $persona->mostrar();
+
+$roles = new Roles();
+$listarRoles = $roles->listar();
 // include('../../app/controllers/docentes/listado_de_docentes.php');
 ?>
 
@@ -13,7 +18,7 @@ $lista = $persona->mostrar();
   <div class="content">
     <div class="container">
       <div class="row">
-        <h1>Listado del personal docente</h1>
+        <h1>Listado del personal</h1>
       </div>
       <br>
       <div class="row">
@@ -34,7 +39,7 @@ $lista = $persona->mostrar();
                       <center>Nro</center>
                     </th>
                     <th>
-                      <center>Nombres del docente</center>
+                      <center>Nombres</center>
                     </th>
                     <th>
                       <center>Rol</center>
@@ -63,7 +68,7 @@ $lista = $persona->mostrar();
                     echo "<tr>";
                     echo "<td style='text-align: center'>" . $i + 1 . "</td>";
                     echo "<td>" . $lista[$i]->nombres . " " . $lista[$i]->apellidos . "</td>";
-                    echo "<td>" . $lista[$i]->id_rol . "</td>";
+                    echo "<td>" . $listarRoles[$i]->nombre_rol . "</td>";
                     echo "<td>" . $lista[$i]->cedula . "</td>";
                     echo "<td>" . $lista[$i]->fecha_nac . "</td>";
                     echo "<td>" . $lista[$i]->correo . "</td>";

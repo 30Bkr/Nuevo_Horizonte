@@ -6,7 +6,6 @@ $persona = new Persona();
 $lista = $persona->mostrarById(2);
 // include('../../app/controllers/docentes/listado_de_docentes.php');
 ?>
-
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
   <br>
@@ -21,10 +20,7 @@ $lista = $persona->mostrarById(2);
         <div class="col-md-12">
           <div class="card card-outline card-primary">
             <div class="card-header">
-              <h3 class="card-title">Docentes registrados</h3>
-              <div class="card-tools">
-                <a href="create.php" class="btn btn-primary"><i class="bi bi-plus-square"></i> Crear nuevo docente</a>
-              </div>
+              <h3 class="card-title">Alumnos registrados</h3>
             </div>
             <div class="card-body">
               <table id="example1" class="table table-striped table-bordered table-hover table-sm">
@@ -34,22 +30,20 @@ $lista = $persona->mostrarById(2);
                       <center>Nro</center>
                     </th>
                     <th>
-                      <center>Nombres del docente</center>
-                    </th>
-                    <th>
-                      <center>Rol</center>
+                      <center>Nombres del estudiante</center>
                     </th>
                     <th>
                       <center>Ci</center>
                     </th>
-                    <th>
-                      <center>Fecha de nacimiento</center>
-                    </th>
+
                     <th>
                       <center>Email</center>
                     </th>
                     <th>
                       <center>Estado</center>
+                    </th>
+                    <th>
+                      <center>Fecha de nacimiento</center>
                     </th>
                     <th>
                       <center>Acciones</center>
@@ -63,19 +57,18 @@ $lista = $persona->mostrarById(2);
                     echo "<tr>";
                     echo "<td style='text-align: center'>" . $i + 1 . "</td>";
                     echo "<td>" . $lista[$i]->nombres . " " . $lista[$i]->apellidos . "</td>";
-                    echo "<td>" . $lista[$i]->id_rol . "</td>";
                     echo "<td>" . $lista[$i]->cedula . "</td>";
-                    echo "<td>" . $lista[$i]->fecha_nac . "</td>";
                     echo "<td>" . $lista[$i]->correo . "</td>";
                     echo "<td>" . $lista[$i]->estado . "</td>";
+                    echo "<td>" . $lista[$i]->fecha_nac . "</td>";
                     echo "<td style='display: flex;
                          justify-content: center;'>
                          <div class='btn-group' role='group' aria-label='Basic example'>
                          <a href=edit.php?id_persona=" . $lista[$i]->id_persona . "  class='btn btn-success'> 
                           <img src='../../public/images/pencil.svg' alt='ELIMINAR'>
                          </a>
-                         <a href=eliminarUsuario.php?id=" . $lista[$i]->id_persona . " style='margin-left: 8px' class='btn btn-danger'>
-                          <img src='../../public/images/trash.svg' alt='ELIMINAR'>
+                         <a href=mostrar.php?id=" . $lista[$i]->id_persona . " style='margin-left: 8px' class='btn btn-warning'>
+                          <img src='../../public/images/perfil.svg' alt='ELIMINAR'>
                          </a>
                          
                          </div>

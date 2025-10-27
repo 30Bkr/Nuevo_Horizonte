@@ -37,7 +37,30 @@ class Roles
     try {
       $conexion = new Conexion();
       $objConexion = $conexion->conectar();
-      $sql = "SELECT * FROM roles";
+      $sql = "SELECT * FROM roles WHERE id_rol";
+      $stmt = $objConexion->prepare($sql);
+      $stmt->execute();
+      $listarUsuarios = array();
+      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        $objUsuarios = new Roles();
+        $objUsuarios->id_rol = $row->id_rol;
+        $objUsuarios->nombre_rol = $row->nombre_rol;
+        $objUsuarios->descripcion = $row->descripcion;
+        $listarUsuarios[] = $objUsuarios;
+      }
+      return $listarUsuarios;
+      $stmt = null;
+      $conexion->desconectar();
+    } catch (\Throwable $th) {
+      echo "Error al listar los roles" . $th->getMessage();
+    }
+  }
+  public function listar2()
+  {
+    try {
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+      $sql = "SELECT * FROM roles WHERE id_rol != 2 && id_rol != 11 && id_rol !=10 && id_rol !=8 && id_rol !=9";
       $stmt = $objConexion->prepare($sql);
       $stmt->execute();
       $listarUsuarios = array();

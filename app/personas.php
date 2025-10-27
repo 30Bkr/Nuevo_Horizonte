@@ -27,7 +27,7 @@ class Persona
     try {
       $conexion = new Conexion();
       $objPersonas = $conexion->conectar();
-      $sql = "SELECT * FROM personas WHERE id_rol != 2 && id_rol != 11";
+      $sql = "SELECT * FROM personas WHERE id_rol != 2 && id_rol != 11 && id_rol != 10;";
       $stmt = $objPersonas->prepare($sql);
       $stmt->execute();
       $listaPersona = array();

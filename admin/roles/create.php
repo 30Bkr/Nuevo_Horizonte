@@ -1,4 +1,5 @@
 <?php
+include_once("/xampp/htdocs/final/global/utils.php");
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 include_once("/xampp/htdocs/final/app/controllers/roles/roles.php");
 $roles = new Roles();
@@ -21,7 +22,7 @@ $lista = $roles->listar();
               <h3 class="card-title">Rol</h3>
             </div>
             <div class="card-body">
-              <form action="../../app/controllers/roles/createRol.php" method="post" id="roles">
+              <form action="<?= URL ?>/app/controllers/roles/createRol.php" method="post" id="roles">
                 <div class="row">
                   <div class="col-md-12">
                     <div class="form-group">

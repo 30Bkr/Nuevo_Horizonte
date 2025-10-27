@@ -2,7 +2,7 @@
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 include_once("/xampp/htdocs/final/app/controllers/roles/roles.php");
 $roles = new Roles();
-$lista = $roles->listar();
+$lista = $roles->listar2();
 ?>
 
 <div class="content-wrapper">
@@ -16,10 +16,10 @@ $lista = $roles->listar();
           <div class="card card-outline card-primary">
             <div class="card-header">
               <h3 class="card-title">Lista de roles</h3>
-              <div class="card-tools">
+              <!-- <div class="card-tools">
                 <a href="create.php" class="btn btn-primary"> Nuevo rol <strong>+</strong>
                 </a>
-              </div>
+              </div> -->
             </div>
             <div class="card-body">
               <table class="table table-hover table-bordered">

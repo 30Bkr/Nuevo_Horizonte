@@ -153,6 +153,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <p>Secundaria</p>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/inscripciones/registro.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Listado</p>
+                  </a>
+                </li>
               </ul>
             </li>
           <?php

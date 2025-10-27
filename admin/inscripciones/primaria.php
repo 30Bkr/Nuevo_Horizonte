@@ -25,7 +25,7 @@ $docente = new Persona();
     <br>
     <div class="container">
       <div class="row">
-        <h1>Creación de un nuevo estudiante</h1>
+        <h1>Primaria</h1>
       </div>
       <br>
       <form action="http://localhost/final/app/controllers/inscripciones/inscripciong.php" method="post" id="for">

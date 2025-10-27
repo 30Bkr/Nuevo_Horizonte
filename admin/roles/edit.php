@@ -1,5 +1,6 @@
 <?php
 include_once("/xampp/htdocs/final/layout/layaout1.php");
+include_once("/xampp/htdocs/final/global/utils.php");
 include_once("/xampp/htdocs/final/app/controllers/roles/roles.php");
 $roles = new Roles();
 $lista = $roles->consultar($_GET['id_rol']);
@@ -21,7 +22,7 @@ $lista = $roles->consultar($_GET['id_rol']);
               <h3 class="card-title">Rol</h3>
             </div>
             <div class="card-body">
-              <form action="../../app/controllers/roles/updateRol.php" method="post" id="roles">
+              <form action="<?= URL ?>/app/controllers/roles/updateRol.php" method="post" id="roles">
                 <input type="hidden" name="id_rol" value="<?php echo $lista[0]->id_rol ?>">
                 <div class="row">
                   <div class="col-md-12">

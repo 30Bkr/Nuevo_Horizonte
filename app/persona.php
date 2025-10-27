@@ -105,7 +105,7 @@ class Persona
     $conexion = new Conexion();
     $objconexion = $conexion->conectar();
 
-    $sql = "SELECT * FROM usuario WHERE id = $id";
+    $sql = "SELECT * FROM personas WHERE id_persona = $id";
     $stmt = $objconexion->prepare($sql);
     $stmt->execute();
     $datos = array();
@@ -115,20 +115,15 @@ class Persona
       $objPersona->apellidos = $row->apellidos;
       $objPersona->correo = $row->correo;
       $objPersona->telefono = $row->telefono;
-      $objPersona->rol = $row->rol;
-      $objPersona->id = $row->id;
       $objPersona->telefono_hab = $row->telefono_hab;
       $objPersona->fecha_nac = $row->fecha_nac;
-      $objPersona->lugar_nac = $row->lugar_nac;
       $objPersona->cedula = $row->cedula;
       $objPersona->sexo = $row->sexo;
       $objPersona->nacionalidad = $row->nacionalidad;
       $objPersona->calle = $row->calle;
       $objPersona->casa = $row->casa;
+      $objPersona->estado = $row->estado;
       $objPersona->parroquia = $row->parroquia;
-      $objPersona->profesion = $row->profesion;
-      $objPersona->lugar_trabajo = $row->lugar_trabajo;
-      $objPersona->rol = $row->rol;
       $datos[] = $objPersona;
     }
     return $datos;
