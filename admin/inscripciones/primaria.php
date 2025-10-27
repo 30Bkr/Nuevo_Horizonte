@@ -376,7 +376,7 @@ $docente = new Persona();
                       echo "<td style='display: flex;
                            justify-content: center;'>
                            <div class='btn-group' role='group' aria-label='Basic example'>
-                            <input type='radio' name='gradopo' value=" . $listaGrados[$i]->id_grado_seccion . " 
+                            <input type='radio' name='gradopo' value=" . $listaGrados[$i]->id_grados_secciones . " 
                            </div>
                         </td>";
                       echo "</label>";

@@ -33,14 +33,6 @@ $lista = $roles->consultar($_GET['id_rol']);
                   </div>
                 </div>
                 <hr>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label for="descripcion">Descripción</label>
-                      <input type="text" class="form-control" name="descripcion" value="<?php echo $lista[0]->descripcion ?>" require>
-                    </div>
-                  </div>
-                </div>
                 <hr>
                 <div class="row">
                   <div class="col-md-12">

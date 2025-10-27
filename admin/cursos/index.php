@@ -119,11 +119,19 @@ $listaAnos = $cursos->mostrarAños();
                             <div class="modal-dialog modal-lg">
                               <div class="modal-content">
                                 <div class="modal-header" style="background-color: #dbcd59;">
-
+                                  <h5 class="modal-header">
+                                    Agregar
+                                  </h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span>Hola</span>
+                                  </button>
                                 </div>
                                 <div class="modal-body">
                                   <div class="row">
-
+                                    <div class="col-md-3">
+                                      <input type="text" name="aca" id="miramar">
+                                      <label for="aca">Ejemplo</label>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -156,6 +164,7 @@ $listaAnos = $cursos->mostrarAños();
                       $i++; -->
 
                   <?php
+                    $i++;
                   }
                   ?>
                 </tbody>
