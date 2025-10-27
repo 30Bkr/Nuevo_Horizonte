@@ -6,7 +6,6 @@ include_once('/xampp/htdocs/final/app/users.php');
 session_start();
 $esto = $_SESSION['sesion_email'];
 $user = new Usuarios;
-
 $info = $user->info($esto);
 // $mira = $_SESSION['nombre'];
 if (isset($_SESSION['sesion_email'])) {

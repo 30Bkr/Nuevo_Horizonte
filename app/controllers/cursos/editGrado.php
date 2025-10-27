@@ -25,4 +25,4 @@ $objCurso->actualizarGS($_POST['id_persona']);
 // echo "$esto3";
 // echo "$esto4";
 // echo "$esto5";
-header('Location:' . URL . '/admin/cursos/index.php');
+// header('Location:' . URL . '/admin/cursos/index.php');

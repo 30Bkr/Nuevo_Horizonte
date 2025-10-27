@@ -6,7 +6,7 @@ $cursos = new Cursos();
 $listaGrados = $cursos->mostrarGrados();
 $listaAnos = $cursos->mostrarAños();
 
-$edicion = $cursos->consultarGS($_GET['id_año_seccion']);
+$edicion = $cursos->consultarGS($_GET['id_años_secciones']);
 ?>
 <div class="content-wrapper">
 
@@ -17,7 +17,7 @@ $edicion = $cursos->consultarGS($_GET['id_año_seccion']);
       </div>
       <br>
       <form action="http://localhost/final/app/controllers/cursos/editAño.php" method='post'>
-        <input type="hidden" name="id_persona" value="<?php echo $edicion[0]->id_grado_seccion ?>">
+        <input type="hidden" name="id_persona" value="<?php echo $edicion[0]->id_grados_secciones ?>">
         <div class="row">
           <div class="col-md-10">
             <div class="card card-outline card-primary">
@@ -30,12 +30,6 @@ $edicion = $cursos->consultarGS($_GET['id_año_seccion']);
                     <div class="form-group">
                       <label for="grado">Grado</label>
                       <input type="number" name="grado" class="form-control" value="<?php echo $edicion[0]->grado ?>" maxlength="1" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="descripcion">Descripción del grado</label>
-                      <input type="text" name="descripcion" class="form-control" value="<?php echo $edicion[0]->descripcion ?>" required>
                     </div>
                   </div>
                 </div>
@@ -55,12 +49,6 @@ $edicion = $cursos->consultarGS($_GET['id_año_seccion']);
                     <div class="form-group">
                       <label for="seccion">Seccion</label>
                       <input type="text" name="seccion" class="form-control" value="<?php echo $edicion[0]->nom_seccion ?>" maxlength="1" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="observacion">Descripción del grado</label>
-                      <input type="text" name="observacion" class="form-control" value="<?php echo $edicion[0]->observacion ?>" required>
                     </div>
                   </div>
                 </div>

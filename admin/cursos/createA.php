@@ -32,12 +32,6 @@ $listaAnos = $cursos->mostrarAños();
                       <input type="number" name="año" class="form-control" maxlength="1" required>
                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="descripcion">Descripción del año</label>
-                      <input type="text" name="descripcion" class="form-control" required>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -55,12 +49,6 @@ $listaAnos = $cursos->mostrarAños();
                     <div class="form-group">
                       <label for="seccion">Seccion</label>
                       <input type="text" name="seccion" class="form-control" maxlength="1" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="observacion">Descripción del grado</label>
-                      <input type="text" name="observacion" class="form-control" required>
                     </div>
                   </div>
                 </div>

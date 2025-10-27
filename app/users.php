@@ -11,7 +11,7 @@ class Usuarios
   public $nombre_usuario;
   public $usuario;
   public $contraseña;
-  public $estado_cuenta;
+  public $estatus;
   public $cedula;
   public $cargo;
   public $correo;
@@ -22,15 +22,15 @@ class Usuarios
   {
     $conexion = new Conexion();
     $objConexion = $conexion->conectar();
-    $sql = "INSERT INTO usuarios (id_persona, id_rol, nombre_usuario, usuario, contraseña, estado_cuenta)
-            VALUES (:id_persona, :id_rol, :nombre_usuario, :usuario, :contraseña, :estado_cuenta)";
+    $sql = "INSERT INTO usuarios (id_persona, id_rol, nombre_usuario, usuario, contraseña, estatus)
+            VALUES (:id_persona, :id_rol, :nombre_usuario, :usuario, :contraseña, :estatus)";
     $stmt = $objConexion->prepare($sql);
     $stmt->bindParam(":id_persona", $this->id_persona);
     $stmt->bindParam(":id_rol", $this->id_rol);
     $stmt->bindParam(":nombre_usuario", $this->nombre_usuario);
     $stmt->bindParam(":usuario", $this->usuario);
     $stmt->bindParam(":contraseña", $this->contraseña);
-    $stmt->bindParam(":estado_cuenta", $this->estado_cuenta);
+    $stmt->bindParam(":estatus", $this->estatus);
     $stmt->execute();
     $stmt = null;
     $conexion->desconectar();
@@ -51,7 +51,7 @@ class Usuarios
       $objUsuarios->nombre_usuario = $row->nombre_usuario;
       $objUsuarios->usuario = $row->usuario;
       $objUsuarios->contraseña = $row->contraseña;
-      $objUsuarios->estado_cuenta = $row->estado_cuenta;
+      $objUsuarios->estatus = $row->estatus;
       $listarUsuarios[] = $objUsuarios;
     }
     return $listarUsuarios;
@@ -82,7 +82,7 @@ class Usuarios
       // echo "<pre>";
       // var_dump($aqui);
       // echo "</pre>";
-      $sql = "SELECT * FROM usuarios WHERE nombre_usuario = '$aqui' AND estado_cuenta = 0";
+      $sql = "SELECT * FROM usuarios WHERE nombre_usuario = '$aqui' AND estatus = 1";
       $stmt = $objConexion->prepare($sql);
       $stmt->execute();
       $listarUsuarios = array();
@@ -94,7 +94,7 @@ class Usuarios
         $objUsuarios->nombre_usuario = $row->nombre_usuario;
         $objUsuarios->usuario = $row->usuario;
         $objUsuarios->contraseña = $row->contraseña;
-        $objUsuarios->estado_cuenta = $row->estado_cuenta;
+        $objUsuarios->estatus = $row->estatus;
         $listarUsuarios[] = $objUsuarios;
       }
       return $listarUsuarios;
@@ -112,7 +112,7 @@ class Usuarios
       $sql = "SELECT * FROM usuarios AS usu
               INNER JOIN roles as rol ON usu.id_rol = rol.id_rol 
               INNER JOIN personas as per ON usu.id_persona = per.id_persona 
-              WHERE usu.nombre_usuario = '$aqui' AND usu.estado_cuenta = 0
+              WHERE usu.nombre_usuario = '$aqui' AND usu.estatus = 1
       ";
       // $sql = "SELECT * FROM personas INNER JOIN usuarios on personas.id_persona = usuarios.id_persona WHERE usuarios.id_usuario = $aqui";
       $stmt = $objConexion->prepare($sql);

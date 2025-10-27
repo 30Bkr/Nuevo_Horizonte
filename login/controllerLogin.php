@@ -23,7 +23,7 @@ $listaPersona = $user->consultar($email);
 // echo "<pre>";
 // var_dump($listaPersona);
 // echo "</pre>";
-if (password_verify($listaPersona[0]->contraseña, $contrasena) && ($listaPersona[0]->estado_cuenta === 0)) {
+if (password_verify($listaPersona[0]->contraseña, $contrasena) && ($listaPersona[0]->estatus === 1)) {
   echo "aca2 si es la misma";
   session_start();
   header('Location:' . URL . '/admin/index.php');
@@ -34,6 +34,6 @@ if (password_verify($listaPersona[0]->contraseña, $contrasena) && ($listaPerson
   echo 'aca3 no es la misma';
   session_start();
   $_SESSION['mensaje'] = "Los datos introducidos son incorrectos";
-  header('Location: ' . URL . '/login/index.php');
+  // header('Location: ' . URL . '/login/index.php');
 }
 // echo "<br>Usuario: $email<br>Contrasena: $contrasena";

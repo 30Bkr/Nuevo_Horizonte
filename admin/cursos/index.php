@@ -18,7 +18,7 @@ $listaAnos = $cursos->mostrarAños();
       </div>
       <br>
       <div class="row">
-        <div class='col-md-12'>
+        <div class='col-md-8'>
           <div class="card card-outline card-primary">
             <div class="card-header">
               <h3 class="card-title">Listado de grados</h3>
@@ -52,10 +52,10 @@ $listaAnos = $cursos->mostrarAños();
                     echo "<td style='display: flex;
                            justify-content: center;'>
                            <div class='btn-group' role='group' aria-label='Basic example'>
-                           <a href=editG.php?id_grado_seccion=" . $listaGrados[$i]->id_grado_seccion . "  class='btn btn-success'> 
+                           <a href=editG.php?id_grados_secciones=" . $listaGrados[$i]->id_grados_secciones . "  class='btn btn-success'> 
                             <img src='../../public/images/pencil.svg' alt='ELIMINAR'>
                            </a>
-                           <a href=eliminarUsuario.php?id=" . $listaGrados[$i]->id_grado_seccion . " style='margin-left: 8px' class='btn btn-danger'>
+                           <a href=eliminarUsuario.php?id=" . $listaGrados[$i]->id_grados_secciones . " style='margin-left: 8px' class='btn btn-danger'>
                             <img src='../../public/images/trash.svg' alt='ELIMINAR'>
                            </a>
                            
@@ -75,7 +75,8 @@ $listaAnos = $cursos->mostrarAños();
         </div>
       </div>
       <div class="row">
-        <div class='col-md-12'>
+        <div class='col-md-8 center'>
+
           <div class="card card-outline card-primary">
             <div class="card-header">
               <h3 class="card-title">Listado de años</h3>
@@ -101,26 +102,60 @@ $listaAnos = $cursos->mostrarAños();
                   <?php
                   $i = 0;
                   while ($i < count($listaAnos)) {
-                    echo "<tr>";
-                    echo "<td>" . $listaAnos[$i]->año . "</td>";
-                    echo "<td>" . $listaAnos[$i]->nom_seccion . "</td>";
-                    echo "<td>" . $listaAnos[$i]->capacidad . "</td>";
-                    echo "<td>" . $listaAnos[$i]->turno . "</td>";
-                    echo "<td style='display: flex;
-                           justify-content: center;'>
-                           <div class='btn-group' role='group' aria-label='Basic example'>
-                           <a href=editA.php?id_año_seccion=" . $listaAnos[$i]->id_año_seccion . "  class='btn btn-success'> 
-                            <img src='../../public/images/pencil.svg' alt='ELIMINAR'>
-                           </a>
-                           <a href=eliminarUsuario.php?id_año_seccion=" . $listaAnos[$i]->id_año_seccion . " style='margin-left: 8px' class='btn btn-danger'>
-                            <img src='../../public/images/trash.svg' alt='ELIMINAR'>
-                           </a>
-                           
-                           </div>
-                        </td>";
-                    echo "</tr>";
+                  ?>
+                    <tr>
+                      <td><?= $listaAnos[$i]->año  ?></td>
+                      <td><?= $listaAnos[$i]->nom_seccion  ?></td>
+                      <td><?= $listaAnos[$i]->capacidad  ?></td>
+                      <td><?= $listaAnos[$i]->turno  ?></td>
+                      <td>
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                          <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modal_asignacion<?= $listaAnos[$i]->id_años_secciones ?>">
+                            <i class="bi bi-check-circle"></i>
+                            Edit
+                          </button>
 
-                    $i++;
+                          <div class="modal fade" id="modal_asignacion<?= $listaAnos[$i]->id_años_secciones ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                              <div class="modal-content">
+                                <div class="modal-header" style="background-color: #dbcd59;">
+
+                                </div>
+                                <div class="modal-body">
+                                  <div class="row">
+
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+
+                      </td>
+                    </tr>
+                    <!-- echo "<tr>";
+                      echo "<td>" . $listaAnos[$i]->año . "</td>";
+                      echo "<td>" . $listaAnos[$i]->nom_seccion . "</td>";
+                      echo "<td>" . $listaAnos[$i]->capacidad . "</td>";
+                      echo "<td>" . $listaAnos[$i]->turno . "</td>";
+                      echo "<td style='display: flex;
+                             justify-content: center;'>
+                             <div class='btn-group' role='group' aria-label='Basic example'>
+                             <a href=editA.php?id_años_secciones=" . $listaAnos[$i]->id_años_secciones . "  class='btn btn-success'> 
+                              <img src='../../public/images/pencil.svg' alt='ELIMINAR'>
+                             </a>
+                             <a href=eliminarUsuario.php?id_años_secciones=" . $listaAnos[$i]->id_años_secciones . " style='margin-left: 8px' class='btn btn-danger'>
+                              <img src='../../public/images/trash.svg' alt='ELIMINAR'>
+                             </a>
+                             
+                             </div>
+                          </td>";
+                      echo "</tr>";
+  
+                      $i++; -->
+
+                  <?php
                   }
                   ?>
                 </tbody>
@@ -128,6 +163,7 @@ $listaAnos = $cursos->mostrarAños();
 
             </div>
           </div>
+
 
         </div>
       </div>

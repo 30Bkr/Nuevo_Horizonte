@@ -3,10 +3,10 @@ include_once('/xampp/htdocs/final/app/conexion.php');
 
 class Cursos
 {
-  public $id_año_seccion;
-  public $id_grado_seccion;
-  public $id_grado;
-  public $id_año;
+  public $id_años_secciones;
+  public $id_grados_secciones;
+  public $id_grados;
+  public $id_años;
   public $id_seccion;
   public $grado;
   public $año;
@@ -15,7 +15,6 @@ class Cursos
   public $descripcion;
   public $observacion;
   public $descripcion3;
-
   public $capacidad;
 
   public function mostrarGrados()
@@ -24,9 +23,8 @@ class Cursos
       // session_start();
       $conexion = new Conexion();
       $objConexion = $conexion->conectar();
-      // $sql = "SELECT * FROM grado_seccion";
-      $sqlPrueba = "SELECT * FROM grado_seccion AS gs
-              INNER JOIN grados as g ON gs.id_grado = g.id_grado 
+      $sqlPrueba = "SELECT * FROM grados_secciones AS gs
+              INNER JOIN grados as g ON gs.id_grados = g.id_grados 
               INNER JOIN secciones as s ON gs.id_seccion = s.id_seccion";
       $stmt = $objConexion->prepare($sqlPrueba);
       $stmt->execute();
@@ -37,7 +35,7 @@ class Cursos
         $objCursos->nom_seccion = $row->nom_seccion;
         $objCursos->capacidad = $row->capacidad;
         $objCursos->turno = $row->turno;
-        $objCursos->id_grado_seccion = $row->id_grado_seccion;
+        $objCursos->id_grados_secciones = $row->id_grados_secciones;
         $listaRoles[] = $objCursos;
       }
       return $listaRoles;
@@ -55,8 +53,8 @@ class Cursos
       // session_start();
       $conexion = new Conexion();
       $objConexion = $conexion->conectar();
-      $sql = "SELECT * FROM año_seccion AS ano
-              INNER JOIN años as a ON ano.id_año = a.id_año
+      $sql = "SELECT * FROM años_secciones AS ano
+              INNER JOIN años as a ON ano.id_años = a.id_años
               INNER JOIN secciones as s ON ano.id_seccion = s.id_seccion";
       $stmt = $objConexion->prepare($sql);
       $stmt->execute();
@@ -67,7 +65,7 @@ class Cursos
         $objCursos->nom_seccion = $row->nom_seccion;
         $objCursos->capacidad = $row->capacidad;
         $objCursos->turno = $row->turno;
-        $objCursos->id_año_seccion = $row->id_año_seccion;
+        $objCursos->id_años_secciones = $row->id_años_secciones;
         $listaRoles[] = $objCursos;
       }
       return $listaRoles;
@@ -84,10 +82,10 @@ class Cursos
     try {
       $conexion = new Conexion();
       $objCurso = $conexion->conectar();
-      $sql = "SELECT * FROM grado_seccion as ans 
+      $sql = "SELECT * FROM grados_secciones as ans 
             INNER JOIN grados as a ON ans.id_grado = a.id_grado
             INNER JOIN secciones as s ON ans.id_seccion = s.id_seccion
-            where ans.id_grado_seccion = $id";
+            where ans.id_grados_secciones = $id";
       $stmt = $objCurso->prepare($sql);
       $stmt->execute();
       $listaCursos = array();
@@ -99,7 +97,7 @@ class Cursos
         $objCursos->nom_seccion = $row->nom_seccion;
         $objCursos->capacidad = $row->capacidad;
         $objCursos->turno = $row->turno;
-        $objCursos->id_grado_seccion = $row->id_grado_seccion;
+        $objCursos->id_grados_secciones = $row->id_grados_secciones;
         $listaCursos[] = $objCursos;
       }
       return $listaCursos;
@@ -115,10 +113,10 @@ class Cursos
     try {
       $conexion = new Conexion();
       $objCurso = $conexion->conectar();
-      $sql = "SELECT * FROM año_seccion as ans 
-            INNER JOIN años as a ON ans.id_año = a.id_año
+      $sql = "SELECT * FROM años_secciones as ans 
+            INNER JOIN años as a ON ans.id_años = a.id_años
             INNER JOIN secciones as s ON ans.id_seccion = s.id_seccion
-            where ans.id_año_seccion = $id";
+            where ans.id_años_secciones = $id";
       $stmt = $objCurso->prepare($sql);
       $stmt->execute();
       $listaCursos = array();
@@ -130,7 +128,7 @@ class Cursos
         $objCursos->nom_seccion = $row->nom_seccion;
         $objCursos->capacidad = $row->capacidad;
         $objCursos->turno = $row->turno;
-        $objCursos->id_año_seccion = $row->id_año_seccion;
+        $objCursos->id_años_secciones = $row->id_años_secciones;
         $listaCursos[] = $objCursos;
       }
       return $listaCursos;
@@ -146,11 +144,11 @@ class Cursos
     try {
       $conexion = new Conexion();
       $objCurso = $conexion->conectar();
-      $sql = "UPDATE grado_seccion 
-              INNER JOIN grados ON grado_seccion.id_grado = grados.id_grado
-              INNER JOIN secciones ON grado_seccion.id_seccion = secciones.id_seccion
-              SET secciones.nom_seccion = :nom_seccion, secciones.turno = :turno, secciones.observacion = :observacion, grados.grado = :grado, grados.descripcion = :descripcion, grado_seccion.capacidad = :capacidad
-              WHERE grado_seccion.id_grado_seccion = $id";
+      $sql = "UPDATE grados_secciones 
+              INNER JOIN grados ON grados_secciones.id_grado = grados.id_grado
+              INNER JOIN secciones ON grados_secciones.id_seccion = secciones.id_seccion
+              SET secciones.nom_seccion = :nom_seccion, secciones.turno = :turno, secciones.observacion = :observacion, grados.grado = :grado, grados.descripcion = :descripcion, grados_secciones.capacidad = :capacidad
+              WHERE grados_secciones.id_grados_secciones = $id";
       $stmt = $objCurso->prepare($sql);
       $stmt->bindParam(':nom_seccion', $this->nom_seccion);
       $stmt->bindParam(':turno', $this->turno);
@@ -170,11 +168,11 @@ class Cursos
     try {
       $conexion = new Conexion();
       $objCurso = $conexion->conectar();
-      $sql = "UPDATE año_seccion 
-              INNER JOIN años ON año_seccion.id_año = años.id_año
-              INNER JOIN secciones ON año_seccion.id_seccion = secciones.id_seccion
-              SET secciones.nom_seccion = ?, secciones.turno = ?, secciones.observacion = ?, años.año = ?, años.descripcion = ?, año_seccion.capacidad = ?
-              WHERE año_seccion.id_año_seccion = $id";
+      $sql = "UPDATE años_secciones 
+              INNER JOIN años ON años_secciones.id_años = años.id_año
+              INNER JOIN secciones ON años_secciones.id_seccion = secciones.id_seccion
+              SET secciones.nom_seccion = ?, secciones.turno = ?, secciones.observacion = ?, años.año = ?, años.descripcion = ?, años_secciones.capacidad = ?
+              WHERE años_secciones.id_años_secciones = $id";
       $stmt = $objCurso->prepare($sql);
       $stmt->bindParam(':nom_seccion', $this->nom_seccion);
       $stmt->bindParam(':turno', $this->turno);
@@ -195,29 +193,27 @@ class Cursos
       session_start();
       $conexion = new Conexion();
       $objConexion = $conexion->conectar();
-      $sql = "INSERT INTO grados (grado, descripcion)
-              VALUES (:grado, :descripcion)";
+      $sql = "INSERT INTO grados (grado)
+              VALUES (:grado)";
       $stmt = $objConexion->prepare($sql);
       $stmt->bindParam(':grado', $this->grado);
-      $stmt->bindParam(':descripcion', $this->descripcion);
       $stmt->execute();
       $ultimoGrado = $objConexion->lastInsertId();
 
       // echo "$ultimoGrado";
-      $sql2 = "INSERT INTO secciones (nom_seccion, turno, observacion)
-              VALUES (:nom_seccion, :turno, :observacion)";
+      $sql2 = "INSERT INTO secciones (nom_seccion, turno)
+              VALUES (:nom_seccion, :turno)";
       $stmt2 = $objConexion->prepare($sql2);
       $stmt2->bindParam(':nom_seccion', $this->nom_seccion);
       $stmt2->bindParam(':turno', $this->turno);
-      $stmt2->bindParam(':observacion', $this->observacion);
       $stmt2->execute();
       $ultimaSeccion = $objConexion->lastInsertId();
       // echo "$ultimaSeccion";
 
-      $sql3 = "INSERT INTO grado_seccion (id_grado, id_seccion, capacidad)
-              VALUES (:id_grado, :id_seccion, :capacidad)";
+      $sql3 = "INSERT INTO grados_secciones (id_grados, id_seccion, capacidad)
+              VALUES (:id_grados, :id_seccion, :capacidad)";
       $stmt3 = $objConexion->prepare($sql3);
-      $stmt3->bindParam(":id_grado", $ultimoGrado);
+      $stmt3->bindParam(":id_grados", $ultimoGrado);
       $stmt3->bindParam(":id_seccion", $ultimaSeccion);
       $stmt3->bindParam(":capacidad", $this->capacidad);
       $stmt3->execute();

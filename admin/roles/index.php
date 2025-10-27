@@ -29,7 +29,6 @@ $lista = $roles->listar2();
                       <center>Nro</center>
                     </th>
                     <th>Rol</th>
-                    <th>Usuario</th>
                     <th>
                       <center>Acciones</center>
                     </th>
@@ -43,7 +42,6 @@ $lista = $roles->listar2();
                     echo "<tr>";
                     echo "<td style='text-align: center'>" . $i + 1 . "</td>";
                     echo "<td>" . $lista[$i]->nombre_rol . "</td>";
-                    echo "<td>" . $lista[$i]->descripcion . "</td>";
                     echo "<td style='display: flex;
                          justify-content: center;'>
                          <div class='btn-group' role='group' aria-label='Basic example'>
