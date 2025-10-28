@@ -35,6 +35,13 @@ $docente = new Persona();
               <div class="card-header">
                 <h3 class="card-title"><b>Datos del estudiante</b></h3>
               </div>
+               <div class="col-md-3">
+                    <div class="form-group">
+                      <label for="cedula">Cédula de identidad</label>
+                      <input type="text" name="cedula" class="form-control" required>
+                    </div>
+                  </div>
+
               <div class="card-body">
                 <div class="row">
                   <div class="col-md-3">
@@ -51,15 +58,10 @@ $docente = new Persona();
                     </div>
                   </div>
 
+                 
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="cedula">Documento de identidad</label>
-                      <input type="text" name="cedula" class="form-control" required>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="form-group">
-                      <label for="correo">Correo electronico</label>
+                      <label for="correo">Correo electrónico</label>
                       <input type="email" name="correo" class="form-control" required>
                     </div>
                   </div>
@@ -80,13 +82,13 @@ $docente = new Persona();
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="telefono">Telefono propio</label>
+                      <label for="telefono">Teléfono</label>
                       <input type="text" name="telefono" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="telefono_hab">Telefono de habitación</label>
+                      <label for="telefono_hab">Teléfono de habitación</label>
                       <input type="text" name="telefono_hab" class="form-control" required>
                     </div>
                   </div>
@@ -130,11 +132,7 @@ $docente = new Persona();
                       <input type="text" name="nacionalidad" class="form-control" required>
                     </div>
                   </div>
-                  <div class="col-md-4">
-                    <div class="form-group">
-                      <label for="alergias">Alergías</label>
-                      <input type="text" name="alergias" class="form-control" required>
-                    </div>
+    
                   </div>
                   <div class="col-md-4">
                     <div class="form-group">
@@ -158,7 +156,18 @@ $docente = new Persona();
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="parroquia">Parroquía</label>
+                      <label for="parroquia">Municipio</label>
+                      <input type="address" name="parroquia" class="form-control" required>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <label for="parroquia">Parroquia</label>
+                      <input type="address" name="parroquia" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                    <div class="form-group">
+                      <label for="parroquia">Comunidad</label>
                       <input type="address" name="parroquia" class="form-control" required>
                     </div>
                   </div>
@@ -186,6 +195,13 @@ $docente = new Persona();
               <div class="card-header">
                 <h3 class="card-title"><b>Datos del representante</b></h3>
               </div>
+              <div class="col-md-3">
+                    <div class="form-group">
+                      <label for="cedular">Cédula de identidad</label>
+                      <input type="number" name="cedular" class="form-control" required>
+                    </div>
+                  </div>
+
               <div class="card-body">
                 <div class="row">
                   <div class="col-md-3">
@@ -202,15 +218,9 @@ $docente = new Persona();
                     </div>
                   </div>
 
-                  <div class="col-md-3">
+                      <div class="col-md-3">
                     <div class="form-group">
-                      <label for="cedular">Documento de identidad</label>
-                      <input type="number" name="cedular" class="form-control" required>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="form-group">
-                      <label for="correor">Correo electronico</label>
+                      <label for="correor">Correo electrónico</label>
                       <input type="email" name="correor" class="form-control" required>
                     </div>
                   </div>
@@ -231,19 +241,19 @@ $docente = new Persona();
                   </div>
                   <div class="col-md-2">
                     <div class="form-group">
-                      <label for="relacion">Relacion(Estudiante)</label>
+                      <label for="relacion">Parentesco</label>
                       <input type="text" name="relacion" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="telefonor">Telefono propio</label>
+                      <label for="telefonor">Teléfono</label>
                       <input type="text" name="telefonor" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="telefono_habr">Telefono de habitación</label>
+                      <label for="telefono_habr">Teléfono de habitación</label>
                       <input type="text" name="telefono_habr" class="form-control" required>
                     </div>
                   </div>
@@ -259,6 +269,12 @@ $docente = new Persona();
                     <div class="form-group">
                       <label for="nacionalidadr">Nacionalidad</label>
                       <input type="text" name="nacionalidadr" class="form-control" required>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label for="ocupacionr">Profesión</label>
+                      <input type="textarea" name="ocupacionr" class="form-control" required>
                     </div>
                   </div>
                   <div class="col-md-4">
@@ -287,9 +303,15 @@ $docente = new Persona();
                       <input type="address" name="estador" class="form-control" required>
                     </div>
                   </div>
+                   <div class="col-md-3">
+                    <div class="form-group">
+                      <label for="estador">Municipio</label>
+                      <input type="address" name="estador" class="form-control" required>
+                    </div>
+                  </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="parroquiar">Parroquía</label>
+                      <label for="parroquiar">Parroquia</label>
                       <input type="address" name="parroquiar" class="form-control" required>
                     </div>
                   </div>
