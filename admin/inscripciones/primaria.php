@@ -8,12 +8,8 @@ include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
 $cursos = new Cursos();
 $listaGrados = $cursos->mostrarGrados();
 $listaAnos = $cursos->mostrarAños();
-
-
-
 $roles = new Roles();
 $listarRoles = $roles->listar();
-
 $docente = new Persona();
 // $info = $docente->consultar($_GET['id_persona']);
 // $rol = $info[0]->especialidad;

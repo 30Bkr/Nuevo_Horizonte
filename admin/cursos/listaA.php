@@ -13,7 +13,7 @@ $listaAnos = $cursos->mostrarAños();
   <div class="content">
     <div class="container">
 
-      <div class="row">
+      <!-- <div class="row">
         <h1>Cursos</h1>
       </div>
       <br>
@@ -74,7 +74,7 @@ $listaAnos = $cursos->mostrarAños();
           </div>
 
         </div>
-      </div>
+      </div> -->
 
       <div class="row">
         <div class="col-md-2">

@@ -83,7 +83,7 @@ class Cursos
       $conexion = new Conexion();
       $objCurso = $conexion->conectar();
       $sql = "SELECT * FROM grados_secciones as ans 
-            INNER JOIN grados as a ON ans.id_grado = a.id_grado
+            INNER JOIN grados as a ON ans.id_grados = a.id_grados
             INNER JOIN secciones as s ON ans.id_seccion = s.id_seccion
             where ans.id_grados_secciones = $id";
       $stmt = $objCurso->prepare($sql);
@@ -92,8 +92,6 @@ class Cursos
       while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
         $objCursos = new Cursos();
         $objCursos->grado = $row->grado;
-        $objCursos->descripcion = $row->descripcion;
-        $objCursos->observacion = $row->observacion;
         $objCursos->nom_seccion = $row->nom_seccion;
         $objCursos->capacidad = $row->capacidad;
         $objCursos->turno = $row->turno;
@@ -104,7 +102,7 @@ class Cursos
       $stmt = null;
       $conexion->desconectar();
     } catch (\Throwable $th) {
-      echo "Error al mostrar buscar curso" . $th->getMessage() . $th->getLine();
+      echo "Error al mostrar buscar curso consultaGs" . $th->getMessage() . $th->getLine();
     }
   }
 
@@ -123,8 +121,6 @@ class Cursos
       while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
         $objCursos = new Cursos();
         $objCursos->año = $row->año;
-        $objCursos->descripcion = $row->descripcion;
-        $objCursos->observacion = $row->observacion;
         $objCursos->nom_seccion = $row->nom_seccion;
         $objCursos->capacidad = $row->capacidad;
         $objCursos->turno = $row->turno;

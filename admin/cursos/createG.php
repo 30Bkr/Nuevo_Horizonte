@@ -16,7 +16,7 @@ $listaAnos = $cursos->mostrarAños();
         <h1>Creación de un nuevo curso <?php echo '(Grado)' ?></h1>
       </div>
       <br>
-      <form action="http://localhost/final/app/controllers/cursos/createGrado.php" method='post'>
+      <form action="http://localhost/final/app/controllers/cursos/createGrado.php" id="grado" method='post'>
         <div class="row">
           <div class="col-md-10">
             <div class="card card-outline card-primary">
@@ -89,8 +89,58 @@ $listaAnos = $cursos->mostrarAños();
           </div>
         </div>
       </form>
+
     </div>
   </div>
+  <script>
+    $()
+    document.getElementById('grado').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const {
+        grado,
+        turno,
+        seccion,
+        capacidad
+      } = event.target
+
+      const emptyRegex = /^\s*$/;
+
+      const soloNumeros = capacidad.value;
+      for (let i = 0; i < soloNumeros.length; i++) {
+        let prueba = soloNumeros[i];
+        let convercion = parseInt(prueba);
+        if (typeof(convercion) != Number) {
+          alert('No es posible agregar letras en la capidad de la seccion');
+          break;
+        } else if (emptyRegex.test(capacidad.value)) {
+          alert('Es obligatorio llenar el campo: Nombre');
+        } else if (emptyRegex.test(turno.value)) {
+          alert('Es obligatorio llenar el campo: turno')
+        } else if (emptyRegex.test(turno.value)) {
+          alert('Es obligatorio llenar el campo: turno')
+        } else if (emptyRegex.test(turno.value)) {
+          alert('Es obligatorio llenar el campo: turno')
+        } else {
+          console.log('entro al submit');
+
+          this.submit();
+        }
+      }
+      // if (emptyRegex.test(capacidad.value)) {
+      //   alert('Es obligatorio llenar el campo: Nombre');
+      // } else if (emptyRegex.test(turno.value)) {
+      //   alert('Es obligatorio llenar el campo: turno')
+      // } else if (emptyRegex.test(turno.value)) {
+      //   alert('Es obligatorio llenar el campo: turno')
+      // } else if (emptyRegex.test(turno.value)) {
+      //   alert('Es obligatorio llenar el campo: turno')
+      // } else {
+      //   console.log('entro al submit');
+
+      //   // this.submit();
+      // }
+    })
+  </script>
 </div>
 
 <?php

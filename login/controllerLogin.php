@@ -34,6 +34,6 @@ if (password_verify($listaPersona[0]->contraseña, $contrasena) && ($listaPerson
   echo 'aca3 no es la misma';
   session_start();
   $_SESSION['mensaje'] = "Los datos introducidos son incorrectos";
-  // header('Location: ' . URL . '/login/index.php');
+  header('Location: ' . URL . '/login/index.php');
 }
 // echo "<br>Usuario: $email<br>Contrasena: $contrasena";
