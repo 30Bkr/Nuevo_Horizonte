@@ -17,11 +17,13 @@
                                   </div>
                                   <div class="form-group">
                                     <label for="capacidad">Capacidad</label>
-                                    <input type="text" class="form-control" name="capacidad" id="capacidad<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->capacidad ?>" onkeydown="manejarTecla(event)" maxlength="2">
+                                    <input type="text" class="form-control" name="capacidad" id="capacidad<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->capacidad ?>" onkeydown="manejarTecla<?php echo $edicion[0]->id_grados_secciones ?>(event)" maxlength="2">
+                                    <span id="error_capacidad<?php echo $edicion[0]->id_grados_secciones ?>">hol</span>
                                   </div>
                                   <div class="form-group">
                                     <label for="turno">Turno</label>
                                     <input type="text" class="form-control" name="turno" id="turno<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->turno ?>">
+                                    <div id="error-turno"></div>
                                   </div>
                                 </div>
                                 <div class="modal-footer">
@@ -45,24 +47,33 @@
                                       })
                                     });
 
-                                    function manejarTecla(event) {
+                                    function manejarTecla<?php echo $edicion[0]->id_grados_secciones ?>(event) {
                                       let valor = event.target.value;
                                       let tecla = event.key;
-                                      if (/^[0-9]+$/.test(tecla)) {
-                                        console.log('2 o menos:', valor);
-                                        if (valor.length > 2) {
-                                          console.log('no mas de 2 caracteres');
+                                      let capacidad = document.getElementById("error_capacidad<?php echo $edicion[0]->id_grados_secciones ?>");
 
-                                          return false;
-                                        }
+                                      let valido = true;
+                                      if (/^[0-9]+$/.test(tecla) || tecla == 'Backspace') {
+                                        capacidad.textContent = ''
+                                        if (valor.length > 1 && tecla != 'Backspace') {
+                                          event.preventDefault();
+                                          valido = false;
+                                          let total = parseInt(valor);
+                                          if (total > 40) {
+                                            console.log('Excede limite de alumnos por salon');
+                                            capacidad.textContent = 'Excede limite de cupos disponibles'
+                                          }
+                                        } else {
+                                          let numero = valor + tecla;
+                                          let total = parseInt(numero);
+                                          if (total > 40) {
+                                            capacidad.textContent = 'Excede limite de cupos por seccion'
 
-                                        let numero = valor + tecla;
-                                        let total = parseInt(numero);
-                                        if (total > 40) {
-                                          console.log('Excede limite de alumnos por salon');
+                                          }
                                         }
                                       } else {
-                                        console.log('Es una letra', tecla);
+                                        event.preventDefault();
+                                        capacidad.textContent = 'Solo caracteres numericos'
                                       }
                                     }
 
