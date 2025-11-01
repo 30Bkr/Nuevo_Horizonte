@@ -8,7 +8,6 @@ include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
 $cursos = new Cursos();
 $listaGrados = $cursos->mostrarGrados();
 $listaAnos = $cursos->mostrarAños();
-$cursos = new Cursos();
 
 ?>
 
@@ -90,8 +89,8 @@ $cursos = new Cursos();
             <div class="card-header">
               <h3 class="card-title"><strong>LISTADO DE GRADOS</strong></h3>
               <div class="card-tools">
-                <button type="button" style="width: 128px;" class="btn bg-gradient-success btn-md" data-toggle="modal" data-target="#modal_asignacionAño">
-                  + Nuevo GRADO
+                <button type="button" style="width: 148px;" class="btn bg-gradient-success btn-md" data-toggle="modal" data-target="#modal_asignacionAño">
+                  + NUEVO GRADO
                 </button>
                 <?php include_once("/xampp/htdocs/final/admin/cursos/ediciones/nuevoAño.php") ?>
 
@@ -114,21 +113,20 @@ $cursos = new Cursos();
                 <tbody>
                   <?php
                   $i = 0;
-                  while ($i < count($listaGrados)) {
-
-                    $edicion = $cursos->consultarGS($listaGrados[$i]->id_grados_secciones);
+                  foreach ($listaGrados as $lg) {
+                    $edicion = $cursos->consultarGS($lg->id_grados_secciones);
                   ?>
                     <tr>
-                      <td><?= $listaGrados[$i]->grado  ?></td>
-                      <td><?= $listaGrados[$i]->nom_seccion  ?></td>
-                      <td><?= $listaGrados[$i]->capacidad  ?></td>
-                      <td><?= $listaGrados[$i]->turno  ?></td>
+                      <td><?= $lg->grado  ?></td>
+                      <td><?= $lg->nom_seccion  ?></td>
+                      <td><?= $lg->capacidad ?></td>
+                      <td><?= $lg->turno ?></td>
                       <td>
                         <div class="btn-group" role="group" aria-label="Basic example">
-                          <button type="button" class="btn btn-sm bg-gradient-primary" data-toggle="modal" data-target="#modal_asignacion<?= $listaGrados[$i]->id_grados_secciones ?>">
+                          <button type="button" class="btn btn-sm bg-gradient-primary" data-toggle="modal" data-target="#modal_asignacion<?= $lg->id_grados_secciones ?>">
                             <img src='../../public/images/pencil.svg' style="color: white;" alt='editar'>
                           </button>
-                          <?php include_once("/xampp/htdocs/final/admin/cursos/ediciones/editarG.php") ?>
+                          <?php include("/xampp/htdocs/final/admin/cursos/ediciones/editarG.php") ?>
                         </div>
                       </td>
                     </tr>
@@ -138,7 +136,6 @@ $cursos = new Cursos();
                   ?>
                 </tbody>
               </table>
-
             </div>
           </div>
 

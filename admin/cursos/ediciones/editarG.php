@@ -1,4 +1,4 @@
-                          <div class="modal fade" id="modal_asignacion<?= $listaGrados[$i]->id_grados_secciones ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                          <div class="modal fade" id="modal_asignacion<?= $lg->id_grados_secciones ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                             <div class="modal-dialog modal-md">
                               <div class="modal-content">
                                 <div class="modal-header bg-gradient-primary">
@@ -9,25 +9,72 @@
                                 <div class="modal-body">
                                   <div class="form-group">
                                     <label for="año">Año</label>
-                                    <input type="text" class="form-control" name="año" id="año" value="<?php echo $edicion[0]->grado ?>">
+                                    <input type="text" class="form-control" name="año" id="año<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->grado ?>" readonly>
                                   </div>
                                   <div class="form-group">
                                     <label for="seccion">Sección</label>
-                                    <input type="text" class="form-control" name="seccion" id="seccion" value="<?php echo $edicion[0]->nom_seccion ?>">
+                                    <input type="text" class="form-control" name="seccion" id="seccion<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->nom_seccion ?>" readonly>
                                   </div>
                                   <div class="form-group">
                                     <label for="capacidad">Capacidad</label>
-                                    <input type="text" class="form-control" name="capacidad" id="capacidad" value="<?php echo $edicion[0]->capacidad ?>">
+                                    <input type="text" class="form-control" name="capacidad" id="capacidad<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->capacidad ?>" onkeydown="manejarTecla(event)">
                                   </div>
                                   <div class="form-group">
                                     <label for="turno">Turno</label>
-                                    <input type="text" class="form-control" name="turno" id="turno" value="<?php echo $edicion[0]->turno ?>">
+                                    <input type="text" class="form-control" name="turno" id="turno<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->turno ?>">
                                   </div>
                                 </div>
                                 <div class="modal-footer">
-                                  <button type="button" class="btn btn-lg bg-gradient-success" data-dismiss="modal" aria-label="Close">
+                                  <button type="submit" id="btn_<?php $lg->id_grados_secciones ?>" class="btn btn-lg bg-gradient-success" data-dismiss="modal" aria-label="Close">
                                     Actualizar
                                   </button>
+                                  <script>
+                                    document.getElementById('btn_<?php $lg->id_grados_secciones ?>').addEventListener('submit', function(e) {
+                                      e.preventDefault();
+
+                                      let capacidad = document.getElementById('capacidad').value;
+                                      let turno = document.getElementById('turno').value;
+
+                                      console.log('ingresamos al script. con:', seccion);
+                                      if (!validarDatos(turno, capacidad)) {
+                                        return;
+                                      }
+                                      enviarDatosPHP({
+                                        turno,
+                                        capacidad
+                                      })
+                                    });
+
+                                    function manejarTecla(event) {
+                                      let valor = event.target.value;
+                                      let tecla = event.key;
+                                      if (/^[0-9]+$/.test(tecla)) {
+                                        let numero = valor + tecla;
+                                        let total = parseInt(numero);
+                                        if (total > 40) {
+                                          console.log('Excede limite de alumnos por salon');
+                                        }
+                                      } else {
+                                        console.log('Es una letra', tecla);
+
+                                      }
+
+                                      // console.log('valor: ', valor);
+                                      // console.log('tecla: ', tecla);
+
+
+
+                                    }
+
+                                    function validarDatos(turno, capacidad) {
+                                      let capacidad1 = capacidad.toUpperCase();
+
+                                      if (capacidad1 != 'MAÑANA' || capacidad1 != 'TARDE') {
+                                        console.error('No se puede enviar el turno indicado');
+                                        return false;
+                                      }
+                                    }
+                                  </script>
                                 </div>
                               </div>
                             </div>
