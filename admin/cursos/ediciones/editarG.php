@@ -17,7 +17,7 @@
                                   </div>
                                   <div class="form-group">
                                     <label for="capacidad">Capacidad</label>
-                                    <input type="text" class="form-control" name="capacidad" id="capacidad<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->capacidad ?>" onkeydown="manejarTecla(event)">
+                                    <input type="text" class="form-control" name="capacidad" id="capacidad<?php $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->capacidad ?>" onkeydown="manejarTecla(event)" maxlength="2">
                                   </div>
                                   <div class="form-group">
                                     <label for="turno">Turno</label>
@@ -49,6 +49,13 @@
                                       let valor = event.target.value;
                                       let tecla = event.key;
                                       if (/^[0-9]+$/.test(tecla)) {
+                                        console.log('2 o menos:', valor);
+                                        if (valor.length > 2) {
+                                          console.log('no mas de 2 caracteres');
+
+                                          return false;
+                                        }
+
                                         let numero = valor + tecla;
                                         let total = parseInt(numero);
                                         if (total > 40) {
@@ -56,14 +63,7 @@
                                         }
                                       } else {
                                         console.log('Es una letra', tecla);
-
                                       }
-
-                                      // console.log('valor: ', valor);
-                                      // console.log('tecla: ', tecla);
-
-
-
                                     }
 
                                     function validarDatos(turno, capacidad) {
