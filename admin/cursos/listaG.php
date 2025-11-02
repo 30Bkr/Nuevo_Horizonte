@@ -8,6 +8,7 @@ include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
 $cursos = new Cursos();
 $listaGrados = $cursos->mostrarGrados();
 $listaAnos = $cursos->mostrarAños();
+$turnoss = ['Nocturno', 'Diurno'];
 
 ?>
 
