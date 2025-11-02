@@ -1,6 +1,6 @@
 <?php
 include_once("/xampp/htdocs/final/layout/layaout1.php");
-include_once("/xampp/htdocs/final/app/personas.php");
+include_once("/xampp/htdocs/final/app/alumnos.php");
 include_once("/xampp/htdocs/final/app/controllers/roles/roles.php");
 include_once("/xampp/htdocs/final/global/utils.php");
 
@@ -8,10 +8,9 @@ include_once("/xampp/htdocs/final/global/utils.php");
 $roles = new Roles();
 $listarRoles = $roles->listar();
 
-$docente = new Persona();
+$docente = new Alumnos();
 $info = $docente->consultar($_GET['id_persona']);
-$rol = $info[0]->especialidad;
-
+// $rol = $info[0]->especialidad;
 
 
 $sexos = ['masculino', 'femenino', 'otro'];
@@ -24,44 +23,29 @@ $pais = ['venezolano', 'extranjero'];
   <div class="content">
     <div class="container">
       <div class="row">
-        <h1>Actualizar personal</h1>
+        <h1>Actualizar alumno</h1>
       </div>
       <br>
-      <form action="<?= URL ?>/app/controllers/docentes/actualizarD.php" method="post">
+      <form action="<?= URL ?>/app/controllers/inscripciones/actualizarD.php" method="post">
         <input type="hidden" name="id_persona" value="<?php echo $info[0]->id_persona ?>">
         <div class="row">
           <div class="col-md-12">
             <div class="card card-outline card-primary">
               <div class="card-header">
-                <h3 class="card-title"><b><?php echo $info[0]->nombre_rol . ": " . $info[0]->nombres . " " . $info[0]->apellidos ?></b></h3>
+                <h3 class="card-title"><b><?php echo $info[0]->nombres . " " . $info[0]->apellidos ?></b></h3>
                 <div class="card-tools">
                   <button type="submit" class="btn btn-primary btn-lg">Actualizar</button>
                 </div>
               </div>
               <div class="card-body">
-                <div class="row">
-                  <div class="col-md-3">
-                    <div class="form-group">
-                      <label for="">Nombre del rol</label>
-                      <!-- <div class="form-inline"> -->
-                      <select name="id_rol" id="" class="form-control">
-                        <?php
-                        foreach ($listarRoles as $role) { ?>
-                          <?php
-                          if ($info[0]->id_rol == $role->id_rol) {
-                          ?>
-                            <option value="<?= $role->id_rol; ?>" selected><?php echo "$role->nombre_rol" ?></option>
-                          <?php } else { ?>
-                            <option value="<?= $role->id_rol; ?>"><?php echo "$role->nombre_rol" ?></option>
-                          <?php } ?>
-
-                        <?php
-                        }
-                        ?>
-                      </select>
-                      <!-- </div> -->
-                    </div>
+                <div class="col-md-3" hidden>
+                  <div class="form-group">
+                    <label for="id_rol">ro</label>
+                    <input type="text" name="id_rol" class="form-control" value="<?php echo $info[0]->id_rol ?>" required>
                   </div>
+                </div>
+                <div class="row">
+
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="nombres">Nombres</label>
@@ -82,15 +66,16 @@ $pais = ['venezolano', 'extranjero'];
                       <input type="number" name="cedula" class="form-control" value="<?php echo $info[0]->cedula ?>" required>
                     </div>
                   </div>
-                </div>
-                <br>
-                <div class="row">
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="correo">Correo</label>
                       <input type="email" name="correo" class="form-control" value="<?php echo $info[0]->correo ?>" required>
                     </div>
                   </div>
+                </div>
+                <br>
+                <div class="row">
+
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="telefono">Numero telefonico</label>
@@ -105,10 +90,17 @@ $pais = ['venezolano', 'extranjero'];
                   </div>
                   <div class="col-md-3">
                     <div class="form-group">
-                      <label for="especialidad">Especialidad</label>
-                      <input type="text" name="especialidad" class="form-control" value="<?php echo $info[0]->especialidad ?>" required>
+                      <label for="fecha_nac">Fecha de nacimiento</label>
+                      <input type="date" name="fecha_nac" class="form-control" value="<?php echo $info[0]->fecha_nac ?>" required>
                     </div>
                   </div>
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <label for="lugar_nac">Lugar de nacimiento</label>
+                      <input type="text" name="lugar_nac" class="form-control" value="<?php echo $info[0]->lugar_nac ?>" required>
+                    </div>
+                  </div>
+
                 </div>
                 <br>
                 <div class="row">
@@ -140,18 +132,20 @@ $pais = ['venezolano', 'extranjero'];
                 </div>
                 <br>
                 <div class="row">
-                  <div class="col-md-3">
+                  <div class="col-md-6">
                     <div class="form-group">
-                      <label for="lugar_nac">Lugar de nacimiento</label>
-                      <input type="text" name="lugar_nac" class="form-control" value="<?php echo $info[0]->lugar_nac ?>" required>
+                      <label for="alergias">Alergias</label>
+                      <input type="text" name="alergias" class="form-control" value="<?php echo $info[0]->alergias ?>" required>
                     </div>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-6">
                     <div class="form-group">
-                      <label for="fecha_nac">Fecha de nacimiento</label>
-                      <input type="date" name="fecha_nac" class="form-control" value="<?php echo $info[0]->fecha_nac ?>" required>
+                      <label for="condiciones">condiciones</label>
+                      <input type="text" name="condiciones" class="form-control" value="<?php echo $info[0]->condiciones ?>" required>
                     </div>
                   </div>
+                </div>
+                <div class="row">
                   <div class="col-md-3">
                     <div class="form-group">
                       <label for="sexo">Sexo</label>
@@ -204,7 +198,6 @@ $pais = ['venezolano', 'extranjero'];
   </div>
 
 </div>
-
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
 include_once("/xampp/htdocs/final/layout/mensajes.php");

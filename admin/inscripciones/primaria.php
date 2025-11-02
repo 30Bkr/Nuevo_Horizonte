@@ -8,12 +8,8 @@ include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
 $cursos = new Cursos();
 $listaGrados = $cursos->mostrarGrados();
 $listaAnos = $cursos->mostrarAños();
-
-
-
 $roles = new Roles();
 $listarRoles = $roles->listar();
-
 $docente = new Persona();
 // $info = $docente->consultar($_GET['id_persona']);
 // $rol = $info[0]->especialidad;
@@ -25,7 +21,7 @@ $docente = new Persona();
     <br>
     <div class="container">
       <div class="row">
-        <h1>Creación de un nuevo estudiante</h1>
+        <h1>Primaria</h1>
       </div>
       <br>
       <form action="http://localhost/final/app/controllers/inscripciones/inscripciong.php" method="post" id="for">
@@ -398,7 +394,7 @@ $docente = new Persona();
                       echo "<td style='display: flex;
                            justify-content: center;'>
                            <div class='btn-group' role='group' aria-label='Basic example'>
-                            <input type='radio' name='gradopo' value=" . $listaGrados[$i]->id_grado_seccion . " 
+                            <input type='radio' name='gradopo' value=" . $listaGrados[$i]->id_grados_secciones . " 
                            </div>
                         </td>";
                       echo "</label>";

@@ -5,6 +5,9 @@ include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 
 // require('/xampp/htdocs/project/app/controllers/cursos/cursos.php');
+// capacidad que no permita ingresar letras.
+// Que no exista 2 secciones repetidas para 1 mismo año.
+
 $cursos = new Cursos();
 $listaGrados = $cursos->mostrarGrados();
 $listaAnos = $cursos->mostrarAños();
@@ -17,7 +20,7 @@ $listaAnos = $cursos->mostrarAños();
         <h1>Creación de un nuevo curso <?php echo '(Año)' ?></h1>
       </div>
       <br>
-      <form action="../../app/controllers/cursos/createAño.php" method='post'>
+      <form action="http://localhost/final/app/controllers/cursos/createAño.php" id="grados" method='post'>
         <div class="row">
           <div class="col-md-10">
             <div class="card card-outline card-primary">
@@ -30,12 +33,6 @@ $listaAnos = $cursos->mostrarAños();
                     <div class="form-group">
                       <label for="año">Año</label>
                       <input type="number" name="año" class="form-control" maxlength="1" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="descripcion">Descripción del año</label>
-                      <input type="text" name="descripcion" class="form-control" required>
                     </div>
                   </div>
                 </div>
@@ -55,12 +52,6 @@ $listaAnos = $cursos->mostrarAños();
                     <div class="form-group">
                       <label for="seccion">Seccion</label>
                       <input type="text" name="seccion" class="form-control" maxlength="1" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="observacion">Descripción del grado</label>
-                      <input type="text" name="observacion" class="form-control" required>
                     </div>
                   </div>
                 </div>
@@ -102,6 +93,36 @@ $listaAnos = $cursos->mostrarAños();
           </div>
         </div>
       </form>
+      <script>
+        document.getElementById('roles').addEventListener('submit', function(event) {
+          event.preventDefault();
+          const {
+            nombre_rol,
+            descripcion
+          } = event.target
+          // console.log('Nombre:', nombre_rol.value);
+          // console.log('Descripcion:', descripcion.value);
+          // console.log('Evento', event.target);
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          const emptyRegex = /^\s*$/;
+          if (emptyRegex.test(nombre_rol.value)) {
+            alert('Es obligatorio llenar el campo: Nombre');
+          } else if (emptyRegex.test(descripcion.value)) {
+            alert('Es obligatorio llenar el campo: Descripcion')
+          } else if (emailRegex.test(nombre_rol.value)) {
+            alert('No es valido enviar correos electronicos.')
+          } else if (emailRegex.test(descripcion.value)) {
+            alert('No es valido enviar correos electronicos.')
+          } else {
+            //Falta añadir proteccion contra inyeccion de codigo
+            //Falta añadir proteccion contra inyeccion de codigo
+            //Falta añadir proteccion contra inyeccion de codigo
+            //Falta añadir proteccion contra inyeccion de codigo
+            alert('Todo corre bien');
+            this.submit();
+          }
+        })
+      </script>
     </div>
   </div>
 </div>

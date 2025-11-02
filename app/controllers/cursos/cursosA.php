@@ -1,5 +1,5 @@
 <?php
-include_once('c:/xampp/htdocs/project/global/conexion.php');
+include_once('c:/xampp/htdocs/final/app/conexion.php');
 
 class Cursos2
 {
@@ -23,25 +23,25 @@ class Cursos2
       // session_start();
       $conexion = new Conexion();
       $objConexion = $conexion->conectar();
-      $sql = "INSERT INTO años (año, descripcion)
-              VALUES (?, ?)";
+      $sql = "INSERT INTO años (año)
+              VALUES (?)";
       $stmt = $objConexion->prepare($sql);
       // $stmt->bindParam(':año', $this->año);
       // $stmt->bindParam(':descripcion', $this->descripcion);
-      $stmt->execute([$this->año, $this->descripcion]);
+      $stmt->execute([$this->año]);
       $ultimoAño = $objConexion->lastInsertId();
 
       echo "hoola";
-      $sql2 = "INSERT INTO secciones (nom_seccion, turno, observacion)
-              VALUES (?,?,?)";
+      $sql2 = "INSERT INTO secciones (nom_seccion, turno)
+              VALUES (?,?)";
       $stmt2 = $objConexion->prepare($sql2);
       // $stmt2->bindParam(':nom_seccion', $this->nom_seccion);
       // $stmt2->bindParam(':turno', $this->turno);
       // $stmt2->bindParam(':descripcion', $this->observacion);
-      $stmt2->execute([$this->nom_seccion, $this->turno, $this->observacion]);
+      $stmt2->execute([$this->nom_seccion, $this->turno]);
       $ultimaSeccion = $objConexion->lastInsertId();
 
-      $sql3 = "INSERT INTO año_seccion (id_año, id_seccion, capacidad)
+      $sql3 = "INSERT INTO años_secciones (id_años, id_seccion, capacidad)
               VALUES (?, ?, ?)";
       $stmt3 = $objConexion->prepare($sql3);
       // $stmt3->bindParam(":id_año", $ultimoAño);

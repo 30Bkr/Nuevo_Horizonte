@@ -29,7 +29,6 @@ if (password_verify($listaPersona[0]->contraseña, $contrasena) && ($listaPerson
   echo "aca2 si es la misma";
   session_start();
   header('Location:' . URL . '/admin/index.php');
-  $_SESSION['mensaje'] = "Bienvenido al sistema Nuevo Horizonte nerd";
   $_SESSION['icono'] = "success";
   $_SESSION['sesion_email'] = $email;
   echo $_SESSION['sesion_email'];

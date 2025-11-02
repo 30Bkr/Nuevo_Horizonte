@@ -16,7 +16,7 @@ $listaAnos = $cursos->mostrarAños();
         <h1>Creación de un nuevo curso <?php echo '(Grado)' ?></h1>
       </div>
       <br>
-      <form action="../../app/controllers/cursos/editGrado.php" method='post'>
+      <form action="http://localhost/final/app/controllers/cursos/createGrado.php" id="grado" method='post'>
         <div class="row">
           <div class="col-md-10">
             <div class="card card-outline card-primary">
@@ -29,12 +29,6 @@ $listaAnos = $cursos->mostrarAños();
                     <div class="form-group">
                       <label for="grado">Grado</label>
                       <input type="text" name="grado" class="form-control" maxlength="1" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="descripcion">Descripción del grado</label>
-                      <input type="text" name="descripcion" class="form-control" required>
                     </div>
                   </div>
                 </div>
@@ -54,12 +48,6 @@ $listaAnos = $cursos->mostrarAños();
                     <div class="form-group">
                       <label for="seccion">Seccion</label>
                       <input type="text" name="seccion" class="form-control" maxlength="1" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label for="observacion">Descripción del grado</label>
-                      <input type="text" name="observacion" class="form-control" required>
                     </div>
                   </div>
                 </div>
@@ -96,13 +84,63 @@ $listaAnos = $cursos->mostrarAños();
           <div class="col-md-10">
             <div class="form-group">
               <button class="btn btn-primary btn-lg">Registrar</button>
-              <a href="http://localhost/project/admin/estudiantes" class="btn btn-secondary btn-lg">Cancelar</a>
+              <a href="http://localhost/final/admin/index.php" class="btn btn-secondary btn-lg">Cancelar</a>
             </div>
           </div>
         </div>
       </form>
+
     </div>
   </div>
+  <script>
+    $()
+    document.getElementById('grado').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const {
+        grado,
+        turno,
+        seccion,
+        capacidad
+      } = event.target
+
+      const emptyRegex = /^\s*$/;
+
+      const soloNumeros = capacidad.value;
+      for (let i = 0; i < soloNumeros.length; i++) {
+        let prueba = soloNumeros[i];
+        let convercion = parseInt(prueba);
+        if (typeof(convercion) != Number) {
+          alert('No es posible agregar letras en la capidad de la seccion');
+          break;
+        } else if (emptyRegex.test(capacidad.value)) {
+          alert('Es obligatorio llenar el campo: Nombre');
+        } else if (emptyRegex.test(turno.value)) {
+          alert('Es obligatorio llenar el campo: turno')
+        } else if (emptyRegex.test(turno.value)) {
+          alert('Es obligatorio llenar el campo: turno')
+        } else if (emptyRegex.test(turno.value)) {
+          alert('Es obligatorio llenar el campo: turno')
+        } else {
+          console.log('entro al submit');
+
+          this.submit();
+        }
+      }
+      // if (emptyRegex.test(capacidad.value)) {
+      //   alert('Es obligatorio llenar el campo: Nombre');
+      // } else if (emptyRegex.test(turno.value)) {
+      //   alert('Es obligatorio llenar el campo: turno')
+      // } else if (emptyRegex.test(turno.value)) {
+      //   alert('Es obligatorio llenar el campo: turno')
+      // } else if (emptyRegex.test(turno.value)) {
+      //   alert('Es obligatorio llenar el campo: turno')
+      // } else {
+      //   console.log('entro al submit');
+
+      //   // this.submit();
+      // }
+    })
+  </script>
 </div>
 
 <?php

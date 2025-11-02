@@ -27,7 +27,44 @@ class Persona
     try {
       $conexion = new Conexion();
       $objPersonas = $conexion->conectar();
-      $sql = "SELECT * FROM personas WHERE id_rol != 2";
+      $sql = "SELECT * FROM personas WHERE id_rol != 2 && id_rol != 11 && id_rol != 10;";
+      $stmt = $objPersonas->prepare($sql);
+      $stmt->execute();
+      $listaPersona = array();
+      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        $objPersona = new Persona();
+        $objPersona->id_persona = $row->id_persona;
+        $objPersona->id_rol = $row->id_rol;
+        $objPersona->nombres = $row->nombres;
+        $objPersona->apellidos = $row->apellidos;
+        $objPersona->cedula = $row->cedula;
+        $objPersona->telefono = $row->telefono;
+        $objPersona->telefono_hab = $row->telefono_hab;
+        $objPersona->correo = $row->correo;
+        $objPersona->lugar_nac = $row->lugar_nac;
+        $objPersona->sexo = $row->sexo;
+        $objPersona->nacionalidad = $row->nacionalidad;
+        $objPersona->fecha_nac = $row->fecha_nac;
+        $objPersona->estado = $row->estado;
+        $objPersona->parroquia = $row->parroquia;
+        $objPersona->calle = $row->calle;
+        $objPersona->casa = $row->casa;
+        $objPersona->inhabilitado = $row->inhabilitado;
+        $listaPersona[] = $objPersona;
+      }
+      return $listaPersona;
+      $stmt = null;
+      $conexion->desconectar();
+    } catch (\Throwable $th) {
+      echo "Error en personas mostrarlas" . $th->getMessage() . $th->getLine();
+    }
+  }
+  public function mostrarById($id)
+  {
+    try {
+      $conexion = new Conexion();
+      $objPersonas = $conexion->conectar();
+      $sql = "SELECT * FROM personas WHERE id_rol = $id ";
       $stmt = $objPersonas->prepare($sql);
       $stmt->execute();
       $listaPersona = array();
