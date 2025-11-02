@@ -9,17 +9,17 @@
                                 <form action="">
                                   <div class="modal-body">
                                     <div class="form-group">
-                                      <label for="año">Año</label>
-                                      <input type="text" class="form-control" name="año" id="año<?php echo $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->grado ?>" readonly>
+                                      <label for="grado">Grado</label>
+                                      <input type="text" class="form-control" name="grado" id="grado<?php echo $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->grado ?>" readonly>
                                     </div>
                                     <div class="form-group">
-                                      <label for="seccion">Sección</label>
-                                      <input type="text" class="form-control" name="seccion" id="seccion<?php echo $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->nom_seccion ?>" readonly>
+                                      <label for="nom_seccion">Sección</label>
+                                      <input type="text" class="form-control" name="nom_seccion" id="nom_seccion<?php echo $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->nom_seccion ?>" readonly>
                                     </div>
                                     <div class="form-group">
                                       <label for="capacidad">Capacidad</label>
                                       <input type="text" class="form-control" name="capacidad" id="capacidad<?php echo $lg->id_grados_secciones ?>" value="<?php echo $edicion[0]->capacidad ?>" onkeydown="manejarTecla<?php echo $edicion[0]->id_grados_secciones ?>(event)" maxlength="2">
-                                      <span id="error_capacidad<?php echo $edicion[0]->id_grados_secciones ?>">hol</span>
+                                      <span id="error_capacidad<?php echo $edicion[0]->id_grados_secciones ?>"></span>
                                     </div>
                                     <div class="form-group">
                                       <label for="turno">Turno</label>
@@ -52,6 +52,8 @@
                                         let id<?php echo $edicion[0]->id_grados_secciones ?> = <?php echo $edicion[0]->id_grados_secciones ?>;
 
                                         let capacidad<?php echo $lg->id_grados_secciones ?> = document.getElementById('capacidad<?php echo $lg->id_grados_secciones ?>').value;
+                                        let nom_seccion<?php echo $lg->id_grados_secciones ?> = document.getElementById('nom_seccion<?php echo $lg->id_grados_secciones ?>').value;
+                                        let grado<?php echo $lg->id_grados_secciones ?> = document.getElementById('grado<?php echo $lg->id_grados_secciones ?>').value;
                                         let turno<?php echo $lg->id_grados_secciones ?> = document.getElementById('turno<?php echo $lg->id_grados_secciones ?>').value;
                                         console.log('Agarramos el input');
                                         console.log();
@@ -69,6 +71,8 @@
 
                                           enviarDatos<?php echo $edicion[0]->id_grados_secciones ?>({
                                             capacidad<?php echo $lg->id_grados_secciones ?>,
+                                            nom_seccion<?php echo $lg->id_grados_secciones ?>,
+                                            grado<?php echo $lg->id_grados_secciones ?>,
                                             turno<?php echo $lg->id_grados_secciones ?>,
                                             id<?php echo $edicion[0]->id_grados_secciones ?>
                                           })
@@ -87,14 +91,14 @@
                                           if (valor.length > 1 && tecla != 'Backspace') {
                                             event.preventDefault();
                                             let total = parseInt(valor);
-                                            if (total > 40) {
+                                            if (total > 37) {
                                               capacidad.textContent = 'Excede limite de cupos disponibles'
                                               esValido<?php echo $edicion[0]->id_grados_secciones ?> = false;
                                             }
                                           } else {
                                             let numero = valor + tecla;
                                             let total = parseInt(numero);
-                                            if (total > 40) {
+                                            if (total > 37) {
                                               capacidad.textContent = 'Excede limite de cupos por seccion'
                                               esValido<?php echo $edicion[0]->id_grados_secciones ?> = false;
                                             }
@@ -109,6 +113,8 @@
                                       async function enviarDatos<?php echo $edicion[0]->id_grados_secciones ?>(datos) {
                                         let formData = new FormData();
                                         formData.append('capacidad', datos.capacidad<?php echo $edicion[0]->id_grados_secciones ?>);
+                                        formData.append('nom_seccion', datos.nom_seccion<?php echo $edicion[0]->id_grados_secciones ?>);
+                                        formData.append('grado', datos.grado<?php echo $edicion[0]->id_grados_secciones ?>);
                                         formData.append('turno', datos.turno<?php echo $edicion[0]->id_grados_secciones ?>);
                                         formData.append('id', datos.id<?php echo $edicion[0]->id_grados_secciones ?>);
                                         try {
@@ -122,14 +128,12 @@
                                           try {
                                             data<?php echo $edicion[0]->id_grados_secciones ?> = JSON.parse(text<?php echo $edicion[0]->id_grados_secciones ?>);
                                             console.log('Json valido ', data<?php echo $edicion[0]->id_grados_secciones ?>);
-
+                                            location.reload();
                                           } catch (error) {
                                             console.error('Erro parsenado JSON: ', error);
                                             console.error('Respuesta no es JSON válido: ', text<?php echo $edicion[0]->id_grados_secciones ?>.substring(0, 100));
 
                                           }
-
-
                                         } catch (error) {
                                           console.error('🔥 Error de conexión:', error);
                                           alert('Error de conexión: ' + error.message);
