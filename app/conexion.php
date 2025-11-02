@@ -2,15 +2,9 @@
 class Conexion
 {
   private $hostname = 'localhost';
-<<<<<<< HEAD
   private $database = 'nuevo';
   private $usuario = 'root';
   private $password = '';
-=======
-  private $database = 'segunda';
-  private $usuario = 'root';
-  private $password = '5413528';
->>>>>>> 5df853b7dbad4be01e4c9417f1aff139f61b1b63
   private $conn;
   public function conectar()
   {
