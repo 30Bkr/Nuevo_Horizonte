@@ -12,19 +12,20 @@ $esto2 = $_POST['turno'];
 // $esto4 = $_POST['grado'];
 $esto5 = $_POST['capacidad'];
 
-// $objCurso->turno          = $_POST['turno'];
-// $objCurso->capacidad      = $_POST['capacidad'];
-// $objCurso->actualizarGS($_POST['id_persona']);
-echo "$esto";
+$objCurso->turno          = $_POST['turno'];
+$objCurso->grado          = $_POST['grado'];
+$objCurso->nom_seccion          = $_POST['nom_seccion'];
+$objCurso->capacidad      = $_POST['capacidad'];
+$objCurso->actualizarGS($_POST['id']);
+// echo "$esto";
 // echo "$esto1";
-echo "$esto2";
+// echo "$esto2";
 // echo "$esto3";
 // echo "$esto4";
-echo "$esto5";
+// echo "$esto5";
 $json_data = [
   'success' => true,
   'message' => 'Conexión exitosa',
   'data' => ['id' => $esto, 'turno' => $esto2, 'capacidad' => $esto5]
 ];
 echo json_encode($json_data);
-// header('Location:' . URL . '/admin/cursos/index.php');

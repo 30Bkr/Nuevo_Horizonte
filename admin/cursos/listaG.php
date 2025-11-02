@@ -90,10 +90,10 @@ $turnoss = ['Nocturno', 'Diurno'];
             <div class="card-header">
               <h3 class="card-title"><strong>LISTADO DE GRADOS</strong></h3>
               <div class="card-tools">
-                <button type="button" style="width: 148px;" class="btn bg-gradient-success btn-md" data-toggle="modal" data-target="#modal_asignacionAño">
+                <button type="button" style="width: 148px;" class="btn bg-gradient-success btn-md" data-toggle="modal" data-target="#modal_asignacion_grados">
                   + NUEVO GRADO
                 </button>
-                <?php include_once("/xampp/htdocs/final/admin/cursos/ediciones/nuevoAño.php") ?>
+                <?php include_once("/xampp/htdocs/final/admin/cursos/ediciones/nuevoGrado.php") ?>
 
                 </a>
               </div>
