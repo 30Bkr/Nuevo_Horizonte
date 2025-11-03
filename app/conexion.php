@@ -1,14 +1,19 @@
 <?php
+
+// Configuración de la base de datos
+define('DB_HOST', 'localhost');      // Servidor (usualmente localhost)
+define('DB_NAME', 'nuevo_horizonte'); // Nombre de tu base de datos
+define('DB_USER', 'root');          // Usuario de la DB
+define('DB_PASS', '');              // Contraseña de la DB
+define('DB_CHARSET', 'utf8mb4');
+
 class Conexion {
-    private $host = "localhost";
-    private $db = "nuevo_horizonte";
-    private $user = "root"; // Cambia esto por tu usuario de BD
-    private $pass = "";     // Cambia esto por tu contraseña de BD
-    private $charset = "utf8mb4";
-    private $pdo;
+    
+    protected $pdo;
 
     public function __construct() {
-        $dsn = "mysql:host={$this->host};dbname={$this->db};charset={$this->charset}";
+        $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+        
         $options = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -16,14 +21,28 @@ class Conexion {
         ];
 
         try {
-            $this->pdo = new PDO($dsn, $this->user, $this->pass, $options);
+             $this->pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (\PDOException $e) {
-            throw new \PDOException($e->getMessage(), (int)$e->getCode());
+             throw new \PDOException($e->getMessage(), (int)$e->getCode());
         }
     }
 
-    public function getConexion() {
+    /**
+     * Retorna la instancia de la conexión PDO.
+     */
+    public function getPdo() {
         return $this->pdo;
     }
 }
+
+// Instanciamos la conexión para que esté disponible
+try {
+    $conexion = new Conexion();
+    $pdo = $conexion->getPdo(); // $pdo será tu variable de conexión global
+} catch (\PDOException $e) {
+    // Manejo de error de conexión
+    echo "Error de conexión: " . $e->getMessage();
+    exit;
+}
+
 ?>
