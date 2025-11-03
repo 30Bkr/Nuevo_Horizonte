@@ -1,0 +1,42 @@
+/* Estilo para dividir la pantalla en el login */
+.login-page {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.login-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.login-image-side {
+    width: 60%;
+    background: url('../images/institucion.jpg') no-repeat center center; /* Asegúrate de tener esta imagen */
+    background-size: cover;
+}
+
+.login-form-side {
+    width: 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa; /* Color de fondo claro */
+}
+
+/* Hacemos que la login-box de AdminLTE ocupe el espacio */
+.login-form-side .login-box {
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Responsive: en pantallas pequeñas, ocultar la imagen y centrar el form */
+@media (max-width: 768px) {
+    .login-image-side {
+        display: none;
+    }
+    .login-form-side {
+        width: 100%;
+    }
+}
