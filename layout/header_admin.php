@@ -35,6 +35,9 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/css/style.css">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+
 </head>
 <body class="hold-transition sidebar-mini"> 
 <div class="wrapper">
@@ -106,19 +109,38 @@
                         </ul>
                     </li>
                     <?php endif; ?>
-
-                    <li class="nav-header">INSCRIPCIONES</li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon bi bi-mortarboard-fill"></i>
-                            <p>
-                                Gestión de Matriculas
-                                <i class="right fas fa-angle-left"></i>
-                            </p>
-                        </a>
-                        <ul class="nav nav-treeview">
-                            </ul>
-                    </li>
+          <?php if ($rol_usuario_sesion == 'ADMINISTRADOR'): ?>
+          <li class="nav-header">MATRÍCULAS</li>
+          <li class="nav-item"> 
+            <a href="#" class="nav-link"> 
+              <i class="nav-icon bi bi-calendar-check-fill"></i>
+              <p>
+                Gestión de Matrícula
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="<?php echo BASE_URL; ?>/admin/matriculas/periodos.php" class="nav-link">
+                  <i class="nav-icon bi bi-clock"></i>
+                  <p>Periodos</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?php echo BASE_URL; ?>/admin/matriculas/niveles.php" class="nav-link">
+                  <i class="nav-icon bi bi-layers"></i>
+                  <p>Niveles</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?php echo BASE_URL; ?>/admin/matriculas/secciones.php" class="nav-link">
+                  <i class="nav-icon bi bi-people-fill"></i>
+                  <p>Secciones</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <?php endif; ?>
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <i class="nav-icon bi bi-file-earmark-person-fill"></i>

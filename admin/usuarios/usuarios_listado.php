@@ -28,14 +28,16 @@
 <section class="content">
     <div class="container-fluid">
         <div class="card">
+            
             <div class="card-header">
                 <h3 class="card-title">Listado de Usuarios</h3>
                 <div class="card-tools">
-                    <a href="usuarios_crear.php" class="btn btn-primary">
-                        <i class="fa fa-plus me-1"></i> Nuevo Usuario
+                    <a href="usuarios_crear.php" class="btn btn-sm btn-primary" title="Crear Nuevo Usuario">
+                        <i class="bi bi-person-fill-add"></i> Crear Usuario
                     </a>
                 </div>
             </div>
+            
             <div class="card-body">
                 <table id="tablaUsuarios" class="table table-bordered table-striped" style="width:100%">
                     <thead>
@@ -46,15 +48,15 @@
                             <th>Rol</th>
                             <th>Estatus</th>
                             <th>Creación</th>
-                            <th>Acciones</th>
+                            <th>Acciones</th> 
                         </tr>
                     </thead>
                     <tbody>
                         </tbody>
                 </table>
             </div>
+            </div>
         </div>
-    </div>
 </section>
 
 <?php 
@@ -63,10 +65,23 @@
 
 <script>
     $(document).ready(function() {
-        $('#tablaUsuarios').DataTable({
+        
+        // 1. Inicialización de Tooltips (Se mantiene la velocidad de respuesta)
+        $('[data-toggle="tooltip"]').tooltip({
+            delay: { show: 100, hide: 100 }
+        });
+        
+        // Helper para recargar DataTables (Se mantiene)
+        function recargarTabla() {
+            if ($.fn.DataTable.isDataTable('#tablaUsuarios')) {
+                $('#tablaUsuarios').DataTable().ajax.reload(null, false);
+            }
+        }
+        
+        // 2. Configuración de DataTables (Volviendo al renderizado de acciones)
+        var tabla = $('#tablaUsuarios').DataTable({ 
             "ajax": {
-                // Usamos la URL absoluta del controlador
-                "url": "/nuevo_horizonte/app/controllers/usuarios/controller_usuario.php?action=listar",
+                "url": "<?php echo BASE_URL; ?>/app/controllers/usuarios/controller_usuario.php?action=listar",
                 "dataSrc": "data"
             },
             "columns": [
@@ -79,18 +94,60 @@
                 }},
                 { "data": "creacion" },
                 { 
-                    "data": "id_usuario", // Usamos el ID para generar el botón
-                    "render": function(data) {
-                        // Aquí irán los botones de Actualizar/Editar
-                        return `<button class'btn btn-sm btn-info btn-actualizar' data-id='${data}'>Actualizar</button>`;
+                    "data": "id_usuario", 
+                    "render": function(data, type, row) {
+                        // El valor de 'row' contiene todos los datos de la fila (incluyendo el estatus)
+                        const estatusTexto = row.estatus == 1 ? 'Inactivar' : 'Activar';
+                        const estatusIcono = row.estatus == 1 ? 'fas fa-toggle-off' : 'fas fa-toggle-on';
+                        
+                        return `
+                            <button class='btn btn-sm btn-info btn-actualizar mx-1' data-id='${data}' title='Editar Usuario' data-toggle='tooltip' data-placement='top'>
+                                <i class='fas fa-edit'></i>
+                            </button>
+                            <button class='btn btn-sm btn-secondary btn-cambio-estatus mx-1' data-id='${data}' data-estatus='${row.estatus}' title='${estatusTexto}' data-toggle='tooltip' data-placement='top'>
+                                <i class='${estatusIcono}'></i>
+                            </button>
+                            <button class='btn btn-sm btn-warning btn-reset-contrasena mx-1' data-id='${data}' title='Reset Contraseña' data-toggle='tooltip' data-placement='top'>
+                                <i class='fas fa-key'></i>
+                            </button>`;
                     },
-                    "orderable": false
+                    "orderable": false,
+                    "searchable": false
                 }
             ],
-            "language": { 
-                "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" 
-            },
-            "responsive": true
+            // IMPORTANTE: Eliminamos la propiedad "select"
+        });
+        
+        // 3. Lógica para el botón ACTUALIZAR (Abre el modal)
+        $('#tablaUsuarios tbody').on('click', '.btn-actualizar', function () {
+            var id_usuario = $(this).data('id');
+            // Llama a la función global para cargar datos y abrir el modal
+            window.cargarDatosUsuario(id_usuario); 
+        });
+
+        // 4. Lógica para el botón CAMBIO ESTATUS
+        $('#tablaUsuarios tbody').on('click', '.btn-cambio-estatus', function () {
+            var id_usuario = $(this).data('id');
+            var estatus_actual = $(this).data('estatus');
+            
+            // Llama a la función global para ejecutar el cambio de estatus
+            // Le pasamos la función de recarga como callback
+            window.ejecutarCambioEstatus(id_usuario, estatus_actual, recargarTabla); 
+        });
+        
+        // 5. Lógica para el botón RESET CONTRASEÑA
+        $('#tablaUsuarios tbody').on('click', '.btn-reset-contrasena', function () {
+            var id_usuario = $(this).data('id');
+            
+            // Llama a la función global para ejecutar el reset
+            window.ejecutarResetContrasena(id_usuario); 
         });
     });
+    
+    // NOTA: Asegúrate de que tu helper de recargarTabla sigue definido
+    function recargarTabla() {
+        if ($.fn.DataTable.isDataTable('#tablaUsuarios')) {
+            $('#tablaUsuarios').DataTable().ajax.reload(null, false);
+        }
+    }
 </script>

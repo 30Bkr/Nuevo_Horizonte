@@ -72,6 +72,28 @@ class ModelUsuario {
         }
     }
     
+    public function cambiarEstatusUsuario($pdo, $id_usuario, $nuevoEstatus) {
+        try {
+            $sql = "UPDATE usuarios SET estatus = ?, actualizacion = CURRENT_TIMESTAMP WHERE id_usuario = ?";
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([$nuevoEstatus, $id_usuario]);
+        } catch (PDOException $e) {
+            error_log("Error en ModelUsuario::cambiarEstatusUsuario: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function resetContrasenaUsuario($pdo, $id_usuario, $contrasenaHash) {
+        try {
+            $sql = "UPDATE usuarios SET contrasena = ?, actualizacion = CURRENT_TIMESTAMP WHERE id_usuario = ?";
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([$contrasenaHash, $id_usuario]);
+        } catch (PDOException $e) {
+            error_log("Error en ModelUsuario::resetContrasenaUsuario: " . $e->getMessage());
+            return false;
+        }
+    }
+
     // (Aquí irán las funciones de Actualizar)
 
 }

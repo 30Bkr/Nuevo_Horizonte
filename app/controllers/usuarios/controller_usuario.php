@@ -69,6 +69,53 @@ try {
             // ...
             break;
 
+        case 'cambiar_estatus':
+            $id_usuario = $_POST['id_usuario'] ?? null;
+            $estatus_actual = $_POST['estatus_actual'] ?? null;
+            
+            if (empty($id_usuario) || $estatus_actual === null) {
+                throw new Exception("Faltan datos para cambiar el estatus.");
+            }
+            
+            // Determinamos el nuevo estatus (Si es 1 (Activo), pasa a 0 (Inactivo), y viceversa)
+            $nuevoEstatus = ($estatus_actual == 1) ? 0 : 1;
+            
+            $cambiado = $usuarioModel->cambiarEstatusUsuario($pdo, $id_usuario, $nuevoEstatus);
+
+            if ($cambiado) {
+                $mensajeEstatus = ($nuevoEstatus == 1) ? 'Activo' : 'Inactivo';
+                $response['success'] = true;
+                $response['message'] = "Estatus actualizado exitosamente a **{$mensajeEstatus}**.";
+            } else {
+                throw new Exception("Error al cambiar el estatus del usuario.");
+            }
+            
+            echo json_encode($response);
+            exit;
+
+            case 'reset_contrasena':
+            $id_usuario = $_POST['id_usuario'] ?? null;
+            
+            if (empty($id_usuario)) {
+                throw new Exception("ID de usuario no proporcionado para el reseteo.");
+            }
+            
+            // Contraseña temporal por defecto
+            $tempContrasena = '12345678';
+            $contrasenaHash = password_hash($tempContrasena, PASSWORD_BCRYPT);
+            
+            $reseteado = $usuarioModel->resetContrasenaUsuario($pdo, $id_usuario, $contrasenaHash);
+
+            if ($reseteado) {
+                $response['success'] = true;
+                $response['message'] = 'Contraseña reseteada exitosamente. La nueva clave es **12345678**.';
+            } else {
+                throw new Exception("Error al resetear la contraseña del usuario.");
+            }
+            
+            echo json_encode($response);
+            exit;
+
         default:
             echo json_encode($response); // Envía {'success': false, 'message': 'Acción no válida...'}
             break;
