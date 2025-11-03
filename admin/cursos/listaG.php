@@ -90,6 +90,7 @@ $turnoss = ['Nocturno', 'Diurno'];
             <div class="card-header">
               <h3 class="card-title"><strong>LISTADO DE GRADOS</strong></h3>
               <div class="card-tools">
+                <!-- <a href="http://localhost/reportesPractica/reportesentencia.php" class="btn bg-gradient-secondary btn-md">Reportes</a> -->
                 <button type="button" style="width: 148px;" class="btn bg-gradient-success btn-md" data-toggle="modal" data-target="#modal_asignacion_grados">
                   + NUEVO GRADO
                 </button>
