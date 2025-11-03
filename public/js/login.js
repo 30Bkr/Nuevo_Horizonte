@@ -14,16 +14,16 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                mostrarAlerta('¡Bienvenido! Redirigiendo...', 'success');
-                setTimeout(() => {
-                    // Redirigimos al dashboard (o index) de admin
-                    window.location.href = '../admin/dashboard.php'; 
-                }, 1500);
-            } else {
-                mostrarAlerta(data.message, 'danger');
-            }
-        })
+    if (data.success) {
+        mostrarAlerta('¡Bienvenido! Redirigiendo...', 'success');
+        setTimeout(() => {
+            // Ruta absoluta al dashboard
+            window.location.href = '/nuevo_horizonte/admin/dashboard.php'; 
+        }, 1500);
+    } else {
+        mostrarAlerta(data.message, 'danger');
+    }
+})
         .catch(error => {
             console.error('Error:', error);
             mostrarAlerta('Ocurrió un error de conexión.', 'danger');
