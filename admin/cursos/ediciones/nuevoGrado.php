@@ -155,7 +155,7 @@
                                                   if (data.success) {
                                                     console.log('🎉 Grado creado exitosamente');
                                                     alert('✅ ' + data.message);
-                                                    setTimeout(() => location.reload(), 1000);
+                                                    // setTimeout(() => location.reload(), 1000);
                                                   } else {
                                                     console.log('❌ Error al crear:', data.message);
                                                     alert('❌ ' + data.message);

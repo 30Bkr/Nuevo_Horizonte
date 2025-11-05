@@ -215,14 +215,14 @@ CREATE TABLE `estudiantes_representantes` (
 
 CREATE TABLE `años` (
     `id_años` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `año` int(11) NOT NULL UNIQUE,
+    `año` int(11) NOT NULL,
     `creacion` timestamp NULL DEFAULT current_timestamp(),
     `actualizado` VARCHAR(255) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
 
 CREATE TABLE `grados` (
     `id_grados` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `grado` int(11) NOT NULL UNIQUE,
+    `grado` int(11) NOT NULL,
     `creacion` timestamp NULL DEFAULT current_timestamp(),
     `actualizado` VARCHAR(255) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;

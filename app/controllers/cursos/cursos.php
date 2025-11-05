@@ -81,6 +81,38 @@ class Cursos
       }
     }
   }
+  public function filtrar($grado)
+  {
+
+    try {
+      // session_start();
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+      $sqlPrueba = "SELECT * FROM grados_secciones AS gs
+              INNER JOIN grados as g ON gs.id_grados = g.id_grados 
+              INNER JOIN secciones as s ON gs.id_seccion = s.id_seccion
+              WHERE g.grado = $grado";
+      $stmt = $objConexion->prepare($sqlPrueba);
+      $stmt->execute();
+      $listaRoles = array();
+      while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
+        $objCursos = new Cursos();
+        $objCursos->grado = $row->grado;
+        $objCursos->nom_seccion = $row->nom_seccion;
+        $objCursos->capacidad = $row->capacidad;
+        $objCursos->turno = $row->turno;
+        $objCursos->id_grados_secciones = $row->id_grados_secciones;
+        $listaRoles[] = $objCursos;
+      }
+      return $listaRoles;
+      $stmt = null;
+      $conexion->desconectar();
+    } catch (\Throwable $th) {
+      $_SESSION['mensaje'] = "Oh no, no se pudo mostrar las tablas del curso. Comuniquese con el administrador";
+      $_SESSION['icono'] = "error";
+      echo "Error al mostrar grados" . $th->getMessage();
+    }
+  }
   // public function verificar($grado, $seccion)
   // {
   //   try {
