@@ -1,3 +1,6 @@
+<?php
+include_once('../global/utils.php');
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -5,6 +8,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inicio de sesión</title>
+  <link rel="stylesheet" href="<?= URL ?>/public/plugins/fontawesome-free/css/all.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="<?= URL ?>/public/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="<?= URL ?>/public/dist/css/adminlte.min.css">
   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
   <!-- <style>
     * {
@@ -231,7 +239,7 @@
         </div>
 
 
-        <form class="login-form">
+        <form class="login-form" action="./controllerLogin.php" method="post">
 
           <div class="form-group">
             <label for="username">Usuario</label>
@@ -239,7 +247,7 @@
               <i>
                 <img src="../public/images/usuario.svg" alt="" style="width: 28px; height:28px ;">
               </i>
-              <input type="text" id="username" placeholder="Ingresa tu usuario" required>
+              <input type="email" id="email" name="email" placeholder="Ingresa tu usuario" required>
             </div>
           </div>
 
@@ -249,18 +257,23 @@
               <i>
                 <img src="../public/images/contrasena.svg" alt="" style="width: 28px; height:28px ;">
               </i>
-              <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
+              <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
             </div>
           </div>
 
           <button type="submit" class="login-btn">
             Iniciar Sesión
           </button>
+
         </form>
       </div>
     </div>
   </div>
-
+  <script src="<?= URL ?>/public/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="<?= URL ?>/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="<?= URL ?>/public/dist/js/adminlte.min.js"></script>
 
 </body>
 
