@@ -8,26 +8,9 @@ include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
 $cursos = new Cursos();
 $listaGrados = $cursos->mostrarGrados();
 $listaAnos = $cursos->mostrarAños();
-$turnoss = ['Tarde', 'Mañana'];
-
-$grado_filtro = $_GET['grado_filtro'] ?? '';
-$seccion_filtro = $_GET['seccion_filtro'] ?? '';
-
-$listaGradosFiltrada = $listaGrados;
-
-//if (!empty($grado_filtro) || !empty($seccion_filtro)) {
-//     $listaGradosFiltrada = array_filter($listaGrados, function($grado) use ($grado_filtro, $seccion_filtro) {
-//         $match_grado = empty($grado_filtro) || ($grado->grado == $grado_filtro);
-//         $match_seccion = empty($seccion_filtro) || ($grado->nom_seccion == $seccion_filtro);
-//         return $match_grado && $match_seccion;
-//     });
-// }
-
-// $grados_unicos = array_unique(array_column($listaGrados, 'grado'));
-// $secciones_unicas = array_unique(array_column($listaGrados, 'nom_seccion'));
+$turnoss = ['Nocturno', 'Diurno'];
 
 ?>
-
 
 <div class="content-wrapper">
   <br>
@@ -107,11 +90,10 @@ $listaGradosFiltrada = $listaGrados;
             <div class="card-header">
               <h3 class="card-title"><strong>LISTADO DE GRADOS</strong></h3>
               <div class="card-tools">
-                <a href="http://localhost/reportesPractica/reportesentencia.php" class="btn bg-gradient-secondary btn-md">Reportes</a> 
                 <button type="button" style="width: 148px;" class="btn bg-gradient-success btn-md" data-toggle="modal" data-target="#modal_asignacion_grados">
                   + NUEVO GRADO
-                  </button>
-                  <?php include_once("/xampp/htdocs/final/admin/cursos/ediciones/nuevoGrado.php") ?>
+                </button>
+                <?php include_once("/xampp/htdocs/final/admin/cursos/ediciones/nuevoGrado.php") ?>
 
                 </a>
               </div>
@@ -121,7 +103,7 @@ $listaGradosFiltrada = $listaGrados;
                 <thead>
                   <tr>
                     <th>Grado</th>
-                    <th>Sección</th>
+                    <th>Seccion</th>
                     <th>Capacidad</th>
                     <th>Turno</th>
                     <th>
