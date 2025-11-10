@@ -460,3 +460,842 @@ ADD CONSTRAINT `municipios_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estados
 
 ALTER TABLE `parroquias`
 ADD CONSTRAINT `parroquias_ibfk_1` FOREIGN KEY (`id_municipio`) REFERENCES `municipios` (`id_municipio`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- 2. INSERTAR DIRECCIONES
+INSERT INTO
+    direcciones (
+        id_direccion,
+        id_parroquia,
+        direccion,
+        calle,
+        casa,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        1,
+        'Av Principal de Petare',
+        'Av Principal',
+        'Casa 123',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        2,
+        'Urbanización Caucagüita',
+        'Calle 2',
+        'Edificio A, Apt 4B',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        3,
+        3,
+        'Sector Baruta',
+        'Calle Los Samanes',
+        'Quinta María',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        4,
+        4,
+        'Av Intercomunal El Valle',
+        'Av Principal',
+        'Casa 567',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        5,
+        1,
+        'Urbanización Los Naranjos',
+        'Calle 5',
+        'Casa 89',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        6,
+        2,
+        'Sector La Dolorita',
+        'Calle 7',
+        'Edificio B, Apt 2C',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        7,
+        3,
+        'Urbanización Prados del Este',
+        'Av Ppal',
+        'Quinta Los Pinos',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 3. INSERTAR PERSONAS (Estudiantes)
+INSERT INTO
+    personas (
+        id_persona,
+        id_direccion,
+        primer_nombre,
+        segundo_nombre,
+        primer_apellido,
+        segundo_apellido,
+        cedula,
+        telefono,
+        telefono_hab,
+        correo,
+        lugar_nac,
+        fecha_nac,
+        sexo,
+        nacionalidad,
+        actualizacion,
+        estatus
+    )
+VALUES
+    -- Estudiantes
+    (
+        1,
+        1,
+        'María',
+        'Gabriela',
+        'Pérez',
+        'González',
+        '28987654',
+        '04141234567',
+        '02127788991',
+        'maria.perez@email.com',
+        'Caracas',
+        '2015-03-15',
+        'Femenino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        2,
+        'Carlos',
+        'José',
+        'Rodríguez',
+        'López',
+        '29012345',
+        '04149876543',
+        '02128877665',
+        'carlos.rodriguez@email.com',
+        'Caracas',
+        '2016-07-22',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        3,
+        3,
+        'Ana',
+        'Isabel',
+        'García',
+        'Mendoza',
+        '29123456',
+        '04148765432',
+        '02129988776',
+        'ana.garcia@email.com',
+        'Caracas',
+        '2015-11-08',
+        'Femenino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        4,
+        4,
+        'Luis',
+        'Alberto',
+        'Martínez',
+        'Rojas',
+        '29234567',
+        '04147654321',
+        '02126655443',
+        'luis.martinez@email.com',
+        'Caracas',
+        '2016-01-30',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        5,
+        5,
+        'Valentina',
+        'Sophia',
+        'Hernández',
+        'Silva',
+        '29345678',
+        '04146543210',
+        '02125544332',
+        'valentina.hernandez@email.com',
+        'Caracas',
+        '2015-09-14',
+        'Femenino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        6,
+        6,
+        'Diego',
+        'Alejandro',
+        'Torres',
+        'Ramírez',
+        '29456789',
+        '04145432109',
+        '02124433221',
+        'diego.torres@email.com',
+        'Caracas',
+        '2016-04-05',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        7,
+        7,
+        'Sofía',
+        'Camila',
+        'Díaz',
+        'Fernández',
+        '29567890',
+        '04144321098',
+        '02123322110',
+        'sofia.diaz@email.com',
+        'Caracas',
+        '2015-12-18',
+        'Femenino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 4. INSERTAR ESTUDIANTES
+INSERT INTO
+    estudiantes (
+        id_estudiante,
+        id_persona,
+        actualizacion,
+        estatus
+    )
+VALUES (1, 1, CURRENT_TIMESTAMP, 1),
+    (2, 2, CURRENT_TIMESTAMP, 1),
+    (3, 3, CURRENT_TIMESTAMP, 1),
+    (4, 4, CURRENT_TIMESTAMP, 1),
+    (5, 5, CURRENT_TIMESTAMP, 1),
+    (6, 6, CURRENT_TIMESTAMP, 1),
+    (7, 7, CURRENT_TIMESTAMP, 1);
+
+-- 5. INSERTAR MÁS PERSONAS (Representantes)
+INSERT INTO
+    personas (
+        id_persona,
+        id_direccion,
+        primer_nombre,
+        segundo_nombre,
+        primer_apellido,
+        segundo_apellido,
+        cedula,
+        telefono,
+        telefono_hab,
+        correo,
+        lugar_nac,
+        fecha_nac,
+        sexo,
+        nacionalidad,
+        actualizacion,
+        estatus
+    )
+VALUES
+    -- Representantes
+    (
+        8,
+        1,
+        'Carmen',
+        'Elena',
+        'González',
+        'Pérez',
+        '15678901',
+        '04141234568',
+        '02127788992',
+        'carmen.gonzalez@email.com',
+        'Caracas',
+        '1980-05-20',
+        'Femenino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        9,
+        2,
+        'José',
+        'Luis',
+        'López',
+        'Rodríguez',
+        '16789012',
+        '04149876544',
+        '02128877666',
+        'jose.lopez@email.com',
+        'Caracas',
+        '1978-08-15',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        10,
+        3,
+        'Isabel',
+        'Carmen',
+        'Mendoza',
+        'García',
+        '17890123',
+        '04148765433',
+        '02129988777',
+        'isabel.mendoza@email.com',
+        'Caracas',
+        '1982-03-10',
+        'Femenino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        11,
+        4,
+        'Alberto',
+        'José',
+        'Rojas',
+        'Martínez',
+        '18901234',
+        '04147654322',
+        '02126655444',
+        'alberto.rojas@email.com',
+        'Caracas',
+        '1975-11-25',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        12,
+        5,
+        'Roberto',
+        'Carlos',
+        'Silva',
+        'Hernández',
+        '19012345',
+        '04146543211',
+        '02125544333',
+        'roberto.silva@email.com',
+        'Caracas',
+        '1979-07-30',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        13,
+        6,
+        'Patricia',
+        'Ana',
+        'Ramírez',
+        'Torres',
+        '20123456',
+        '04145432110',
+        '02124433222',
+        'patricia.ramirez@email.com',
+        'Caracas',
+        '1981-09-05',
+        'Femenino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        14,
+        7,
+        'Fernando',
+        'Luis',
+        'Fernández',
+        'Díaz',
+        '21234567',
+        '04144321099',
+        '02123322111',
+        'fernando.fernandez@email.com',
+        'Caracas',
+        '1977-12-12',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 6. INSERTAR REPRESENTANTES
+INSERT INTO
+    representantes (
+        id_representante,
+        id_persona,
+        profesion,
+        ocupacion,
+        lugar_trabajo,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        8,
+        'Ingeniero',
+        'Ingeniero Civil',
+        'Constructora Nacional',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        9,
+        'Doctor',
+        'Médico',
+        'Hospital Central',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        3,
+        10,
+        'Licenciada',
+        'Contadora',
+        'Firma Contable',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        4,
+        11,
+        'Profesor',
+        'Docente',
+        'Universidad Central',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        5,
+        12,
+        'Arquitecto',
+        'Arquitecto',
+        'Estudio de Arquitectura',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        6,
+        13,
+        'Abogada',
+        'Abogada',
+        'Bufete Legal',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        7,
+        14,
+        'Ingeniero',
+        'Ingeniero de Sistemas',
+        'Empresa Tecnológica',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 7. RELACIONAR ESTUDIANTES CON REPRESENTANTES
+INSERT INTO
+    estudiantes_representantes (
+        id_estudiante_representante,
+        id_estudiante,
+        id_representante,
+        parentesco,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        1,
+        1,
+        'Madre',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        2,
+        2,
+        'Padre',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        3,
+        3,
+        3,
+        'Madre',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        4,
+        4,
+        4,
+        'Padre',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        5,
+        5,
+        5,
+        'Padre',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        6,
+        6,
+        6,
+        'Madre',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        7,
+        7,
+        7,
+        'Padre',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 8. INSERTAR PATOLOGÍAS (Alergias comunes)
+INSERT INTO
+    patologias (
+        id_patologia,
+        nom_patologia,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        'Asma',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        'Alergia a lácteos',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        3,
+        'Alergia al polen',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        4,
+        'Rinitis alérgica',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 9. RELACIONAR ESTUDIANTES CON PATOLOGÍAS
+INSERT INTO
+    estudiantes_patologias (
+        id_estudiante_patologia,
+        id_estudiante,
+        id_patologia,
+        actualizacion,
+        estatus
+    )
+VALUES (1, 1, 1, CURRENT_TIMESTAMP, 1), -- María tiene asma
+    (2, 3, 2, CURRENT_TIMESTAMP, 1), -- Ana tiene alergia a lácteos
+    (3, 5, 3, CURRENT_TIMESTAMP, 1), -- Valentina tiene alergia al polen
+    (4, 7, 4, CURRENT_TIMESTAMP, 1);
+-- Sofía tiene rinitis alérgica
+
+-- 10. CONFIGURACIÓN DEL SISTEMA (Para inscripciones)
+INSERT INTO
+    niveles (
+        id_nivel,
+        num_nivel,
+        nom_nivel,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        1,
+        'Primer Grado',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        2,
+        'Segundo Grado',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+INSERT INTO
+    secciones (
+        id_seccion,
+        nom_seccion,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        'Sección A',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        'Sección B',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+INSERT INTO
+    niveles_secciones (
+        id_nivel_seccion,
+        id_nivel,
+        id_seccion,
+        capacidad,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        1,
+        1,
+        25,
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        1,
+        2,
+        25,
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        3,
+        2,
+        1,
+        25,
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+INSERT INTO
+    periodos (
+        id_periodo,
+        descripcion_periodo,
+        fecha_ini,
+        fecha_fin,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        'Año Escolar 2024-2025',
+        '2024-09-01',
+        '2025-07-15',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 11. CREAR USUARIO ADMINISTRATIVO (Para inscripciones)
+INSERT INTO
+    personas (
+        id_persona,
+        id_direccion,
+        primer_nombre,
+        segundo_nombre,
+        primer_apellido,
+        segundo_apellido,
+        cedula,
+        telefono,
+        telefono_hab,
+        correo,
+        lugar_nac,
+        fecha_nac,
+        sexo,
+        nacionalidad,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        15,
+        1,
+        'Admin',
+        'Sistema',
+        'Neudelys',
+        'School',
+        '12345678',
+        '04140000000',
+        '02120000000',
+        'admin@neudelys.edu.ve',
+        'Caracas',
+        '1990-01-01',
+        'Masculino',
+        'Venezolana',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+INSERT INTO
+    roles (
+        id_rol,
+        nom_rol,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        'Administrador',
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+INSERT INTO
+    usuarios (
+        id_usuario,
+        id_persona,
+        id_rol,
+        usuario,
+        contrasena,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        15,
+        1,
+        'admin',
+        SHA2('admin123', 256),
+        CURRENT_TIMESTAMP,
+        1
+    );
+
+-- 12. FINALMENTE, INSCRIBIR A LOS ESTUDIANTES
+INSERT INTO
+    inscripciones (
+        id_inscripcion,
+        id_estudiante,
+        id_periodo,
+        id_nivel_seccion,
+        id_usuario,
+        fecha_inscripcion,
+        observaciones,
+        actualizacion,
+        estatus
+    )
+VALUES (
+        1,
+        1,
+        1,
+        1,
+        1,
+        '2024-09-01',
+        'Estudiante nueva, con asma controlada',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        2,
+        2,
+        1,
+        1,
+        1,
+        '2024-09-01',
+        'Estudiante regular',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        3,
+        3,
+        1,
+        1,
+        1,
+        '2024-09-02',
+        'Alergia a lácteos, traer lunch especial',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        4,
+        4,
+        1,
+        2,
+        1,
+        '2024-09-02',
+        'Estudiante regular',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        5,
+        5,
+        1,
+        2,
+        1,
+        '2024-09-03',
+        'Alergia al polen, evitar áreas con flores',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        6,
+        6,
+        1,
+        2,
+        1,
+        '2024-09-03',
+        'Estudiante regular',
+        CURRENT_TIMESTAMP,
+        1
+    ),
+    (
+        7,
+        7,
+        1,
+        1,
+        1,
+        '2024-09-04',
+        'Rinitis alérgica, traer medicamento',
+        CURRENT_TIMESTAMP,
+        1
+    );

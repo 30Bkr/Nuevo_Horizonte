@@ -11,6 +11,7 @@ class Usuarios
   public $nombre_usuario;
   public $usuario;
   public $contraseña;
+  public $contrasena;
   public $estatus;
   public $cedula;
   public $cargo;
@@ -82,7 +83,7 @@ class Usuarios
       // echo "<pre>";
       // var_dump($aqui);
       // echo "</pre>";
-      $sql = "SELECT * FROM usuarios WHERE nombre_usuario = '$aqui' AND estatus = 1";
+      $sql = "SELECT * FROM usuarios WHERE usuario = '$aqui' AND estatus = 1";
       $stmt = $objConexion->prepare($sql);
       $stmt->execute();
       $listarUsuarios = array();
@@ -91,9 +92,9 @@ class Usuarios
         $objUsuarios->id_usuario = $row->id_usuario;
         $objUsuarios->id_persona = $row->id_persona;
         $objUsuarios->id_rol = $row->id_rol;
-        $objUsuarios->nombre_usuario = $row->nombre_usuario;
+        // $objUsuarios->nombre_usuario = $row->nombre_usuario;
         $objUsuarios->usuario = $row->usuario;
-        $objUsuarios->contraseña = $row->contraseña;
+        $objUsuarios->contrasena = $row->contrasena;
         $objUsuarios->estatus = $row->estatus;
         $listarUsuarios[] = $objUsuarios;
       }
@@ -112,7 +113,7 @@ class Usuarios
       $sql = "SELECT * FROM usuarios AS usu
               INNER JOIN roles as rol ON usu.id_rol = rol.id_rol 
               INNER JOIN personas as per ON usu.id_persona = per.id_persona 
-              WHERE usu.nombre_usuario = '$aqui' AND usu.estatus = 1
+              WHERE usu.usuario = '$aqui' AND usu.estatus = 1
       ";
       // $sql = "SELECT * FROM personas INNER JOIN usuarios on personas.id_persona = usuarios.id_persona WHERE usuarios.id_usuario = $aqui";
       $stmt = $objConexion->prepare($sql);
@@ -120,11 +121,10 @@ class Usuarios
       $listarInfoUsuarios = array();
       while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
         $objUsuarios = new Usuarios();
-        $objUsuarios->correo = $row->nombre_usuario;
-        $objUsuarios->cedula = $row->usuario;
-        $objUsuarios->cargo = $row->nombre_rol;
-        $objUsuarios->nombre = $row->nombres;
-        $objUsuarios->apellido = $row->apellidos;
+        $objUsuarios->correo = $row->usuario;
+        $objUsuarios->cargo = $row->nom_rol;
+        $objUsuarios->nombre = $row->primer_nombre;
+        $objUsuarios->apellido = $row->primer_apellido;
         $listarInfoUsuarios[] = $objUsuarios;
       }
       return $listarInfoUsuarios;

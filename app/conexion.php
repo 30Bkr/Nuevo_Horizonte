@@ -2,7 +2,7 @@
 class Conexion
 {
   private $hostname = 'localhost';
-  private $database = 'segunda';
+  private $database = 'neudelys';
   private $usuario = 'root';
   private $password = '5413528';
   private $conn;
