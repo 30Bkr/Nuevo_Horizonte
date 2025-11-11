@@ -1,106 +1,164 @@
 <?php
-include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripcion2.php");
-
+session_start();
 header('Content-Type: application/json');
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+// Incluir las clases necesarias
+include_once("/xampp/htdocs/final/app/conexion.php");
+include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
+include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
+include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.php");
+include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
+include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
 
-// Debug: Log de entrada
-error_log("=== INSCRIPCIONG.PHP EJECUTADO ===");
-error_log("Método: " . $_SERVER['REQUEST_METHOD']);
-error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'No definido'));
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  try {
-    // Obtener datos JSON
-    $input = file_get_contents('php://input');
-    error_log("Datos recibidos: " . substr($input, 0, 500)); // Log primeros 500 chars
-
-    $datos = json_decode($input, true);
-
-    if (!$datos) {
-      throw new Exception('Datos de inscripción no válidos o JSON mal formado');
-    }
-
-    error_log("JSON decodificado correctamente");
-
-    // Validar datos requeridos
-    $errores = validarDatosInscripcion($datos);
-    if (!empty($errores)) {
-      echo json_encode([
-        'success' => false,
-        'error' => 'Datos incompletos: ' . implode(', ', $errores)
-      ]);
-      exit;
-    }
-
-    $inscripcionController = new InscripcionController();
-    $resultado = $inscripcionController->procesarInscripcion($datos);
-
-    error_log("Resultado del procesamiento: " . json_encode($resultado));
-
-    echo json_encode($resultado);
-  } catch (Exception $e) {
-    error_log("Error en inscripciong.php: " . $e->getMessage());
-    echo json_encode([
-      'success' => false,
-      'error' => 'Error al procesar la inscripción: ' . $e->getMessage()
-    ]);
+try {
+  // Verificar que la solicitud sea POST
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    throw new Exception('Método no permitido');
   }
-} else {
-  echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-}
 
-/**
- * Validar datos de inscripción
- */
-function validarDatosInscripcion($datos)
-{
-  $errores = [];
+  // Conectar a la base de datos
+  $conexion = new Conexion();
+  $pdo = $conexion->conectar();
 
-  // Validar representante
-  if (empty($datos['representante'])) {
-    $errores[] = 'Datos del representante requeridos';
+  // Iniciar transacción
+  $pdo->beginTransaction();
+
+  // Crear instancias de los controladores
+  $ubicacionController = new UbicacionController($pdo);
+  $personaController = new PersonaController($pdo);
+  $estudianteController = new EstudianteController($pdo);
+  $representanteController = new RepresentanteController($pdo);
+  $inscripcionController = new InscripcionController($pdo);
+
+  // ========== PROCESAR REPRESENTANTE ==========
+  $id_representante = null;
+  $representante_existente = $_POST['representante_existente'] ?? '0';
+
+  if ($representante_existente === '1') {
+    // Usar representante existente
+    $id_representante = $_POST['id_representante_existente'];
   } else {
-    $rep = $datos['representante'];
-    $campos_requeridos = ['primer_nombre', 'primer_apellido', 'cedula', 'correo', 'fecha_nac'];
-    foreach ($campos_requeridos as $campo) {
-      if (empty($rep[$campo])) {
-        $errores[] = "Campo del representante: $campo";
-      }
+    // ========== CREAR NUEVA DIRECCIÓN DEL REPRESENTANTE ==========
+    $datosDireccionRepresentante = [
+      'id_parroquia' => $_POST['parroquia_r'],
+      'direccion' => $_POST['direccion_r'],
+      'calle' => $_POST['calle_r'] ?? '',
+      'casa' => $_POST['casa_r'] ?? ''
+    ];
+
+    $id_direccion_representante = $ubicacionController->crearDireccion($datosDireccionRepresentante);
+
+    // ========== CREAR PERSONA REPRESENTANTE ==========
+    $datosPersonaRepresentante = [
+      'id_direccion' => $id_direccion_representante,
+      'primer_nombre' => $_POST['primer_nombre_r'],
+      'segundo_nombre' => $_POST['segundo_nombre_r'] ?? '',
+      'primer_apellido' => $_POST['primer_apellido_r'],
+      'segundo_apellido' => $_POST['segundo_apellido_r'] ?? '',
+      'cedula' => $_POST['cedula_r'],
+      'telefono' => $_POST['telefono_r'],
+      'telefono_hab' => $_POST['telefono_hab_r'],
+      'correo' => $_POST['correo_r'],
+      'lugar_nac' => $_POST['lugar_nac_r'],
+      'fecha_nac' => $_POST['fecha_nac_r'],
+      'sexo' => $_POST['sexo_r'],
+      'nacionalidad' => $_POST['nacionalidad_r']
+    ];
+
+    $id_persona_representante = $personaController->crearPersona($datosPersonaRepresentante);
+
+    // ========== CREAR REPRESENTANTE ==========
+    $datosRepresentante = [
+      'profesion' => $_POST['profesion_r'] ?? '',
+      'ocupacion' => $_POST['ocupacion_r'],
+      'lugar_trabajo' => $_POST['lugar_trabajo_r'] ?? ''
+    ];
+
+    $id_representante = $representanteController->crearRepresentante($id_persona_representante, $datosRepresentante);
+  }
+
+  // ========== CREAR DIRECCIÓN DEL ESTUDIANTE ==========
+  // (Puede ser la misma del representante o una diferente)
+  // Por simplicidad, usaremos la misma dirección del representante
+  $datosDireccionEstudiante = [
+    'id_parroquia' => $_POST['parroquia_r'], // Misma parroquia que el representante
+    'direccion' => $_POST['direccion_r'], // Misma dirección que el representante
+    'calle' => $_POST['calle_r'] ?? '',
+    'casa' => $_POST['casa_r'] ?? ''
+  ];
+
+  $id_direccion_estudiante = $ubicacionController->crearDireccion($datosDireccionEstudiante);
+
+  // ========== CREAR PERSONA ESTUDIANTE ==========
+  $datosPersonaEstudiante = [
+    'id_direccion' => $id_direccion_estudiante,
+    'primer_nombre' => $_POST['primer_nombre_e'],
+    'segundo_nombre' => $_POST['segundo_nombre_e'] ?? '',
+    'primer_apellido' => $_POST['primer_apellido_e'],
+    'segundo_apellido' => $_POST['segundo_apellido_e'] ?? '',
+    'cedula' => $_POST['cedula_e'],
+    'telefono' => $_POST['telefono_e'] ?? '',
+    'telefono_hab' => $_POST['telefono_hab_r'], // Mismo teléfono de habitación del representante
+    'correo' => $_POST['correo_e'] ?? '',
+    'lugar_nac' => $_POST['lugar_nac_e'],
+    'fecha_nac' => $_POST['fecha_nac_e'],
+    'sexo' => $_POST['sexo_e'],
+    'nacionalidad' => $_POST['nacionalidad_e']
+  ];
+
+  $id_persona_estudiante = $personaController->crearPersona($datosPersonaEstudiante);
+
+  // ========== CREAR ESTUDIANTE ==========
+  $id_estudiante = $estudianteController->crearEstudiante($id_persona_estudiante);
+
+  // ========== AGREGAR PATOLOGÍAS AL ESTUDIANTE ==========
+  if (isset($_POST['patologias']) && is_array($_POST['patologias'])) {
+    foreach ($_POST['patologias'] as $id_patologia) {
+      $estudianteController->agregarPatologia($id_estudiante, $id_patologia);
     }
-
-    // Validar dirección
-    if (empty($rep['direccion']['id_parroquia'])) {
-      $errores[] = 'Parroquia del representante requerida';
-    }
   }
 
-  // Validar estudiantes
-  if (empty($datos['estudiantes']) || !is_array($datos['estudiantes'])) {
-    $errores[] = 'Al menos un estudiante requerido';
-  } else {
-    foreach ($datos['estudiantes'] as $index => $estudiante) {
-      $num = $index + 1;
-      $campos_requeridos = ['primer_nombre', 'primer_apellido', 'cedula', 'fecha_nac', 'sexo', 'nivel', 'seccion'];
-      foreach ($campos_requeridos as $campo) {
-        if (empty($estudiante[$campo])) {
-          $errores[] = "Estudiante $num - campo: $campo";
-        }
-      }
-    }
+  // ========== CREAR RELACIÓN ESTUDIANTE-REPRESENTANTE ==========
+  $parentesco = $_POST['parentesco'];
+  $representanteController->crearRelacionEstudianteRepresentante($id_estudiante, $id_representante, $parentesco);
+
+  // ========== CREAR INSCRIPCIÓN ==========
+  $datosInscripcion = [
+    'id_estudiante' => $id_estudiante,
+    'id_periodo' => $_POST['id_periodo'],
+    'id_nivel' => $_POST['id_nivel'],
+    'id_seccion' => $_POST['id_seccion'],
+    'id_usuario' => $_SESSION['id_usuario'] ?? 1, // Asumiendo que el usuario está en sesión
+    'fecha_inscripcion' => date('Y-m-d'),
+    'observaciones' => $_POST['observaciones'] ?? ''
+  ];
+
+  $id_inscripcion = $inscripcionController->crearInscripcion($datosInscripcion);
+
+  // Confirmar transacción
+  $pdo->commit();
+
+  // Respuesta de éxito
+  echo json_encode([
+    'success' => true,
+    'message' => 'Inscripción realizada exitosamente',
+    'id_inscripcion' => $id_inscripcion,
+    'id_estudiante' => $id_estudiante
+  ]);
+} catch (Exception $e) {
+  // Revertir transacción en caso de error
+  if (isset($pdo)) {
+    $pdo->rollBack();
   }
 
-  // Validar inscripción
-  if (empty($datos['inscripcion']['periodo'])) {
-    $errores[] = 'Periodo escolar requerido';
+  http_response_code(400);
+  echo json_encode([
+    'success' => false,
+    'message' => 'Error en la inscripción: ' . $e->getMessage()
+  ]);
+} finally {
+  // Cerrar conexión si existe
+  if (isset($conexion)) {
+    $conexion->desconectar();
   }
-
-  if (empty($datos['parentesco'])) {
-    $errores[] = 'Parentesco requerido';
-  }
-
-  return $errores;
 }
