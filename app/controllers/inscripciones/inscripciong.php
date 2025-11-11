@@ -1,17 +1,30 @@
 <?php
-include_once("/xampp/htdocs/final/app/controllers/inscripciones/InscripcionController.php");
+include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripcion2.php");
 
 header('Content-Type: application/json');
+
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Debug: Log de entrada
+error_log("=== INSCRIPCIONG.PHP EJECUTADO ===");
+error_log("Método: " . $_SERVER['REQUEST_METHOD']);
+error_log("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'No definido'));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try {
     // Obtener datos JSON
     $input = file_get_contents('php://input');
+    error_log("Datos recibidos: " . substr($input, 0, 500)); // Log primeros 500 chars
+
     $datos = json_decode($input, true);
 
     if (!$datos) {
-      throw new Exception('Datos de inscripción no válidos');
+      throw new Exception('Datos de inscripción no válidos o JSON mal formado');
     }
+
+    error_log("JSON decodificado correctamente");
 
     // Validar datos requeridos
     $errores = validarDatosInscripcion($datos);
@@ -25,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $inscripcionController = new InscripcionController();
     $resultado = $inscripcionController->procesarInscripcion($datos);
+
+    error_log("Resultado del procesamiento: " . json_encode($resultado));
 
     echo json_encode($resultado);
   } catch (Exception $e) {

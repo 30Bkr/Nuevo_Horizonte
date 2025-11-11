@@ -4,12 +4,27 @@ include_once("/xampp/htdocs/final/app/persona.php");
 include_once("/xampp/htdocs/final/app/controllers/roles/roles.php");
 include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
 
+include_once("/xampp/htdocs/final/app/controllers/inscripciones/nivelController.php");
+include_once("/xampp/htdocs/final/app/controllers/inscripciones/seccionController.php");
+include_once("/xampp/htdocs/final/app/controllers/inscripciones/patologiaController.php");
+
 $cursos = new Cursos();
 // $listaGrados = $cursos->mostrarGrados();
 // $listaAnos = $cursos->mostrarAños();
 // $roles = new Roles();
 // $listarRoles = $roles->listar();
 $docente = new Persona();
+
+
+
+// Cargar datos desde la base de datos
+$nivelController = new NivelController();
+$seccionController = new SeccionController();
+$patologiaController = new PatologiaController();
+
+$niveles = $nivelController->getNiveles();
+$secciones = $seccionController->getSecciones();
+$patologias = $patologiaController->getPatologias();
 ?>
 <link rel="stylesheet" href="<?= URL; ?>/admin/inscripciones/styles/style2.css">
 
@@ -403,6 +418,112 @@ $docente = new Persona();
   </div>
 </div>
 <script>
+  // Cargar niveles desde la base de datos
+  async function cargarNiveles() {
+    try {
+      console.log('🔍 Cargando niveles desde la base de datos...');
+
+      const response = await fetch('/final/admin/inscripciones/ediciones/cargar_niveles.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const resultado = await response.json();
+
+      if (resultado.success) {
+        console.log(`🎯 Niveles cargados: ${resultado.niveles.length}`);
+        return resultado.niveles;
+      } else {
+        throw new Error(resultado.error);
+      }
+    } catch (error) {
+      console.error('Error cargando niveles:', error);
+      return [];
+    }
+  }
+
+  // Cargar secciones desde la base de datos
+  async function cargarSecciones() {
+    try {
+      console.log('🔍 Cargando secciones desde la base de datos...');
+
+      const response = await fetch('/final/admin/inscripciones/ediciones/cargar_secciones.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const resultado = await response.json();
+
+      if (resultado.success) {
+        console.log(`🎯 Secciones cargadas: ${resultado.secciones.length}`);
+        return resultado.secciones;
+      } else {
+        throw new Error(resultado.error);
+      }
+    } catch (error) {
+      console.error('Error cargando secciones:', error);
+      return [];
+    }
+  }
+
+  // Cargar patologías desde la base de datos
+  async function cargarPatologias() {
+    try {
+      console.log('🔍 Cargando patologías desde la base de datos...');
+
+      const response = await fetch('/final/admin/inscripciones/ediciones/cargar_patologias.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const resultado = await response.json();
+
+      if (resultado.success) {
+        console.log(`🎯 Patologías cargadas: ${resultado.patologias.length}`);
+        return resultado.patologias;
+      } else {
+        throw new Error(resultado.error);
+      }
+    } catch (error) {
+      console.error('Error cargando patologías:', error);
+      return [];
+    }
+  }
+
+  // Función para poblar selects con datos
+  function poblarSelect(selectElement, datos, valorCampo, textoCampo, textoDefault = 'Seleccione...') {
+    selectElement.innerHTML = `<option value="">${textoDefault}</option>`;
+
+    datos.forEach(item => {
+      selectElement.innerHTML += `<option value="${item[valorCampo]}">${item[textoCampo]}</option>`;
+    });
+  }
+
+  // Inicializar todos los datos cuando se cargue la página
+  async function inicializarDatos() {
+    console.log('🚀 Inicializando datos desde la base de datos...');
+
+    const [niveles, secciones, patologias] = await Promise.all([
+      cargarNiveles(),
+      cargarSecciones(),
+      cargarPatologias()
+    ]);
+
+    // Guardar en variables globales para usar después
+    window.nivelesData = niveles;
+    window.seccionesData = secciones;
+    window.patologiasData = patologias;
+
+    console.log('✅ Todos los datos inicializados');
+  }
+</script>
+<script>
   // Cargar estados al inicializar la página
   async function cargarEstados() {
     console.log('🔍 Iniciando carga de estados...');
@@ -686,10 +807,130 @@ $docente = new Persona();
 </script>
 <script>
   // Función para enviar los datos al backend
+  // async function enviarInscripcion() {
+  //   try {
+  //     // Recolectar datos del formulario
+  //     const datosInscripcion = recolectarDatosInscripcion();
+
+  //     // Validar datos antes de enviar
+  //     const errores = validarDatosCompletos(datosInscripcion);
+  //     if (errores.length > 0) {
+  //       alert('Errores en el formulario:\n' + errores.join('\n'));
+  //       return;
+  //     }
+
+  //     // Mostrar loading
+  //     const btnSubmit = document.getElementById('btnSubmit');
+  //     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+  //     btnSubmit.disabled = true;
+
+  //     // Enviar datos al backend
+  //     const response = await fetch('/final/app/controllers/inscripciones/inscripciong.php', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(datosInscripcion)
+  //     });
+
+  //     const resultado = await response.json();
+
+  //     if (resultado.success) {
+  //       alert('¡Inscripción completada exitosamente!');
+  //       // Redirigir o limpiar formulario
+  //       window.location.href = '/final/admin/inscripciones/exito.php?id=' + resultado.id_representante;
+  //     } else {
+  //       throw new Error(resultado.error);
+  //     }
+
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     alert('Error al procesar la inscripción: ' + error.message);
+  //   } finally {
+  //     const btnSubmit = document.getElementById('btnSubmit');
+  //     btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Registro';
+  //     btnSubmit.disabled = false;
+  //   }
+  // }
+  // Función para enviar los datos al backend - MEJORADA
+  // async function enviarInscripcion() {
+  //   try {
+  //     console.log('🚀 Iniciando envío de inscripción...');
+
+  //     // Recolectar datos del formulario
+  //     const datosInscripcion = recolectarDatosInscripcion();
+
+  //     // Validar datos antes de enviar
+  //     const errores = validarDatosCompletos(datosInscripcion);
+  //     if (errores.length > 0) {
+  //       alert('Errores en el formulario:\n' + errores.join('\n'));
+  //       return;
+  //     }
+
+  //     // Mostrar loading
+  //     const btnSubmit = document.getElementById('btnSubmit');
+  //     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+  //     btnSubmit.disabled = true;
+
+  //     console.log('🌐 Enviando datos al servidor...');
+
+  //     // Enviar datos al backend
+  //     const response = await fetch('/final/app/controllers/inscripciones/inscripciong.php', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(datosInscripcion)
+  //     });
+
+  //     console.log('✅ Respuesta recibida, status:', response.status);
+
+  //     if (!response.ok) {
+  //       throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+  //     }
+
+  //     const resultado = await response.json();
+  //     console.log('📨 Resultado del servidor:', resultado);
+
+  //     if (resultado.success) {
+  //       alert('¡Inscripción completada exitosamente!');
+  //       console.log('🎉 Inscripción exitosa, redirigiendo...');
+  //       // Redirigir o limpiar formulario
+  //       window.location.href = '/final/admin/inscripciones/exito.php?id=' + resultado.id_representante;
+  //     } else {
+  //       throw new Error(resultado.error || 'Error desconocido del servidor');
+  //     }
+
+  //   } catch (error) {
+  //     console.error('💥 Error en enviarInscripcion:', error.message);
+  //     let mensajeError = 'Error al procesar la inscripción: ';
+
+  //     if (error.message.includes('Failed to fetch')) {
+  //       mensajeError += 'No se pudo conectar con el servidor. Verifica tu conexión.';
+  //     } else if (error.message.includes('HTTP error')) {
+  //       mensajeError += 'Error del servidor: ' + error.message;
+  //     } else {
+  //       mensajeError += error.message;
+  //     }
+
+  //     alert(mensajeError);
+  //   } finally {
+  //     const btnSubmit = document.getElementById('btnSubmit');
+  //     if (btnSubmit) {
+  //       btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Registro';
+  //       btnSubmit.disabled = false;
+  //     }
+  //   }
+  // }
+
+  // Función para enviar los datos al backend - VERSIÓN MEJORADA CON DEBUG
   async function enviarInscripcion() {
     try {
+      console.log('🚀 Iniciando envío de inscripción...');
+
       // Recolectar datos del formulario
       const datosInscripcion = recolectarDatosInscripcion();
+      console.log('📦 Datos a enviar:', datosInscripcion);
 
       // Validar datos antes de enviar
       const errores = validarDatosCompletos(datosInscripcion);
@@ -700,8 +941,11 @@ $docente = new Persona();
 
       // Mostrar loading
       const btnSubmit = document.getElementById('btnSubmit');
+      const originalText = btnSubmit.innerHTML;
       btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
       btnSubmit.disabled = true;
+
+      console.log('🌐 Enviando datos al servidor...');
 
       // Enviar datos al backend
       const response = await fetch('/final/app/controllers/inscripciones/inscripciong.php', {
@@ -712,28 +956,65 @@ $docente = new Persona();
         body: JSON.stringify(datosInscripcion)
       });
 
-      const resultado = await response.json();
+      console.log('✅ Respuesta recibida, status:', response.status);
+      console.log('✅ Response headers:', Object.fromEntries(response.headers.entries()));
+
+      // Verificar si la respuesta es JSON válido
+      const responseText = await response.text();
+      console.log('📨 Respuesta del servidor (texto):', responseText);
+
+      let resultado;
+      try {
+        resultado = JSON.parse(responseText);
+        console.log('📨 Resultado del servidor (JSON):', resultado);
+      } catch (jsonError) {
+        console.error('❌ Error parseando JSON:', jsonError);
+        console.error('❌ Respuesta recibida:', responseText);
+        throw new Error('El servidor respondió con un formato inválido. Respuesta: ' + responseText.substring(0, 200));
+      }
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+      }
 
       if (resultado.success) {
         alert('¡Inscripción completada exitosamente!');
+        console.log('🎉 Inscripción exitosa, redirigiendo...');
         // Redirigir o limpiar formulario
         window.location.href = '/final/admin/inscripciones/exito.php?id=' + resultado.id_representante;
       } else {
-        throw new Error(resultado.error);
+        throw new Error(resultado.error || 'Error desconocido del servidor');
       }
 
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al procesar la inscripción: ' + error.message);
+      console.error('💥 Error en enviarInscripcion:', error);
+      let mensajeError = 'Error al procesar la inscripción: ';
+
+      if (error.message.includes('Failed to fetch')) {
+        mensajeError += 'No se pudo conectar con el servidor. Verifica tu conexión.';
+      } else if (error.message.includes('HTTP error')) {
+        mensajeError += 'Error del servidor: ' + error.message;
+      } else if (error.message.includes('JSON')) {
+        mensajeError += 'Error en la respuesta del servidor: ' + error.message;
+      } else {
+        mensajeError += error.message;
+      }
+
+      alert(mensajeError);
     } finally {
       const btnSubmit = document.getElementById('btnSubmit');
-      btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Registro';
-      btnSubmit.disabled = false;
+      if (btnSubmit) {
+        btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Registro';
+        btnSubmit.disabled = false;
+      }
     }
   }
 
   // Recolectar datos del formulario
+  // Recolectar datos del formulario - CORREGIDA
   function recolectarDatosInscripcion() {
+    console.log('📝 Recolectando datos del formulario...');
+
     const datos = {
       representante: {
         // Información personal
@@ -762,7 +1043,6 @@ $docente = new Persona();
           calle: document.querySelector('input[name="calle_r"]').value,
           casa: document.querySelector('input[name="casa_r"]').value
         }
-
       },
       estudiantes: [],
       parentesco: document.querySelector('select[name="parentesco_global"]').value,
@@ -774,11 +1054,21 @@ $docente = new Persona();
       }
     };
 
-    // Recolectar datos de estudiantes
+    // Recolectar datos de estudiantes - CORREGIDO
     const contenedorAlumnos = document.getElementById('contenedorAlumnos');
     const seccionesAlumnos = contenedorAlumnos.querySelectorAll('.alumno-section');
 
+    console.log(`👥 Encontrados ${seccionesAlumnos.length} estudiantes`);
+
     seccionesAlumnos.forEach((seccion, index) => {
+      // Obtener valores de selects múltiples para patologías
+      const selectPatologias = seccion.querySelector('select[name="patologias_a[]"]');
+      const patologiasSeleccionadas = Array.from(selectPatologias.selectedOptions)
+        .map(option => option.value)
+        .filter(value => value !== ''); // Filtrar valores vacíos
+
+      console.log(`📋 Estudiante ${index + 1} - Patologías seleccionadas:`, patologiasSeleccionadas);
+
       const estudiante = {
         primer_nombre: seccion.querySelector('input[name="primer_nombre_a[]"]').value,
         segundo_nombre: seccion.querySelector('input[name="segundo_nombre_a[]"]').value,
@@ -793,18 +1083,126 @@ $docente = new Persona();
         correo: seccion.querySelector('input[name="correo_a[]"]').value,
         nivel: seccion.querySelector('select[name="nivel_a[]"]').value,
         seccion: seccion.querySelector('select[name="seccion_a[]"]').value,
-        patologias: seccion.querySelector('textarea[name="patologias_a[]"]').value
+        patologias: patologiasSeleccionadas // Ahora es un array de IDs
       };
 
+      console.log(`🎓 Estudiante ${index + 1} recolectado:`, estudiante.primer_nombre, estudiante.primer_apellido);
       datos.estudiantes.push(estudiante);
     });
 
+    console.log('📦 Datos recolectados completos:', datos);
     return datos;
   }
 
+  // function recolectarDatosInscripcion() {
+  //   const datos = {
+  //     representante: {
+  //       // Información personal
+  //       primer_nombre: document.querySelector('input[name="primer_nombre_r"]').value,
+  //       segundo_nombre: document.querySelector('input[name="segundo_nombre_r"]').value,
+  //       primer_apellido: document.querySelector('input[name="primer_apellido_r"]').value,
+  //       segundo_apellido: document.querySelector('input[name="segundo_apellido_r"]').value,
+  //       cedula: document.querySelector('input[name="cedula_r"]').value,
+  //       correo: document.querySelector('input[name="correo_r"]').value,
+  //       fecha_nac: document.querySelector('input[name="fecha_nac_r"]').value,
+  //       lugar_nac: document.querySelector('input[name="lugar_nac_r"]').value,
+  //       telefono: document.querySelector('input[name="telefono_r"]').value,
+  //       telefono_hab: document.querySelector('input[name="telefono_hab_r"]').value,
+  //       sexo: document.querySelector('select[name="sexo_r"]').value,
+  //       nacionalidad: document.querySelector('input[name="nacionalidad_r"]').value,
+
+  //       // Información laboral
+  //       profesion: document.querySelector('select[name="profesion_r"]').value,
+  //       ocupacion: document.querySelector('input[name="ocupacion_r"]').value,
+  //       lugar_trabajo: document.querySelector('input[name="lugar_trabajo_r"]').value,
+
+  //       // Dirección
+  //       direccion: {
+  //         id_parroquia: document.querySelector('select[name="parroquia_r"]').value,
+  //         direccion: document.querySelector('input[name="direccion_r"]').value,
+  //         calle: document.querySelector('input[name="calle_r"]').value,
+  //         casa: document.querySelector('input[name="casa_r"]').value
+  //       }
+
+  //     },
+  //     estudiantes: [],
+  //     parentesco: document.querySelector('select[name="parentesco_global"]').value,
+  //     inscripcion: {
+  //       periodo: document.querySelector('select[name="periodo_inscripcion"]').value,
+  //       fecha_inscripcion: document.querySelector('input[name="fecha_inscripcion"]').value,
+  //       id_usuario: 1, // Esto debería venir de la sesión
+  //       observaciones: 'Inscripción realizada mediante formulario web'
+  //     }
+  //   };
+
+  //   // Recolectar datos de estudiantes
+  //   const contenedorAlumnos = document.getElementById('contenedorAlumnos');
+  //   const seccionesAlumnos = contenedorAlumnos.querySelectorAll('.alumno-section');
+
+  //   seccionesAlumnos.forEach((seccion, index) => {
+  //     const estudiante = {
+  //       primer_nombre: seccion.querySelector('input[name="primer_nombre_a[]"]').value,
+  //       segundo_nombre: seccion.querySelector('input[name="segundo_nombre_a[]"]').value,
+  //       primer_apellido: seccion.querySelector('input[name="primer_apellido_a[]"]').value,
+  //       segundo_apellido: seccion.querySelector('input[name="segundo_apellido_a[]"]').value,
+  //       cedula: seccion.querySelector('input[name="cedula_a[]"]').value,
+  //       fecha_nac: seccion.querySelector('input[name="fecha_nac_a[]"]').value,
+  //       sexo: seccion.querySelector('select[name="sexo_a[]"]').value,
+  //       nacionalidad: seccion.querySelector('input[name="nacionalidad_a[]"]').value,
+  //       lugar_nac: seccion.querySelector('input[name="lugar_nac_a[]"]').value,
+  //       telefono: seccion.querySelector('input[name="telefono_a[]"]').value,
+  //       correo: seccion.querySelector('input[name="correo_a[]"]').value,
+  //       nivel: seccion.querySelector('select[name="nivel_a[]"]').value,
+  //       seccion: seccion.querySelector('select[name="seccion_a[]"]').value,
+  //       patologias: seccion.querySelector('textarea[name="patologias_a[]"]').value
+  //     };
+
+  //     datos.estudiantes.push(estudiante);
+  //   });
+
+  //   return datos;
+  // }
+
   // Validar datos completos antes de enviar
+  // function validarDatosCompletos(datos) {
+  //   const errores = [];
+
+  //   // Validar representante
+  //   if (!datos.representante.primer_nombre) errores.push('Primer nombre del representante requerido');
+  //   if (!datos.representante.primer_apellido) errores.push('Primer apellido del representante requerido');
+  //   if (!datos.representante.cedula) errores.push('Cédula del representante requerida');
+  //   if (!datos.representante.correo) errores.push('Correo del representante requerido');
+  //   if (!datos.representante.fecha_nac) errores.push('Fecha de nacimiento del representante requerida');
+  //   if (!datos.representante.direccion.id_parroquia) errores.push('Parroquia del representante requerida');
+
+  //   // Validar estudiantes
+  //   if (datos.estudiantes.length === 0) {
+  //     errores.push('Al menos un estudiante requerido');
+  //   } else {
+  //     datos.estudiantes.forEach((est, index) => {
+  //       const num = index + 1;
+  //       if (!est.primer_nombre) errores.push(`Estudiante ${num}: primer nombre requerido`);
+  //       if (!est.primer_apellido) errores.push(`Estudiante ${num}: primer apellido requerido`);
+  //       if (!est.cedula) errores.push(`Estudiante ${num}: cédula requerida`);
+  //       if (!est.fecha_nac) errores.push(`Estudiante ${num}: fecha de nacimiento requerida`);
+  //       if (!est.sexo) errores.push(`Estudiante ${num}: sexo requerido`);
+  //       if (!est.nivel) errores.push(`Estudiante ${num}: nivel requerido`);
+  //       if (!est.seccion) errores.push(`Estudiante ${num}: sección requerida`);
+  //     });
+  //   }
+
+  //   // Validar parentesco
+  //   if (!datos.parentesco) errores.push('Parentesco requerido');
+
+  //   // Validar periodo
+  //   if (!datos.inscripcion.periodo) errores.push('Periodo escolar requerido');
+
+  //   return errores;
+  // }
+  // Validar datos completos antes de enviar - MEJORADA
   function validarDatosCompletos(datos) {
     const errores = [];
+    console.log('🔍 Validando datos...');
 
     // Validar representante
     if (!datos.representante.primer_nombre) errores.push('Primer nombre del representante requerido');
@@ -813,6 +1211,8 @@ $docente = new Persona();
     if (!datos.representante.correo) errores.push('Correo del representante requerido');
     if (!datos.representante.fecha_nac) errores.push('Fecha de nacimiento del representante requerida');
     if (!datos.representante.direccion.id_parroquia) errores.push('Parroquia del representante requerida');
+    if (!datos.representante.sexo) errores.push('Sexo del representante requerido');
+    if (!datos.representante.nacionalidad) errores.push('Nacionalidad del representante requerida');
 
     // Validar estudiantes
     if (datos.estudiantes.length === 0) {
@@ -827,6 +1227,8 @@ $docente = new Persona();
         if (!est.sexo) errores.push(`Estudiante ${num}: sexo requerido`);
         if (!est.nivel) errores.push(`Estudiante ${num}: nivel requerido`);
         if (!est.seccion) errores.push(`Estudiante ${num}: sección requerida`);
+        if (!est.nacionalidad) errores.push(`Estudiante ${num}: nacionalidad requerida`);
+        if (!est.lugar_nac) errores.push(`Estudiante ${num}: lugar de nacimiento requerido`);
       });
     }
 
@@ -835,7 +1237,9 @@ $docente = new Persona();
 
     // Validar periodo
     if (!datos.inscripcion.periodo) errores.push('Periodo escolar requerido');
+    if (!datos.inscripcion.fecha_inscripcion) errores.push('Fecha de inscripción requerida');
 
+    console.log(`❌ Errores de validación: ${errores.length}`);
     return errores;
   }
 
@@ -972,6 +1376,62 @@ $docente = new Persona();
     return isValid;
   }
 
+  // async function validarCedula() {
+  //   const representanteRegistrado = document.querySelector('input[name="representanteRegistrado"]:checked').value;
+
+  //   if (representanteRegistrado === 'si') {
+  //     const cedula = document.getElementById('cedulaValidacion').value;
+  //     if (!cedula) {
+  //       alert('Por favor ingrese la cédula del representante');
+  //       return;
+  //     }
+
+  //     try {
+  //       let formData = new FormData();
+  //       formData.append('cedula', cedula);
+
+  //       let response = await fetch('/final/app/controllers/inscripciones/validar.php', {
+  //         method: 'POST',
+  //         body: formData
+  //       });
+
+  //       let data = await response.json();
+
+  //       if (data.existe) {
+  //         // Representante existe
+  //         representanteExistente = true;
+  //         document.getElementById('resultadoExistente').style.display = 'block';
+  //         document.getElementById('resultadoExistente').className = 'validation-result validation-success';
+  //         document.getElementById('resultadoNuevo').style.display = 'none';
+  //         document.getElementById('infoRepresentanteExistente').textContent =
+  //           `Cédula ${cedula} - ${data.nombre_completo}`;
+
+  //         // Saltar al paso 3 (alumnos)
+  //         showStep(3);
+  //       } else {
+  //         // Representante no existe
+  //         representanteExistente = false;
+  //         document.getElementById('resultadoNuevo').style.display = 'block';
+  //         document.getElementById('resultadoNuevo').className = 'validation-result validation-warning';
+  //         document.getElementById('resultadoExistente').style.display = 'none';
+
+  //         // Llenar automáticamente la cédula en el paso 2
+  //         document.querySelector('input[name="cedula_r"]').value = cedula;
+
+  //         // Ir al paso 2 (registro representante)
+  //         showStep(2);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error de conexión:', error);
+  //       alert('Error de conexión: ' + error.message);
+  //     }
+  //   } else {
+  //     // Representante nuevo, ir directamente al paso 2
+  //     representanteExistente = false;
+  //     showStep(2);
+  //   }
+  // }
+
   async function validarCedula() {
     const representanteRegistrado = document.querySelector('input[name="representanteRegistrado"]:checked').value;
 
@@ -986,24 +1446,40 @@ $docente = new Persona();
         let formData = new FormData();
         formData.append('cedula', cedula);
 
+        // Mostrar loading
+        const btnValidar = document.getElementById('btnValidar');
+        btnValidar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Validando...';
+        btnValidar.disabled = true;
+
         let response = await fetch('/final/app/controllers/inscripciones/validar.php', {
           method: 'POST',
           body: formData
         });
 
         let data = await response.json();
+        console.log('📨 Datos recibidos del servidor:', data);
+
+        // Restaurar botón
+        btnValidar.innerHTML = '<i class="fas fa-search mr-2"></i>Validar y Continuar';
+        btnValidar.disabled = false;
 
         if (data.existe) {
-          // Representante existe
+          // Representante existe - LLENAR FORMULARIO AUTOMÁTICAMENTE
           representanteExistente = true;
+
+          // Mostrar resultado
           document.getElementById('resultadoExistente').style.display = 'block';
           document.getElementById('resultadoExistente').className = 'validation-result validation-success';
           document.getElementById('resultadoNuevo').style.display = 'none';
           document.getElementById('infoRepresentanteExistente').textContent =
             `Cédula ${cedula} - ${data.nombre_completo}`;
 
-          // Saltar al paso 3 (alumnos)
-          showStep(3);
+          // Llenar automáticamente todos los campos del formulario
+          llenarFormularioRepresentante(data.datos_completos);
+
+          // Ir al paso 2 para que el usuario pueda ver y confirmar los datos
+          showStep(2);
+
         } else {
           // Representante no existe
           representanteExistente = false;
@@ -1011,7 +1487,7 @@ $docente = new Persona();
           document.getElementById('resultadoNuevo').className = 'validation-result validation-warning';
           document.getElementById('resultadoExistente').style.display = 'none';
 
-          // Llenar automáticamente la cédula en el paso 2
+          // Llenar automáticamente solo la cédula en el paso 2
           document.querySelector('input[name="cedula_r"]').value = cedula;
 
           // Ir al paso 2 (registro representante)
@@ -1020,6 +1496,11 @@ $docente = new Persona();
       } catch (error) {
         console.error('Error de conexión:', error);
         alert('Error de conexión: ' + error.message);
+
+        // Restaurar botón en caso de error
+        const btnValidar = document.getElementById('btnValidar');
+        btnValidar.innerHTML = '<i class="fas fa-search mr-2"></i>Validar y Continuar';
+        btnValidar.disabled = false;
       }
     } else {
       // Representante nuevo, ir directamente al paso 2
@@ -1028,8 +1509,286 @@ $docente = new Persona();
     }
   }
 
-  function agregarAlumno() {
+  // Función para llenar automáticamente el formulario con los datos del representante
+  function llenarFormularioRepresentante(datos) {
+    console.log('🔄 Llenando formulario con datos:', datos);
+
+    // Información Personal
+    if (document.querySelector('input[name="primer_nombre_r"]')) {
+      document.querySelector('input[name="primer_nombre_r"]').value = datos.primer_nombre || '';
+    }
+    if (document.querySelector('input[name="segundo_nombre_r"]')) {
+      document.querySelector('input[name="segundo_nombre_r"]').value = datos.segundo_nombre || '';
+    }
+    if (document.querySelector('input[name="primer_apellido_r"]')) {
+      document.querySelector('input[name="primer_apellido_r"]').value = datos.primer_apellido || '';
+    }
+    if (document.querySelector('input[name="segundo_apellido_r"]')) {
+      document.querySelector('input[name="segundo_apellido_r"]').value = datos.segundo_apellido || '';
+    }
+    if (document.querySelector('input[name="cedula_r"]')) {
+      document.querySelector('input[name="cedula_r"]').value = datos.cedula || '';
+    }
+    if (document.querySelector('input[name="correo_r"]')) {
+      document.querySelector('input[name="correo_r"]').value = datos.correo || '';
+    }
+    if (document.querySelector('input[name="fecha_nac_r"]') && datos.fecha_nac) {
+      document.querySelector('input[name="fecha_nac_r"]').value = datos.fecha_nac.split(' ')[0]; // Solo la fecha sin hora
+    }
+    if (document.querySelector('input[name="lugar_nac_r"]')) {
+      document.querySelector('input[name="lugar_nac_r"]').value = datos.lugar_nac || '';
+    }
+
+    // Información de Contacto
+    if (document.querySelector('input[name="telefono_r"]')) {
+      document.querySelector('input[name="telefono_r"]').value = datos.telefono || '';
+    }
+    if (document.querySelector('input[name="telefono_hab_r"]')) {
+      document.querySelector('input[name="telefono_hab_r"]').value = datos.telefono_hab || '';
+    }
+    if (document.querySelector('select[name="sexo_r"]')) {
+      document.querySelector('select[name="sexo_r"]').value = datos.sexo || '';
+    }
+    if (document.querySelector('input[name="nacionalidad_r"]')) {
+      document.querySelector('input[name="nacionalidad_r"]').value = datos.nacionalidad || '';
+    }
+
+    // Información Laboral
+    if (document.querySelector('select[name="profesion_r"]')) {
+      document.querySelector('select[name="profesion_r"]').value = datos.profesion || '';
+    }
+    if (document.querySelector('input[name="ocupacion_r"]')) {
+      document.querySelector('input[name="ocupacion_r"]').value = datos.ocupacion || '';
+    }
+    if (document.querySelector('input[name="lugar_trabajo_r"]')) {
+      document.querySelector('input[name="lugar_trabajo_r"]').value = datos.lugar_trabajo || '';
+    }
+
+    // Dirección - Llenar selects de ubicación
+    if (datos.id_estado) {
+      // Simular selección de estado y cargar municipios
+      setTimeout(() => {
+        const selectEstado = document.getElementById('estado_r');
+        selectEstado.value = datos.id_estado;
+
+        // Disparar evento change para cargar municipios
+        const event = new Event('change');
+        selectEstado.dispatchEvent(event);
+
+        // Esperar a que carguen los municipios y luego seleccionar
+        setTimeout(() => {
+          if (datos.id_municipio) {
+            const selectMunicipio = document.getElementById('municipio_r');
+            selectMunicipio.value = datos.id_municipio;
+
+            // Disparar evento change para cargar parroquias
+            const event2 = new Event('change');
+            selectMunicipio.dispatchEvent(event2);
+
+            // Esperar a que carguen las parroquias y luego seleccionar
+            setTimeout(() => {
+              if (datos.id_parroquia) {
+                const selectParroquia = document.getElementById('parroquia_r');
+                selectParroquia.value = datos.id_parroquia;
+              }
+            }, 800);
+          }
+        }, 800);
+      }, 500);
+    }
+
+    // Campos de dirección
+    if (document.querySelector('input[name="direccion_r"]')) {
+      document.querySelector('input[name="direccion_r"]').value = datos.direccion || '';
+    }
+    if (document.querySelector('input[name="calle_r"]')) {
+      document.querySelector('input[name="calle_r"]').value = datos.calle || '';
+    }
+    if (document.querySelector('input[name="casa_r"]')) {
+      document.querySelector('input[name="casa_r"]').value = datos.casa || '';
+    }
+
+    console.log('✅ Formulario llenado automáticamente');
+
+    // Mostrar mensaje de confirmación
+    mostrarMensajeExito('Datos del representante cargados automáticamente. Verifique y edite si es necesario.');
+  }
+
+  // Función para mostrar mensaje de éxito
+  function mostrarMensajeExito(mensaje) {
+    // Crear o actualizar div de mensaje
+    let mensajeDiv = document.getElementById('mensaje-carga-automatica');
+    if (!mensajeDiv) {
+      mensajeDiv = document.createElement('div');
+      mensajeDiv.id = 'mensaje-carga-automatica';
+      mensajeDiv.className = 'alert alert-success mt-3';
+      document.querySelector('#step2 .card-body-elegante').prepend(mensajeDiv);
+    }
+
+    mensajeDiv.innerHTML = `
+        <i class="fas fa-check-circle mr-2"></i>
+        <strong>¡Datos cargados automáticamente!</strong> ${mensaje}
+    `;
+
+    // Ocultar mensaje después de 5 segundos
+    setTimeout(() => {
+      mensajeDiv.style.opacity = '0';
+      setTimeout(() => {
+        mensajeDiv.remove();
+      }, 1000);
+    }, 5000);
+  }
+
+  // function agregarAlumno() {
+  //   contadorAlumnos++;
+  //   const alumnoHTML = `
+  //     <div class="alumno-section" id="alumno${contadorAlumnos}">
+  //       <div class="alumno-header">
+  //         <h5 class="mb-0 text-primary">
+  //           <i class="fas fa-child mr-2"></i>Alumno/Hijo ${contadorAlumnos}
+  //         </h5>
+  //         ${contadorAlumnos > 1 ? `
+  //         <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarAlumno(${contadorAlumnos})">
+  //           <i class="fas fa-times"></i>
+  //         </button>
+  //         ` : ''}
+  //       </div>
+
+  //       <h6 class="section-title">Información Personal</h6>
+  //       <div class="row form-row-spaced">
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="primer_nombre_a${contadorAlumnos}" class="form-label-elegante required-field">Primer Nombre</label>
+  //             <input type="text" name="primer_nombre_a[]" class="form-control form-control-elegante" placeholder="Primer nombre" required>
+  //           </div>
+  //         </div>
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="segundo_nombre_a${contadorAlumnos}" class="form-label-elegante">Segundo Nombre</label>
+  //             <input type="text" name="segundo_nombre_a[]" class="form-control form-control-elegante" placeholder="Segundo nombre">
+  //           </div>
+  //         </div>
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="primer_apellido_a${contadorAlumnos}" class="form-label-elegante required-field">Primer Apellido</label>
+  //             <input type="text" name="primer_apellido_a[]" class="form-control form-control-elegante" placeholder="Primer apellido" required>
+  //           </div>
+  //         </div>
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="segundo_apellido_a${contadorAlumnos}" class="form-label-elegante">Segundo Apellido</label>
+  //             <input type="text" name="segundo_apellido_a[]" class="form-control form-control-elegante" placeholder="Segundo apellido">
+  //           </div>
+  //         </div>
+  //       </div>
+
+  //       <div class="row form-row-spaced">
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="cedula_a${contadorAlumnos}" class="form-label-elegante required-field">Cédula</label>
+  //             <input type="number" name="cedula_a[]" class="form-control form-control-elegante" placeholder="Cédula del alumno" required>
+  //           </div>
+  //         </div>
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="fecha_nac_a${contadorAlumnos}" class="form-label-elegante required-field">Fecha Nacimiento</label>
+  //             <input type="date" name="fecha_nac_a[]" class="form-control form-control-elegante" required>
+  //           </div>
+  //         </div>
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="sexo_a${contadorAlumnos}" class="form-label-elegante required-field">Sexo</label>
+  //             <select name="sexo_a[]" class="form-control form-control-elegante" required>
+  //               <option value="">Seleccione...</option>
+  //               <option value="Masculino">Masculino</option>
+  //               <option value="Femenino">Femenino</option>
+  //             </select>
+  //           </div>
+  //         </div>
+  //         <div class="col-md-3">
+  //           <div class="form-group-elegante">
+  //             <label for="nacionalidad_a${contadorAlumnos}" class="form-label-elegante required-field">Nacionalidad</label>
+  //             <input type="text" name="nacionalidad_a[]" class="form-control form-control-elegante" placeholder="Nacionalidad" required>
+  //           </div>
+  //         </div>
+  //       </div>
+
+  //       <div class="row form-row-spaced">
+  //         <div class="col-md-4">
+  //           <div class="form-group-elegante">
+  //             <label for="lugar_nac_a${contadorAlumnos}" class="form-label-elegante required-field">Lugar de Nacimiento</label>
+  //             <input type="text" name="lugar_nac_a[]" class="form-control form-control-elegante" placeholder="Ciudad, Estado" required>
+  //           </div>
+  //         </div>
+  //         <div class="col-md-4">
+  //           <div class="form-group-elegante">
+  //             <label for="telefono_a${contadorAlumnos}" class="form-label-elegante">Teléfono Personal</label>
+  //             <input type="text" name="telefono_a[]" class="form-control form-control-elegante" placeholder="Opcional">
+  //           </div>
+  //         </div>
+  //         <div class="col-md-4">
+  //           <div class="form-group-elegante">
+  //             <label for="correo_a${contadorAlumnos}" class="form-label-elegante">Correo Electrónico</label>
+  //             <input type="email" name="correo_a[]" class="form-control form-control-elegante" placeholder="Opcional">
+  //           </div>
+  //         </div>
+  //       </div>
+
+  //       <h6 class="section-title">Información Académica</h6>
+  //       <div class="row form-row-spaced">
+  //         <div class="col-md-6">
+  //           <div class="form-group-elegante">
+  //             <label for="nivel_a${contadorAlumnos}" class="form-label-elegante required-field">Nivel/Grado</label>
+  //             <select name="nivel_a[]" class="form-control form-control-elegante" required>
+  //               <option value="">Seleccione...</option>
+  //               <option value="1">1er Grado</option>
+  //               <option value="2">2do Grado</option>
+  //               <option value="3">3er Grado</option>
+  //               <option value="4">4to Grado</option>
+  //               <option value="5">5to Grado</option>
+  //               <option value="6">6to Grado</option>
+  //             </select>
+  //           </div>
+  //         </div>
+  //         <div class="col-md-6">
+  //           <div class="form-group-elegante">
+  //             <label for="seccion_a${contadorAlumnos}" class="form-label-elegante required-field">Sección</label>
+  //             <select name="seccion_a[]" class="form-control form-control-elegante" required>
+  //               <option value="">Seleccione...</option>
+  //               <option value="A">Sección A</option>
+  //               <option value="B">Sección B</option>
+  //               <option value="C">Sección C</option>
+  //             </select>
+  //           </div>
+  //         </div>
+  //       </div>
+
+  //       <!-- Información de Salud -->
+  //       <h6 class="section-title">Información de Salud</h6>
+  //       <div class="row form-row-spaced">
+  //         <div class="col-md-12">
+  //           <div class="form-group-elegante">
+  //             <label for="patologias_a${contadorAlumnos}" class="form-label-elegante">Patologías/Alergias</label>
+  //             <textarea name="patologias_a[]" class="form-control form-control-elegante" rows="2" placeholder="Indique cualquier condición médica, alergia o patología conocida (opcional)"></textarea>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   `;
+
+  //   document.getElementById('contenedorAlumnos').innerHTML += alumnoHTML;
+  //   document.getElementById('totalAlumnos').textContent = contadorAlumnos;
+  // }
+
+  // Función mejorada para agregar alumno que usa datos de la BD
+  async function agregarAlumno() {
     contadorAlumnos++;
+
+    // Asegurarse de que los datos estén cargados
+    if (!window.nivelesData || !window.seccionesData) {
+      await inicializarDatos();
+    }
+
     const alumnoHTML = `
       <div class="alumno-section" id="alumno${contadorAlumnos}">
         <div class="alumno-header">
@@ -1128,37 +1887,30 @@ $docente = new Persona();
           <div class="col-md-6">
             <div class="form-group-elegante">
               <label for="nivel_a${contadorAlumnos}" class="form-label-elegante required-field">Nivel/Grado</label>
-              <select name="nivel_a[]" class="form-control form-control-elegante" required>
-                <option value="">Seleccione...</option>
-                <option value="1">1er Grado</option>
-                <option value="2">2do Grado</option>
-                <option value="3">3er Grado</option>
-                <option value="4">4to Grado</option>
-                <option value="5">5to Grado</option>
-                <option value="6">6to Grado</option>
+              <select name="nivel_a[]" class="form-control form-control-elegante nivel-select" required>
+                <option value="">Cargando niveles...</option>
               </select>
             </div>
           </div>
           <div class="col-md-6">
             <div class="form-group-elegante">
               <label for="seccion_a${contadorAlumnos}" class="form-label-elegante required-field">Sección</label>
-              <select name="seccion_a[]" class="form-control form-control-elegante" required>
-                <option value="">Seleccione...</option>
-                <option value="A">Sección A</option>
-                <option value="B">Sección B</option>
-                <option value="C">Sección C</option>
+              <select name="seccion_a[]" class="form-control form-control-elegante seccion-select" required>
+                <option value="">Cargando secciones...</option>
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Información de Salud -->
         <h6 class="section-title">Información de Salud</h6>
         <div class="row form-row-spaced">
           <div class="col-md-12">
             <div class="form-group-elegante">
               <label for="patologias_a${contadorAlumnos}" class="form-label-elegante">Patologías/Alergias</label>
-              <textarea name="patologias_a[]" class="form-control form-control-elegante" rows="2" placeholder="Indique cualquier condición médica, alergia o patología conocida (opcional)"></textarea>
+              <select name="patologias_a[]" class="form-control form-control-elegante patologia-select" multiple>
+                <option value="">Cargando patologías...</option>
+              </select>
+              <small class="text-muted">Mantén presionada la tecla Ctrl para seleccionar múltiples opciones</small>
             </div>
           </div>
         </div>
@@ -1167,6 +1919,30 @@ $docente = new Persona();
 
     document.getElementById('contenedorAlumnos').innerHTML += alumnoHTML;
     document.getElementById('totalAlumnos').textContent = contadorAlumnos;
+
+    // Poblar los selects con datos de la BD
+    const nuevoAlumno = document.getElementById(`alumno${contadorAlumnos}`);
+    poblarSelect(
+      nuevoAlumno.querySelector('.nivel-select'),
+      window.nivelesData,
+      'id_nivel',
+      'nom_nivel'
+    );
+
+    poblarSelect(
+      nuevoAlumno.querySelector('.seccion-select'),
+      window.seccionesData,
+      'id_seccion',
+      'nom_seccion'
+    );
+
+    poblarSelect(
+      nuevoAlumno.querySelector('.patologia-select'),
+      window.patologiasData,
+      'id_patologia',
+      'nom_patologia',
+      'Seleccione patologías (opcional)'
+    );
   }
 
   function eliminarAlumno(numero) {
@@ -1224,7 +2000,21 @@ $docente = new Persona();
     });
   });
 </script>
+<script>
+  // Inicializar datos automáticamente al cargar la página
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM cargado, inicializando...');
 
+    // Inicializar datos de niveles, secciones y patologías
+    inicializarDatos().then(() => {
+      console.log('✅ Todos los datos inicializados correctamente');
+    }).catch(error => {
+      console.error('❌ Error inicializando datos:', error);
+    });
+
+    // ... el resto de tu código de inicialización
+  });
+</script>
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
 include_once("/xampp/htdocs/final/layout/mensajes.php");

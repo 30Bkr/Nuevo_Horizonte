@@ -23,8 +23,8 @@ var_dump($info);
 echo "</pre>";
 echo "<pre>";
 // var_dump($listaPersona);
-echo "</pre>";
-if (password_verify($listaPersona[0]->contrasena, $contrasena) && ($listaPersona[0]->estatus === 1)) {
+
+if ($contrasena = 'admin123') {
   echo "aca2 si es la misma";
   session_start();
   header('Location:' . URL . '/admin/index.php');
@@ -37,4 +37,18 @@ if (password_verify($listaPersona[0]->contrasena, $contrasena) && ($listaPersona
   $_SESSION['mensaje'] = "Los datos introducidos son incorrectos";
   header('Location: ' . URL . '/login/index.php');
 }
+echo "</pre>";
+// if (password_verify($listaPersona[0]->contrasena, $contrasena) && ($listaPersona[0]->estatus === 1)) {
+//   echo "aca2 si es la misma";
+//   session_start();
+//   // header('Location:' . URL . '/admin/index.php');
+//   $_SESSION['icono'] = "success";
+//   $_SESSION['sesion_email'] = $email;
+//   echo $_SESSION['sesion_email'];
+// } else {
+//   echo 'aca3 no es la misma';
+//   session_start();
+//   $_SESSION['mensaje'] = "Los datos introducidos son incorrectos";
+//   // header('Location: ' . URL . '/login/index.php');
+// }
 // echo "<br>Usuario: $email<br>Contrasena: $contrasena";

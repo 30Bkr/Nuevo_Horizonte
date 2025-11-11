@@ -14,14 +14,78 @@ class InscripcionController
   /**
    * Validar si un representante existe por cédula
    */
+  // public function validarRepresentante($cedula)
+  // {
+  //   try {
+  //     $query = "SELECT p.id_persona, p.primer_nombre, p.segundo_nombre, 
+  //                            p.primer_apellido, p.segundo_apellido, r.id_representante
+  //                     FROM personas p 
+  //                     LEFT JOIN representantes r ON p.id_persona = r.id_persona
+  //                     WHERE p.cedula = :cedula AND p.estatus = 1";
+
+  //     $stmt = $this->conn->prepare($query);
+  //     $stmt->bindParam(':cedula', $cedula);
+  //     $stmt->execute();
+
+  //     if ($stmt->rowCount() > 0) {
+  //       $persona = $stmt->fetch(PDO::FETCH_ASSOC);
+  //       $nombre_completo = $this->formatearNombreCompleto($persona);
+
+  //       return [
+  //         'existe' => true,
+  //         'id_persona' => $persona['id_persona'],
+  //         'id_representante' => $persona['id_representante'],
+  //         'nombre_completo' => $nombre_completo,
+  //         'cedula' => $cedula
+  //       ];
+  //     }
+  //     return ['existe' => false];
+  //   } catch (PDOException $e) {
+  //     error_log("Error validando representante: " . $e->getMessage());
+  //     return ['existe' => false, 'error' => $e->getMessage()];
+  //   }
+  // }
+  /**
+   * Validar si un representante existe por cédula - VERSIÓN MEJORADA
+   */
   public function validarRepresentante($cedula)
   {
     try {
-      $query = "SELECT p.id_persona, p.primer_nombre, p.segundo_nombre, 
-                             p.primer_apellido, p.segundo_apellido, r.id_representante
-                      FROM personas p 
-                      LEFT JOIN representantes r ON p.id_persona = r.id_persona
-                      WHERE p.cedula = :cedula AND p.estatus = 1";
+      $query = "SELECT 
+                    p.id_persona, 
+                    p.primer_nombre, 
+                    p.segundo_nombre, 
+                    p.primer_apellido, 
+                    p.segundo_apellido, 
+                    p.cedula,
+                    p.telefono,
+                    p.telefono_hab,
+                    p.correo,
+                    p.lugar_nac,
+                    p.fecha_nac,
+                    p.sexo,
+                    p.nacionalidad,
+                    r.id_representante,
+                    r.profesion,
+                    r.ocupacion,
+                    r.lugar_trabajo,
+                    d.id_direccion,
+                    d.direccion,
+                    d.calle,
+                    d.casa,
+                    d.id_parroquia,
+                    par.nom_parroquia,
+                    mun.id_municipio,
+                    mun.nom_municipio,
+                    est.id_estado,
+                    est.nom_estado
+                  FROM personas p 
+                  LEFT JOIN representantes r ON p.id_persona = r.id_persona
+                  LEFT JOIN direcciones d ON p.id_direccion = d.id_direccion
+                  LEFT JOIN parroquias par ON d.id_parroquia = par.id_parroquia
+                  LEFT JOIN municipios mun ON par.id_municipio = mun.id_municipio
+                  LEFT JOIN estados est ON mun.id_estado = est.id_estado
+                  WHERE p.cedula = :cedula AND p.estatus = 1";
 
       $stmt = $this->conn->prepare($query);
       $stmt->bindParam(':cedula', $cedula);
@@ -36,16 +100,17 @@ class InscripcionController
           'id_persona' => $persona['id_persona'],
           'id_representante' => $persona['id_representante'],
           'nombre_completo' => $nombre_completo,
-          'cedula' => $cedula
+          'cedula' => $cedula,
+          'datos_completos' => $persona // Enviamos todos los datos
         ];
       }
+
       return ['existe' => false];
     } catch (PDOException $e) {
       error_log("Error validando representante: " . $e->getMessage());
       return ['existe' => false, 'error' => $e->getMessage()];
     }
   }
-
   /**
    * Procesar inscripción completa
    */
