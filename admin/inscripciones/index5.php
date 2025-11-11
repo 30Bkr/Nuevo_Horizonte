@@ -1,321 +1,421 @@
 <?php
 include_once("/xampp/htdocs/final/layout/layaout1.php");
-include_once("/xampp/htdocs/final/app/persona.php");
-include_once("/xampp/htdocs/final/app/controllers/roles/roles.php");
-include_once("/xampp/htdocs/final/app/controllers/cursos/cursos.php");
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-include_once("/xampp/htdocs/final/app/controllers/inscripciones/nivelController.php");
-include_once("/xampp/htdocs/final/app/controllers/inscripciones/seccionController.php");
-include_once("/xampp/htdocs/final/app/controllers/inscripciones/patologiaController.php");
+// Incluir los controladores necesarios
+include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
+include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
+include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.php");
+include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
+include_once("/xampp/htdocs/final/app/conexion.php");
 
-$cursos = new Cursos();
-// $listaGrados = $cursos->mostrarGrados();
-// $listaAnos = $cursos->mostrarAños();
-// $roles = new Roles();
-// $listarRoles = $roles->listar();
-$docente = new Persona();
+try {
+  $conexion = new Conexion();
+  $pdo = $conexion->conectar();
 
-
-
-// Cargar datos desde la base de datos
-$nivelController = new NivelController();
-$seccionController = new SeccionController();
-$patologiaController = new PatologiaController();
-
-$niveles = $nivelController->getNiveles();
-$secciones = $seccionController->getSecciones();
-$patologias = $patologiaController->getPatologias();
+  $ubicacionController = new UbicacionController($pdo);
+  $estados = $ubicacionController->obtenerEstados();
+} catch (PDOException $e) {
+  die("Error de conexión: " . $e->getMessage());
+}
 ?>
-<link rel="stylesheet" href="<?= URL; ?>/admin/inscripciones/styles/style2.css">
+
+<style>
+  :root {
+    --primary: #4361ee;
+    --secondary: #3f37c9;
+    --success: #4cc9f0;
+    --info: #4895ef;
+    --warning: #f72585;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --gradient: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+  }
+
+  .step {
+    display: none;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .step.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .step-indicator {
+    background: var(--gradient);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(67, 97, 238, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .step-item {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .step-number {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: white;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin: 0 auto 10px;
+    border: 3px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .step-item.active .step-number {
+    background: var(--success);
+    color: white;
+    transform: scale(1.1);
+  }
+
+  .step-item.completed .step-number {
+    background: var(--success);
+    color: white;
+  }
+
+  .step-item.completed .step-number::after {
+    content: '✓';
+    font-size: 1.5rem;
+  }
+
+  .step-label {
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .step-connector {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 1;
+  }
+
+  .step-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  }
+
+  .step-card .card-header {
+    background: var(--gradient);
+    color: white;
+    border: none;
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .step-card .card-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--success), var(--info));
+  }
+
+  .step-card .card-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.3rem;
+  }
+
+  .step-card .card-body {
+    padding: 2rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .btn-modern {
+    border: none;
+    border-radius: 10px;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-modern:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary-modern {
+    background: var(--gradient);
+    color: white;
+  }
+
+  .btn-primary-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+  }
+
+  .btn-success-modern {
+    background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+    color: white;
+  }
+
+  .btn-success-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.4);
+  }
+
+  .btn-secondary-modern {
+    background: #6c757d;
+    color: white;
+  }
+
+  .btn-secondary-modern:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+  }
+
+  .validation-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .animated-alert {
+    border: none;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    animation: slideIn 0.5s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .progress-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .section-divider {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    margin: 2rem 0;
+  }
+
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--gradient);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+  }
+
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary);
+  }
+</style>
 
 <div class="content-wrapper">
   <div class="content">
-    <br>
     <div class="container-fluid">
-      <div class="row mb-4">
-        <div class="col-md-12">
-          <h1 class="h2 font-weight-bold text-dark">Inscripción de Alumnos</h1>
-          <p class="text-muted">Complete el proceso de inscripción paso a paso</p>
+      <!-- Header -->
+      <div class="row mb-5">
+        <div class="col-12 text-center">
+          <h1 class="display-4 font-weight-bold text-dark mb-3">🎓 Inscripción de Estudiante</h1>
+          <p class="lead text-muted">Complete el proceso de inscripción en 3 simples pasos</p>
         </div>
       </div>
 
-      <!-- Estadísticas Flotantes -->
-      <div class="floating-stats">
-        <div class="stat-card">
-          <div class="stat-number" id="totalAlumnos">0</div>
-          <div class="stat-label">Alumnos</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="pasoActual">1</div>
-          <div class="stat-label">Paso Actual</div>
-        </div>
-      </div>
-
-      <!-- Indicador de Pasos -->
-      <div class="step-indicator">
-        <div class="step active" data-step="1">
-          <div class="step-circle">
-            <span class="step-number">1</span>
-          </div>
-          <div class="step-text">Validación<br>Representante</div>
-        </div>
-        <div class="step-line" id="line1-2" style="width: calc(25% - 100px); left: 25%;"></div>
-
-        <div class="step" data-step="2">
-          <div class="step-circle">
-            <span class="step-number">2</span>
-          </div>
-          <div class="step-text">Datos del<br>Representante</div>
-        </div>
-        <div class="step-line" id="line2-3" style="width: calc(25% - 100px); left: 50%;"></div>
-
-        <div class="step" data-step="3">
-          <div class="step-circle">
-            <span class="step-number">3</span>
-          </div>
-          <div class="step-text">Datos del<br>Alumno</div>
-        </div>
-        <div class="step-line" id="line3-4" style="width: calc(25% - 100px); left: 75%;"></div>
-
-        <div class="step" data-step="4">
-          <div class="step-circle">
-            <span class="step-number">4</span>
-          </div>
-          <div class="step-text">Confirmación</div>
-        </div>
-      </div>
-
-      <form action="http://localhost/final/app/controllers/inscripciones/inscripciong.php" method="post" id="for">
-
-        <!-- Paso 1: Validación de Representante -->
-        <div class="step-container active" id="step1">
-          <div class="card card-elegante">
-            <div class="card-header-elegante">
-              <h3><i class="fas fa-search mr-2"></i>Paso 1: Validación del Representante</h3>
+      <!-- Step Indicator -->
+      <div class="row mb-5">
+        <div class="col-12">
+          <div class="step-indicator">
+            <div class="row">
+              <div class="col-md-4 step-item active" id="indicator-step1">
+                <div class="step-number">1</div>
+                <div class="step-label">Validar Representante</div>
+              </div>
+              <div class="col-md-4 step-item" id="indicator-step2">
+                <div class="step-number">2</div>
+                <div class="step-label">Datos del Representante</div>
+              </div>
+              <div class="col-md-4 step-item" id="indicator-step3">
+                <div class="step-number">3</div>
+                <div class="step-label">Datos del Estudiante</div>
+              </div>
             </div>
-            <div class="card-body-elegante">
-              <div class="row justify-content-center">
-                <div class="col-md-8">
-                  <div class="form-group-elegante text-center">
-                    <label class="form-label-elegante">
-                      <i class="fas fa-question-circle mr-2"></i>¿El representante está registrado en el sistema?
-                    </label>
-                    <div class="radio-group justify-content-center">
-                      <div class="radio-option">
-                        <input type="radio" id="repRegistradoSi" name="representanteRegistrado" value="si" checked>
-                        <label for="repRegistradoSi">Sí, está registrado</label>
-                      </div>
-                      <div class="radio-option">
-                        <input type="radio" id="repRegistradoNo" name="representanteRegistrado" value="no">
-                        <label for="repRegistradoNo">No, es nuevo</label>
+          </div>
+        </div>
+      </div>
+
+      <form action="http://localhost/final/app/controllers/inscripciones/inscripciong.php" method="post" id="form-inscripcion">
+
+        <!-- PASO 1: VALIDAR REPRESENTANTE -->
+        <div class="step active" id="step1">
+          <div class="row justify-content-center">
+            <div class="col-lg-8">
+              <div class="step-card">
+                <div class="card-header text-center">
+                  <i class="fas fa-id-card fa-2x mb-3"></i>
+                  <h3 class="card-title">Validación de Representante</h3>
+                  <p class="mb-0 opacity-75">Verifique si el representante ya está registrado en el sistema</p>
+                </div>
+                <div class="card-body">
+                  <div class="validation-card text-center">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <h4 class="mb-3">Buscar Representante</h4>
+                    <p class="mb-4">Ingrese la cédula de identidad del representante para verificar su registro</p>
+
+                    <div class="row justify-content-center">
+                      <div class="col-md-8">
+                        <div class="form-group">
+                          <div class="input-group input-group-lg">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text bg-white">
+                                <i class="fas fa-id-card text-primary"></i>
+                              </span>
+                            </div>
+                            <input type="number"
+                              id="cedula_representante"
+                              class="form-control form-control-lg"
+                              placeholder="Ej: 12345678"
+                              style="border-radius: 0 10px 10px 0;">
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div id="cedulaContainer">
-                    <div class="form-group-elegante text-center">
-                      <label for="cedulaValidacion" class="form-label-elegante required-field">
-                        <i class="fas fa-id-card mr-2"></i>Ingrese la Cédula del Representante
-                      </label>
-                      <input type="number" id="cedulaValidacion" class="form-control form-control-elegante text-center"
-                        placeholder="Ej: 12345678" style="font-size: 1.2rem;">
-                      <small class="text-muted">Ingrese el número de cédula para verificar si el representante ya está registrado</small>
-                    </div>
-                  </div>
-
-                  <div class="validation-result" id="resultadoExistente">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <strong>Representante encontrado:</strong>
-                    <span id="infoRepresentanteExistente"></span>
-                  </div>
-
-                  <div class="validation-result" id="resultadoNuevo">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <strong>Representante no registrado:</strong>
-                    Proceda a registrar la información del representante.
-                  </div>
-
-                  <div class="text-center mt-4">
-                    <button type="button" class="btn btn-primary-elegante btn-elegante" onclick="validarCedula()" id="btnValidar">
-                      <i class="fas fa-search mr-2"></i>Validar y Continuar
+                    <button type="button" id="btn-validar-representante" class="btn btn-primary-modern btn-lg">
+                      <i class="fas fa-search mr-2"></i>Validar Representante
                     </button>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Paso 2: Datos del Representante -->
-        <div class="step-container" id="step2">
-          <div class="card card-elegante">
-            <div class="card-header-elegante">
-              <h3><i class="fas fa-user-tie mr-2"></i>Paso 2: Datos del Representante</h3>
-            </div>
-            <div class="card-body-elegante">
-              <h5 class="section-title">Información Personal</h5>
-              <div class="row form-row-spaced">
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="primer_nombre_r" class="form-label-elegante required-field">Primer Nombre</label>
-                    <input type="text" name="primer_nombre_r" class="form-control form-control-elegante" placeholder="Primer nombre" required>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="segundo_nombre_r" class="form-label-elegante">Segundo Nombre</label>
-                    <input type="text" name="segundo_nombre_r" class="form-control form-control-elegante" placeholder="Segundo nombre">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="primer_apellido_r" class="form-label-elegante required-field">Primer Apellido</label>
-                    <input type="text" name="primer_apellido_r" class="form-control form-control-elegante" placeholder="Primer apellido" required>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="segundo_apellido_r" class="form-label-elegante">Segundo Apellido</label>
-                    <input type="text" name="segundo_apellido_r" class="form-control form-control-elegante" placeholder="Segundo apellido">
-                  </div>
-                </div>
-              </div>
+                  <div id="resultado-validacion" class="mt-4"></div>
 
-              <div class="row form-row-spaced">
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="cedula_r" class="form-label-elegante required-field">Cédula de Identidad</label>
-                    <input type="number" name="cedula_r" class="form-control form-control-elegante" placeholder="Ej: 12345678" required>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="correo_r" class="form-label-elegante required-field">Correo Electrónico</label>
-                    <input type="email" name="correo_r" class="form-control form-control-elegante" placeholder="ejemplo@correo.com" required>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="fecha_nac_r" class="form-label-elegante required-field">Fecha de Nacimiento</label>
-                    <input type="date" name="fecha_nac_r" class="form-control form-control-elegante" required>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="lugar_nac_r" class="form-label-elegante required-field">Lugar de Nacimiento</label>
-                    <input type="text" name="lugar_nac_r" class="form-control form-control-elegante" placeholder="Ciudad, Estado" required>
-                  </div>
-                </div>
-              </div>
-
-              <h5 class="section-title">Información de Contacto</h5>
-              <div class="row form-row-spaced">
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="telefono_r" class="form-label-elegante required-field">Teléfono Personal</label>
-                    <input type="text" name="telefono_r" class="form-control form-control-elegante" placeholder="Ej: 0412-1234567" required>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="telefono_hab_r" class="form-label-elegante required-field">Teléfono de Habitación</label>
-                    <input type="text" name="telefono_hab_r" class="form-control form-control-elegante" placeholder="Ej: 0212-1234567" required>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="sexo_r" class="form-label-elegante required-field">Sexo</label>
-                    <select name="sexo_r" class="form-control form-control-elegante" required>
-                      <option value="">Seleccione...</option>
-                      <option value="Masculino">Masculino</option>
-                      <option value="Femenino">Femenino</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="form-group-elegante">
-                    <label for="nacionalidad_r" class="form-label-elegante required-field">Nacionalidad</label>
-                    <input type="text" name="nacionalidad_r" class="form-control form-control-elegante" placeholder="Ej: Venezolana" required>
-                  </div>
-                </div>
-              </div>
-
-              <h5 class="section-title">Información Laboral</h5>
-              <div class="row form-row-spaced">
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="profesion_r" class="form-label-elegante required-field">Profesión</label>
-                    <select name="profesion_r" class="form-control form-control-elegante" required>
-                      <option value="">Seleccione...</option>
-                      <option value="Licenciado/a">Licenciado/a</option>
-                      <option value="Ingeniero/a">Ingeniero/a</option>
-                      <option value="Doctor/a">Doctor/a</option>
-                      <option value="Bachiller">Bachiller</option>
-                      <option value="Técnico">Técnico</option>
-                      <option value="Ama de casa">Ama de casa</option>
-                      <option value="Obrero">Obrero</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="ocupacion_r" class="form-label-elegante required-field">Ocupación</label>
-                    <input type="text" name="ocupacion_r" class="form-control form-control-elegante" placeholder="Profesión u oficio" required>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="lugar_trabajo_r" class="form-label-elegante required-field">Lugar de Trabajo</label>
-                    <input type="text" name="lugar_trabajo_r" class="form-control form-control-elegante" placeholder="Empresa o institución" required>
-                  </div>
-                </div>
-              </div>
-              <h5 class="section-title">Dirección del Representante</h5>
-              <div class="row form-row-spaced">
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="estado_r" class="form-label-elegante required-field">Estado</label>
-                    <select name="estado_r" id="estado_r" class="form-control form-control-elegante" required
-                      onchange="cargarMunicipios(this.value)">
-                      <option value="">Cargando estados...</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="municipio_r" class="form-label-elegante required-field">Municipio</label>
-                    <select name="municipio_r" id="municipio_r" class="form-control form-control-elegante" required
-                      onchange="cargarParroquias(this.value)" disabled>
-                      <option value="">Seleccione un estado primero</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="parroquia_r" class="form-label-elegante required-field">Parroquia</label>
-                    <select name="parroquia_r" id="parroquia_r" class="form-control form-control-elegante" required disabled>
-                      <option value="">Seleccione un municipio primero</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="row form-row-spaced">
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="direccion_r" class="form-label-elegante required-field">Dirección Completa</label>
-                    <input type="text" name="direccion_r" class="form-control form-control-elegante" placeholder="Dirección completa" required>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="calle_r" class="form-label-elegante required-field">Calle/Avenida</label>
-                    <input type="text" name="calle_r" class="form-control form-control-elegante" placeholder="Nombre de la calle" required>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group-elegante">
-                    <label for="casa_r" class="form-label-elegante required-field">Casa/Edificio</label>
-                    <input type="text" name="casa_r" class="form-control form-control-elegante" placeholder="Número o nombre" required>
+                  <!-- Navigation -->
+                  <div class="row mt-4">
+                    <div class="col-12 text-center">
+                      <button type="button" class="btn btn-success-modern btn-lg px-5" id="btn-next-to-step2" style="display: none;">
+                        Continuar al Paso 2 <i class="fas fa-arrow-right ml-2"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -323,1698 +423,887 @@ $patologias = $patologiaController->getPatologias();
           </div>
         </div>
 
-        <!-- Paso 3: Datos del Alumno -->
-        <div class="step-container" id="step3">
-          <div class="card card-elegante">
-            <div class="card-header-elegante">
-              <h3><i class="fas fa-user-graduate mr-2"></i>Paso 3: Datos del Alumno/Hijo</h3>
-            </div>
-            <div class="card-body-elegante">
-              <div class="form-group-elegante mb-4">
-                <label class="form-label-elegante required-field">Parentesco con el Representante</label>
-                <select name="parentesco_global" class="form-control form-control-elegante" required>
-                  <option value="">Seleccione...</option>
-                  <option value="Madre">Madre</option>
-                  <option value="Padre">Padre</option>
-                  <option value="Abuelo/a">Abuelo/a</option>
-                  <option value="Tío/a">Tío/a</option>
-                  <option value="Hermano/a">Hermano/a</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
+        <!-- PASO 2: DATOS DEL REPRESENTANTE -->
+        <div class="step" id="step2">
+          <div class="row">
+            <div class="col-12">
+              <div class="step-card">
+                <div class="card-header">
+                  <i class="fas fa-user-tie mr-2"></i>
+                  <h3 class="card-title">Información del Representante</h3>
+                </div>
+                <div class="card-body">
+                  <input type="hidden" name="representante_existente" id="representante_existente" value="0">
+                  <input type="hidden" name="id_representante_existente" id="id_representante_existente" value="">
 
-              <div id="contenedorAlumnos">
-                <!-- Los alumnos se agregarán aquí dinámicamente -->
-              </div>
+                  <!-- Información Personal -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-user-circle mr-2"></i>Información Personal
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Primer Nombre *</label>
+                          <input type="text" name="primer_nombre_r" id="primer_nombre_r" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Segundo Nombre</label>
+                          <input type="text" name="segundo_nombre_r" id="segundo_nombre_r" class="form-control">
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Primer Apellido *</label>
+                          <input type="text" name="primer_apellido_r" id="primer_apellido_r" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Segundo Apellido</label>
+                          <input type="text" name="segundo_apellido_r" id="segundo_apellido_r" class="form-control">
+                        </div>
+                      </div>
+                    </div>
 
-              <div class="text-center mt-4">
-                <button type="button" class="btn btn-info-elegante btn-elegante" onclick="agregarAlumno()">
-                  <i class="fas fa-plus-circle mr-2"></i>Agregar Otro Alumno/Hijo
-                </button>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Cédula *</label>
+                          <input type="number" name="cedula_r" id="cedula_r" class="form-control" required readonly>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Fecha Nacimiento *</label>
+                          <input type="date" name="fecha_nac_r" id="fecha_nac_r" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Sexo *</label>
+                          <select name="sexo_r" id="sexo_r" class="form-control" required>
+                            <option value="">Seleccionar</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Nacionalidad *</label>
+                          <input type="text" name="nacionalidad_r" id="nacionalidad_r" class="form-control" required value="Venezolana">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Información de Contacto -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-address-card mr-2"></i>Información de Contacto
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Correo Electrónico *</label>
+                          <input type="email" name="correo_r" id="correo_r" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Teléfono Móvil *</label>
+                          <input type="text" name="telefono_r" id="telefono_r" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Teléfono Habitación *</label>
+                          <input type="text" name="telefono_hab_r" id="telefono_hab_r" class="form-control" required>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Información Laboral -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-briefcase mr-2"></i>Información Laboral
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Profesión</label>
+                          <input type="text" name="profesion_r" id="profesion_r" class="form-control">
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Ocupación *</label>
+                          <input type="text" name="ocupacion_r" id="ocupacion_r" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Lugar de Trabajo</label>
+                          <input type="text" name="lugar_trabajo_r" id="lugar_trabajo_r" class="form-control">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Dirección -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-map-marker-alt mr-2"></i>Dirección
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Estado *</label>
+                          <select name="estado_r" id="estado_r" class="form-control" required>
+                            <option value="">Seleccionar Estado</option>
+                            <?php foreach ($estados as $estado): ?>
+                              <option value="<?= $estado['id_estado'] ?>"><?= $estado['nom_estado'] ?></option>
+                            <?php endforeach; ?>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Municipio *</label>
+                          <select name="municipio_r" id="municipio_r" class="form-control" required disabled>
+                            <option value="">Primero seleccione un estado</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Parroquia *</label>
+                          <select name="parroquia_r" id="parroquia_r" class="form-control" required disabled>
+                            <option value="">Primero seleccione un municipio</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Parentesco *</label>
+                          <select name="parentesco" id="parentesco" class="form-control" required>
+                            <option value="">Seleccionar</option>
+                            <option value="Madre">Madre</option>
+                            <option value="Padre">Padre</option>
+                            <option value="Abuelo">Abuelo</option>
+                            <option value="Abuela">Abuela</option>
+                            <option value="Tío">Tío</option>
+                            <option value="Tía">Tía</option>
+                            <option value="Hermano">Hermano</option>
+                            <option value="Hermana">Hermana</option>
+                            <option value="Otro">Otro</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="form-label">Dirección Completa *</label>
+                          <input type="text" name="direccion_r" id="direccion_r" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Calle/Avenida</label>
+                          <input type="text" name="calle_r" id="calle_r" class="form-control">
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Casa/Edificio</label>
+                          <input type="text" name="casa_r" id="casa_r" class="form-control">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Navigation -->
+                  <div class="row mt-4">
+                    <div class="col-12 text-center">
+                      <button type="button" class="btn btn-secondary-modern btn-lg mr-3" id="btn-back-to-step1">
+                        <i class="fas fa-arrow-left mr-2"></i>Anterior
+                      </button>
+                      <button type="button" class="btn btn-success-modern btn-lg" id="btn-next-to-step3">
+                        Siguiente Paso <i class="fas fa-arrow-right ml-2"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Paso 4: Confirmación -->
-        <div class="step-container" id="step4">
-          <div class="card card-elegante">
-            <div class="card-header-elegante">
-              <h3><i class="fas fa-check-circle mr-2"></i>Paso 4: Confirmación</h3>
-            </div>
-            <div class="card-body-elegante text-center">
-              <i class="fas fa-clipboard-check fa-3x text-success mb-3"></i>
-              <h4 class="text-success">¡Revisión Completa!</h4>
-              <p class="lead">Se han registrado los datos de <strong id="totalAlumnosConfirmacion">0</strong> alumno(s)</p>
-              <p class="text-muted">Verifique que toda la información sea correcta antes de proceder con el registro.</p>
+        <!-- PASO 3: DATOS DEL ESTUDIANTE -->
+        <div class="step" id="step3">
+          <div class="row">
+            <div class="col-12">
+              <div class="step-card">
+                <div class="card-header">
+                  <i class="fas fa-user-graduate mr-2"></i>
+                  <h3 class="card-title">Información del Estudiante</h3>
+                </div>
+                <div class="card-body">
+                  <!-- Información Personal del Estudiante -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-user-circle mr-2"></i>Información Personal del Estudiante
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Primer Nombre *</label>
+                          <input type="text" name="primer_nombre_e" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Segundo Nombre</label>
+                          <input type="text" name="segundo_nombre_e" class="form-control">
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Primer Apellido *</label>
+                          <input type="text" name="primer_apellido_e" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Segundo Apellido</label>
+                          <input type="text" name="segundo_apellido_e" class="form-control">
+                        </div>
+                      </div>
+                    </div>
 
-              <div class="alert alert-info mt-4">
-                <i class="fas fa-info-circle mr-2"></i>
-                <strong>Información importante:</strong> Al hacer clic en "Confirmar Registro",
-                se guardarán todos los datos del representante y los alumnos inscritos.
-              </div>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Cédula *</label>
+                          <input type="number" name="cedula_e" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Fecha Nacimiento *</label>
+                          <input type="date" name="fecha_nac_e" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Lugar Nacimiento *</label>
+                          <input type="text" name="lugar_nac_e" class="form-control" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label class="form-label">Sexo *</label>
+                          <select name="sexo_e" class="form-control" required>
+                            <option value="">Seleccionar</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
 
-              <!-- Información de Inscripción -->
-              <div class="row mt-4">
-                <div class="col-md-6">
-                  <div class="form-group-elegante">
-                    <label for="periodo_inscripcion" class="form-label-elegante required-field">Periodo Escolar</label>
-                    <select name="periodo_inscripcion" class="form-control form-control-elegante" required>
-                      <option value="">Seleccione...</option>
-                      <?php
-                      // Aquí deberías cargar los periodos desde tu base de datos
-                      ?>
-                      <option value="1">Año Escolar 2024-2025</option>
-                    </select>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Nacionalidad *</label>
+                          <input type="text" name="nacionalidad_e" class="form-control" required value="Venezolana">
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Teléfono</label>
+                          <input type="text" name="telefono_e" class="form-control">
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Correo Electrónico</label>
+                          <input type="email" name="correo_e" class="form-control">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Información Académica -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-graduation-cap mr-2"></i>Información Académica
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Período Académico *</label>
+                          <select name="id_periodo" class="form-control" required>
+                            <option value="">Seleccionar Período</option>
+                            <option value="1" selected>Año Escolar 2024-2025</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Nivel/Grado *</label>
+                          <select name="id_nivel" class="form-control" required>
+                            <option value="">Seleccionar Nivel</option>
+                            <?php
+                            $niveles = [1 => 'Primer Grado', 2 => 'Segundo Grado'];
+                            foreach ($niveles as $id => $nivel) {
+                              echo "<option value='$id'>$nivel</option>";
+                            }
+                            ?>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label class="form-label">Sección *</label>
+                          <select name="id_seccion" class="form-control" required>
+                            <option value="">Seleccionar Sección</option>
+                            <?php
+                            $secciones = [1 => 'Sección A', 2 => 'Sección B'];
+                            foreach ($secciones as $id => $seccion) {
+                              echo "<option value='$id'>$seccion</option>";
+                            }
+                            ?>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Información Médica -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-heartbeat mr-2"></i>Información Médica
+                    </h5>
+                    <div class="row">
+                      <div class="col-12">
+                        <label class="form-label mb-3">Patologías/Alergias (Seleccione las que apliquen)</label>
+                        <div class="row">
+                          <?php
+                          $patologias = [
+                            1 => 'Asma',
+                            2 => 'Alergia a lácteos',
+                            3 => 'Alergia al polen',
+                            4 => 'Rinitis alérgica'
+                          ];
+                          foreach ($patologias as $id => $patologia) {
+                            echo "
+                                                        <div class='col-md-3 mb-2'>
+                                                            <div class='custom-control custom-checkbox'>
+                                                                <input type='checkbox' name='patologias[]' value='$id' class='custom-control-input' id='patologia_$id'>
+                                                                <label class='custom-control-label' for='patologia_$id'>$patologia</label>
+                                                            </div>
+                                                        </div>";
+                          }
+                          ?>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Observaciones -->
+                  <div class="form-section">
+                    <h5 class="font-weight-bold text-primary mb-3">
+                      <i class="fas fa-sticky-note mr-2"></i>Observaciones Adicionales
+                    </h5>
+                    <div class="row">
+                      <div class="col-12">
+                        <div class="form-group">
+                          <textarea name="observaciones" class="form-control" rows="4" placeholder="Ingrese cualquier observación adicional que considere importante..."></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Final Actions -->
+                  <div class="row mt-5">
+                    <div class="col-12 text-center">
+                      <div class="alert alert-info animated-alert">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>¡Estás a punto de completar la inscripción!</strong> Verifica que toda la información sea correcta antes de enviar.
+                      </div>
+
+                      <button type="button" class="btn btn-secondary-modern btn-lg mr-3" id="btn-back-to-step2">
+                        <i class="fas fa-arrow-left mr-2"></i>Anterior
+                      </button>
+                      <button type="submit" class="btn btn-success-modern btn-lg px-5">
+                        <i class="fas fa-paper-plane mr-2"></i>Completar Inscripción
+                      </button>
+                      <a href="http://localhost/final/admin/index.php" class="btn btn-danger btn-lg ml-3">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                      </a>
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="form-group-elegante">
-                    <label for="fecha_inscripcion" class="form-label-elegante required-field">Fecha de Inscripción</label>
-                    <input type="date" name="fecha_inscripcion" class="form-control form-control-elegante" value="<?= date('Y-m-d'); ?>" required>
-                  </div>
-                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Botones de Navegación -->
-        <div class="navigation-buttons">
-          <button type="button" class="btn btn-outline-elegante btn-elegante" id="btnPrev" onclick="prevStep()" style="display: none;">
-            <i class="fas fa-arrow-left mr-2"></i>Anterior
-          </button>
-          <div class="ml-auto">
-            <button type="button" class="btn btn-primary-elegante btn-elegante" id="btnNext" onclick="nextStep()">
-              Siguiente<i class="fas fa-arrow-right ml-2"></i>
-            </button>
-            <button type="submit" class="btn btn-success btn-elegante" id="btnSubmit" style="display: none;">
-              <i class="fas fa-save mr-2"></i>Confirmar Registro
-            </button>
           </div>
         </div>
       </form>
     </div>
   </div>
 </div>
+
 <script>
-  // Cargar niveles desde la base de datos
-  async function cargarNiveles() {
-    try {
-      console.log('🔍 Cargando niveles desde la base de datos...');
-
-      const response = await fetch('/final/admin/inscripciones/ediciones/cargar_niveles.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      const resultado = await response.json();
-
-      if (resultado.success) {
-        console.log(`🎯 Niveles cargados: ${resultado.niveles.length}`);
-        return resultado.niveles;
-      } else {
-        throw new Error(resultado.error);
-      }
-    } catch (error) {
-      console.error('Error cargando niveles:', error);
-      return [];
-    }
-  }
-
-  // Cargar secciones desde la base de datos
-  async function cargarSecciones() {
-    try {
-      console.log('🔍 Cargando secciones desde la base de datos...');
-
-      const response = await fetch('/final/admin/inscripciones/ediciones/cargar_secciones.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      const resultado = await response.json();
-
-      if (resultado.success) {
-        console.log(`🎯 Secciones cargadas: ${resultado.secciones.length}`);
-        return resultado.secciones;
-      } else {
-        throw new Error(resultado.error);
-      }
-    } catch (error) {
-      console.error('Error cargando secciones:', error);
-      return [];
-    }
-  }
-
-  // Cargar patologías desde la base de datos
-  async function cargarPatologias() {
-    try {
-      console.log('🔍 Cargando patologías desde la base de datos...');
-
-      const response = await fetch('/final/admin/inscripciones/ediciones/cargar_patologias.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      const resultado = await response.json();
-
-      if (resultado.success) {
-        console.log(`🎯 Patologías cargadas: ${resultado.patologias.length}`);
-        return resultado.patologias;
-      } else {
-        throw new Error(resultado.error);
-      }
-    } catch (error) {
-      console.error('Error cargando patologías:', error);
-      return [];
-    }
-  }
-
-  // Función para poblar selects con datos
-  function poblarSelect(selectElement, datos, valorCampo, textoCampo, textoDefault = 'Seleccione...') {
-    selectElement.innerHTML = `<option value="">${textoDefault}</option>`;
-
-    datos.forEach(item => {
-      selectElement.innerHTML += `<option value="${item[valorCampo]}">${item[textoCampo]}</option>`;
-    });
-  }
-
-  // Inicializar todos los datos cuando se cargue la página
-  async function inicializarDatos() {
-    console.log('🚀 Inicializando datos desde la base de datos...');
-
-    const [niveles, secciones, patologias] = await Promise.all([
-      cargarNiveles(),
-      cargarSecciones(),
-      cargarPatologias()
-    ]);
-
-    // Guardar en variables globales para usar después
-    window.nivelesData = niveles;
-    window.seccionesData = secciones;
-    window.patologiasData = patologias;
-
-    console.log('✅ Todos los datos inicializados');
-  }
-</script>
-<script>
-  // Cargar estados al inicializar la página
-  async function cargarEstados() {
-    console.log('🔍 Iniciando carga de estados...');
-
-    const selectEstado = document.getElementById('estado_r');
-
-    try {
-      console.log('🌐 Haciendo POST a: /final/app/controllers/inscripciones/cargar_estados.php');
-
-      const response = await fetch('/final/app/controllers/inscripciones/cargar_estados.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      console.log('✅ Response status:', response.status);
-      console.log('✅ Response ok:', response.ok);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const resultado = await response.json();
-      console.log('📦 Resultado JSON:', resultado);
-
-      if (resultado.success) {
-        console.log(`🎯 Se encontraron ${resultado.estados.length} estados`);
-
-        selectEstado.innerHTML = '<option value="">Seleccione un estado</option>';
-
-        resultado.estados.forEach(estado => {
-          console.log(`📍 Estado: ${estado.nombre} (ID: ${estado.id})`);
-          selectEstado.innerHTML += `<option value="${estado.id}">${estado.nombre}</option>`;
-        });
-
-        // Habilitar el select de estado
-        selectEstado.disabled = false;
-        console.log('✅ Select de estados habilitado');
-
-      } else {
-        console.error('❌ Error del servidor:', resultado.error);
-        selectEstado.innerHTML = `<option value="">Error: ${resultado.error}</option>`;
-
-        // Mostrar alerta con detalles del error
-        if (resultado.debug) {
-          console.error('🔧 Debug info:', resultado.debug);
-        }
-      }
-
-    } catch (error) {
-      console.error('💥 Error cargando estados:', error);
-
-      selectEstado.innerHTML = `
-            <option value="">Error al cargar estados</option>
-            <option value="">Detalle: ${error.message}</option>
-        `;
-
-      // Mostrar error en la interfaz
-      mostrarErrorUbicacion(error.message);
-    }
-  }
-
-  // Cargar municipios según estado seleccionado
-  async function cargarMunicipios(estadoId) {
-    if (!estadoId) {
-      resetearMunicipios();
-      resetearParroquias();
-      return;
-    }
-
-    try {
-      const selectMunicipio = document.getElementById('municipio_r');
-      const selectParroquia = document.getElementById('parroquia_r');
-
-      // Mostrar loading
-      selectMunicipio.innerHTML = '<option value="">Cargando municipios...</option>';
-      selectMunicipio.disabled = true;
-
-      selectParroquia.innerHTML = '<option value="">Seleccione un municipio primero</option>';
-      selectParroquia.disabled = true;
-
-      console.log(`🌐 Haciendo POST para municipios del estado: ${estadoId}`);
-
-      const response = await fetch('/final/app/controllers/inscripciones/cargar_municipios.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          estado_id: estadoId
-        })
-      });
-
-      const resultado = await response.json();
-      console.log('📦 Resultado municipios:', resultado);
-
-      if (resultado.success) {
-        selectMunicipio.innerHTML = '<option value="">Seleccione un municipio</option>';
-
-        resultado.municipios.forEach(municipio => {
-          selectMunicipio.innerHTML += `<option value="${municipio.id}">${municipio.nombre}</option>`;
-        });
-
-        // Habilitar el select de municipio
-        selectMunicipio.disabled = false;
-        console.log('✅ Select de municipios habilitado');
-      } else {
-        throw new Error(resultado.error);
-      }
-    } catch (error) {
-      console.error('Error cargando municipios:', error);
-      document.getElementById('municipio_r').innerHTML = '<option value="">Error al cargar municipios</option>';
-    }
-  }
-
-  // Cargar parroquias según municipio seleccionado
-  async function cargarParroquias(municipioId) {
-    if (!municipioId) {
-      resetearParroquias();
-      return;
-    }
-
-    try {
-      const selectParroquia = document.getElementById('parroquia_r');
-
-      // Mostrar loading
-      selectParroquia.innerHTML = '<option value="">Cargando parroquias...</option>';
-      selectParroquia.disabled = true;
-
-      console.log(`🌐 Haciendo POST para parroquias del municipio: ${municipioId}`);
-
-      const response = await fetch('/final/app/controllers/inscripciones/cargar_parroquias.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          municipio_id: municipioId
-        })
-      });
-
-      const resultado = await response.json();
-      console.log('📦 Resultado parroquias:', resultado);
-
-      if (resultado.success) {
-        selectParroquia.innerHTML = '<option value="">Seleccione una parroquia</option>';
-
-        resultado.parroquias.forEach(parroquia => {
-          selectParroquia.innerHTML += `<option value="${parroquia.id}">${parroquia.nombre}</option>`;
-        });
-
-        // Habilitar el select de parroquia
-        selectParroquia.disabled = false;
-        console.log('✅ Select de parroquias habilitado');
-
-        // Mostrar información de la ubicación seleccionada
-        mostrarInfoUbicacion();
-      } else {
-        throw new Error(resultado.error);
-      }
-    } catch (error) {
-      console.error('Error cargando parroquias:', error);
-      document.getElementById('parroquia_r').innerHTML = '<option value="">Error al cargar parroquias</option>';
-    }
-  }
-
-  // Resetear select de municipios
-  function resetearMunicipios() {
-    const selectMunicipio = document.getElementById('municipio_r');
-    selectMunicipio.innerHTML = '<option value="">Seleccione un estado primero</option>';
-    selectMunicipio.disabled = true;
-  }
-
-  // Resetear select de parroquias
-  function resetearParroquias() {
-    const selectParroquia = document.getElementById('parroquia_r');
-    selectParroquia.innerHTML = '<option value="">Seleccione un municipio primero</option>';
-    selectParroquia.disabled = true;
-  }
-
-  // Función para mostrar información didáctica
-  function mostrarInfoUbicacion() {
-    const estado = document.getElementById('estado_r');
-    const municipio = document.getElementById('municipio_r');
-    const parroquia = document.getElementById('parroquia_r');
-
-    if (estado.value && municipio.value && parroquia.value) {
-      console.log('Ubicación seleccionada:');
-      console.log('- Estado:', estado.options[estado.selectedIndex].text);
-      console.log('- Municipio:', municipio.options[municipio.selectedIndex].text);
-      console.log('- Parroquia:', parroquia.options[parroquia.selectedIndex].text);
-
-      // Puedes mostrar esta información en un div informativo
-      const infoDiv = document.getElementById('info-ubicacion') || crearDivInformacion();
-      infoDiv.innerHTML = `
-            <div class="alert alert-info mt-3">
-                <strong><i class="fas fa-map-marker-alt mr-2"></i>Ubicación seleccionada:</strong><br>
-                <strong>Estado:</strong> ${estado.options[estado.selectedIndex].text}<br>
-                <strong>Municipio:</strong> ${municipio.options[municipio.selectedIndex].text}<br>
-                <strong>Parroquia:</strong> ${parroquia.options[parroquia.selectedIndex].text}
-            </div>
-        `;
-    }
-  }
-
-  // Función para mostrar errores
-  function mostrarErrorUbicacion(mensaje) {
-    let errorDiv = document.getElementById('error-ubicacion');
-    if (!errorDiv) {
-      errorDiv = document.createElement('div');
-      errorDiv.id = 'error-ubicacion';
-      errorDiv.className = 'alert alert-danger mt-3';
-      document.querySelector('#step2 .card-body-elegante').appendChild(errorDiv);
-    }
-
-    errorDiv.innerHTML = `
-        <strong><i class="fas fa-exclamation-triangle mr-2"></i>Error cargando ubicaciones:</strong><br>
-        ${mensaje}
-        <br><small>Verifica la consola del navegador para más detalles (F12 → Console)</small>
-    `;
-  }
-
-  // Crear div para información de ubicación
-  function crearDivInformacion() {
-    const div = document.createElement('div');
-    div.id = 'info-ubicacion';
-    document.querySelector('#step2 .card-body-elegante').appendChild(div);
-    return div;
-  }
-
-  // Función para probar manualmente
-  function probarCargaEstados() {
-    console.clear();
-    console.log('🧪 Probando carga de estados manualmente...');
-    cargarEstados();
-  }
-
-  // Agregar botón de prueba
-  // function agregarBotonPrueba() {
-  //   const botonPrueba = document.createElement('button');
-  //   botonPrueba.type = 'button';
-  //   botonPrueba.className = 'btn btn-sm btn-warning mt-2';
-  //   botonPrueba.innerHTML = '<i class="fas fa-bug mr-2"></i>Probar Carga de Estados';
-  //   botonPrueba.onclick = probarCargaEstados;
-
-  //   const contenedor = document.querySelector('#step2 .card-body-elegante');
-  //   contenedor.appendChild(botonPrueba);
-  // }
-
-  // Modificar los eventos para mostrar información
+  // El JavaScript permanece igual que en la versión anterior
   document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM cargado, iniciando carga de estados...');
-
-    // Cargar estados cuando la página esté lista
-    cargarEstados();
-
-    // Agregar botón de prueba
-    // agregarBotonPrueba();
-
-    // Agregar event listeners para mostrar información
-    document.getElementById('estado_r').addEventListener('change', function() {
-      setTimeout(mostrarInfoUbicacion, 500); // Delay para esperar la carga
-    });
-
-    document.getElementById('municipio_r').addEventListener('change', function() {
-      setTimeout(mostrarInfoUbicacion, 500);
-    });
-
-    document.getElementById('parroquia_r').addEventListener('change', mostrarInfoUbicacion);
-
-    // Verificar que los elementos existan
-    const selectEstado = document.getElementById('estado_r');
-    if (!selectEstado) {
-      console.error('❌ No se encontró el elemento #estado_r');
-      mostrarErrorUbicacion('No se encontró el selector de estados en el DOM');
-    } else {
-      console.log('✅ Elemento #estado_r encontrado');
-    }
-  });
-</script>
-<script>
-  // Función para enviar los datos al backend
-  // async function enviarInscripcion() {
-  //   try {
-  //     // Recolectar datos del formulario
-  //     const datosInscripcion = recolectarDatosInscripcion();
-
-  //     // Validar datos antes de enviar
-  //     const errores = validarDatosCompletos(datosInscripcion);
-  //     if (errores.length > 0) {
-  //       alert('Errores en el formulario:\n' + errores.join('\n'));
-  //       return;
-  //     }
-
-  //     // Mostrar loading
-  //     const btnSubmit = document.getElementById('btnSubmit');
-  //     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
-  //     btnSubmit.disabled = true;
-
-  //     // Enviar datos al backend
-  //     const response = await fetch('/final/app/controllers/inscripciones/inscripciong.php', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(datosInscripcion)
-  //     });
-
-  //     const resultado = await response.json();
-
-  //     if (resultado.success) {
-  //       alert('¡Inscripción completada exitosamente!');
-  //       // Redirigir o limpiar formulario
-  //       window.location.href = '/final/admin/inscripciones/exito.php?id=' + resultado.id_representante;
-  //     } else {
-  //       throw new Error(resultado.error);
-  //     }
-
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     alert('Error al procesar la inscripción: ' + error.message);
-  //   } finally {
-  //     const btnSubmit = document.getElementById('btnSubmit');
-  //     btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Registro';
-  //     btnSubmit.disabled = false;
-  //   }
-  // }
-  // Función para enviar los datos al backend - MEJORADA
-  // async function enviarInscripcion() {
-  //   try {
-  //     console.log('🚀 Iniciando envío de inscripción...');
-
-  //     // Recolectar datos del formulario
-  //     const datosInscripcion = recolectarDatosInscripcion();
-
-  //     // Validar datos antes de enviar
-  //     const errores = validarDatosCompletos(datosInscripcion);
-  //     if (errores.length > 0) {
-  //       alert('Errores en el formulario:\n' + errores.join('\n'));
-  //       return;
-  //     }
-
-  //     // Mostrar loading
-  //     const btnSubmit = document.getElementById('btnSubmit');
-  //     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
-  //     btnSubmit.disabled = true;
-
-  //     console.log('🌐 Enviando datos al servidor...');
-
-  //     // Enviar datos al backend
-  //     const response = await fetch('/final/app/controllers/inscripciones/inscripciong.php', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(datosInscripcion)
-  //     });
-
-  //     console.log('✅ Respuesta recibida, status:', response.status);
-
-  //     if (!response.ok) {
-  //       throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-  //     }
-
-  //     const resultado = await response.json();
-  //     console.log('📨 Resultado del servidor:', resultado);
-
-  //     if (resultado.success) {
-  //       alert('¡Inscripción completada exitosamente!');
-  //       console.log('🎉 Inscripción exitosa, redirigiendo...');
-  //       // Redirigir o limpiar formulario
-  //       window.location.href = '/final/admin/inscripciones/exito.php?id=' + resultado.id_representante;
-  //     } else {
-  //       throw new Error(resultado.error || 'Error desconocido del servidor');
-  //     }
-
-  //   } catch (error) {
-  //     console.error('💥 Error en enviarInscripcion:', error.message);
-  //     let mensajeError = 'Error al procesar la inscripción: ';
-
-  //     if (error.message.includes('Failed to fetch')) {
-  //       mensajeError += 'No se pudo conectar con el servidor. Verifica tu conexión.';
-  //     } else if (error.message.includes('HTTP error')) {
-  //       mensajeError += 'Error del servidor: ' + error.message;
-  //     } else {
-  //       mensajeError += error.message;
-  //     }
-
-  //     alert(mensajeError);
-  //   } finally {
-  //     const btnSubmit = document.getElementById('btnSubmit');
-  //     if (btnSubmit) {
-  //       btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Registro';
-  //       btnSubmit.disabled = false;
-  //     }
-  //   }
-  // }
-
-  // Función para enviar los datos al backend - VERSIÓN MEJORADA CON DEBUG
-  async function enviarInscripcion() {
-    try {
-      console.log('🚀 Iniciando envío de inscripción...');
-
-      // Recolectar datos del formulario
-      const datosInscripcion = recolectarDatosInscripcion();
-      console.log('📦 Datos a enviar:', datosInscripcion);
-
-      // Validar datos antes de enviar
-      const errores = validarDatosCompletos(datosInscripcion);
-      if (errores.length > 0) {
-        alert('Errores en el formulario:\n' + errores.join('\n'));
-        return;
-      }
-
-      // Mostrar loading
-      const btnSubmit = document.getElementById('btnSubmit');
-      const originalText = btnSubmit.innerHTML;
-      btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
-      btnSubmit.disabled = true;
-
-      console.log('🌐 Enviando datos al servidor...');
-
-      // Enviar datos al backend
-      const response = await fetch('/final/app/controllers/inscripciones/inscripciong.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(datosInscripcion)
-      });
-
-      console.log('✅ Respuesta recibida, status:', response.status);
-      console.log('✅ Response headers:', Object.fromEntries(response.headers.entries()));
-
-      // Verificar si la respuesta es JSON válido
-      const responseText = await response.text();
-      console.log('📨 Respuesta del servidor (texto):', responseText);
-
-      let resultado;
-      try {
-        resultado = JSON.parse(responseText);
-        console.log('📨 Resultado del servidor (JSON):', resultado);
-      } catch (jsonError) {
-        console.error('❌ Error parseando JSON:', jsonError);
-        console.error('❌ Respuesta recibida:', responseText);
-        throw new Error('El servidor respondió con un formato inválido. Respuesta: ' + responseText.substring(0, 200));
-      }
-
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-      }
-
-      if (resultado.success) {
-        alert('¡Inscripción completada exitosamente!');
-        console.log('🎉 Inscripción exitosa, redirigiendo...');
-        // Redirigir o limpiar formulario
-        window.location.href = '/final/admin/inscripciones/exito.php?id=' + resultado.id_representante;
-      } else {
-        throw new Error(resultado.error || 'Error desconocido del servidor');
-      }
-
-    } catch (error) {
-      console.error('💥 Error en enviarInscripcion:', error);
-      let mensajeError = 'Error al procesar la inscripción: ';
-
-      if (error.message.includes('Failed to fetch')) {
-        mensajeError += 'No se pudo conectar con el servidor. Verifica tu conexión.';
-      } else if (error.message.includes('HTTP error')) {
-        mensajeError += 'Error del servidor: ' + error.message;
-      } else if (error.message.includes('JSON')) {
-        mensajeError += 'Error en la respuesta del servidor: ' + error.message;
-      } else {
-        mensajeError += error.message;
-      }
-
-      alert(mensajeError);
-    } finally {
-      const btnSubmit = document.getElementById('btnSubmit');
-      if (btnSubmit) {
-        btnSubmit.innerHTML = '<i class="fas fa-save mr-2"></i>Confirmar Registro';
-        btnSubmit.disabled = false;
-      }
-    }
-  }
-
-  // Recolectar datos del formulario
-  // Recolectar datos del formulario - CORREGIDA
-  function recolectarDatosInscripcion() {
-    console.log('📝 Recolectando datos del formulario...');
-
-    const datos = {
-      representante: {
-        // Información personal
-        primer_nombre: document.querySelector('input[name="primer_nombre_r"]').value,
-        segundo_nombre: document.querySelector('input[name="segundo_nombre_r"]').value,
-        primer_apellido: document.querySelector('input[name="primer_apellido_r"]').value,
-        segundo_apellido: document.querySelector('input[name="segundo_apellido_r"]').value,
-        cedula: document.querySelector('input[name="cedula_r"]').value,
-        correo: document.querySelector('input[name="correo_r"]').value,
-        fecha_nac: document.querySelector('input[name="fecha_nac_r"]').value,
-        lugar_nac: document.querySelector('input[name="lugar_nac_r"]').value,
-        telefono: document.querySelector('input[name="telefono_r"]').value,
-        telefono_hab: document.querySelector('input[name="telefono_hab_r"]').value,
-        sexo: document.querySelector('select[name="sexo_r"]').value,
-        nacionalidad: document.querySelector('input[name="nacionalidad_r"]').value,
-
-        // Información laboral
-        profesion: document.querySelector('select[name="profesion_r"]').value,
-        ocupacion: document.querySelector('input[name="ocupacion_r"]').value,
-        lugar_trabajo: document.querySelector('input[name="lugar_trabajo_r"]').value,
-
-        // Dirección
-        direccion: {
-          id_parroquia: document.querySelector('select[name="parroquia_r"]').value,
-          direccion: document.querySelector('input[name="direccion_r"]').value,
-          calle: document.querySelector('input[name="calle_r"]').value,
-          casa: document.querySelector('input[name="casa_r"]').value
-        }
-      },
-      estudiantes: [],
-      parentesco: document.querySelector('select[name="parentesco_global"]').value,
-      inscripcion: {
-        periodo: document.querySelector('select[name="periodo_inscripcion"]').value,
-        fecha_inscripcion: document.querySelector('input[name="fecha_inscripcion"]').value,
-        id_usuario: 1, // Esto debería venir de la sesión
-        observaciones: 'Inscripción realizada mediante formulario web'
-      }
-    };
-
-    // Recolectar datos de estudiantes - CORREGIDO
-    const contenedorAlumnos = document.getElementById('contenedorAlumnos');
-    const seccionesAlumnos = contenedorAlumnos.querySelectorAll('.alumno-section');
-
-    console.log(`👥 Encontrados ${seccionesAlumnos.length} estudiantes`);
-
-    seccionesAlumnos.forEach((seccion, index) => {
-      // Obtener valores de selects múltiples para patologías
-      const selectPatologias = seccion.querySelector('select[name="patologias_a[]"]');
-      const patologiasSeleccionadas = Array.from(selectPatologias.selectedOptions)
-        .map(option => option.value)
-        .filter(value => value !== ''); // Filtrar valores vacíos
-
-      console.log(`📋 Estudiante ${index + 1} - Patologías seleccionadas:`, patologiasSeleccionadas);
-
-      const estudiante = {
-        primer_nombre: seccion.querySelector('input[name="primer_nombre_a[]"]').value,
-        segundo_nombre: seccion.querySelector('input[name="segundo_nombre_a[]"]').value,
-        primer_apellido: seccion.querySelector('input[name="primer_apellido_a[]"]').value,
-        segundo_apellido: seccion.querySelector('input[name="segundo_apellido_a[]"]').value,
-        cedula: seccion.querySelector('input[name="cedula_a[]"]').value,
-        fecha_nac: seccion.querySelector('input[name="fecha_nac_a[]"]').value,
-        sexo: seccion.querySelector('select[name="sexo_a[]"]').value,
-        nacionalidad: seccion.querySelector('input[name="nacionalidad_a[]"]').value,
-        lugar_nac: seccion.querySelector('input[name="lugar_nac_a[]"]').value,
-        telefono: seccion.querySelector('input[name="telefono_a[]"]').value,
-        correo: seccion.querySelector('input[name="correo_a[]"]').value,
-        nivel: seccion.querySelector('select[name="nivel_a[]"]').value,
-        seccion: seccion.querySelector('select[name="seccion_a[]"]').value,
-        patologias: patologiasSeleccionadas // Ahora es un array de IDs
-      };
-
-      console.log(`🎓 Estudiante ${index + 1} recolectado:`, estudiante.primer_nombre, estudiante.primer_apellido);
-      datos.estudiantes.push(estudiante);
-    });
-
-    console.log('📦 Datos recolectados completos:', datos);
-    return datos;
-  }
-
-  // function recolectarDatosInscripcion() {
-  //   const datos = {
-  //     representante: {
-  //       // Información personal
-  //       primer_nombre: document.querySelector('input[name="primer_nombre_r"]').value,
-  //       segundo_nombre: document.querySelector('input[name="segundo_nombre_r"]').value,
-  //       primer_apellido: document.querySelector('input[name="primer_apellido_r"]').value,
-  //       segundo_apellido: document.querySelector('input[name="segundo_apellido_r"]').value,
-  //       cedula: document.querySelector('input[name="cedula_r"]').value,
-  //       correo: document.querySelector('input[name="correo_r"]').value,
-  //       fecha_nac: document.querySelector('input[name="fecha_nac_r"]').value,
-  //       lugar_nac: document.querySelector('input[name="lugar_nac_r"]').value,
-  //       telefono: document.querySelector('input[name="telefono_r"]').value,
-  //       telefono_hab: document.querySelector('input[name="telefono_hab_r"]').value,
-  //       sexo: document.querySelector('select[name="sexo_r"]').value,
-  //       nacionalidad: document.querySelector('input[name="nacionalidad_r"]').value,
-
-  //       // Información laboral
-  //       profesion: document.querySelector('select[name="profesion_r"]').value,
-  //       ocupacion: document.querySelector('input[name="ocupacion_r"]').value,
-  //       lugar_trabajo: document.querySelector('input[name="lugar_trabajo_r"]').value,
-
-  //       // Dirección
-  //       direccion: {
-  //         id_parroquia: document.querySelector('select[name="parroquia_r"]').value,
-  //         direccion: document.querySelector('input[name="direccion_r"]').value,
-  //         calle: document.querySelector('input[name="calle_r"]').value,
-  //         casa: document.querySelector('input[name="casa_r"]').value
-  //       }
-
-  //     },
-  //     estudiantes: [],
-  //     parentesco: document.querySelector('select[name="parentesco_global"]').value,
-  //     inscripcion: {
-  //       periodo: document.querySelector('select[name="periodo_inscripcion"]').value,
-  //       fecha_inscripcion: document.querySelector('input[name="fecha_inscripcion"]').value,
-  //       id_usuario: 1, // Esto debería venir de la sesión
-  //       observaciones: 'Inscripción realizada mediante formulario web'
-  //     }
-  //   };
-
-  //   // Recolectar datos de estudiantes
-  //   const contenedorAlumnos = document.getElementById('contenedorAlumnos');
-  //   const seccionesAlumnos = contenedorAlumnos.querySelectorAll('.alumno-section');
-
-  //   seccionesAlumnos.forEach((seccion, index) => {
-  //     const estudiante = {
-  //       primer_nombre: seccion.querySelector('input[name="primer_nombre_a[]"]').value,
-  //       segundo_nombre: seccion.querySelector('input[name="segundo_nombre_a[]"]').value,
-  //       primer_apellido: seccion.querySelector('input[name="primer_apellido_a[]"]').value,
-  //       segundo_apellido: seccion.querySelector('input[name="segundo_apellido_a[]"]').value,
-  //       cedula: seccion.querySelector('input[name="cedula_a[]"]').value,
-  //       fecha_nac: seccion.querySelector('input[name="fecha_nac_a[]"]').value,
-  //       sexo: seccion.querySelector('select[name="sexo_a[]"]').value,
-  //       nacionalidad: seccion.querySelector('input[name="nacionalidad_a[]"]').value,
-  //       lugar_nac: seccion.querySelector('input[name="lugar_nac_a[]"]').value,
-  //       telefono: seccion.querySelector('input[name="telefono_a[]"]').value,
-  //       correo: seccion.querySelector('input[name="correo_a[]"]').value,
-  //       nivel: seccion.querySelector('select[name="nivel_a[]"]').value,
-  //       seccion: seccion.querySelector('select[name="seccion_a[]"]').value,
-  //       patologias: seccion.querySelector('textarea[name="patologias_a[]"]').value
-  //     };
-
-  //     datos.estudiantes.push(estudiante);
-  //   });
-
-  //   return datos;
-  // }
-
-  // Validar datos completos antes de enviar
-  // function validarDatosCompletos(datos) {
-  //   const errores = [];
-
-  //   // Validar representante
-  //   if (!datos.representante.primer_nombre) errores.push('Primer nombre del representante requerido');
-  //   if (!datos.representante.primer_apellido) errores.push('Primer apellido del representante requerido');
-  //   if (!datos.representante.cedula) errores.push('Cédula del representante requerida');
-  //   if (!datos.representante.correo) errores.push('Correo del representante requerido');
-  //   if (!datos.representante.fecha_nac) errores.push('Fecha de nacimiento del representante requerida');
-  //   if (!datos.representante.direccion.id_parroquia) errores.push('Parroquia del representante requerida');
-
-  //   // Validar estudiantes
-  //   if (datos.estudiantes.length === 0) {
-  //     errores.push('Al menos un estudiante requerido');
-  //   } else {
-  //     datos.estudiantes.forEach((est, index) => {
-  //       const num = index + 1;
-  //       if (!est.primer_nombre) errores.push(`Estudiante ${num}: primer nombre requerido`);
-  //       if (!est.primer_apellido) errores.push(`Estudiante ${num}: primer apellido requerido`);
-  //       if (!est.cedula) errores.push(`Estudiante ${num}: cédula requerida`);
-  //       if (!est.fecha_nac) errores.push(`Estudiante ${num}: fecha de nacimiento requerida`);
-  //       if (!est.sexo) errores.push(`Estudiante ${num}: sexo requerido`);
-  //       if (!est.nivel) errores.push(`Estudiante ${num}: nivel requerido`);
-  //       if (!est.seccion) errores.push(`Estudiante ${num}: sección requerida`);
-  //     });
-  //   }
-
-  //   // Validar parentesco
-  //   if (!datos.parentesco) errores.push('Parentesco requerido');
-
-  //   // Validar periodo
-  //   if (!datos.inscripcion.periodo) errores.push('Periodo escolar requerido');
-
-  //   return errores;
-  // }
-  // Validar datos completos antes de enviar - MEJORADA
-  function validarDatosCompletos(datos) {
-    const errores = [];
-    console.log('🔍 Validando datos...');
-
-    // Validar representante
-    if (!datos.representante.primer_nombre) errores.push('Primer nombre del representante requerido');
-    if (!datos.representante.primer_apellido) errores.push('Primer apellido del representante requerido');
-    if (!datos.representante.cedula) errores.push('Cédula del representante requerida');
-    if (!datos.representante.correo) errores.push('Correo del representante requerido');
-    if (!datos.representante.fecha_nac) errores.push('Fecha de nacimiento del representante requerida');
-    if (!datos.representante.direccion.id_parroquia) errores.push('Parroquia del representante requerida');
-    if (!datos.representante.sexo) errores.push('Sexo del representante requerido');
-    if (!datos.representante.nacionalidad) errores.push('Nacionalidad del representante requerida');
-
-    // Validar estudiantes
-    if (datos.estudiantes.length === 0) {
-      errores.push('Al menos un estudiante requerido');
-    } else {
-      datos.estudiantes.forEach((est, index) => {
-        const num = index + 1;
-        if (!est.primer_nombre) errores.push(`Estudiante ${num}: primer nombre requerido`);
-        if (!est.primer_apellido) errores.push(`Estudiante ${num}: primer apellido requerido`);
-        if (!est.cedula) errores.push(`Estudiante ${num}: cédula requerida`);
-        if (!est.fecha_nac) errores.push(`Estudiante ${num}: fecha de nacimiento requerida`);
-        if (!est.sexo) errores.push(`Estudiante ${num}: sexo requerido`);
-        if (!est.nivel) errores.push(`Estudiante ${num}: nivel requerido`);
-        if (!est.seccion) errores.push(`Estudiante ${num}: sección requerida`);
-        if (!est.nacionalidad) errores.push(`Estudiante ${num}: nacionalidad requerida`);
-        if (!est.lugar_nac) errores.push(`Estudiante ${num}: lugar de nacimiento requerido`);
-      });
-    }
-
-    // Validar parentesco
-    if (!datos.parentesco) errores.push('Parentesco requerido');
-
-    // Validar periodo
-    if (!datos.inscripcion.periodo) errores.push('Periodo escolar requerido');
-    if (!datos.inscripcion.fecha_inscripcion) errores.push('Fecha de inscripción requerida');
-
-    console.log(`❌ Errores de validación: ${errores.length}`);
-    return errores;
-  }
-
-  // Modificar el evento del botón de envío
-  document.addEventListener('DOMContentLoaded', function() {
-    const btnSubmit = document.getElementById('btnSubmit');
-    if (btnSubmit) {
-      btnSubmit.addEventListener('click', function(e) {
-        e.preventDefault();
-        enviarInscripcion();
-      });
-    }
-  });
-</script>
-<script>
-  let currentStep = 1;
-  const totalSteps = 4;
-  let contadorAlumnos = 0;
-  let representanteExistente = false;
-
-  // Mostrar/ocultar campo de cédula según selección
-  document.getElementById('repRegistradoSi').addEventListener('change', function() {
-    document.getElementById('cedulaContainer').style.display = 'block';
-    document.getElementById('btnValidar').innerHTML = '<i class="fas fa-search mr-2"></i>Validar y Continuar';
-  });
-
-  document.getElementById('repRegistradoNo').addEventListener('change', function() {
-    document.getElementById('cedulaContainer').style.display = 'none';
-    document.getElementById('btnValidar').innerHTML = '<i class="fas fa-arrow-right mr-2"></i>Continuar con Registro';
-    document.getElementById('resultadoExistente').style.display = 'none';
-    document.getElementById('resultadoNuevo').style.display = 'none';
-  });
-
-  function showStep(step) {
-    // Ocultar todos los pasos
-    document.querySelectorAll('.step-container').forEach(container => {
-      container.classList.remove('active');
-    });
-
-    // Actualizar indicadores de pasos
-    document.querySelectorAll('.step').forEach((stepElement, index) => {
-      const stepNumber = index + 1;
-      if (stepNumber < step) {
-        stepElement.classList.add('completed');
-        stepElement.classList.remove('active');
-      } else if (stepNumber === step) {
-        stepElement.classList.add('active');
-        stepElement.classList.remove('completed');
-      } else {
-        stepElement.classList.remove('active', 'completed');
-      }
-    });
-
-    // Actualizar líneas de progreso
-    document.querySelectorAll('.step-line').forEach((line, index) => {
-      if (index + 1 < step) {
-        line.classList.add('progress');
-      } else {
-        line.classList.remove('progress');
-      }
-    });
-
-    // Mostrar paso actual
-    setTimeout(() => {
+    let currentStep = 1;
+    const totalSteps = 3;
+
+    function showStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
       document.getElementById(`step${step}`).classList.add('active');
-    }, 200);
 
-    // Actualizar botones de navegación
-    document.getElementById('btnPrev').style.display = step > 1 ? 'block' : 'none';
-    document.getElementById('btnNext').style.display = step < totalSteps ? 'block' : 'none';
-    document.getElementById('btnSubmit').style.display = step === totalSteps ? 'block' : 'none';
+      // Actualizar indicadores
+      document.querySelectorAll('.step-item').forEach((item, index) => {
+        if (index + 1 === step) {
+          item.classList.add('active');
+          item.classList.remove('completed');
+        } else if (index + 1 < step) {
+          item.classList.remove('active');
+          item.classList.add('completed');
+        } else {
+          item.classList.remove('active', 'completed');
+        }
+      });
 
-    // Actualizar estadísticas
-    document.getElementById('pasoActual').textContent = step;
-
-    // Si estamos en el paso 4, actualizar la confirmación
-    if (step === 4) {
-      document.getElementById('totalAlumnosConfirmacion').textContent = contadorAlumnos;
+      currentStep = step;
     }
 
-    currentStep = step;
-  }
+    // Navegación entre pasos
+    document.getElementById('btn-next-to-step2').addEventListener('click', () => showStep(2));
+    document.getElementById('btn-next-to-step3').addEventListener('click', () => {
+      const requiredFields = document.querySelectorAll('#step2 [required]');
+      let valid = true;
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          valid = false;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+      if (valid) showStep(3);
+      else alert('Complete todos los campos requeridos del representante.');
+    });
+    document.getElementById('btn-back-to-step1').addEventListener('click', () => showStep(1));
+    document.getElementById('btn-back-to-step2').addEventListener('click', () => showStep(2));
 
-  function nextStep() {
-    if (currentStep < totalSteps) {
-      if (validateStep(currentStep)) {
-        showStep(currentStep + 1);
+    // Resto del JavaScript existente...
+  });
+</script>
+
+<!-- Mantener todo el JavaScript existente para validaciones y ubicaciones -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el envío del formulario
+    document.getElementById('form-inscripcion').addEventListener('submit', function(e) {
+      e.preventDefault();
+      console.log('Formulario enviado - iniciando procesamiento...');
+      document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
+        element.disabled = false;
+      });
+      // Mostrar loading
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      submitBtn.disabled = true;
+
+      // Crear FormData
+      const formData = new FormData(this);
+
+      // Log para debugging (opcional)
+      console.log('Datos a enviar:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
       }
-    }
-  }
 
-  function prevStep() {
-    if (currentStep > 1) {
-      showStep(currentStep - 1);
-    }
-  }
+      fetch(this.action, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          console.log('Respuesta recibida, status:', response.status);
 
-  function validateStep(step) {
-    let isValid = true;
-
-    switch (step) {
-      case 1:
-        const representanteRegistrado = document.querySelector('input[name="representanteRegistrado"]:checked').value;
-        if (representanteRegistrado === 'si') {
-          const cedula = document.getElementById('cedulaValidacion').value;
-          if (!cedula) {
-            alert('Por favor ingrese la cédula del representante');
-            isValid = false;
+          // Verificar si la respuesta es JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('La respuesta no es JSON');
           }
-        }
-        break;
-      case 2:
-        const requiredFields = document.querySelectorAll('#step2 [required]');
-        requiredFields.forEach(field => {
-          if (!field.value.trim()) {
-            isValid = false;
-            field.style.borderColor = '#d32f2f';
+          return response.json();
+        })
+        .then(data => {
+          console.log('Datos procesados:', data);
+
+          if (data.success) {
+            // Mostrar mensaje de éxito
+            alert('✅ ' + data.message);
+            // Redirigir después de 2 segundos
+            setTimeout(() => {
+              window.location.href = '/final/admin/index.php';
+            }, 2000);
           } else {
-            field.style.borderColor = '';
+            alert('❌ ' + data.message);
+            // Rehabilitar botón
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
           }
+        })
+        .catch(error => {
+          console.error('Error completo:', error);
+
+          // Mostrar error específico
+          if (error.message.includes('JSON')) {
+            alert('❌ Error: El servidor no respondió con JSON válido. Verifica que el archivo PHP no tenga errores.');
+          } else {
+            alert('❌ Error de conexión: ' + error.message);
+          }
+
+          // Rehabilitar botón
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
         });
-        if (!isValid) {
-          alert('Por favor complete todos los campos obligatorios del representante');
-        }
-        break;
-      case 3:
-        if (contadorAlumnos === 0) {
-          alert('Debe agregar al menos un alumno/hijo');
-          isValid = false;
-        }
-        break;
+    });
+  });
+</script>
+</script>
+<!-- Carga de estados, municipios, parroquias -->
+<!-- Carga de estados, municipios, parroquias -->
+<!-- Carga de estados, municipios, parroquias -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Cargar municipios cuando cambie el estado
+    document.getElementById('estado_r').addEventListener('change', function() {
+      const estadoId = this.value;
+      const municipioSelect = document.getElementById('municipio_r');
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (estadoId) {
+        municipioSelect.disabled = false;
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        cargarMunicipios(estadoId);
+      } else {
+        municipioSelect.disabled = true;
+        parroquiaSelect.disabled = true;
+        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    // Cargar parroquias cuando cambie el municipio
+    document.getElementById('municipio_r').addEventListener('change', function() {
+      const municipioId = this.value;
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (municipioId) {
+        parroquiaSelect.disabled = false;
+        cargarParroquias(municipioId);
+      } else {
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    function cargarMunicipios(estadoId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('estado_id', estadoId);
+
+        fetch('/final/app/controllers/ubicaciones/municipios.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('municipio_r');
+            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+
+            data.forEach(municipio => {
+              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar municipios:', error);
+            reject(error);
+          });
+      });
     }
 
-    return isValid;
-  }
+    function cargarParroquias(municipioId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('municipio_id', municipioId);
 
-  // async function validarCedula() {
-  //   const representanteRegistrado = document.querySelector('input[name="representanteRegistrado"]:checked').value;
+        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('parroquia_r');
+            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
 
-  //   if (representanteRegistrado === 'si') {
-  //     const cedula = document.getElementById('cedulaValidacion').value;
-  //     if (!cedula) {
-  //       alert('Por favor ingrese la cédula del representante');
-  //       return;
-  //     }
+            data.forEach(parroquia => {
+              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar parroquias:', error);
+            reject(error);
+          });
+      });
+    }
 
-  //     try {
-  //       let formData = new FormData();
-  //       formData.append('cedula', cedula);
+  });
+</script>
 
-  //       let response = await fetch('/final/app/controllers/inscripciones/validar.php', {
-  //         method: 'POST',
-  //         body: formData
-  //       });
 
-  //       let data = await response.json();
+<!-- Para validar la cedula de identidad -->
+<!-- Para validar la cedula de identidad -->
+<!-- Para validar la cedula de identidad -->
+<!-- Para validar la cedula de identidad -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Validar representante existente
+    document.getElementById('btn-validar-representante').addEventListener('click', function() {
+      const cedula = document.getElementById('cedula_representante').value;
 
-  //       if (data.existe) {
-  //         // Representante existe
-  //         representanteExistente = true;
-  //         document.getElementById('resultadoExistente').style.display = 'block';
-  //         document.getElementById('resultadoExistente').className = 'validation-result validation-success';
-  //         document.getElementById('resultadoNuevo').style.display = 'none';
-  //         document.getElementById('infoRepresentanteExistente').textContent =
-  //           `Cédula ${cedula} - ${data.nombre_completo}`;
-
-  //         // Saltar al paso 3 (alumnos)
-  //         showStep(3);
-  //       } else {
-  //         // Representante no existe
-  //         representanteExistente = false;
-  //         document.getElementById('resultadoNuevo').style.display = 'block';
-  //         document.getElementById('resultadoNuevo').className = 'validation-result validation-warning';
-  //         document.getElementById('resultadoExistente').style.display = 'none';
-
-  //         // Llenar automáticamente la cédula en el paso 2
-  //         document.querySelector('input[name="cedula_r"]').value = cedula;
-
-  //         // Ir al paso 2 (registro representante)
-  //         showStep(2);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error de conexión:', error);
-  //       alert('Error de conexión: ' + error.message);
-  //     }
-  //   } else {
-  //     // Representante nuevo, ir directamente al paso 2
-  //     representanteExistente = false;
-  //     showStep(2);
-  //   }
-  // }
-
-  async function validarCedula() {
-    const representanteRegistrado = document.querySelector('input[name="representanteRegistrado"]:checked').value;
-
-    if (representanteRegistrado === 'si') {
-      const cedula = document.getElementById('cedulaValidacion').value;
       if (!cedula) {
         alert('Por favor ingrese la cédula del representante');
         return;
       }
 
-      try {
-        let formData = new FormData();
-        formData.append('cedula', cedula);
+      validarRepresentante(cedula);
+    });
 
-        // Mostrar loading
-        const btnValidar = document.getElementById('btnValidar');
-        btnValidar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Validando...';
-        btnValidar.disabled = true;
+    // Cargar municipios cuando cambie el estado
+    document.getElementById('estado_r').addEventListener('change', function() {
+      const estadoId = this.value;
+      const municipioSelect = document.getElementById('municipio_r');
+      const parroquiaSelect = document.getElementById('parroquia_r');
 
-        let response = await fetch('/final/app/controllers/inscripciones/validar.php', {
+      if (estadoId) {
+        municipioSelect.disabled = false;
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        cargarMunicipios(estadoId);
+      } else {
+        municipioSelect.disabled = true;
+        parroquiaSelect.disabled = true;
+        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    // Cargar parroquias cuando cambie el municipio
+    document.getElementById('municipio_r').addEventListener('change', function() {
+      const municipioId = this.value;
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (municipioId) {
+        parroquiaSelect.disabled = false;
+        cargarParroquias(municipioId);
+      } else {
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    function cargarMunicipios(estadoId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('estado_id', estadoId);
+
+        fetch('/final/app/controllers/ubicaciones/municipios.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('municipio_r');
+            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+
+            data.forEach(municipio => {
+              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar municipios:', error);
+            reject(error);
+          });
+      });
+    }
+
+    function cargarParroquias(municipioId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('municipio_id', municipioId);
+
+        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('parroquia_r');
+            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+
+            data.forEach(parroquia => {
+              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar parroquias:', error);
+            reject(error);
+          });
+      });
+    }
+
+
+    function validarRepresentante(cedula) {
+      // Crear FormData para enviar por POST
+      const formData = new FormData();
+      formData.append('cedula', cedula);
+
+      fetch('/final/app/controllers/representantes/validar.php', {
           method: 'POST',
           body: formData
-        });
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const resultado = document.getElementById('resultado-validacion');
 
-        let data = await response.json();
-        console.log('📨 Datos recibidos del servidor:', data);
+          if (data.existe) {
+            resultado.innerHTML = `
+            <div class="alert alert-success">
+                <strong>Representante encontrado:</strong> ${data.nombre_completo}
+                <br>Los datos se cargarán automáticamente.
+            </div>
+            `;
 
-        // Restaurar botón
-        btnValidar.innerHTML = '<i class="fas fa-search mr-2"></i>Validar y Continuar';
-        btnValidar.disabled = false;
+            // Llenar los campos con los datos del representante
+            document.getElementById('representante_existente').value = '1';
+            document.getElementById('id_representante_existente').value = data.id_representante;
 
-        if (data.existe) {
-          // Representante existe - LLENAR FORMULARIO AUTOMÁTICAMENTE
-          representanteExistente = true;
+            // Datos personales
+            document.getElementById('cedula_r').value = data.cedula;
+            document.getElementById('primer_nombre_r').value = data.primer_nombre;
+            document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
+            document.getElementById('primer_apellido_r').value = data.primer_apellido;
+            document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
+            document.getElementById('correo_r').value = data.correo || '';
+            document.getElementById('telefono_r').value = data.telefono || '';
+            document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
+            document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
+            document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
+            document.getElementById('sexo_r').value = data.sexo || '';
+            document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
+            document.getElementById('ocupacion_r').value = data.ocupacion || '';
+            document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
+            document.getElementById('profesion_r').value = data.profesion || '';
 
-          // Mostrar resultado
-          document.getElementById('resultadoExistente').style.display = 'block';
-          document.getElementById('resultadoExistente').className = 'validation-result validation-success';
-          document.getElementById('resultadoNuevo').style.display = 'none';
-          document.getElementById('infoRepresentanteExistente').textContent =
-            `Cédula ${cedula} - ${data.nombre_completo}`;
+            // Datos de dirección
+            if (data.id_estado) {
+              document.getElementById('estado_r').value = data.id_estado;
 
-          // Llenar automáticamente todos los campos del formulario
-          llenarFormularioRepresentante(data.datos_completos);
+              // Cargar municipios para este estado
+              cargarMunicipios(data.id_estado).then(() => {
+                if (data.id_municipio) {
+                  document.getElementById('municipio_r').value = data.id_municipio;
 
-          // Ir al paso 2 para que el usuario pueda ver y confirmar los datos
-          showStep(2);
+                  // Cargar parroquias para este municipio
+                  cargarParroquias(data.id_municipio).then(() => {
+                    if (data.id_parroquia) {
+                      document.getElementById('parroquia_r').value = data.id_parroquia;
+                    }
+                  });
+                }
+              });
+            }
 
-        } else {
-          // Representante no existe
-          representanteExistente = false;
-          document.getElementById('resultadoNuevo').style.display = 'block';
-          document.getElementById('resultadoNuevo').className = 'validation-result validation-warning';
-          document.getElementById('resultadoExistente').style.display = 'none';
+            document.getElementById('direccion_r').value = data.direccion || '';
+            document.getElementById('calle_r').value = data.calle || '';
+            document.getElementById('casa_r').value = data.casa || '';
 
-          // Llenar automáticamente solo la cédula en el paso 2
-          document.querySelector('input[name="cedula_r"]').value = cedula;
-
-          // Ir al paso 2 (registro representante)
-          showStep(2);
-        }
-      } catch (error) {
-        console.error('Error de conexión:', error);
-        alert('Error de conexión: ' + error.message);
-
-        // Restaurar botón en caso de error
-        const btnValidar = document.getElementById('btnValidar');
-        btnValidar.innerHTML = '<i class="fas fa-search mr-2"></i>Validar y Continuar';
-        btnValidar.disabled = false;
-      }
-    } else {
-      // Representante nuevo, ir directamente al paso 2
-      representanteExistente = false;
-      showStep(2);
-    }
-  }
-
-  // Función para llenar automáticamente el formulario con los datos del representante
-  function llenarFormularioRepresentante(datos) {
-    console.log('🔄 Llenando formulario con datos:', datos);
-
-    // Información Personal
-    if (document.querySelector('input[name="primer_nombre_r"]')) {
-      document.querySelector('input[name="primer_nombre_r"]').value = datos.primer_nombre || '';
-    }
-    if (document.querySelector('input[name="segundo_nombre_r"]')) {
-      document.querySelector('input[name="segundo_nombre_r"]').value = datos.segundo_nombre || '';
-    }
-    if (document.querySelector('input[name="primer_apellido_r"]')) {
-      document.querySelector('input[name="primer_apellido_r"]').value = datos.primer_apellido || '';
-    }
-    if (document.querySelector('input[name="segundo_apellido_r"]')) {
-      document.querySelector('input[name="segundo_apellido_r"]').value = datos.segundo_apellido || '';
-    }
-    if (document.querySelector('input[name="cedula_r"]')) {
-      document.querySelector('input[name="cedula_r"]').value = datos.cedula || '';
-    }
-    if (document.querySelector('input[name="correo_r"]')) {
-      document.querySelector('input[name="correo_r"]').value = datos.correo || '';
-    }
-    if (document.querySelector('input[name="fecha_nac_r"]') && datos.fecha_nac) {
-      document.querySelector('input[name="fecha_nac_r"]').value = datos.fecha_nac.split(' ')[0]; // Solo la fecha sin hora
-    }
-    if (document.querySelector('input[name="lugar_nac_r"]')) {
-      document.querySelector('input[name="lugar_nac_r"]').value = datos.lugar_nac || '';
-    }
-
-    // Información de Contacto
-    if (document.querySelector('input[name="telefono_r"]')) {
-      document.querySelector('input[name="telefono_r"]').value = datos.telefono || '';
-    }
-    if (document.querySelector('input[name="telefono_hab_r"]')) {
-      document.querySelector('input[name="telefono_hab_r"]').value = datos.telefono_hab || '';
-    }
-    if (document.querySelector('select[name="sexo_r"]')) {
-      document.querySelector('select[name="sexo_r"]').value = datos.sexo || '';
-    }
-    if (document.querySelector('input[name="nacionalidad_r"]')) {
-      document.querySelector('input[name="nacionalidad_r"]').value = datos.nacionalidad || '';
-    }
-
-    // Información Laboral
-    if (document.querySelector('select[name="profesion_r"]')) {
-      document.querySelector('select[name="profesion_r"]').value = datos.profesion || '';
-    }
-    if (document.querySelector('input[name="ocupacion_r"]')) {
-      document.querySelector('input[name="ocupacion_r"]').value = datos.ocupacion || '';
-    }
-    if (document.querySelector('input[name="lugar_trabajo_r"]')) {
-      document.querySelector('input[name="lugar_trabajo_r"]').value = datos.lugar_trabajo || '';
-    }
-
-    // Dirección - Llenar selects de ubicación
-    if (datos.id_estado) {
-      // Simular selección de estado y cargar municipios
-      setTimeout(() => {
-        const selectEstado = document.getElementById('estado_r');
-        selectEstado.value = datos.id_estado;
-
-        // Disparar evento change para cargar municipios
-        const event = new Event('change');
-        selectEstado.dispatchEvent(event);
-
-        // Esperar a que carguen los municipios y luego seleccionar
-        setTimeout(() => {
-          if (datos.id_municipio) {
-            const selectMunicipio = document.getElementById('municipio_r');
-            selectMunicipio.value = datos.id_municipio;
-
-            // Disparar evento change para cargar parroquias
-            const event2 = new Event('change');
-            selectMunicipio.dispatchEvent(event2);
-
-            // Esperar a que carguen las parroquias y luego seleccionar
-            setTimeout(() => {
-              if (datos.id_parroquia) {
-                const selectParroquia = document.getElementById('parroquia_r');
-                selectParroquia.value = datos.id_parroquia;
+            // Deshabilitar campos del representante
+            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+              if (element.name.includes('_r') && element.name !== 'parentesco') {
+                element.disabled = true;
               }
-            }, 800);
+            });
+
+          } else {
+            resultado.innerHTML = `
+            <div class="alert alert-info">
+                <strong>Representante no encontrado.</strong> Por favor complete todos los datos del representante.
+            </div>
+            `;
+            document.getElementById('cedula_r').value = cedula;
+            document.getElementById('representante_existente').value = '0';
+
+            // Habilitar todos los campos por si estaban deshabilitados
+            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+              element.disabled = false;
+            });
           }
-        }, 800);
-      }, 500);
-    }
-
-    // Campos de dirección
-    if (document.querySelector('input[name="direccion_r"]')) {
-      document.querySelector('input[name="direccion_r"]').value = datos.direccion || '';
-    }
-    if (document.querySelector('input[name="calle_r"]')) {
-      document.querySelector('input[name="calle_r"]').value = datos.calle || '';
-    }
-    if (document.querySelector('input[name="casa_r"]')) {
-      document.querySelector('input[name="casa_r"]').value = datos.casa || '';
-    }
-
-    console.log('✅ Formulario llenado automáticamente');
-
-    // Mostrar mensaje de confirmación
-    mostrarMensajeExito('Datos del representante cargados automáticamente. Verifique y edite si es necesario.');
-  }
-
-  // Función para mostrar mensaje de éxito
-  function mostrarMensajeExito(mensaje) {
-    // Crear o actualizar div de mensaje
-    let mensajeDiv = document.getElementById('mensaje-carga-automatica');
-    if (!mensajeDiv) {
-      mensajeDiv = document.createElement('div');
-      mensajeDiv.id = 'mensaje-carga-automatica';
-      mensajeDiv.className = 'alert alert-success mt-3';
-      document.querySelector('#step2 .card-body-elegante').prepend(mensajeDiv);
-    }
-
-    mensajeDiv.innerHTML = `
-        <i class="fas fa-check-circle mr-2"></i>
-        <strong>¡Datos cargados automáticamente!</strong> ${mensaje}
-    `;
-
-    // Ocultar mensaje después de 5 segundos
-    setTimeout(() => {
-      mensajeDiv.style.opacity = '0';
-      setTimeout(() => {
-        mensajeDiv.remove();
-      }, 1000);
-    }, 5000);
-  }
-
-  // function agregarAlumno() {
-  //   contadorAlumnos++;
-  //   const alumnoHTML = `
-  //     <div class="alumno-section" id="alumno${contadorAlumnos}">
-  //       <div class="alumno-header">
-  //         <h5 class="mb-0 text-primary">
-  //           <i class="fas fa-child mr-2"></i>Alumno/Hijo ${contadorAlumnos}
-  //         </h5>
-  //         ${contadorAlumnos > 1 ? `
-  //         <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarAlumno(${contadorAlumnos})">
-  //           <i class="fas fa-times"></i>
-  //         </button>
-  //         ` : ''}
-  //       </div>
-
-  //       <h6 class="section-title">Información Personal</h6>
-  //       <div class="row form-row-spaced">
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="primer_nombre_a${contadorAlumnos}" class="form-label-elegante required-field">Primer Nombre</label>
-  //             <input type="text" name="primer_nombre_a[]" class="form-control form-control-elegante" placeholder="Primer nombre" required>
-  //           </div>
-  //         </div>
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="segundo_nombre_a${contadorAlumnos}" class="form-label-elegante">Segundo Nombre</label>
-  //             <input type="text" name="segundo_nombre_a[]" class="form-control form-control-elegante" placeholder="Segundo nombre">
-  //           </div>
-  //         </div>
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="primer_apellido_a${contadorAlumnos}" class="form-label-elegante required-field">Primer Apellido</label>
-  //             <input type="text" name="primer_apellido_a[]" class="form-control form-control-elegante" placeholder="Primer apellido" required>
-  //           </div>
-  //         </div>
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="segundo_apellido_a${contadorAlumnos}" class="form-label-elegante">Segundo Apellido</label>
-  //             <input type="text" name="segundo_apellido_a[]" class="form-control form-control-elegante" placeholder="Segundo apellido">
-  //           </div>
-  //         </div>
-  //       </div>
-
-  //       <div class="row form-row-spaced">
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="cedula_a${contadorAlumnos}" class="form-label-elegante required-field">Cédula</label>
-  //             <input type="number" name="cedula_a[]" class="form-control form-control-elegante" placeholder="Cédula del alumno" required>
-  //           </div>
-  //         </div>
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="fecha_nac_a${contadorAlumnos}" class="form-label-elegante required-field">Fecha Nacimiento</label>
-  //             <input type="date" name="fecha_nac_a[]" class="form-control form-control-elegante" required>
-  //           </div>
-  //         </div>
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="sexo_a${contadorAlumnos}" class="form-label-elegante required-field">Sexo</label>
-  //             <select name="sexo_a[]" class="form-control form-control-elegante" required>
-  //               <option value="">Seleccione...</option>
-  //               <option value="Masculino">Masculino</option>
-  //               <option value="Femenino">Femenino</option>
-  //             </select>
-  //           </div>
-  //         </div>
-  //         <div class="col-md-3">
-  //           <div class="form-group-elegante">
-  //             <label for="nacionalidad_a${contadorAlumnos}" class="form-label-elegante required-field">Nacionalidad</label>
-  //             <input type="text" name="nacionalidad_a[]" class="form-control form-control-elegante" placeholder="Nacionalidad" required>
-  //           </div>
-  //         </div>
-  //       </div>
-
-  //       <div class="row form-row-spaced">
-  //         <div class="col-md-4">
-  //           <div class="form-group-elegante">
-  //             <label for="lugar_nac_a${contadorAlumnos}" class="form-label-elegante required-field">Lugar de Nacimiento</label>
-  //             <input type="text" name="lugar_nac_a[]" class="form-control form-control-elegante" placeholder="Ciudad, Estado" required>
-  //           </div>
-  //         </div>
-  //         <div class="col-md-4">
-  //           <div class="form-group-elegante">
-  //             <label for="telefono_a${contadorAlumnos}" class="form-label-elegante">Teléfono Personal</label>
-  //             <input type="text" name="telefono_a[]" class="form-control form-control-elegante" placeholder="Opcional">
-  //           </div>
-  //         </div>
-  //         <div class="col-md-4">
-  //           <div class="form-group-elegante">
-  //             <label for="correo_a${contadorAlumnos}" class="form-label-elegante">Correo Electrónico</label>
-  //             <input type="email" name="correo_a[]" class="form-control form-control-elegante" placeholder="Opcional">
-  //           </div>
-  //         </div>
-  //       </div>
-
-  //       <h6 class="section-title">Información Académica</h6>
-  //       <div class="row form-row-spaced">
-  //         <div class="col-md-6">
-  //           <div class="form-group-elegante">
-  //             <label for="nivel_a${contadorAlumnos}" class="form-label-elegante required-field">Nivel/Grado</label>
-  //             <select name="nivel_a[]" class="form-control form-control-elegante" required>
-  //               <option value="">Seleccione...</option>
-  //               <option value="1">1er Grado</option>
-  //               <option value="2">2do Grado</option>
-  //               <option value="3">3er Grado</option>
-  //               <option value="4">4to Grado</option>
-  //               <option value="5">5to Grado</option>
-  //               <option value="6">6to Grado</option>
-  //             </select>
-  //           </div>
-  //         </div>
-  //         <div class="col-md-6">
-  //           <div class="form-group-elegante">
-  //             <label for="seccion_a${contadorAlumnos}" class="form-label-elegante required-field">Sección</label>
-  //             <select name="seccion_a[]" class="form-control form-control-elegante" required>
-  //               <option value="">Seleccione...</option>
-  //               <option value="A">Sección A</option>
-  //               <option value="B">Sección B</option>
-  //               <option value="C">Sección C</option>
-  //             </select>
-  //           </div>
-  //         </div>
-  //       </div>
-
-  //       <!-- Información de Salud -->
-  //       <h6 class="section-title">Información de Salud</h6>
-  //       <div class="row form-row-spaced">
-  //         <div class="col-md-12">
-  //           <div class="form-group-elegante">
-  //             <label for="patologias_a${contadorAlumnos}" class="form-label-elegante">Patologías/Alergias</label>
-  //             <textarea name="patologias_a[]" class="form-control form-control-elegante" rows="2" placeholder="Indique cualquier condición médica, alergia o patología conocida (opcional)"></textarea>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   `;
-
-  //   document.getElementById('contenedorAlumnos').innerHTML += alumnoHTML;
-  //   document.getElementById('totalAlumnos').textContent = contadorAlumnos;
-  // }
-
-  // Función mejorada para agregar alumno que usa datos de la BD
-  async function agregarAlumno() {
-    contadorAlumnos++;
-
-    // Asegurarse de que los datos estén cargados
-    if (!window.nivelesData || !window.seccionesData) {
-      await inicializarDatos();
-    }
-
-    const alumnoHTML = `
-      <div class="alumno-section" id="alumno${contadorAlumnos}">
-        <div class="alumno-header">
-          <h5 class="mb-0 text-primary">
-            <i class="fas fa-child mr-2"></i>Alumno/Hijo ${contadorAlumnos}
-          </h5>
-          ${contadorAlumnos > 1 ? `
-          <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarAlumno(${contadorAlumnos})">
-            <i class="fas fa-times"></i>
-          </button>
-          ` : ''}
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('resultado-validacion').innerHTML = `
+        <div class="alert alert-danger">
+            Error al validar el representante. Intente nuevamente.
         </div>
-        
-        <h6 class="section-title">Información Personal</h6>
-        <div class="row form-row-spaced">
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="primer_nombre_a${contadorAlumnos}" class="form-label-elegante required-field">Primer Nombre</label>
-              <input type="text" name="primer_nombre_a[]" class="form-control form-control-elegante" placeholder="Primer nombre" required>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="segundo_nombre_a${contadorAlumnos}" class="form-label-elegante">Segundo Nombre</label>
-              <input type="text" name="segundo_nombre_a[]" class="form-control form-control-elegante" placeholder="Segundo nombre">
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="primer_apellido_a${contadorAlumnos}" class="form-label-elegante required-field">Primer Apellido</label>
-              <input type="text" name="primer_apellido_a[]" class="form-control form-control-elegante" placeholder="Primer apellido" required>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="segundo_apellido_a${contadorAlumnos}" class="form-label-elegante">Segundo Apellido</label>
-              <input type="text" name="segundo_apellido_a[]" class="form-control form-control-elegante" placeholder="Segundo apellido">
-            </div>
-          </div>
-        </div>
-
-        <div class="row form-row-spaced">
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="cedula_a${contadorAlumnos}" class="form-label-elegante required-field">Cédula</label>
-              <input type="number" name="cedula_a[]" class="form-control form-control-elegante" placeholder="Cédula del alumno" required>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="fecha_nac_a${contadorAlumnos}" class="form-label-elegante required-field">Fecha Nacimiento</label>
-              <input type="date" name="fecha_nac_a[]" class="form-control form-control-elegante" required>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="sexo_a${contadorAlumnos}" class="form-label-elegante required-field">Sexo</label>
-              <select name="sexo_a[]" class="form-control form-control-elegante" required>
-                <option value="">Seleccione...</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-              </select>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="form-group-elegante">
-              <label for="nacionalidad_a${contadorAlumnos}" class="form-label-elegante required-field">Nacionalidad</label>
-              <input type="text" name="nacionalidad_a[]" class="form-control form-control-elegante" placeholder="Nacionalidad" required>
-            </div>
-          </div>
-        </div>
-
-        <div class="row form-row-spaced">
-          <div class="col-md-4">
-            <div class="form-group-elegante">
-              <label for="lugar_nac_a${contadorAlumnos}" class="form-label-elegante required-field">Lugar de Nacimiento</label>
-              <input type="text" name="lugar_nac_a[]" class="form-control form-control-elegante" placeholder="Ciudad, Estado" required>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group-elegante">
-              <label for="telefono_a${contadorAlumnos}" class="form-label-elegante">Teléfono Personal</label>
-              <input type="text" name="telefono_a[]" class="form-control form-control-elegante" placeholder="Opcional">
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group-elegante">
-              <label for="correo_a${contadorAlumnos}" class="form-label-elegante">Correo Electrónico</label>
-              <input type="email" name="correo_a[]" class="form-control form-control-elegante" placeholder="Opcional">
-            </div>
-          </div>
-        </div>
-
-        <h6 class="section-title">Información Académica</h6>
-        <div class="row form-row-spaced">
-          <div class="col-md-6">
-            <div class="form-group-elegante">
-              <label for="nivel_a${contadorAlumnos}" class="form-label-elegante required-field">Nivel/Grado</label>
-              <select name="nivel_a[]" class="form-control form-control-elegante nivel-select" required>
-                <option value="">Cargando niveles...</option>
-              </select>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group-elegante">
-              <label for="seccion_a${contadorAlumnos}" class="form-label-elegante required-field">Sección</label>
-              <select name="seccion_a[]" class="form-control form-control-elegante seccion-select" required>
-                <option value="">Cargando secciones...</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <h6 class="section-title">Información de Salud</h6>
-        <div class="row form-row-spaced">
-          <div class="col-md-12">
-            <div class="form-group-elegante">
-              <label for="patologias_a${contadorAlumnos}" class="form-label-elegante">Patologías/Alergias</label>
-              <select name="patologias_a[]" class="form-control form-control-elegante patologia-select" multiple>
-                <option value="">Cargando patologías...</option>
-              </select>
-              <small class="text-muted">Mantén presionada la tecla Ctrl para seleccionar múltiples opciones</small>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.getElementById('contenedorAlumnos').innerHTML += alumnoHTML;
-    document.getElementById('totalAlumnos').textContent = contadorAlumnos;
-
-    // Poblar los selects con datos de la BD
-    const nuevoAlumno = document.getElementById(`alumno${contadorAlumnos}`);
-    poblarSelect(
-      nuevoAlumno.querySelector('.nivel-select'),
-      window.nivelesData,
-      'id_nivel',
-      'nom_nivel'
-    );
-
-    poblarSelect(
-      nuevoAlumno.querySelector('.seccion-select'),
-      window.seccionesData,
-      'id_seccion',
-      'nom_seccion'
-    );
-
-    poblarSelect(
-      nuevoAlumno.querySelector('.patologia-select'),
-      window.patologiasData,
-      'id_patologia',
-      'nom_patologia',
-      'Seleccione patologías (opcional)'
-    );
-  }
-
-  function eliminarAlumno(numero) {
-    if (confirm('¿Está seguro de eliminar este alumno?')) {
-      document.getElementById(`alumno${numero}`).remove();
-      contadorAlumnos--;
-      document.getElementById('totalAlumnos').textContent = contadorAlumnos;
-      reordenarAlumnos();
+        `;
+        });
     }
-  }
-
-  function reordenarAlumnos() {
-    const alumnos = document.querySelectorAll('.alumno-section');
-    alumnos.forEach((alumno, index) => {
-      const nuevoNumero = index + 1;
-      const header = alumno.querySelector('h5');
-      header.innerHTML = `<i class="fas fa-child mr-2"></i>Alumno/Hijo ${nuevoNumero}`;
-      alumno.id = `alumno${nuevoNumero}`;
-
-      // Actualizar el botón de eliminar
-      const btnEliminar = alumno.querySelector('button');
-      if (btnEliminar) {
-        btnEliminar.setAttribute('onclick', `eliminarAlumno(${nuevoNumero})`);
-      }
-    });
-  }
-  // Inicializar
-  document.addEventListener('DOMContentLoaded', function() {
-    showStep(1);
-
-    // Permitir navegación haciendo clic en los pasos
-    document.querySelectorAll('.step').forEach(step => {
-      step.addEventListener('click', function() {
-        const stepNumber = parseInt(this.getAttribute('data-step'));
-        if (stepNumber < currentStep) {
-          showStep(stepNumber);
-        }
-      });
-    });
-
-    // Agregar primer alumno automáticamente cuando se llega al paso 3
-    const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          if (document.getElementById('step3').classList.contains('active') && contadorAlumnos === 0) {
-            agregarAlumno();
-          }
-        }
-      });
-    });
-
-    observer.observe(document.getElementById('step3'), {
-      attributes: true,
-      attributeFilter: ['class']
-    });
   });
 </script>
-<script>
-  // Inicializar datos automáticamente al cargar la página
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM cargado, inicializando...');
 
-    // Inicializar datos de niveles, secciones y patologías
-    inicializarDatos().then(() => {
-      console.log('✅ Todos los datos inicializados correctamente');
-    }).catch(error => {
-      console.error('❌ Error inicializando datos:', error);
-    });
-
-    // ... el resto de tu código de inicialización
-  });
-</script>
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
 include_once("/xampp/htdocs/final/layout/mensajes.php");

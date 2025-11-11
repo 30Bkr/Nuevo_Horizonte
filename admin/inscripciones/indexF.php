@@ -1,5 +1,7 @@
 <?php
 include_once("/xampp/htdocs/final/layout/layaout1.php");
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 // Incluir los controladores necesarios
 include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
@@ -441,7 +443,7 @@ try {
   </div>
 </div>
 
-<script>
+<!-- <script>
   // En tu formulario HTML, agrega este script
   document.getElementById('form-inscripcion').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -464,10 +466,84 @@ try {
         }
       })
       .catch(error => {
+
         console.error('Error:', error);
         alert('Error al procesar la inscripción');
       });
   });
+</script> -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el envío del formulario
+    document.getElementById('form-inscripcion').addEventListener('submit', function(e) {
+      e.preventDefault();
+      console.log('Formulario enviado - iniciando procesamiento...');
+      document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
+        element.disabled = false;
+      });
+      // Mostrar loading
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      submitBtn.disabled = true;
+
+      // Crear FormData
+      const formData = new FormData(this);
+
+      // Log para debugging (opcional)
+      console.log('Datos a enviar:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
+      }
+
+      fetch(this.action, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          console.log('Respuesta recibida, status:', response.status);
+
+          // Verificar si la respuesta es JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('La respuesta no es JSON');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Datos procesados:', data);
+
+          if (data.success) {
+            // Mostrar mensaje de éxito
+            alert('✅ ' + data.message);
+            // Redirigir después de 2 segundos
+            setTimeout(() => {
+              window.location.href = '/final/admin/index.php';
+            }, 2000);
+          } else {
+            alert('❌ ' + data.message);
+            // Rehabilitar botón
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        })
+        .catch(error => {
+          console.error('Error completo:', error);
+
+          // Mostrar error específico
+          if (error.message.includes('JSON')) {
+            alert('❌ Error: El servidor no respondió con JSON válido. Verifica que el archivo PHP no tenga errores.');
+          } else {
+            alert('❌ Error de conexión: ' + error.message);
+          }
+
+          // Rehabilitar botón
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        });
+    });
+  });
+</script>
 </script>
 <!-- Carga de estados, municipios, parroquias -->
 <!-- Carga de estados, municipios, parroquias -->
