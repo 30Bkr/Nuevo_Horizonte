@@ -331,7 +331,7 @@ try {
           </div>
         </div>
 
-        <!-- PASO 3: DATOS DEL ESTUDIANTE -->
+        <!-- Formulario del apartado del estudiante -->
         <div class="step" id="step3">
           <div class="row">
             <div class="col-md-12">
@@ -415,6 +415,85 @@ try {
                       <div class="form-group">
                         <label for="correo_e">Correo Electrónico</label>
                         <input type="email" name="correo_e" class="form-control">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pregunta inicial -->
+                  <div class="card-header mt-4">
+                    <h3 class="card-title"><b>Datos de Residencia</b></h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="misma_casa">¿El alumno vive en la misma casa del representante?</label>
+                          <select name="misma_casa" id="misma_casa" class="form-control" required>
+                            <option value="">Seleccionar</option>
+                            <option value="si">Sí</option>
+                            <option value="no">No</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sección de dirección del representante (oculta inicialmente) -->
+                  <div id="direccion_representante" style="display: none;">
+                    <div class="card-header mt-4">
+                      <h3 class="card-title"><b>Dirección del Representante</b></h3>
+                    </div>
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label for="estado_e">Estado</label>
+                            <select name="estado_e" id="estado_e" class="form-control">
+                              <option value="">Seleccionar Estado</option>
+                              <?php
+                              foreach ($estados as $estado) {
+                                echo "<option value='{$estado['id_estado']}'>{$estado['nom_estado']}</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label for="municipio_e">Municipio</label>
+                            <select name="municipio_e" id="municipio_e" class="form-control">
+                              <option value="">Primero seleccione un estado</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label for="parroquia_e">Parroquia</label>
+                            <select name="parroquia_e" id="parroquia_e" class="form-control">
+                              <option value="">Primero seleccione un municipio</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label for="direccion_e">Dirección Completa</label>
+                            <input type="text" name="direccion_e" id="direccion_e" class="form-control">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="calle_e">Calle/Avenida</label>
+                            <input type="text" name="calle_e" id="calle_e" class="form-control">
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="casa_e">Casa/Edificio</label>
+                            <input type="text" name="casa_e" id="casa_e" class="form-control">
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -522,6 +601,40 @@ try {
     </div>
   </div>
 </div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const selectMismaCasa = document.getElementById('misma_casa');
+    const seccionDireccion = document.getElementById('direccion_representante');
+
+    selectMismaCasa.addEventListener('change', function() {
+      if (this.value === 'no') {
+        // Mostrar la sección de dirección
+        seccionDireccion.style.display = 'block';
+
+        // Hacer los campos requeridos
+        document.getElementById('estado_r').required = true;
+        document.getElementById('direccion_r').required = true;
+      } else {
+        // Ocultar la sección de dirección
+        seccionDireccion.style.display = 'none';
+
+        // Quitar el atributo required y limpiar los campos
+        document.getElementById('estado_r').required = false;
+        document.getElementById('direccion_r').required = false;
+
+        // Opcional: Limpiar los campos cuando se ocultan
+        document.getElementById('estado_r').value = '';
+        document.getElementById('municipio_r').value = '';
+        document.getElementById('parroquia_r').value = '';
+        document.getElementById('direccion_r').value = '';
+        document.getElementById('calle_r').value = '';
+        document.getElementById('casa_r').value = '';
+      }
+    });
+  });
+</script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -657,10 +770,6 @@ try {
   });
 </script>
 
-<!-- Mantener todo el JavaScript existente para ubicaciones y envío del formulario -->
-<script>
-  // ... (todo el JavaScript existente para cargarMunicipios, cargarParroquias, etc.)
-</script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -734,108 +843,7 @@ try {
   });
 </script>
 </script>
-<!-- Carga de estados, municipios, parroquias -->
-<!-- Carga de estados, municipios, parroquias -->
-<!-- Carga de estados, municipios, parroquias -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Cargar municipios cuando cambie el estado
-    document.getElementById('estado_r').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio_r');
-      const parroquiaSelect = document.getElementById('parroquia_r');
 
-      if (estadoId) {
-        municipioSelect.disabled = false;
-        parroquiaSelect.disabled = true;
-        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
-        cargarMunicipios(estadoId);
-      } else {
-        municipioSelect.disabled = true;
-        parroquiaSelect.disabled = true;
-        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
-        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
-      }
-    });
-
-    // Cargar parroquias cuando cambie el municipio
-    document.getElementById('municipio_r').addEventListener('change', function() {
-      const municipioId = this.value;
-      const parroquiaSelect = document.getElementById('parroquia_r');
-
-      if (municipioId) {
-        parroquiaSelect.disabled = false;
-        cargarParroquias(municipioId);
-      } else {
-        parroquiaSelect.disabled = true;
-        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
-      }
-    });
-
-    function cargarMunicipios(estadoId) {
-      return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('estado_id', estadoId);
-
-        fetch('/final/app/controllers/ubicaciones/municipios.php', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Error en la respuesta del servidor');
-            }
-            return response.json();
-          })
-          .then(data => {
-            const select = document.getElementById('municipio_r');
-            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
-
-            data.forEach(municipio => {
-              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
-            });
-            resolve();
-          })
-          .catch(error => {
-            console.error('Error al cargar municipios:', error);
-            reject(error);
-          });
-      });
-    }
-
-    function cargarParroquias(municipioId) {
-      return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('municipio_id', municipioId);
-
-        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Error en la respuesta del servidor');
-            }
-            return response.json();
-          })
-          .then(data => {
-            const select = document.getElementById('parroquia_r');
-            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
-
-            data.forEach(parroquia => {
-              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
-            });
-            resolve();
-          })
-          .catch(error => {
-            console.error('Error al cargar parroquias:', error);
-            reject(error);
-          });
-      });
-    }
-
-  });
-</script>
 
 
 <!-- Para validar la cedula de identidad -->
@@ -1056,6 +1064,212 @@ try {
   });
 </script>
 
+
+<!-- Carga de estados, municipios, parroquias del representante -->
+<!-- Carga de estados, municipios, parroquias del representante -->
+<!-- Carga de estados, municipios, parroquias del representante -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Cargar municipios cuando cambie el estado
+    document.getElementById('estado_r').addEventListener('change', function() {
+      const estadoId = this.value;
+      const municipioSelect = document.getElementById('municipio_r');
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (estadoId) {
+        municipioSelect.disabled = false;
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        cargarMunicipios(estadoId);
+      } else {
+        municipioSelect.disabled = true;
+        parroquiaSelect.disabled = true;
+        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    // Cargar parroquias cuando cambie el municipio
+    document.getElementById('municipio_r').addEventListener('change', function() {
+      const municipioId = this.value;
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (municipioId) {
+        parroquiaSelect.disabled = false;
+        cargarParroquias(municipioId);
+      } else {
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    function cargarMunicipios(estadoId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('estado_id', estadoId);
+
+        fetch('/final/app/controllers/ubicaciones/municipios.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('municipio_r');
+            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+
+            data.forEach(municipio => {
+              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar municipios:', error);
+            reject(error);
+          });
+      });
+    }
+
+    function cargarParroquias(municipioId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('municipio_id', municipioId);
+
+        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('parroquia_r');
+            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+
+            data.forEach(parroquia => {
+              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar parroquias:', error);
+            reject(error);
+          });
+      });
+    }
+
+  });
+</script>
+
+<!-- Carga de estados, municipios, parroquias del alumno --->
+<!-- Carga de estados, municipios, parroquias del alumno --->
+<!-- Carga de estados, municipios, parroquias del alumno --->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Cargar municipios cuando cambie el estado
+    document.getElementById('estado_r').addEventListener('change', function() {
+      const estadoId = this.value;
+      const municipioSelect = document.getElementById('municipio_r');
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (estadoId) {
+        municipioSelect.disabled = false;
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        cargarMunicipios(estadoId);
+      } else {
+        municipioSelect.disabled = true;
+        parroquiaSelect.disabled = true;
+        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    // Cargar parroquias cuando cambie el municipio
+    document.getElementById('municipio_r').addEventListener('change', function() {
+      const municipioId = this.value;
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (municipioId) {
+        parroquiaSelect.disabled = false;
+        cargarParroquias(municipioId);
+      } else {
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    function cargarMunicipios(estadoId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('estado_id', estadoId);
+
+        fetch('/final/app/controllers/ubicaciones/municipios.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('municipio_r');
+            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+
+            data.forEach(municipio => {
+              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar municipios:', error);
+            reject(error);
+          });
+      });
+    }
+
+    function cargarParroquias(municipioId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('municipio_id', municipioId);
+
+        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('parroquia_r');
+            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+
+            data.forEach(parroquia => {
+              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar parroquias:', error);
+            reject(error);
+          });
+      });
+    }
+
+  });
+</script>
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
 include_once("/xampp/htdocs/final/layout/mensajes.php");

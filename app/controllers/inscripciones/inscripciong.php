@@ -1,10 +1,7 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 
-// Incluir las clases necesarias
 include_once("/xampp/htdocs/final/app/conexion.php");
 include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
 include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
@@ -12,34 +9,28 @@ include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
 
-// Desactivar visualización de errores para producción, pero los capturaremos
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 try {
-  // Verificar que la solicitud sea POST
+  // Aca verificamos que solo recibamos metodos POST
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     throw new Exception('Método no permitido');
   }
 
-  // Log para debugging (puedes quitar esto después)
   error_log("Iniciando procesamiento de inscripción");
 
-  // Conectar a la base de datos
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
 
-  // Iniciar transacción
   $pdo->beginTransaction();
 
-  // Crear instancias de los controladores
   $ubicacionController = new UbicacionController($pdo);
   $personaController = new PersonaController($pdo);
   $estudianteController = new EstudianteController($pdo);
   $representanteController = new RepresentanteController($pdo);
   $inscripcionController = new InscripcionController($pdo);
 
-  // ========== VALIDACIONES BÁSICAS ==========
   $camposRequeridos = [
     'primer_nombre_r',
     'primer_apellido_r',
@@ -75,18 +66,18 @@ try {
     }
   }
 
-  // ========== PROCESAR REPRESENTANTE ==========
+  //  Aca recibimos informacion sobre si el representante esta inscrito
   $id_representante = null;
+  $alumno_VCP = $_POST['juntos'] ?? '0';
   $representante_existente = $_POST['representante_existente'] ?? '0';
 
   if ($representante_existente === '1') {
-    // Usar representante existente
     $id_representante = $_POST['id_representante_existente'];
     if (empty($id_representante)) {
       throw new Exception('ID de representante existente no proporcionado');
     }
   } else {
-    // ========== CREAR NUEVA DIRECCIÓN DEL REPRESENTANTE ==========
+    //  CREAR NUEVA DIRECCIÓN DEL REPRESENTANTE 
     $datosDireccionRepresentante = [
       'id_parroquia' => $_POST['parroquia_r'],
       'direccion' => $_POST['direccion_r'],
@@ -98,7 +89,10 @@ try {
     $id_direccion_representante = $ubicacionController->crearDireccion($datosDireccionRepresentante);
     error_log("Dirección creada con ID: " . $id_direccion_representante);
 
-    // ========== CREAR PERSONA REPRESENTANTE ==========
+    //  Aqui hacemos introducimos en la tabla de personas la identificacion del representante
+    //  Aqui hacemos introducimos en la tabla de personas la identificacion del representante
+    //  Aqui hacemos introducimos en la tabla de personas la identificacion del representante
+    //  Aqui hacemos introducimos en la tabla de personas la identificacion del representante
     $datosPersonaRepresentante = [
       'id_direccion' => $id_direccion_representante,
       'primer_nombre' => $_POST['primer_nombre_r'],
@@ -119,7 +113,11 @@ try {
     $id_persona_representante = $personaController->crearPersona($datosPersonaRepresentante);
     error_log("Persona representante creada con ID: " . $id_persona_representante);
 
-    // ========== CREAR REPRESENTANTE ==========
+    //  Aqui guardamos toda la informacion del representante en la tabla de representante luego de guardarlo en personas
+    //  Aqui guardamos toda la informacion del representante en la tabla de representante luego de guardarlo en personas
+    //  Aqui guardamos toda la informacion del representante en la tabla de representante luego de guardarlo en personas
+    //  Aqui guardamos toda la informacion del representante en la tabla de representante luego de guardarlo en personas
+    //  Aqui guardamos toda la informacion del representante en la tabla de representante luego de guardarlo en personas
     $datosRepresentante = [
       'profesion' => $_POST['profesion_r'] ?? '',
       'ocupacion' => $_POST['ocupacion_r'],
@@ -131,7 +129,7 @@ try {
     error_log("Representante creado con ID: " . $id_representante);
   }
 
-  // ========== CREAR DIRECCIÓN DEL ESTUDIANTE ==========
+  //  Agregando en la tabla de direccion la direccion que esta previamente en el representante
   $datosDireccionEstudiante = [
     'id_parroquia' => $_POST['parroquia_r'],
     'direccion' => $_POST['direccion_r'],
@@ -143,7 +141,7 @@ try {
   $id_direccion_estudiante = $ubicacionController->crearDireccion($datosDireccionEstudiante);
   error_log("Dirección estudiante creada con ID: " . $id_direccion_estudiante);
 
-  // ========== CREAR PERSONA ESTUDIANTE ==========
+  //  Aqui estamos ingresando en la tabla de personas la informacion del estudiante
   $datosPersonaEstudiante = [
     'id_direccion' => $id_direccion_estudiante,
     'primer_nombre' => $_POST['primer_nombre_e'],
@@ -164,12 +162,12 @@ try {
   $id_persona_estudiante = $personaController->crearPersona($datosPersonaEstudiante);
   error_log("Persona estudiante creada con ID: " . $id_persona_estudiante);
 
-  // ========== CREAR ESTUDIANTE ==========
+  //  CREAR ESTUDIANTE 
   error_log("Creando estudiante");
   $id_estudiante = $estudianteController->crearEstudiante($id_persona_estudiante);
   error_log("Estudiante creado con ID: " . $id_estudiante);
 
-  // ========== AGREGAR PATOLOGÍAS AL ESTUDIANTE ==========
+  //  AGREGAR PATOLOGÍAS AL ESTUDIANTE 
   if (isset($_POST['patologias']) && is_array($_POST['patologias'])) {
     error_log("Agregando patologías: " . count($_POST['patologias']));
     foreach ($_POST['patologias'] as $id_patologia) {
@@ -177,12 +175,12 @@ try {
     }
   }
 
-  // ========== CREAR RELACIÓN ESTUDIANTE-REPRESENTANTE ==========
+  //  CREAR RELACIÓN ESTUDIANTE-REPRESENTANTE 
   $parentesco = $_POST['parentesco'];
   error_log("Creando relación estudiante-representante");
   $representanteController->crearRelacionEstudianteRepresentante($id_estudiante, $id_representante, $parentesco);
 
-  // ========== CREAR INSCRIPCIÓN ==========
+  //  CREAR INSCRIPCIÓN 
   $datosInscripcion = [
     'id_estudiante' => $id_estudiante,
     'id_periodo' => $_POST['id_periodo'],
