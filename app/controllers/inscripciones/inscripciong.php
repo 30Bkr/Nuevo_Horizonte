@@ -66,18 +66,23 @@ try {
     }
   }
 
-  //  Aca recibimos informacion sobre si el representante esta inscrito
-  $id_representante = null;
+  // Aca sabemos si viven en el mismo lugar.
   $alumno_VCP = $_POST['juntos'] ?? '0';
+  //  Aca recibimos informacion sobre si el representante esta inscrito y si lo esta guardamos su id para la inscripcion.
   $representante_existente = $_POST['representante_existente'] ?? '0';
+  $id_representante = null;
+  $direccionesRepre = null;
 
   if ($representante_existente === '1') {
+    //Como ya el representante existe solo nos interesa guardar su id, para introducirlo en la inscripcion y en tal caso en la tabla de representante.
     $id_representante = $_POST['id_representante_existente'];
     if (empty($id_representante)) {
       throw new Exception('ID de representante existente no proporcionado');
     }
+    $direccionesRepre = $_POST['id_direccion_repre'];
   } else {
-    //  CREAR NUEVA DIRECCIÓN DEL REPRESENTANTE 
+    //Como el representante no existe, procedemos a introducir los datos del representante en las tablas correspondientes (peronas, representantes y direcciones)
+    //  Guardamos todos los datos recibidos del formulario para proceder a guardarlos en la tabla de direcciones primero.
     $datosDireccionRepresentante = [
       'id_parroquia' => $_POST['parroquia_r'],
       'direccion' => $_POST['direccion_r'],
@@ -88,7 +93,7 @@ try {
     error_log("Creando dirección del representante");
     $id_direccion_representante = $ubicacionController->crearDireccion($datosDireccionRepresentante);
     error_log("Dirección creada con ID: " . $id_direccion_representante);
-
+    $direccionesRepre = $id_direccion_representante;
     //  Aqui hacemos introducimos en la tabla de personas la identificacion del representante
     //  Aqui hacemos introducimos en la tabla de personas la identificacion del representante
     //  Aqui hacemos introducimos en la tabla de personas la identificacion del representante
@@ -128,22 +133,25 @@ try {
     $id_representante = $representanteController->crearRepresentante($id_persona_representante, $datosRepresentante);
     error_log("Representante creado con ID: " . $id_representante);
   }
+  //Aca validamos si el estudiante vive o no con su representante.
+  if ($alumno_VCP === '0') {
+    //  Agregando en la tabla de direccion la direccion que esta previamente en el representante
+    $datosDireccionEstudiante = [
+      'id_parroquia' => $_POST['parroquia_e'],
+      'direccion' => $_POST['direccion_e'],
+      'calle' => $_POST['calle_e'] ?? '',
+      'casa' => $_POST['casa_e'] ?? ''
+    ];
 
-  //  Agregando en la tabla de direccion la direccion que esta previamente en el representante
-  $datosDireccionEstudiante = [
-    'id_parroquia' => $_POST['parroquia_r'],
-    'direccion' => $_POST['direccion_r'],
-    'calle' => $_POST['calle_r'] ?? '',
-    'casa' => $_POST['casa_r'] ?? ''
-  ];
+    error_log("Creando dirección del estudiante");
+    $id_direccion_estudiante = $ubicacionController->crearDireccion($datosDireccionEstudiante);
+    error_log("Dirección estudiante creada con ID: " . $id_direccion_estudiante);
+  }
 
-  error_log("Creando dirección del estudiante");
-  $id_direccion_estudiante = $ubicacionController->crearDireccion($datosDireccionEstudiante);
-  error_log("Dirección estudiante creada con ID: " . $id_direccion_estudiante);
-
+  $direccion_alumno = ($alumno_VCP === '0') ? $id_direccion_estudiante : $direccionesRepre;
   //  Aqui estamos ingresando en la tabla de personas la informacion del estudiante
   $datosPersonaEstudiante = [
-    'id_direccion' => $id_direccion_estudiante,
+    'id_direccion' => $direccion_alumno,
     'primer_nombre' => $_POST['primer_nombre_e'],
     'segundo_nombre' => $_POST['segundo_nombre_e'] ?? '',
     'primer_apellido' => $_POST['primer_apellido_e'],
@@ -218,7 +226,7 @@ try {
   http_response_code(400);
   echo json_encode([
     'success' => false,
-    'message' => 'Error en la inscripción: ' . $e->getMessage()
+    'message' => 'Error en la inscripción: ' . $e->getMessage() . $e->getLine()
   ]);
 } finally {
   // Cerrar conexión si existe

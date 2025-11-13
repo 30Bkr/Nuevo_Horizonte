@@ -39,7 +39,7 @@ class PersonaController
 
       return $this->pdo->lastInsertId();
     } catch (PDOException $e) {
-      throw new Exception("Error al crear persona: " . $e->getMessage());
+      throw new Exception("Error al crear persona: " . $e->getMessage()) . $datos['id_direccion'];
     }
   }
 

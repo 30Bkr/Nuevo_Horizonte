@@ -132,6 +132,7 @@ try {
                 <div class="card-body">
                   <input type="hidden" name="representante_existente" id="representante_existente" value="0">
                   <input type="hidden" name="id_representante_existente" id="id_representante_existente" value="">
+                  <input type="hidden" name="id_direccion_repre" id="id_direccion_repre" value="">
 
                   <div class="row">
                     <div class="col-md-3">
@@ -419,7 +420,8 @@ try {
                     </div>
                   </div>
 
-                  <!-- Pregunta inicial -->
+                  <!-- Pregunta si el almuno vive en la casa del representante -->
+                  <input type="hidden" name="juntos" id="juntos" value="1">
                   <div class="card-header mt-4">
                     <h3 class="card-title"><b>Datos de Residencia</b></h3>
                   </div>
@@ -438,10 +440,10 @@ try {
                     </div>
                   </div>
 
-                  <!-- Sección de dirección del representante (oculta inicialmente) -->
+                  <!-- Dirección del alumno -->
                   <div id="direccion_representante" style="display: none;">
                     <div class="card-header mt-4">
-                      <h3 class="card-title"><b>Dirección del Representante</b></h3>
+                      <h3 class="card-title"><b>Dirección del Alumno</b></h3>
                     </div>
                     <div class="card-body">
                       <div class="row">
@@ -602,7 +604,9 @@ try {
   </div>
 </div>
 
-
+<!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
+<!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
+<!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const selectMismaCasa = document.getElementById('misma_casa');
@@ -610,27 +614,29 @@ try {
 
     selectMismaCasa.addEventListener('change', function() {
       if (this.value === 'no') {
+        document.getElementById('juntos').value = '0';
+
         // Mostrar la sección de dirección
         seccionDireccion.style.display = 'block';
 
         // Hacer los campos requeridos
-        document.getElementById('estado_r').required = true;
-        document.getElementById('direccion_r').required = true;
+        document.getElementById('estado_e').required = true;
+        document.getElementById('direccion_e').required = true;
       } else {
         // Ocultar la sección de dirección
         seccionDireccion.style.display = 'none';
 
         // Quitar el atributo required y limpiar los campos
-        document.getElementById('estado_r').required = false;
-        document.getElementById('direccion_r').required = false;
+        document.getElementById('estado_e').required = false;
+        document.getElementById('direccion_e').required = false;
 
         // Opcional: Limpiar los campos cuando se ocultan
-        document.getElementById('estado_r').value = '';
-        document.getElementById('municipio_r').value = '';
-        document.getElementById('parroquia_r').value = '';
-        document.getElementById('direccion_r').value = '';
-        document.getElementById('calle_r').value = '';
-        document.getElementById('casa_r').value = '';
+        document.getElementById('estado_e').value = '';
+        document.getElementById('municipio_e').value = '';
+        document.getElementById('parroquia_e').value = '';
+        document.getElementById('direccion_e').value = '';
+        document.getElementById('calle_e').value = '';
+        document.getElementById('casa_e').value = '';
       }
     });
   });
@@ -988,6 +994,7 @@ try {
 
             // Llenar los campos con los datos del representante
             document.getElementById('representante_existente').value = '1';
+            document.getElementById('id_direccion_repre').value = data.id_direccion;
             document.getElementById('id_representante_existente').value = data.id_representante;
 
             // Datos personales
@@ -1174,10 +1181,10 @@ try {
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Cargar municipios cuando cambie el estado
-    document.getElementById('estado_r').addEventListener('change', function() {
+    document.getElementById('estado_e').addEventListener('change', function() {
       const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio_r');
-      const parroquiaSelect = document.getElementById('parroquia_r');
+      const municipioSelect = document.getElementById('municipio_e');
+      const parroquiaSelect = document.getElementById('parroquia_e');
 
       if (estadoId) {
         municipioSelect.disabled = false;
@@ -1193,9 +1200,9 @@ try {
     });
 
     // Cargar parroquias cuando cambie el municipio
-    document.getElementById('municipio_r').addEventListener('change', function() {
+    document.getElementById('municipio_e').addEventListener('change', function() {
       const municipioId = this.value;
-      const parroquiaSelect = document.getElementById('parroquia_r');
+      const parroquiaSelect = document.getElementById('parroquia_e');
 
       if (municipioId) {
         parroquiaSelect.disabled = false;
@@ -1222,7 +1229,7 @@ try {
             return response.json();
           })
           .then(data => {
-            const select = document.getElementById('municipio_r');
+            const select = document.getElementById('municipio_e');
             select.innerHTML = '<option value="">Seleccionar Municipio</option>';
 
             data.forEach(municipio => {
@@ -1253,7 +1260,7 @@ try {
             return response.json();
           })
           .then(data => {
-            const select = document.getElementById('parroquia_r');
+            const select = document.getElementById('parroquia_e');
             select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
 
             data.forEach(parroquia => {
