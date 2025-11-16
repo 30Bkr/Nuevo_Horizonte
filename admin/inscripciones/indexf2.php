@@ -8,12 +8,16 @@ include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
 include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
 include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.php");
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
+// include_once("/xampp/htdocs/final/app/controllers/representantes/profesiones.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
 
 try {
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
 
+
+  $profesionesController = new RepresentanteController($pdo);
+  $profesiones = $profesionesController->obtenerProfesiones();
   $ubicacionController = new UbicacionController($pdo);
   $estados = $ubicacionController->obtenerEstados();
 } catch (PDOException $e) {
@@ -240,7 +244,14 @@ try {
                     <div class="col-md-4">
                       <div class="form-group">
                         <label for="profesion_r">Profesión</label>
-                        <input type="text" name="profesion_r" id="profesion_r" class="form-control">
+                        <select name="profesion_r" id="profesion_r" class="form-control" required>
+                          <option value="">Seleccione Profesión</option>
+                          <?php
+                          foreach ($profesiones as $profesion) {
+                            echo "<option value='{$profesion['id_profesion']}'>{$profesion['profesion']}</option>";
+                          }
+                          ?>
+                        </select>
                       </div>
                     </div>
                     <div class="col-md-4">
@@ -776,7 +787,7 @@ try {
   });
 </script>
 
-
+<!-- Aca Enviamos informacion del formulario -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Manejar el envío del formulario
@@ -870,6 +881,118 @@ try {
       validarRepresentante(cedula);
     });
 
+    function validarRepresentante(cedula) {
+      // Crear FormData para enviar por POST
+      const formData = new FormData();
+      formData.append('cedula', cedula);
+
+      fetch('/final/app/controllers/representantes/validar.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const resultado = document.getElementById('resultado-validacion');
+          const nextButton = document.getElementById('btn-next-to-step2');
+
+          if (data.existe) {
+            resultado.innerHTML = `
+            <div class="alert alert-success">
+                <strong>Representante encontrado:</strong> ${data.nombre_completo}
+                <br>Los datos se cargarán automáticamente.
+            </div>
+            `;
+
+            // Llenar los campos con los datos del representante
+            document.getElementById('representante_existente').value = '1';
+            document.getElementById('id_direccion_repre').value = data.id_direccion;
+            document.getElementById('id_representante_existente').value = data.id_representante;
+
+
+            // Mostrar botón siguiente
+            nextButton.style.display = 'inline-block';
+
+            // Datos personales
+            document.getElementById('cedula_r').value = data.cedula;
+            document.getElementById('primer_nombre_r').value = data.primer_nombre;
+            document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
+            document.getElementById('primer_apellido_r').value = data.primer_apellido;
+            document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
+            document.getElementById('correo_r').value = data.correo || '';
+            document.getElementById('telefono_r').value = data.telefono || '';
+            document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
+            document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
+            document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
+            document.getElementById('sexo_r').value = data.sexo || '';
+            document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
+            document.getElementById('ocupacion_r').value = data.ocupacion || '';
+            document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
+
+            // Datos de dirección
+            if (data.id_estado) {
+              document.getElementById('estado_r').value = data.id_estado;
+
+              // Cargar municipios para este estado
+              cargarMunicipios(data.id_estado).then(() => {
+                if (data.id_municipio) {
+                  document.getElementById('municipio_r').value = data.id_municipio;
+
+                  // Cargar parroquias para este municipio
+                  cargarParroquias(data.id_municipio).then(() => {
+                    if (data.id_parroquia) {
+                      document.getElementById('parroquia_r').value = data.id_parroquia;
+                    }
+                  });
+                }
+              });
+            }
+            if (data.profesion) {
+              document.getElementById('profesion_r').value = data.profesion;
+
+            }
+
+
+            document.getElementById('direccion_r').value = data.direccion || '';
+            document.getElementById('calle_r').value = data.calle || '';
+            document.getElementById('casa_r').value = data.casa || '';
+
+            // Deshabilitar campos del representante
+            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+              if (element.name.includes('_r') && element.name !== 'parentesco') {
+                element.disabled = true;
+              }
+            });
+
+          } else {
+            resultado.innerHTML = `
+            <div class="alert alert-info">
+                <strong>Representante no encontrado.</strong> Por favor complete todos los datos del representante.
+            </div>
+            `;
+            document.getElementById('cedula_r').value = cedula;
+            document.getElementById('representante_existente').value = '0';
+
+            // Habilitar todos los campos por si estaban deshabilitados
+            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+              element.disabled = false;
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('resultado-validacion').innerHTML = `
+        <div class="alert alert-danger">
+            Error al validar el representante. Intente nuevamente.
+        </div>
+        `;
+        });
+    }
+
     // Cargar municipios cuando cambie el estado
     document.getElementById('estado_r').addEventListener('change', function() {
       const estadoId = this.value;
@@ -934,6 +1057,38 @@ try {
       });
     }
 
+    function cargarProfesiones(profesionesId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('profesionesId', profesionesId);
+
+        fetch('/final/app/controllers/representantes/profesiones.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error2 en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log("DAta: ", data);
+
+            const select = document.getElementById('profesion_r');
+            select.innerHTML = '<option value="">Seleccionar Profesión</option>';
+
+            select.innerHTML += `<option value="${data[0].id_profesion}">${data[0].profesion}</option>`;
+
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar profesiones:', error);
+            reject(error);
+          });
+      });
+    }
+
     function cargarParroquias(municipioId) {
       return new Promise((resolve, reject) => {
         const formData = new FormData();
@@ -966,108 +1121,7 @@ try {
     }
 
 
-    function validarRepresentante(cedula) {
-      // Crear FormData para enviar por POST
-      const formData = new FormData();
-      formData.append('cedula', cedula);
 
-      fetch('/final/app/controllers/representantes/validar.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          const resultado = document.getElementById('resultado-validacion');
-
-          if (data.existe) {
-            resultado.innerHTML = `
-            <div class="alert alert-success">
-                <strong>Representante encontrado:</strong> ${data.nombre_completo}
-                <br>Los datos se cargarán automáticamente.
-            </div>
-            `;
-
-            // Llenar los campos con los datos del representante
-            document.getElementById('representante_existente').value = '1';
-            document.getElementById('id_direccion_repre').value = data.id_direccion;
-            document.getElementById('id_representante_existente').value = data.id_representante;
-
-            // Datos personales
-            document.getElementById('cedula_r').value = data.cedula;
-            document.getElementById('primer_nombre_r').value = data.primer_nombre;
-            document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
-            document.getElementById('primer_apellido_r').value = data.primer_apellido;
-            document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
-            document.getElementById('correo_r').value = data.correo || '';
-            document.getElementById('telefono_r').value = data.telefono || '';
-            document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
-            document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
-            document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
-            document.getElementById('sexo_r').value = data.sexo || '';
-            document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
-            document.getElementById('ocupacion_r').value = data.ocupacion || '';
-            document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
-            document.getElementById('profesion_r').value = data.profesion || '';
-
-            // Datos de dirección
-            if (data.id_estado) {
-              document.getElementById('estado_r').value = data.id_estado;
-
-              // Cargar municipios para este estado
-              cargarMunicipios(data.id_estado).then(() => {
-                if (data.id_municipio) {
-                  document.getElementById('municipio_r').value = data.id_municipio;
-
-                  // Cargar parroquias para este municipio
-                  cargarParroquias(data.id_municipio).then(() => {
-                    if (data.id_parroquia) {
-                      document.getElementById('parroquia_r').value = data.id_parroquia;
-                    }
-                  });
-                }
-              });
-            }
-
-            document.getElementById('direccion_r').value = data.direccion || '';
-            document.getElementById('calle_r').value = data.calle || '';
-            document.getElementById('casa_r').value = data.casa || '';
-
-            // Deshabilitar campos del representante
-            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-              if (element.name.includes('_r') && element.name !== 'parentesco') {
-                element.disabled = true;
-              }
-            });
-
-          } else {
-            resultado.innerHTML = `
-            <div class="alert alert-info">
-                <strong>Representante no encontrado.</strong> Por favor complete todos los datos del representante.
-            </div>
-            `;
-            document.getElementById('cedula_r').value = cedula;
-            document.getElementById('representante_existente').value = '0';
-
-            // Habilitar todos los campos por si estaban deshabilitados
-            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-              element.disabled = false;
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('resultado-validacion').innerHTML = `
-        <div class="alert alert-danger">
-            Error al validar el representante. Intente nuevamente.
-        </div>
-        `;
-        });
-    }
   });
 </script>
 

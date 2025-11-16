@@ -35,7 +35,7 @@ class RepresentanteController
       $sql = "SELECT 
                     r.id_representante, 
                     p.*, 
-                    r.profesion, 
+                    r.id_profesion, 
                     r.ocupacion, 
                     r.lugar_trabajo,
                     d.id_direccion,
@@ -48,9 +48,12 @@ class RepresentanteController
                     pr.id_municipio,
                     m.nom_municipio,
                     m.id_estado,
-                    e.nom_estado
+                    e.nom_estado,
+                    f.id_profesion AS profesion_id,
+                    f.profesion
                 FROM representantes r
                 INNER JOIN personas p ON r.id_persona = p.id_persona
+                INNER JOIN profesiones f ON r.id_profesion = f.id_profesion
                 INNER JOIN direcciones d ON p.id_direccion = d.id_direccion
                 INNER JOIN parroquias pr ON d.id_parroquia = pr.id_parroquia
                 INNER JOIN municipios m ON pr.id_municipio = m.id_municipio
@@ -83,7 +86,7 @@ class RepresentanteController
           'lugar_nac' => $representante['lugar_nac'],
           'sexo' => $representante['sexo'],
           'nacionalidad' => $representante['nacionalidad'],
-          'profesion' => $representante['profesion'],
+          'profesion' => $representante['id_profesion'],
           'ocupacion' => $representante['ocupacion'],
           'lugar_trabajo' => $representante['lugar_trabajo'],
 
@@ -143,6 +146,32 @@ class RepresentanteController
       return $this->pdo->lastInsertId();
     } catch (PDOException $e) {
       throw new Exception("Error al crear relación estudiante-representante: " . $e->getMessage());
+    }
+  }
+
+  // Cargando profesion de los representantes
+  public function obtenerProfesiones()
+  {
+    try {
+      $sql = "SELECT * FROM profesiones ORDER BY profesion";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener estados: " . $e->getMessage());
+    }
+  }
+  public function obtenerProfesionesById($profesionesID)
+  {
+    try {
+      $sql = "SELECT * FROM profesiones WHERE id_profesion = :id_profesion AND estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([':id_profesion' => $profesionesID]);
+
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener parroquias: " . $e->getMessage());
     }
   }
 }
