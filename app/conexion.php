@@ -4,7 +4,7 @@ class Conexion
   private $hostname = 'localhost';
   private $database = 'nuevo_horizonte';
   private $usuario = 'root';
-  private $password = '';
+  private $password = '5413528';
   private $conn;
   public function conectar()
   {

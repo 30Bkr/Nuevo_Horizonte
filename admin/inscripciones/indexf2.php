@@ -389,7 +389,7 @@ try {
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="cedula_e">Cédula de Identidad</label>
-                        <input type="number" name="cedula_e" class="form-control" required>
+                        <input type="number" name="cedula_e" id="cedula_e" class="form-control" required>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -657,6 +657,10 @@ try {
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_nac_e');
+    const cedulaEInput = document.getElementById('cedula_e');
+    const cedulaRInput = document.getElementById('cedula_r');
+    const id_representante = document.getElementById('id_representante_existente');
+
 
     const hoy = new Date();
     const añoActual = hoy.getFullYear();
@@ -666,6 +670,146 @@ try {
 
     fechaInput.min = `${añoMinimo}-01-01`;
     fechaInput.max = `${añoMaximo}-12-31`;
+
+    fechaInput.addEventListener('change', validarRegistro);
+
+    async function validarRegistro() {
+      const fecha = fechaInput.value;
+      const cedulaR = cedulaRInput.value
+      const idR = id_representante.value;
+
+      const cedulaEscolar = null;
+
+      console.log('guardamos datos de fecha:', fecha);
+
+      const esMenor12 = esMenor(fecha);
+
+      if (esMenor12) {
+        const anioNacimiento = fecha.substring(2, 4);
+        console.log('si es menor de 12 a;os: ', anioNacimiento);
+        console.log('cedula del repre: ', cedulaR);
+        console.log('ID del repre: ', idR);
+        const numeroDEstudiantes = await validarYGenerarCedula(idR);
+        cedulaEscolar = anioNacimiento + numeroDEstudiantes + cedulaR;
+        console.log(cedulaEscolar);
+
+      } else {
+        console.log('Es maoyr de 12 a;os');
+
+      }
+
+      document.getElementById('cedula_e').value = cedulaEscolar;
+    }
+
+    function esMenor(fechaNacimiento) {
+      const fechaNac = new Date(fechaNacimiento);
+      const hoy = new Date();
+
+      // Calcular diferencia en años
+      let edad = hoy.getFullYear() - fechaNac.getFullYear();
+
+      // Ajustar si aún no ha pasado el cumpleaños este año
+      const mesActual = hoy.getMonth();
+      const diaActual = hoy.getDate();
+      const mesNacimiento = fechaNac.getMonth();
+      const diaNacimiento = fechaNac.getDate();
+
+      if (mesActual < mesNacimiento ||
+        (mesActual === mesNacimiento && diaActual < diaNacimiento)) {
+        edad--;
+      }
+      return edad < 12;
+    }
+
+    async function validarYGenerarCedula(idRepre) {
+      try {
+        console.log('Solicitando cuenta de alumnos para ID:', idRepre);
+
+        const response = await fetch('/final/app/controllers/representantes/cuentaDeAlumnos.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `id=${encodeURIComponent(idRepre)}`
+        });
+
+        // Obtener el texto completo de la respuesta
+        const responseText = await response.text();
+        console.log('Respuesta completa del servidor:', responseText);
+
+        // Mostrar posición del error para debug
+        console.log('Longitud de la respuesta:', responseText.length);
+        console.log('Primeros 100 caracteres:', responseText.substring(0, 100));
+
+        // Buscar caracteres problemáticos
+        const problemChars = responseText.match(/[^\x20-\x7E\n\r\t]/);
+        if (problemChars) {
+          console.warn('Caracteres no ASCII encontrados:', problemChars);
+        }
+
+        // Intentar parsear como JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Error detallado al parsear JSON:');
+          console.error('Mensaje:', parseError.message);
+          console.error('Posición:', parseError.position);
+          console.error('Línea donde falló:', responseText.split('\n')[0]);
+
+          // Mostrar el contexto del error
+          const errorPosition = parseError.position;
+          const contextStart = Math.max(0, errorPosition - 20);
+          const contextEnd = Math.min(responseText.length, errorPosition + 20);
+          console.error('Contexto del error:', responseText.substring(contextStart, contextEnd));
+
+          throw new Error(`Error de formato JSON: ${parseError.message}`);
+        }
+
+        // Verificar si hay error en la respuesta
+        if (!data.success) {
+          throw new Error(data.error || 'Error del servidor');
+        }
+
+        console.log('✓ Total estudiantes:', data.total_estudiantes);
+        return data.total_estudiantes;
+
+      } catch (error) {
+        console.error('❌ Error en validarYGenerarCedula:', error);
+        return 0;
+      }
+    }
+
+    // async function validarYGenerarCedula(idRepre) {
+    //   try {
+
+    //     const formData = new FormData();
+    //     formData.append('id', idRepre);
+
+
+    //     fetch('/final/app/controllers/representantes/cuentaDeAlumnos.php', {
+    //         method: 'POST',
+    //         body: formData
+    //       })
+    //       .then(response => {
+    //         if (!response.ok) {
+    //           throw new Error('Error en la respuesta del servidor en data');
+    //         }
+    //         return response.json();
+    //       })
+    //       .then(data => {
+    //         console.log(data.total_estudiantes);
+    //         console.log(data);
+
+    //       })
+    //       .catch(error => {
+    //         console.error('Error al cargar municipios:', error);
+    //         reject(error);
+    //       })
+    //   } catch (error) {
+
+    //   }
+    // }
 
   });
 </script>

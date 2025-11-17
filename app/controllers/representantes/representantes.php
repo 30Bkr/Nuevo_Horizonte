@@ -174,4 +174,26 @@ class RepresentanteController
       throw new Exception("Error al obtener parroquias: " . $e->getMessage());
     }
   }
+
+  public function contarEstudiantesPorId($idRepresentante)
+  {
+    try {
+      $sql = "SELECT COUNT(*) as total_estudiantes 
+                FROM estudiantes_representantes 
+                WHERE id_representante = :id_representante 
+                AND estatus = 1";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->bindParam(':id_representante', $idRepresentante, PDO::PARAM_INT);
+      $stmt->execute();
+
+      $resultado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      // Asegurarse de devolver un entero
+      return (int)($resultado['total_estudiantes'] ?? 0);
+    } catch (PDOException $e) {
+      error_log("Error al contar estudiantes del representante: " . $e->getMessage());
+      return 0;
+    }
+  }
 }
