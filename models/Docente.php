@@ -297,8 +297,11 @@ class Docente {
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id);
         
-        return $stmt->execute();
+       if ($stmt->execute()) {
+        return true;
     }
+    return false;
+}
 
     // Obtener lista de profesiones
     public function obtenerProfesiones() {

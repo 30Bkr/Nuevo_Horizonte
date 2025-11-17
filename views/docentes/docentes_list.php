@@ -92,7 +92,7 @@ include_once __DIR__ . '/../../models/Docente.php';
                 <?php if (isset($_SESSION['success'])): ?>
                     <div class="alert alert-success alert-dismissible">
                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                        <h5><i class="icon fas fa-check"></i> Éxito!</h5>
+                        <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
                         <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
                     </div>
                 <?php endif; ?>
@@ -100,7 +100,7 @@ include_once __DIR__ . '/../../models/Docente.php';
                 <?php if (isset($_SESSION['error'])): ?>
                     <div class="alert alert-danger alert-dismissible">
                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                        <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                        <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
                         <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
                     </div>
                 <?php endif; ?>
@@ -124,9 +124,8 @@ include_once __DIR__ . '/../../models/Docente.php';
                                     $db = $database->conectar();
                                     
                                     if ($db) {
-                                        echo "<p class='text-success'>✓ Conexión a la base de datos exitosa</p>";
-                                        
-                                        $docente = new Docente($db);
+                                        //echo "<p class='text-success'>✓ Conexión a la base de datos exitosa</p>";
+                                                $docente = new Docente($db);
                                         $stmt = $docente->listarDocentes();
                                         
                                         if ($stmt) {
@@ -160,19 +159,19 @@ include_once __DIR__ . '/../../models/Docente.php';
                                                     echo "<td>{$row['telefono']}</td>";
                                                     echo "<td>{$row['correo']}</td>";
                                                     echo "<td>{$row['usuario']}</td>";
-                                                    echo "<td>
+                                                   echo "<td>
                                                             <div class='btn-group'>
-                                                                <button class='btn btn-warning btn-sm' title='Editar'>
+                                                                <a href='docente_editar.php?id={$row['id_docente']}' class='btn btn-warning btn-sm' title='Editar'>
                                                                     <i class='fas fa-edit'></i>
-                                                                </button>
-                                                                <button class='btn btn-info btn-sm' title='Ver'>
+                                                                </a>
+                                                                <a href='docente_ver.php?id={$row['id_docente']}' class='btn btn-info btn-sm' title='Ver'>
                                                                     <i class='fas fa-eye'></i>
-                                                                </button>
-                                                                <button type='button' class='btn btn-danger btn-sm' title='Eliminar'>
+                                                                </a>
+                                                                <button type='button' class='btn btn-danger btn-sm' title='Eliminar' onclick='confirmarEliminacion({$row['id_docente']})'>
                                                                     <i class='fas fa-trash'></i>
                                                                 </button>
                                                             </div>
-                                                          </td>";
+                                                        </td>";
                                                     echo "</tr>";
                                                 }
                                                 
@@ -230,11 +229,39 @@ $(function () {
         "responsive": true,
         "autoWidth": false,
         "language": {
-            "url": "//cdn.datatables.net/plugins/1.10.25/i18n/Spanish.json"
+            "decimal": "",
+            "emptyTable": "No hay datos disponibles en la tabla",
+            "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+            "infoEmpty": "Mostrando 0 a 0 de 0 registros",
+            "infoFiltered": "(filtrado de _MAX_ registros totales)",
+            "infoPostFix": "",
+            "thousands": ",",
+            "lengthMenu": "Mostrar _MENU_ registros",
+            "loadingRecords": "Cargando...",
+            "processing": "Procesando...",
+            "search": "Buscar:",
+            "zeroRecords": "No se encontraron registros coincidentes",
+            "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+            },
+            "aria": {
+                "sortAscending": ": activar para ordenar ascendente",
+                "sortDescending": ": activar para ordenar descendente"
+            }
         },
         "order": [[2, "asc"]]
     });
 });
+
+function confirmarEliminacion(id) {
+    if (confirm('¿Está seguro de que desea eliminar este docente?\n\nEsta acción no se puede deshacer.')) {
+        // Redirigir al script de eliminación
+        window.location.href = 'docente_eliminar.php?id=' + id;
+    }
+}
 </script>
 </body>
 </html>
