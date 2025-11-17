@@ -389,7 +389,7 @@ try {
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="cedula_e">Cédula de Identidad</label>
-                        <input type="number" name="cedula_e" id="cedula_e" class="form-control" required>
+                        <input type="text" name="cedula_e" id="cedula_e" class="form-control" required>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -616,7 +616,7 @@ try {
 </div>
 
 <!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
-<!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
+<!-- - Aca hacemos la validacion sobre si el estudiante vive en la misma casa -- -->
 <!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -653,7 +653,10 @@ try {
   });
 </script>
 
-
+<!-- Validadndo edad para creacion de cedula escolar -->
+<!-- Validadndo edad para creacion de cedula escolar -->
+<!-- Validadndo edad para creacion de cedula escolar -->
+<!-- Validadndo edad para creacion de cedula escolar -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_nac_e');
@@ -689,16 +692,20 @@ try {
         console.log('si es menor de 12 a;os: ', anioNacimiento);
         console.log('cedula del repre: ', cedulaR);
         console.log('ID del repre: ', idR);
-        const numeroDEstudiantes = await validarYGenerarCedula(idR);
-        cedulaEscolar = anioNacimiento + numeroDEstudiantes + cedulaR;
-        console.log(cedulaEscolar);
+
+        try {
+          const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaR);
+          document.getElementById('cedula_e').value = `${numeroDEstudiantes}`;
+        } catch (error) {
+
+        }
+        console.log(typeof(numeroDEstudiantes));
 
       } else {
         console.log('Es maoyr de 12 a;os');
 
       }
 
-      document.getElementById('cedula_e').value = cedulaEscolar;
     }
 
     function esMenor(fechaNacimiento) {
@@ -721,7 +728,7 @@ try {
       return edad < 12;
     }
 
-    async function validarYGenerarCedula(idRepre) {
+    async function validarYGenerarCedula(idRepre, a, c) {
       try {
         console.log('Solicitando cuenta de alumnos para ID:', idRepre);
 
@@ -772,7 +779,8 @@ try {
         }
 
         console.log('✓ Total estudiantes:', data.total_estudiantes);
-        return data.total_estudiantes;
+        const cedulaEsc = a + data.total_estudiantes + c;
+        return cedulaEsc;
 
       } catch (error) {
         console.error('❌ Error en validarYGenerarCedula:', error);
