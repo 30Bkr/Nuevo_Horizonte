@@ -18,3 +18,5 @@ include_once('./layout/layaout1.php');
 <?php
 include_once('./layout/layaout2.php')
 ?>
+
+<!-- Agregar especiales a la tabla de especialidades (ingles, mates, etc) -->

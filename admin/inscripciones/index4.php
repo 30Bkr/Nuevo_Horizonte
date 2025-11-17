@@ -138,6 +138,15 @@ $docente = new Persona();
               <h3><i class="fas fa-user-tie mr-2"></i>Paso 2: Datos del Representante</h3>
             </div>
             <div class="card-body-elegante">
+              <h5 class="section-title">Rol</h5>
+              <div class="row form-row-spaced">
+                <label for="rol" class="form-label-elegante required-field">Rol</label>
+                <select name="rol" class="form-control form-control-elegante" required>
+                  <option value="">Seleccione...</option>
+                  <option value="REPRESENTANTE">Representante</option>
+                  <option value="PROFESOR">Profesor</option>
+                </select>
+              </div>
               <h5 class="section-title">Información Personal</h5>
               <div class="row form-row-spaced">
                 <div class="col-md-4">
@@ -215,13 +224,26 @@ $docente = new Persona();
 
               <h5 class="section-title">Información Laboral</h5>
               <div class="row form-row-spaced">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                  <div class="from-group-elegant">
+                    <label for="sexor" class="form-label-elegante required-field">Profesión</label>
+                    <select name="sexor" class="form-control form-control-elegante" required>
+                      <option value="">Seleccione...</option>
+                      <option value="M">Licenciado/a</option>
+                      <option value="F">Ingeniero/a</option>
+                      <option value="F">Bachiller</option>
+                      <option value="F">Ama de casa</option>
+                      <option value="F">Obrero</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
                   <div class="form-group-elegante">
                     <label for="ocupacionr" class="form-label-elegante required-field">Ocupación</label>
                     <input type="text" name="ocupacionr" class="form-control form-control-elegante" placeholder="Profesión u oficio" required>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                   <div class="form-group-elegante">
                     <label for="lugar_trabajor" class="form-label-elegante required-field">Lugar de Trabajo</label>
                     <input type="text" name="lugar_trabajor" class="form-control form-control-elegante" placeholder="Empresa o institución" required>
@@ -231,25 +253,39 @@ $docente = new Persona();
 
               <h5 class="section-title">Dirección del Representante</h5>
               <div class="row form-row-spaced">
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <div class="form-group-elegante">
                     <label for="estador" class="form-label-elegante required-field">Estado</label>
                     <input type="text" name="estador" class="form-control form-control-elegante" placeholder="Nombre del estado" required>
                   </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
+                  <div class="form-group-elegante">
+                    <label for="municipior" class="form-label-elegante required-field">Municipio</label>
+                    <input type="text" name="municipior" class="form-control form-control-elegante" placeholder="Nombre de la parroquía" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
                   <div class="form-group-elegante">
                     <label for="parroquiar" class="form-label-elegante required-field">Parroquía</label>
                     <input type="text" name="parroquiar" class="form-control form-control-elegante" placeholder="Nombre de la parroquía" required>
                   </div>
                 </div>
-                <div class="col-md-3">
+              </div>
+              <div class="row form-row-spaced">
+                <div class="col-md-4">
+                  <div class="form-group-elegante">
+                    <label for="direccionr" class="form-label-elegante required-field">Direccion</label>
+                    <input type="text" name="direccionr" class="form-control form-control-elegante" placeholder="Nombre de la calle" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
                   <div class="form-group-elegante">
                     <label for="caller" class="form-label-elegante required-field">Calle/Avenida</label>
                     <input type="text" name="caller" class="form-control form-control-elegante" placeholder="Nombre de la calle" required>
                   </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <div class="form-group-elegante">
                     <label for="casar" class="form-label-elegante required-field">Casa/Edificio</label>
                     <input type="text" name="casar" class="form-control form-control-elegante" placeholder="Número o nombre" required>
@@ -442,16 +478,42 @@ $docente = new Persona();
     return isValid;
   }
 
-  function validarCedula() {
+  async function validarCedula() {
     const representanteRegistrado = document.querySelector('input[name="representanteRegistrado"]:checked').value;
 
     if (representanteRegistrado === 'si') {
       const cedula = document.getElementById('cedulaValidacion').value;
       if (!cedula) {
-        alert('Por favor ingrese la cédula del representante');
+
+        alert('Por favor ingrese la cédula del representante', cedula);
         return;
       }
+      alert(typeof(cedula))
 
+
+      let formData = new FormData();
+      formData.append('cedula', cedula);
+      try {
+        let responseCiR = await fetch('/final/app/controllers/inscripciones/validar.php', {
+          method: 'POST',
+          body: formData
+        });
+        let representante = await responseCiR;
+        console.log('respuesta cruda: ', representante);
+        let data;
+        try {
+          data = JSON.parse(representante);
+          console.log('Json valido ', data);
+          location.reload();
+        } catch (error) {
+          console.error('Erro parsenado JSON: ', error);
+          console.error('Respuesta no es JSON válido: ', representante.substring(0, 100));
+
+        }
+      } catch (error) {
+        console.error('🔥 Error de conexión:', error);
+        alert('Error de conexión: ' + error.message);
+      }
       // Simular validación con el backend
       const cedulaExistente = Math.random() > 0.5; // Simulación aleatoria
 

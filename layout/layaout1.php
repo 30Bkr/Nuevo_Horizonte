@@ -2,11 +2,21 @@
 include_once('/xampp/htdocs/final/global/utils.php');
 include_once('/xampp/htdocs/final/app/users.php');
 
-
 session_start();
 $esto = $_SESSION['sesion_email'];
 $user = new Usuarios;
-$info = $user->info($esto);
+$info = $user->consultar($esto);
+// echo "<pre>";
+// var_dump('primer: ', $esto);
+// var_dump($listaPersona[0]->contrasena);
+// echo (password_verify($listaPersona[0]->contrasena, $password));
+// var_dump($listaPersona[0]->id_persona);
+// var_dump($info);
+// var_dump($listaPersona);
+
+
+// echo "</pre>";
+
 // $mira = $_SESSION['nombre'];
 if (isset($_SESSION['sesion_email'])) {
   // echo $info[0]->apellido;
@@ -39,7 +49,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <title><?= NAME_PROJECT; ?></title>
 
   <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"> -->
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="<?= URL; ?>/public/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
@@ -88,7 +98,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <img src="<?= URL; ?>/public/images/perfil.svg" class="img-circle elevation-2" alt="User Image">
           </div>
           <div class="info">
-            <a href="#" class="d-block"><?php echo $info[0]->nombre . " " . $info[0]->apellido ?></a>
+            <a href="#" class="d-block"><?php echo $info[0]->usuario ?></a>
           </div>
         </div>
 
@@ -141,23 +151,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </a>
               <ul class="nav nav-treeview">
                 <li class="nav-item">
-                  <a href="<?= URL; ?>/admin/inscripciones/primaria.php" class="nav-link">
+                  <a href="<?= URL; ?>/admin/inscripciones/indexF.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Primaria</p>
+                    <p>Inscribir</p>
                   </a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                   <a href="<?= URL; ?>/admin/inscripciones/secundaria.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Secundaria</p>
                   </a>
-                </li>
-                <li class="nav-item">
+                </li> -->
+                <!-- <li class="nav-item">
                   <a href="<?= URL; ?>/admin/inscripciones/registro.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Listado</p>
                   </a>
-                </li>
+                </li> -->
               </ul>
             </li>
           <?php
