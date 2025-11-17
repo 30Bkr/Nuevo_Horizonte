@@ -382,14 +382,14 @@ try {
                   <div class="row">
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="cedula_e">Cédula de Identidad</label>
-                        <input type="number" name="cedula_e" class="form-control" required>
+                        <label for="fecha_nac_e">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nac_e" id="fecha_nac_e" class="form-control" required>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="fecha_nac_e">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nac_e" class="form-control" required>
+                        <label for="cedula_e">Cédula de Identidad</label>
+                        <input type="number" name="cedula_e" class="form-control" required>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -650,6 +650,23 @@ try {
         document.getElementById('casa_e').value = '';
       }
     });
+  });
+</script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const fechaInput = document.getElementById('fecha_nac_e');
+
+    const hoy = new Date();
+    const añoActual = hoy.getFullYear();
+
+    const añoMinimo = añoActual - 19;
+    const añoMaximo = añoActual - 5;
+
+    fechaInput.min = `${añoMinimo}-01-01`;
+    fechaInput.max = `${añoMaximo}-12-31`;
+
   });
 </script>
 
