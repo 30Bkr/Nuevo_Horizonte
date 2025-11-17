@@ -1,5 +1,9 @@
 <?php
 session_start();
+
+// Incluir archivos desde la carpeta app
+include_once __DIR__ . '/../../app/conexion.php';
+include_once __DIR__ . '/../../models/Docente.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -11,21 +15,56 @@ session_start();
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="../../public/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="/final/public/plugins/fontawesome-free/css/all.min.css">
     <!-- Theme style -->
-    <link rel="stylesheet" href="../../public/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
     <!-- DataTables -->
-    <link rel="stylesheet" href="../../public/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="/final/public/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
 
-    <!-- Navbar -->
-    <?php include '../../includes/navbar.php'; ?>
-    <!-- /.navbar -->
+    <!-- Navbar simplificado -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/final/index.php" class="nav-link">Inicio</a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="docentes_list.php" class="nav-link">Docentes</a>
+            </li>
+        </ul>
+    </nav>
 
-    <!-- Main Sidebar Container -->
-    <?php include '../../includes/sidebar.php'; ?>
+    <!-- Sidebar simplificado -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/final/index.php" class="brand-link">
+            <span class="brand-text font-weight-light">Nuevo Horizonte</span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    <li class="nav-item">
+                        <a href="/final/index.php" class="nav-link">
+                            <i class="nav-icon fas fa-home"></i>
+                            <p>Inicio</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="docentes_list.php" class="nav-link active">
+                            <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                            <p>Docentes</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
@@ -38,7 +77,7 @@ session_start();
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="../../index.php">Inicio</a></li>
+                            <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
                             <li class="breadcrumb-item active">Docentes</li>
                         </ol>
                     </div>
@@ -79,66 +118,78 @@ session_start();
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
-                                <table id="tablaDocentes" class="table table-bordered table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Cédula</th>
-                                            <th>Nombre Completo</th>
-                                            <th>Profesión</th>
-                                            <th>Teléfono</th>
-                                            <th>Correo</th>
-                                            <th>Usuario</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        include_once '../../conexion.php';
-                                        include_once '../../models/Docente.php';
-
-                                        $database = new Conexion();
-                                        $db = $database->conectar();
+                                <?php
+                                try {
+                                    $database = new Conexion();
+                                    $db = $database->conectar();
+                                    
+                                    if ($db) {
+                                        echo "<p class='text-success'>✓ Conexión a la base de datos exitosa</p>";
                                         
-                                        if ($db) {
-                                            $docente = new Docente($db);
-                                            $stmt = $docente->listarDocentes();
-                                            
-                                            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                $nombreCompleto = $row['primer_nombre'] . ' ' . 
-                                                                 ($row['segundo_nombre'] ? $row['segundo_nombre'] . ' ' : '') . 
-                                                                 $row['primer_apellido'] . ' ' . 
-                                                                 ($row['segundo_apellido'] ? $row['segundo_apellido'] : '');
+                                        $docente = new Docente($db);
+                                        $stmt = $docente->listarDocentes();
+                                        
+                                        if ($stmt) {
+                                            if ($stmt->rowCount() > 0) {
+                                                echo '<table id="tablaDocentes" class="table table-bordered table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>ID</th>
+                                                                <th>Cédula</th>
+                                                                <th>Nombre Completo</th>
+                                                                <th>Profesión</th>
+                                                                <th>Teléfono</th>
+                                                                <th>Correo</th>
+                                                                <th>Usuario</th>
+                                                                <th>Acciones</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>';
                                                 
-                                                echo "<tr>";
-                                                echo "<td>{$row['id_docente']}</td>";
-                                                echo "<td>{$row['cedula']}</td>";
-                                                echo "<td>{$nombreCompleto}</td>";
-                                                echo "<td>{$row['profesion']}</td>";
-                                                echo "<td>{$row['telefono']}</td>";
-                                                echo "<td>{$row['correo']}</td>";
-                                                echo "<td>{$row['usuario']}</td>";
-                                                echo "<td>
-                                                        <div class='btn-group'>
-                                                            <a href='docente_editar.php?id={$row['id_docente']}' class='btn btn-warning btn-sm' title='Editar'>
-                                                                <i class='fas fa-edit'></i>
-                                                            </a>
-                                                            <a href='docente_ver.php?id={$row['id_docente']}' class='btn btn-info btn-sm' title='Ver'>
-                                                                <i class='fas fa-eye'></i>
-                                                            </a>
-                                                            <button type='button' class='btn btn-danger btn-sm' title='Eliminar' onclick='confirmarEliminacion({$row['id_docente']})'>
-                                                                <i class='fas fa-trash'></i>
-                                                            </button>
-                                                        </div>
-                                                      </td>";
-                                                echo "</tr>";
+                                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                                    $nombreCompleto = $row['primer_nombre'] . ' ' . 
+                                                                     ($row['segundo_nombre'] ? $row['segundo_nombre'] . ' ' : '') . 
+                                                                     $row['primer_apellido'] . ' ' . 
+                                                                     ($row['segundo_apellido'] ? $row['segundo_apellido'] : '');
+                                                    
+                                                    echo "<tr>";
+                                                    echo "<td>{$row['id_docente']}</td>";
+                                                    echo "<td>{$row['cedula']}</td>";
+                                                    echo "<td>{$nombreCompleto}</td>";
+                                                    echo "<td>{$row['profesion']}</td>";
+                                                    echo "<td>{$row['telefono']}</td>";
+                                                    echo "<td>{$row['correo']}</td>";
+                                                    echo "<td>{$row['usuario']}</td>";
+                                                    echo "<td>
+                                                            <div class='btn-group'>
+                                                                <button class='btn btn-warning btn-sm' title='Editar'>
+                                                                    <i class='fas fa-edit'></i>
+                                                                </button>
+                                                                <button class='btn btn-info btn-sm' title='Ver'>
+                                                                    <i class='fas fa-eye'></i>
+                                                                </button>
+                                                                <button type='button' class='btn btn-danger btn-sm' title='Eliminar'>
+                                                                    <i class='fas fa-trash'></i>
+                                                                </button>
+                                                            </div>
+                                                          </td>";
+                                                    echo "</tr>";
+                                                }
+                                                
+                                                echo '</tbody></table>';
+                                            } else {
+                                                echo "<div class='alert alert-info'>No hay docentes registrados en el sistema.</div>";
                                             }
                                         } else {
-                                            echo "<tr><td colspan='8' class='text-center'>Error de conexión a la base de datos</td></tr>";
+                                            echo "<div class='alert alert-warning'>No se pudo obtener la lista de docentes.</div>";
                                         }
-                                        ?>
-                                    </tbody>
-                                </table>
+                                    } else {
+                                        echo "<div class='alert alert-danger'>✗ Error de conexión a la base de datos</div>";
+                                    }
+                                } catch (Exception $e) {
+                                    echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
+                                }
+                                ?>
                             </div>
                             <!-- /.card-body -->
                         </div>
@@ -155,20 +206,23 @@ session_start();
     <!-- /.content-wrapper -->
 
     <!-- Footer -->
-    <?php include '../../includes/footer.php'; ?>
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
+        Todos los derechos reservados.
+    </footer>
 
 </div>
 <!-- ./wrapper -->
 
 <!-- jQuery -->
-<script src="../../public/plugins/jquery/jquery.min.js"></script>
+<script src="/final/public/plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
-<script src="../../public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- DataTables -->
-<script src="../../public/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="../../public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
 <!-- AdminLTE App -->
-<script src="../../public/dist/js/adminlte.min.js"></script>
+<script src="/final/public/dist/js/adminlte.min.js"></script>
 
 <script>
 $(function () {
@@ -181,12 +235,6 @@ $(function () {
         "order": [[2, "asc"]]
     });
 });
-
-function confirmarEliminacion(id) {
-    if (confirm('¿Está seguro de que desea eliminar este docente?')) {
-        window.location.href = 'docente_eliminar.php?id=' + id;
-    }
-}
 </script>
 </body>
 </html>

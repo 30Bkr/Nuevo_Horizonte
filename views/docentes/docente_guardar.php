@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-include_once '../../conexion.php';
-include_once '../../models/Docente.php';
+include_once __DIR__ . '/../../app/conexion.php';
+include_once __DIR__ . '/../../models/Docente.php';
 
 if ($_POST) {
     $database = new Conexion();

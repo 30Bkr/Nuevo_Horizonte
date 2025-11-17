@@ -119,8 +119,8 @@ session_start();
                                                 <select class="form-control" id="id_profesion" name="id_profesion">
                                                     <option value="">Seleccionar profesión...</option>
                                                     <?php
-                                                    include_once '../../conexion.php';
-                                                    include_once '../../models/Docente.php';
+                                                    include_once __DIR__ . '/../../app/conexion.php';
+                                                    include_once __DIR__ . '/../../models/Docente.php';
                                                     
                                                     $database = new Conexion();
                                                     $db = $database->conectar();
