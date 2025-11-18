@@ -85,4 +85,42 @@ class PersonaController
       throw new Exception("Error al validar cédula: " . $e->getMessage());
     }
   }
+
+  public function actualizarPersona($datos)
+  {
+    $sql = "UPDATE personas SET 
+            id_direccion = ?, 
+            primer_nombre = ?, 
+            segundo_nombre = ?, 
+            primer_apellido = ?, 
+            segundo_apellido = ?, 
+            cedula = ?, 
+            telefono = ?, 
+            telefono_hab = ?, 
+            correo = ?, 
+            lugar_nac = ?, 
+            fecha_nac = ?, 
+            sexo = ?, 
+            nacionalidad = ?,
+            actualizacion = NOW()
+            WHERE id_persona = ?";
+
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([
+      $datos['id_direccion'],
+      $datos['primer_nombre'],
+      $datos['segundo_nombre'],
+      $datos['primer_apellido'],
+      $datos['segundo_apellido'],
+      $datos['cedula'],
+      $datos['telefono'],
+      $datos['telefono_hab'],
+      $datos['correo'],
+      $datos['lugar_nac'],
+      $datos['fecha_nac'],
+      $datos['sexo'],
+      $datos['nacionalidad'],
+      $datos['id_persona']
+    ]);
+  }
 }

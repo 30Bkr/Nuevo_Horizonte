@@ -196,4 +196,22 @@ class RepresentanteController
       return 0;
     }
   }
+
+  public function actualizarRepresentante($datos)
+  {
+    $sql = "UPDATE representantes SET 
+            ocupacion = ?, 
+            lugar_trabajo = ?, 
+            id_profesion = ?,
+            actualizacion = NOW()
+            WHERE id_representante = ?";
+
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([
+      $datos['ocupacion'],
+      $datos['lugar_trabajo'],
+      $datos['id_profesion'],
+      $datos['id_representante']
+    ]);
+  }
 }

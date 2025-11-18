@@ -778,7 +778,7 @@ try {
         }
 
         console.log('✓ Total estudiantes:', data.total_estudiantes);
-        const cedulaEsc = a + data.total_estudiantes + c;
+        const cedulaEsc = a + (data.total_estudiantes + 1) + c;
         return cedulaEsc;
 
       } catch (error) {

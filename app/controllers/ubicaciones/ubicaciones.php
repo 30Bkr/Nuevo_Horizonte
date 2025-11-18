@@ -69,4 +69,24 @@ class UbicacionController
       throw new Exception("Error al crear dirección: " . $e->getMessage());
     }
   }
+
+  public function actualizarDireccion($datos)
+  {
+    $sql = "UPDATE direcciones SET 
+            id_parroquia = ?, 
+            direccion = ?, 
+            calle = ?, 
+            casa = ?,
+            actualizacion = NOW()
+            WHERE id_direccion = ?";
+
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([
+      $datos['id_parroquia'],
+      $datos['direccion'],
+      $datos['calle'],
+      $datos['casa'],
+      $datos['id_direccion']
+    ]);
+  }
 }
