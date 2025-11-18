@@ -156,6 +156,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <p>Inscribir</p>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/inscripciones/reinscripcion.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Re-inscripcion</p>
+                  </a>
+                </li>
                 <!-- <li class="nav-item">
                   <a href="<?= URL; ?>/admin/inscripciones/secundaria.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>

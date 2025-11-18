@@ -24,7 +24,6 @@ try {
   die("Error de conexión: " . $e->getMessage());
 }
 ?>
-
 <style>
   .step {
     display: none;
