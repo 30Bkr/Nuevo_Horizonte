@@ -19,10 +19,7 @@ if ($issues) {
             echo 'Composer detected issues in your platform:' . PHP_EOL.PHP_EOL . str_replace('You are running '.PHP_VERSION.'.', '', implode(PHP_EOL, $issues)) . PHP_EOL.PHP_EOL;
         }
     }
-
-    trigger_error(
-        'Composer detected issues in your platform: ' . implode(' ', $issues),
-        E_USER_ERROR
- 3f21a2fa3b37f8f91900d1a80d81c75c41e593dd
+    throw new \RuntimeException(
+        'Composer detected issues in your platform: ' . implode(' ', $issues)
     );
 }
