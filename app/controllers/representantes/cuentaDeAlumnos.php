@@ -20,7 +20,7 @@ try {
   }
 
   $id_representante = filter_var($_POST['id'], FILTER_VALIDATE_INT);
-  if ($id_representante === false || $id_representante <= 0) {
+  if ($id_representante === false || $id_representante < 0) {
     throw new Exception('ID de representante inválido');
   }
 

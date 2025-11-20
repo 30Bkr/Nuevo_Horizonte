@@ -75,4 +75,19 @@ class InscripcionController
       throw new Exception("Error al verificar inscripción: " . $e->getMessage());
     }
   }
+  public function obtenerPeriodosActivos()
+  {
+    try {
+      $sql = "SELECT id_periodo, descripcion_periodo, fecha_ini, fecha_fin, estatus 
+                    FROM periodos 
+                    WHERE estatus = 1 
+                    ORDER BY fecha_ini DESC";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error al obtener períodos: " . $e->getMessage());
+      return [];
+    }
+  }
 }

@@ -12,12 +12,12 @@ class RepresentanteController
   public function crearRepresentante($id_persona, $datos)
   {
     try {
-      $sql = "INSERT INTO representantes (id_persona, profesion, ocupacion, lugar_trabajo) 
-                    VALUES (:id_persona, :profesion, :ocupacion, :lugar_trabajo)";
+      $sql = "INSERT INTO representantes (id_persona, id_profesion, ocupacion, lugar_trabajo) 
+                    VALUES (:id_persona, :id_profesion, :ocupacion, :lugar_trabajo)";
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute([
         ':id_persona' => $id_persona,
-        ':profesion' => $datos['profesion'],
+        ':id_profesion' => $datos['id_profesion'],
         ':ocupacion' => $datos['ocupacion'],
         ':lugar_trabajo' => $datos['lugar_trabajo']
       ]);
@@ -71,6 +71,7 @@ class RepresentanteController
       if ($representante) {
         return [
           'existe' => true,
+          'tipo' => 'representante',
           'id_representante' => $representante['id_representante'],
 
           // Datos personales
@@ -112,6 +113,103 @@ class RepresentanteController
       return ['existe' => false];
     } catch (PDOException $e) {
       throw new Exception("Error al validar representante: " . $e->getMessage());
+    }
+  }
+
+  public function validarDocente($cedula)
+  {
+    try {
+      $sql = "SELECT 
+                    d.id_docente, 
+                    p.*, 
+                    d.id_profesion,
+                    dir.id_direccion,
+                    dir.id_parroquia,
+                    dir.direccion,
+                    dir.calle,
+                    dir.casa,
+                    pr.id_parroquia,
+                    pr.nom_parroquia,
+                    pr.id_municipio,
+                    m.nom_municipio,
+                    m.id_estado,
+                    e.nom_estado,
+                    f.id_profesion AS profesion_id,
+                    f.profesion,
+                    u.id_usuario,
+                    u.usuario,
+                    r.id_rol,
+                    r.nom_rol
+                FROM docentes d
+                INNER JOIN personas p ON d.id_persona = p.id_persona
+                INNER JOIN profesiones f ON d.id_profesion = f.id_profesion
+                INNER JOIN direcciones dir ON p.id_direccion = dir.id_direccion
+                INNER JOIN parroquias pr ON dir.id_parroquia = pr.id_parroquia
+                INNER JOIN municipios m ON pr.id_municipio = m.id_municipio
+                INNER JOIN estados e ON m.id_estado = e.id_estado
+                LEFT JOIN usuarios u ON p.id_persona = u.id_persona
+                LEFT JOIN roles r ON u.id_rol = r.id_rol
+                WHERE p.cedula = :cedula 
+                    AND d.estatus = 1 
+                    AND p.estatus = 1
+                    AND dir.estatus = 1";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([':cedula' => $cedula]);
+
+      $docente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if ($docente) {
+        return [
+          'existe' => true,
+          'tipo' => 'docente',
+          'id_docente' => $docente['id_docente'],
+          'id_persona' => $docente['id_persona'],
+          'id_usuario' => $docente['id_usuario'],
+          'id_rol' => $docente['id_rol'],
+
+          // Datos personales
+          'primer_nombre' => $docente['primer_nombre'],
+          'segundo_nombre' => $docente['segundo_nombre'],
+          'primer_apellido' => $docente['primer_apellido'],
+          'segundo_apellido' => $docente['segundo_apellido'],
+          'cedula' => $docente['cedula'],
+          'telefono' => $docente['telefono'],
+          'telefono_hab' => $docente['telefono_hab'],
+          'correo' => $docente['correo'],
+          'fecha_nac' => $docente['fecha_nac'],
+          'lugar_nac' => $docente['lugar_nac'],
+          'sexo' => $docente['sexo'],
+          'nacionalidad' => $docente['nacionalidad'],
+          'profesion' => $docente['id_profesion'],
+          'nom_profesion' => $docente['profesion'],
+
+          // Datos de dirección
+          'id_direccion' => $docente['id_direccion'],
+          'id_parroquia' => $docente['id_parroquia'],
+          'direccion' => $docente['direccion'],
+          'calle' => $docente['calle'],
+          'casa' => $docente['casa'],
+          'id_municipio' => $docente['id_municipio'],
+          'id_estado' => $docente['id_estado'],
+          'nom_parroquia' => $docente['nom_parroquia'],
+          'nom_municipio' => $docente['nom_municipio'],
+          'nom_estado' => $docente['nom_estado'],
+
+          // Datos de usuario (si existe)
+          'usuario' => $docente['usuario'],
+          'nom_rol' => $docente['nom_rol'],
+
+          'nombre_completo' => trim($docente['primer_nombre'] . ' ' .
+            ($docente['segundo_nombre'] ? $docente['segundo_nombre'] . ' ' : '') .
+            $docente['primer_apellido'] . ' ' .
+            ($docente['segundo_apellido'] ? $docente['segundo_apellido'] : ''))
+        ];
+      }
+
+      return ['existe' => false];
+    } catch (PDOException $e) {
+      throw new Exception("Error al validar docente: " . $e->getMessage());
     }
   }
 

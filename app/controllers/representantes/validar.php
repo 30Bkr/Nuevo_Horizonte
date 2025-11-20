@@ -31,10 +31,20 @@ try {
   $representanteController = new RepresentanteController($pdo);
 
   // Validar representante
-  $resultado = $representanteController->validarRepresentante($cedula);
 
+  $resultado = $representanteController->validarRepresentante($cedula);
+  if ($resultado['existe']) {
+    echo json_encode($resultado);
+  } else {
+    $resultado2 = $representanteController->validarDocente($cedula);
+    if ($resultado2['existe']) {
+      echo json_encode($resultado2);
+    } else {
+      echo json_encode(['Existe' => false]);
+    }
+  }
   // Devolver resultado en formato JSON
-  echo json_encode($resultado);
+  // echo json_encode($resultado);
 } catch (Exception $e) {
   http_response_code(400);
   echo json_encode([

@@ -84,7 +84,7 @@ try {
         </div>
       </div>
 
-      <form action="http://localhost/final/app/controllers/inscripciones/inscripciong.php" method="post" id="form-inscripcion">
+      <form action="http://localhost/final/app/controllers/inscripciones/inscripciong2.php" method="post" id="form-inscripcion">
 
         <!-- PASO 1: VALIDAR REPRESENTANTE -->
         <div class="step active" id="step1">
@@ -136,6 +136,8 @@ try {
                   <input type="hidden" name="representante_existente" id="representante_existente" value="0">
                   <input type="hidden" name="id_representante_existente" id="id_representante_existente" value="">
                   <input type="hidden" name="id_direccion_repre" id="id_direccion_repre" value="">
+                  <input type="hidden" name="tipo_persona" id="tipo_persona" value="">
+                  <input type="hidden" name="id_representante_existente_esc" id="id_representante_existente_esc" value="">
 
                   <div class="row">
                     <div class="col-md-3">
@@ -661,7 +663,8 @@ try {
     const fechaInput = document.getElementById('fecha_nac_e');
     const cedulaEInput = document.getElementById('cedula_e');
     const cedulaRInput = document.getElementById('cedula_r');
-    const id_representante = document.getElementById('id_representante_existente');
+    const id_representante_esc = document.getElementById('id_representante_existente');
+    const tipo = document.getElementById('tipo_persona');
 
 
     const hoy = new Date();
@@ -678,7 +681,8 @@ try {
     async function validarRegistro() {
       const fecha = fechaInput.value;
       const cedulaR = cedulaRInput.value
-      const idR = id_representante.value;
+      const idR = id_representante_esc.value;
+      const tp = tipo.value;
 
       const cedulaEscolar = null;
 
@@ -687,18 +691,29 @@ try {
       const esMenor12 = esMenor(fecha);
 
       if (esMenor12) {
+
         const anioNacimiento = fecha.substring(2, 4);
+        if (tp === 'representante') {
+          console.log(tp);
+
+          try {
+            const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaR);
+            document.getElementById('cedula_e').value = `${numeroDEstudiantes}`;
+          } catch (error) {
+
+          }
+          console.log(typeof(numeroDEstudiantes));
+        } else {
+          const c_esc = anioNacimiento + '1' + cedulaR;
+          document.getElementById('cedula_e').value = `${c_esc}`;
+
+        }
         console.log('si es menor de 12 a;os: ', anioNacimiento);
         console.log('cedula del repre: ', cedulaR);
         console.log('ID del repre: ', idR);
+        console.log('tipo del repre: ', tp);
 
-        try {
-          const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaR);
-          document.getElementById('cedula_e').value = `${numeroDEstudiantes}`;
-        } catch (error) {
 
-        }
-        console.log(typeof(numeroDEstudiantes));
 
       } else {
         console.log('Es maoyr de 12 a;os');
@@ -821,6 +836,11 @@ try {
   });
 </script>
 
+<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
+<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
+<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
+<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 1;
@@ -908,7 +928,7 @@ try {
 
             // Llenar los campos con los datos del representante
             document.getElementById('representante_existente').value = '1';
-            document.getElementById('id_representante_existente').value = data.id_representante;
+            document.getElementById('id_representante_existente').value = data.id_representante || data.id_docente;
             document.getElementById('cedula_r').value = data.cedula;
 
             // Mostrar botón siguiente
@@ -1031,10 +1051,10 @@ try {
 
 
 
-<!-- Para validar la cedula de identidad -->
-<!-- Para validar la cedula de identidad -->
-<!-- Para validar la cedula de identidad -->
-<!-- Para validar la cedula de identidad -->
+<!-- Para validar la cedula de identidad y recoger datos de personas -->
+<!-- Para validar la cedula de identidad  y recoger datos de personas -->
+<!-- Para validar la cedula de identidad y recoger datos de personas -->
+<!-- Para validar la cedula de identidad y recoger datos de personas -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Validar representante existente
@@ -1048,6 +1068,281 @@ try {
 
       validarRepresentante(cedula);
     });
+
+    // function validarRepresentante(cedula) {
+    //   // Crear FormData para enviar por POST
+    //   const formData = new FormData();
+    //   formData.append('cedula', cedula);
+
+    //   fetch('/final/app/controllers/representantes/validar.php', {
+    //       method: 'POST',
+    //       body: formData
+    //     })
+    //     .then(response => {
+    //       if (!response.ok) {
+    //         throw new Error('Error en la respuesta del servidor');
+    //       }
+    //       return response.json();
+    //     })
+    //     .then(data => {
+    //       const resultado = document.getElementById('resultado-validacion');
+    //       const nextButton = document.getElementById('btn-next-to-step2');
+
+    //       if (data.existe) {
+    //         resultado.innerHTML = `
+    //         <div class="alert alert-success">
+    //             <strong>Representante encontrado:</strong> ${data.nombre_completo}
+    //             <br>Los datos se cargarán automáticamente.
+    //         </div>
+    //         `;
+
+    //         // Llenar los campos con los datos del representante
+    //         document.getElementById('representante_existente').value = '1';
+    //         document.getElementById('id_direccion_repre').value = data.id_direccion;
+    //         document.getElementById('id_representante_existente').value = data.id_representante;
+
+
+    //         // Mostrar botón siguiente
+    //         nextButton.style.display = 'inline-block';
+
+    //         // Datos personales
+    //         document.getElementById('cedula_r').value = data.cedula;
+    //         document.getElementById('primer_nombre_r').value = data.primer_nombre;
+    //         document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
+    //         document.getElementById('primer_apellido_r').value = data.primer_apellido;
+    //         document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
+    //         document.getElementById('correo_r').value = data.correo || '';
+    //         document.getElementById('telefono_r').value = data.telefono || '';
+    //         document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
+    //         document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
+    //         document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
+    //         document.getElementById('sexo_r').value = data.sexo || '';
+    //         document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
+    //         document.getElementById('ocupacion_r').value = data.ocupacion || '';
+    //         document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
+
+    //         // Datos de dirección
+    //         if (data.id_estado) {
+    //           document.getElementById('estado_r').value = data.id_estado;
+
+    //           // Cargar municipios para este estado
+    //           cargarMunicipios(data.id_estado).then(() => {
+    //             if (data.id_municipio) {
+    //               document.getElementById('municipio_r').value = data.id_municipio;
+
+    //               // Cargar parroquias para este municipio
+    //               cargarParroquias(data.id_municipio).then(() => {
+    //                 if (data.id_parroquia) {
+    //                   document.getElementById('parroquia_r').value = data.id_parroquia;
+    //                 }
+    //               });
+    //             }
+    //           });
+    //         }
+    //         if (data.profesion) {
+    //           document.getElementById('profesion_r').value = data.profesion;
+
+    //         }
+
+
+    //         document.getElementById('direccion_r').value = data.direccion || '';
+    //         document.getElementById('calle_r').value = data.calle || '';
+    //         document.getElementById('casa_r').value = data.casa || '';
+
+    //         // Deshabilitar campos del representante
+    //         document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+    //           if (element.name.includes('_r') && element.name !== 'parentesco') {
+    //             element.disabled = true;
+    //           }
+    //         });
+
+    //       } else {
+    //         resultado.innerHTML = `
+    //         <div class="alert alert-info">
+    //             <strong>Representante no encontrado.</strong> Por favor complete todos los datos del representante.
+    //         </div>
+    //         `;
+    //         document.getElementById('cedula_r').value = cedula;
+    //         document.getElementById('representante_existente').value = '0';
+
+    //         // Habilitar todos los campos por si estaban deshabilitados
+    //         document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+    //           element.disabled = false;
+    //         });
+    //       }
+    //     })
+    //     .catch(error => {
+    //       console.error('Error:', error);
+    //       document.getElementById('resultado-validacion').innerHTML = `
+    //     <div class="alert alert-danger">
+    //         Error al validar el representante. Intente nuevamente.
+    //     </div>
+    //     `;
+    //     });
+    // }
+
+    // function validarRepresentante(cedula) {
+    //   // Crear FormData para enviar por POST
+    //   const formData = new FormData();
+    //   formData.append('cedula', cedula);
+
+    //   fetch('/final/app/controllers/representantes/validar.php', {
+    //       method: 'POST',
+    //       body: formData
+    //     })
+    //     .then(response => {
+    //       if (!response.ok) {
+    //         throw new Error('Error en la respuesta del servidor');
+    //       }
+    //       return response.json();
+    //     })
+    //     .then(data => {
+    //       const resultado = document.getElementById('resultado-validacion');
+    //       const nextButton = document.getElementById('btn-next-to-step2');
+
+    //       if (data.existe) {
+    //         // Determinar el tipo de persona encontrada
+    //         const tipoPersona = data.tipo || 'representante'; // Por defecto representante para compatibilidad
+    //         const esDocente = tipoPersona === 'docente';
+    //         const esRepresentante = tipoPersona === 'representante';
+
+    //         resultado.innerHTML = `
+    //     <div class="alert alert-success">
+    //         <strong>${esDocente ? 'Docente' : 'Representante'} encontrado:</strong> ${data.nombre_completo}
+    //         <br>Los datos se cargarán automáticamente.
+    //         ${esDocente ? '<br><em>Nota: Como es docente, algunos campos estarán disponibles para completar</em>' : ''}
+    //     </div>
+    //     `;
+
+    //         // Llenar los campos comunes
+    //         document.getElementById('representante_existente').value = '1';
+    //         document.getElementById('id_direccion_repre').value = data.id_direccion;
+
+    //         if (esRepresentante) {
+    //           document.getElementById('id_representante_existente').value = data.id_representante;
+
+    //           document.getElementById('tipo_persona').value = 'representante';
+    //         } else if (esDocente) {
+    //           document.getElementById('id_representante_existente').value = data.id_docente;
+    //           document.getElementById('tipo_persona').value = 'docente';
+    //         }
+
+    //         // Mostrar botón siguiente
+    //         nextButton.style.display = 'inline-block';
+
+    //         // Datos personales (comunes para ambos)
+    //         document.getElementById('cedula_r').value = data.cedula;
+    //         document.getElementById('primer_nombre_r').value = data.primer_nombre;
+    //         document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
+    //         document.getElementById('primer_apellido_r').value = data.primer_apellido;
+    //         document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
+    //         document.getElementById('correo_r').value = data.correo || '';
+    //         document.getElementById('telefono_r').value = data.telefono || '';
+    //         document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
+    //         document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
+    //         document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
+    //         document.getElementById('sexo_r').value = data.sexo || '';
+    //         document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
+
+    //         // Profesión (común para ambos)
+    //         if (data.profesion) {
+    //           document.getElementById('profesion_r').value = data.profesion;
+    //         }
+
+    //         // Datos de dirección (comunes para ambos)
+    //         if (data.id_estado) {
+    //           document.getElementById('estado_r').value = data.id_estado;
+
+    //           // Cargar municipios para este estado
+    //           cargarMunicipios(data.id_estado).then(() => {
+    //             if (data.id_municipio) {
+    //               document.getElementById('municipio_r').value = data.id_municipio;
+
+    //               // Cargar parroquias para este municipio
+    //               cargarParroquias(data.id_municipio).then(() => {
+    //                 if (data.id_parroquia) {
+    //                   document.getElementById('parroquia_r').value = data.id_parroquia;
+    //                 }
+    //               });
+    //             }
+    //           });
+    //         }
+
+    //         // DIFERENCIAS ENTRE DOCENTE Y REPRESENTANTE
+    //         if (esRepresentante) {
+    //           // REPRESENTANTE: Cargar todos los datos y deshabilitar
+    //           document.getElementById('ocupacion_r').value = data.ocupacion || '';
+    //           document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
+    //           document.getElementById('direccion_r').value = data.direccion || '';
+    //           document.getElementById('calle_r').value = data.calle || '';
+    //           document.getElementById('casa_r').value = data.casa || '';
+
+    //           // Deshabilitar TODOS los campos del representante
+    //           document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+    //             if (element.name.includes('_r') && element.name !== 'parentesco') {
+    //               element.disabled = true;
+    //             }
+    //           });
+
+    //         } else if (esDocente) {
+    //           // DOCENTE: Solo cargar datos básicos y mantener habilitados ciertos campos
+    //           document.getElementById('ocupacion_r').value = ''; // Vacío porque no existe en docente
+    //           document.getElementById('lugar_trabajo_r').value = ''; // Vacío porque no existe en docente
+    //           document.getElementById('direccion_r').value = data.direccion || '';
+    //           document.getElementById('calle_r').value = data.calle || '';
+    //           document.getElementById('casa_r').value = data.casa || '';
+
+    //           // Deshabilitar solo los campos básicos, mantener habilitados los específicos
+    //           const camposDeshabilitados = [
+    //             'cedula_r', 'primer_nombre_r', 'segundo_nombre_r',
+    //             'primer_apellido_r', 'segundo_apellido_r', 'correo_r',
+    //             'telefono_r', 'telefono_hab_r', 'fecha_nac_r', 'lugar_nac_r',
+    //             'sexo_r', 'nacionalidad_r', 'profesion_r', 'estado_r',
+    //             'municipio_r', 'parroquia_r'
+    //           ];
+
+    //           // Deshabilitar campos básicos
+    //           camposDeshabilitados.forEach(campoId => {
+    //             const elemento = document.getElementById(campoId);
+    //             if (elemento) elemento.disabled = true;
+    //           });
+
+    //           // Mantener HABILITADOS los campos específicos que el docente debe completar
+    //           const camposHabilitados = [
+    //             'ocupacion_r', 'lugar_trabajo_r', 'direccion_r',
+    //             'calle_r', 'casa_r'
+    //           ];
+
+    //           camposHabilitados.forEach(campoId => {
+    //             const elemento = document.getElementById(campoId);
+    //             if (elemento) elemento.disabled = false;
+    //           });
+    //         }
+
+    //       } else {
+    //         resultado.innerHTML = `
+    //     <div class="alert alert-info">
+    //         <strong>Persona no encontrada.</strong> Por favor complete todos los datos del representante.
+    //     </div>
+    //     `;
+    //         document.getElementById('cedula_r').value = cedula;
+    //         document.getElementById('representante_existente').value = '0';
+
+    //         // Habilitar todos los campos por si estaban deshabilitados
+    //         document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+    //           element.disabled = false;
+    //         });
+    //       }
+    //     })
+    //     .catch(error => {
+    //       console.error('Error:', error);
+    //       document.getElementById('resultado-validacion').innerHTML = `
+    //   <div class="alert alert-danger">
+    //       Error al validar la persona. Intente nuevamente.
+    //   </div>
+    //   `;
+    //     });
+    // }
 
     function validarRepresentante(cedula) {
       // Crear FormData para enviar por POST
@@ -1069,23 +1364,36 @@ try {
           const nextButton = document.getElementById('btn-next-to-step2');
 
           if (data.existe) {
-            resultado.innerHTML = `
-            <div class="alert alert-success">
-                <strong>Representante encontrado:</strong> ${data.nombre_completo}
-                <br>Los datos se cargarán automáticamente.
-            </div>
-            `;
+            // Determinar el tipo de persona encontrada
+            const tipoPersona = data.tipo;
+            const esDocente = tipoPersona === 'docente';
+            const esRepresentante = tipoPersona === 'representante';
 
-            // Llenar los campos con los datos del representante
+            resultado.innerHTML = `
+        <div class="alert alert-success">
+            <strong>${esDocente ? 'Docente' : 'Representante'} encontrado:</strong> ${data.nombre_completo}
+            <br>Los datos se cargarán automáticamente.
+            ${esDocente ? '<br><em>Nota: Como es docente, algunos campos estarán disponibles para completar</em>' : ''}
+        </div>
+        `;
+
+            // Llenar los campos comunes
             document.getElementById('representante_existente').value = '1';
             document.getElementById('id_direccion_repre').value = data.id_direccion;
-            document.getElementById('id_representante_existente').value = data.id_representante;
+            document.getElementById('tipo_persona').value = tipoPersona;
 
+            if (esRepresentante) {
+              document.getElementById('id_representante_existente').value = data.id_representante;
+              document.getElementById('id_representante_existente_esc').value = data.id_representante;
+            } else if (esDocente) {
+              document.getElementById('id_representante_existente').value = data.id_docente;
+              document.getElementById('id_representante_existente_esc').value = data.id_persona; // IMPORTANTE: Usar id_persona para docente
+            }
 
             // Mostrar botón siguiente
             nextButton.style.display = 'inline-block';
 
-            // Datos personales
+            // Datos personales (comunes para ambos)
             document.getElementById('cedula_r').value = data.cedula;
             document.getElementById('primer_nombre_r').value = data.primer_nombre;
             document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
@@ -1098,10 +1406,13 @@ try {
             document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
             document.getElementById('sexo_r').value = data.sexo || '';
             document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
-            document.getElementById('ocupacion_r').value = data.ocupacion || '';
-            document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
 
-            // Datos de dirección
+            // Profesión (común para ambos)
+            if (data.profesion) {
+              document.getElementById('profesion_r').value = data.profesion;
+            }
+
+            // Datos de dirección (comunes para ambos)
             if (data.id_estado) {
               document.getElementById('estado_r').value = data.id_estado;
 
@@ -1119,31 +1430,67 @@ try {
                 }
               });
             }
-            if (data.profesion) {
-              document.getElementById('profesion_r').value = data.profesion;
 
+            // DIFERENCIAS ENTRE DOCENTE Y REPRESENTANTE
+            if (esRepresentante) {
+              // REPRESENTANTE: Cargar todos los datos y deshabilitar
+              document.getElementById('ocupacion_r').value = data.ocupacion || '';
+              document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
+              document.getElementById('direccion_r').value = data.direccion || '';
+              document.getElementById('calle_r').value = data.calle || '';
+              document.getElementById('casa_r').value = data.casa || '';
+
+              // Deshabilitar TODOS los campos del representante
+              document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+                if (element.name.includes('_r') && element.name !== 'parentesco') {
+                  element.disabled = true;
+                }
+              });
+
+            } else if (esDocente) {
+              // DOCENTE: Solo cargar datos básicos y mantener habilitados ciertos campos
+              document.getElementById('ocupacion_r').value = ''; // Vacío porque no existe en docente
+              document.getElementById('lugar_trabajo_r').value = ''; // Vacío porque no existe en docente
+              document.getElementById('direccion_r').value = data.direccion || '';
+              document.getElementById('calle_r').value = data.calle || '';
+              document.getElementById('casa_r').value = data.casa || '';
+
+              // Deshabilitar solo los campos básicos, mantener habilitados los específicos
+              const camposDeshabilitados = [
+                'cedula_r', 'primer_nombre_r', 'segundo_nombre_r',
+                'primer_apellido_r', 'segundo_apellido_r', 'correo_r',
+                'telefono_r', 'telefono_hab_r', 'fecha_nac_r', 'lugar_nac_r',
+                'sexo_r', 'nacionalidad_r', 'profesion_r', 'estado_r',
+                'municipio_r', 'parroquia_r'
+              ];
+
+              // Deshabilitar campos básicos
+              camposDeshabilitados.forEach(campoId => {
+                const elemento = document.getElementById(campoId);
+                if (elemento) elemento.disabled = true;
+              });
+
+              // Mantener HABILITADOS los campos específicos que el docente debe completar
+              const camposHabilitados = [
+                'ocupacion_r', 'lugar_trabajo_r', 'direccion_r',
+                'calle_r', 'casa_r'
+              ];
+
+              camposHabilitados.forEach(campoId => {
+                const elemento = document.getElementById(campoId);
+                if (elemento) elemento.disabled = false;
+              });
             }
-
-
-            document.getElementById('direccion_r').value = data.direccion || '';
-            document.getElementById('calle_r').value = data.calle || '';
-            document.getElementById('casa_r').value = data.casa || '';
-
-            // Deshabilitar campos del representante
-            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-              if (element.name.includes('_r') && element.name !== 'parentesco') {
-                element.disabled = true;
-              }
-            });
 
           } else {
             resultado.innerHTML = `
-            <div class="alert alert-info">
-                <strong>Representante no encontrado.</strong> Por favor complete todos los datos del representante.
-            </div>
-            `;
+        <div class="alert alert-info">
+            <strong>Persona no encontrada.</strong> Por favor complete todos los datos del representante.
+        </div>
+        `;
             document.getElementById('cedula_r').value = cedula;
             document.getElementById('representante_existente').value = '0';
+            document.getElementById('tipo_persona').value = '';
 
             // Habilitar todos los campos por si estaban deshabilitados
             document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
@@ -1154,10 +1501,10 @@ try {
         .catch(error => {
           console.error('Error:', error);
           document.getElementById('resultado-validacion').innerHTML = `
-        <div class="alert alert-danger">
-            Error al validar el representante. Intente nuevamente.
-        </div>
-        `;
+      <div class="alert alert-danger">
+          Error al validar la persona. Intente nuevamente.
+      </div>
+      `;
         });
     }
 
@@ -1292,6 +1639,7 @@ try {
 
   });
 </script>
+
 
 
 <!-- Carga de estados, municipios, parroquias del representante -->

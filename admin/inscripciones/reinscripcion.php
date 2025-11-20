@@ -781,7 +781,7 @@ try {
           } else {
             resultado.innerHTML = `
               <div class="alert alert-info">
-                <strong>Representante no encontrado.</strong> Por favor complete todos los datos del representante.
+                <strong>Representante no encontrado.</strong> Por favor instroduzca cedula de identidad valida.
               </div>
             `;
             document.getElementById('cedula_r').value = cedula;
@@ -853,12 +853,12 @@ try {
           } else {
             resultado.innerHTML = `
               <div class="alert alert-info">
-                <strong>Estudiante no encontrado.</strong> Por favor complete todos los datos del estudiante.
+                <strong>Estudiante no encontrado.</strong> Por favor introduzca cedula de identidad valida.
               </div>
             `;
             document.getElementById('estudiante_existente').value = '0';
-            datosEstudiante.style.display = 'block';
-            submitButton.style.display = 'inline-block';
+            // datosEstudiante.style.display = 'block';
+            // submitButton.style.display = 'inline-block';
           }
         })
         .catch(error => {

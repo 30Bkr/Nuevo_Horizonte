@@ -51,21 +51,44 @@ class UbicacionController
   }
 
   // Crear nueva dirección
-  public function crearDireccion($datos)
+  // public function crearDireccion($datos)
+  // {
+  //   try {
+  //     $sql = "INSERT INTO direcciones (id_parroquia, direccion, calle, casa) 
+  //                   VALUES (:id_parroquia, :direccion, :calle, :casa)";
+  //     $stmt = $this->pdo->prepare($sql);
+  //     $stmt->execute([
+  //       ':id_parroquia' => $datos['id_parroquia'],
+  //       ':direccion' => $datos['direccion'],
+  //       ':calle' => $datos['calle'],
+  //       ':casa' => $datos['casa']
+  //     ]);
+
+  //     return $this->pdo->lastInsertId();
+  //   } catch (PDOException $e) {
+  //     throw new Exception("Error al crear dirección: " . $e->getMessage());
+  //   }
+  // }
+  public function crearDireccion($datosDireccion)
   {
     try {
       $sql = "INSERT INTO direcciones (id_parroquia, direccion, calle, casa) 
-                    VALUES (:id_parroquia, :direccion, :calle, :casa)";
+                VALUES (:id_parroquia, :direccion, :calle, :casa)";
+
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute([
-        ':id_parroquia' => $datos['id_parroquia'],
-        ':direccion' => $datos['direccion'],
-        ':calle' => $datos['calle'],
-        ':casa' => $datos['casa']
+        ':id_parroquia' => $datosDireccion['id_parroquia'],
+        ':direccion' => $datosDireccion['direccion'],
+        ':calle' => $datosDireccion['calle'] ?? '',
+        ':casa' => $datosDireccion['casa'] ?? ''
       ]);
 
-      return $this->pdo->lastInsertId();
+      $id_direccion = $this->pdo->lastInsertId();
+      error_log("Dirección creada exitosamente con ID: " . $id_direccion);
+
+      return $id_direccion;
     } catch (PDOException $e) {
+      error_log("Error al crear dirección: " . $e->getMessage());
       throw new Exception("Error al crear dirección: " . $e->getMessage());
     }
   }
