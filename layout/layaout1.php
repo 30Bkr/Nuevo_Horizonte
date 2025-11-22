@@ -196,7 +196,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </a>
               <ul class="nav nav-treeview">
                 <li class="nav-item">
-                  <a href="<?= URL; ?>/admin/docentes/index.php" class="nav-link">
+                  <a href="<?= URL; ?>/views/docentes/docentes_list.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Listado de docentes</p>
                   </a>
@@ -229,15 +229,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </a>
               <ul class="nav nav-treeview">
                 <li class="nav-item">
-                  <a href="<?= URL; ?>/admin/cursos/listaG.php" class="nav-link">
+                  <a href="<?= URL; ?>/views/grados/grados_list.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Listado de grados</p>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a href="<?= URL; ?>/admin/cursos/listaA.php" class="nav-link">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Listado de años</p>
+                    <p>Listado</p>
                   </a>
                 </li>
               </ul>

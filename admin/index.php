@@ -19,3 +19,6 @@ include_once('../layout/layaout1.php');
 include_once('../layout/layaout2.php');
 include_once('../layout/mensajes.php')
 ?>
+
+<!-- TABLA DE PARENTEZCO  PARA PARENTEZCO DEL REPRESENTANTE ESTUDIANTE -->
+<!-- Modificar fecha para que tambien sea por mes -->

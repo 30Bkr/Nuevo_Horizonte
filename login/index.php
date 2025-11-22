@@ -232,10 +232,10 @@ include_once('../global/utils.php');
         <div class="logo">
           <h2>Bienvenido</h2>
           <p>a</p>
-          <div class="d-flex justify-content-center mt-1">
-            <img src="../public/images/insignia_escuela.png" alt="insignia-escuela" style="height: 7rem;">
-            <h3>Nuevo Horizonte</h3>
-          </div>
+          <!-- <div class="d-flex justify-content-center mt-1 flex-column"> -->
+          <h3>Nuevo Horizonte</h3>
+          <img src="../public/images/insignia_escuela.png" alt="insignia-escuela" style="height: 7rem;">
+          <!-- </div> -->
         </div>
 
 
