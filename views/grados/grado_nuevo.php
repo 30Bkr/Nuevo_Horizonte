@@ -31,6 +31,18 @@ if ($_POST) {
         $_SESSION['error'] = "Error: " . $e->getMessage();
     }
 }
+
+// Obtener datos para los selects
+try {
+    $database = new Conexion();
+    $db = $database->conectar();
+    $grado = new Grado($db);
+    
+    $niveles = $grado->obtenerNiveles();
+    $secciones = $grado->obtenerSecciones();
+} catch (Exception $e) {
+    $_SESSION['error'] = "Error al cargar datos: " . $e->getMessage();
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -137,38 +149,43 @@ if ($_POST) {
                             <div class="card-header">
                                 <h3 class="card-title">Registrar Nuevo Grado/Sección</h3>
                             </div>
-                            <form method="post" action="grado_nuevo.php">
+                            <form method="post" action="grado_nuevo.php" id="formGrado">
                                 <div class="card-body">
-                                    <?php
-                                    try {
-                                        $database = new Conexion();
-                                        $db = $database->conectar();
-                                        $grado = new Grado($db);
-                                        
-                                        $niveles = $grado->obtenerNiveles();
-                                        $secciones = $grado->obtenerSecciones();
-                                    ?>
                                     <div class="form-group">
                                         <label for="id_nivel">Grado/Nivel:</label>
-                                        <select class="form-control" id="id_nivel" name="id_nivel" required>
+                                        <select class="form-control" id="id_nivel" name="id_nivel" required onchange="validarCombinacion()">
                                             <option value="">Seleccione un grado</option>
-                                            <?php while ($nivel = $niveles->fetch(PDO::FETCH_ASSOC)): ?>
+                                            <?php 
+                                            if (isset($niveles)) {
+                                                $niveles->execute();
+                                                while ($nivel = $niveles->fetch(PDO::FETCH_ASSOC)): 
+                                            ?>
                                                 <option value="<?php echo $nivel['id_nivel']; ?>">
                                                     <?php echo $nivel['nom_nivel']; ?>
                                                 </option>
-                                            <?php endwhile; ?>
+                                            <?php 
+                                                endwhile; 
+                                            }
+                                            ?>
                                         </select>
                                     </div>
                                     
                                     <div class="form-group">
                                         <label for="id_seccion">Sección:</label>
-                                        <select class="form-control" id="id_seccion" name="id_seccion" required>
+                                        <select class="form-control" id="id_seccion" name="id_seccion" required onchange="validarCombinacion()">
                                             <option value="">Seleccione una sección</option>
-                                            <?php while ($seccion = $secciones->fetch(PDO::FETCH_ASSOC)): ?>
+                                            <?php 
+                                            if (isset($secciones)) {
+                                                $secciones->execute();
+                                                while ($seccion = $secciones->fetch(PDO::FETCH_ASSOC)): 
+                                            ?>
                                                 <option value="<?php echo $seccion['id_seccion']; ?>">
                                                     <?php echo $seccion['nom_seccion']; ?>
                                                 </option>
-                                            <?php endwhile; ?>
+                                            <?php 
+                                                endwhile; 
+                                            }
+                                            ?>
                                         </select>
                                     </div>
                                     
@@ -178,12 +195,14 @@ if ($_POST) {
                                                min="1" max="50" required placeholder="Ej: 25">
                                         <small class="form-text text-muted">Número máximo de estudiantes permitidos</small>
                                     </div>
-                                    <?php } catch (Exception $e) { ?>
-                                        <div class="alert alert-danger">Error al cargar datos: <?php echo $e->getMessage(); ?></div>
-                                    <?php } ?>
+
+                                    <!-- Mensaje de validación en tiempo real -->
+                                    <div id="mensajeValidacion" class="alert" style="display: none;">
+                                        <i class="icon fas fa-info-circle"></i> <span id="textoMensaje"></span>
+                                    </div>
                                 </div>
                                 <div class="card-footer">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="btnGuardar">
                                         <i class="fas fa-save"></i> Guardar
                                     </button>
                                     <a href="grados_list.php" class="btn btn-default">
@@ -225,5 +244,70 @@ if ($_POST) {
 <script src="/final/public/plugins/jquery/jquery.min.js"></script>
 <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/final/public/dist/js/adminlte.min.js"></script>
+
+<script>
+// Función para validar combinación en tiempo real
+function validarCombinacion() {
+    var idNivel = document.getElementById('id_nivel').value;
+    var idSeccion = document.getElementById('id_seccion').value;
+    var mensajeDiv = document.getElementById('mensajeValidacion');
+    var textoMensaje = document.getElementById('textoMensaje');
+    var btnGuardar = document.getElementById('btnGuardar');
+
+    // Ocultar mensaje si no hay selección completa
+    if (!idNivel || !idSeccion) {
+        mensajeDiv.style.display = 'none';
+        btnGuardar.disabled = false;
+        return;
+    }
+
+    // Realizar petición AJAX para verificar combinación
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'validar_grado_seccion.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var respuesta = JSON.parse(xhr.responseText);
+            
+            if (respuesta.existe) {
+                // Combinación ya existe
+                mensajeDiv.className = 'alert alert-danger';
+                textoMensaje.innerHTML = '<strong>¡Combinación existente!</strong> Ya existe un ' + 
+                                        respuesta.nombre_grado + ' - Sección ' + respuesta.seccion + 
+                                        ' en el sistema.';
+                mensajeDiv.style.display = 'block';
+                btnGuardar.disabled = true;
+            } else {
+                // Combinación disponible
+                mensajeDiv.className = 'alert alert-success';
+                textoMensaje.innerHTML = '<strong>¡Combinación disponible!</strong> Puede crear ' + 
+                                        respuesta.nombre_grado + ' - Sección ' + respuesta.seccion + '.';
+                mensajeDiv.style.display = 'block';
+                btnGuardar.disabled = false;
+            }
+        }
+    };
+    
+    xhr.send('id_nivel=' + idNivel + '&id_seccion=' + idSeccion);
+}
+
+// Validar al cargar la página si ya hay selecciones
+document.addEventListener('DOMContentLoaded', function() {
+    validarCombinacion();
+});
+
+// Validar antes de enviar el formulario
+document.getElementById('formGrado').addEventListener('submit', function(e) {
+    var idNivel = document.getElementById('id_nivel').value;
+    var idSeccion = document.getElementById('id_seccion').value;
+    
+    if (!idNivel || !idSeccion) {
+        e.preventDefault();
+        alert('Por favor, seleccione tanto el grado como la sección.');
+        return false;
+    }
+});
+</script>
 </body>
 </html>

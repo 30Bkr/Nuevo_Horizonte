@@ -115,30 +115,24 @@ class Grado {
     }
 
     // Actualizar grado
-    public function actualizar() {
-        $query = "UPDATE " . $this->table_name . " 
-                  SET id_nivel = :id_nivel, 
-                      id_seccion = :id_seccion, 
-                      capacidad = :capacidad
-                  WHERE id_nivel_seccion = :id_nivel_seccion";
-        
-        $stmt = $this->conn->prepare($query);
-        
-        $this->id_nivel = htmlspecialchars(strip_tags($this->id_nivel));
-        $this->id_seccion = htmlspecialchars(strip_tags($this->id_seccion));
-        $this->capacidad = htmlspecialchars(strip_tags($this->capacidad));
-        $this->id_nivel_seccion = htmlspecialchars(strip_tags($this->id_nivel_seccion));
-        
-        $stmt->bindParam(":id_nivel", $this->id_nivel);
-        $stmt->bindParam(":id_seccion", $this->id_seccion);
-        $stmt->bindParam(":capacidad", $this->capacidad);
-        $stmt->bindParam(":id_nivel_seccion", $this->id_nivel_seccion);
-        
-        if ($stmt->execute()) {
-            return true;
-        }
-        return false;
+   public function actualizar() {
+    $query = "UPDATE " . $this->table_name . " 
+              SET capacidad = :capacidad
+              WHERE id_nivel_seccion = :id_nivel_seccion";
+    
+    $stmt = $this->conn->prepare($query);
+    
+    $this->capacidad = htmlspecialchars(strip_tags($this->capacidad));
+    $this->id_nivel_seccion = htmlspecialchars(strip_tags($this->id_nivel_seccion));
+    
+    $stmt->bindParam(":capacidad", $this->capacidad);
+    $stmt->bindParam(":id_nivel_seccion", $this->id_nivel_seccion);
+    
+    if ($stmt->execute()) {
+        return true;
     }
+    return false;
+}
 
     // Eliminar grado (cambiar estado)
     public function eliminar() {
