@@ -8,14 +8,16 @@ include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
 include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
 include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.php");
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
+include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
+
 // include_once("/xampp/htdocs/final/app/controllers/representantes/profesiones.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
 
 try {
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
-
-
+  $inscripcionesController = new InscripcionController($pdo);
+  $periodos = $inscripcionesController->obtenerPeriodosActivos();
   $profesionesController = new RepresentanteController($pdo);
   $profesiones = $profesionesController->obtenerProfesiones();
   $ubicacionController = new UbicacionController($pdo);
@@ -381,6 +383,17 @@ try {
                   </div>
 
                   <div class="row">
+
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="nacionalidad_e">Nacionalidad</label>
+                        <select name="nacionalidad_e" class="form-control" required>
+                          <option value="">Seleccionar</option>
+                          <option value="Venezolano">Venezolano</option>
+                          <option value="Extranjero">Extranjero</option>
+                        </select>
+                      </div>
+                    </div>
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="fecha_nac_e">Fecha de Nacimiento</label>
@@ -391,12 +404,6 @@ try {
                       <div class="form-group">
                         <label for="cedula_e">Cédula de Identidad</label>
                         <input type="text" name="cedula_e" id="cedula_e" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="lugar_nac_e">Lugar de Nacimiento</label>
-                        <input type="text" name="lugar_nac_e" class="form-control" required>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -414,10 +421,11 @@ try {
                   <div class="row">
                     <div class="col-md-4">
                       <div class="form-group">
-                        <label for="nacionalidad_e">Nacionalidad</label>
-                        <input type="text" name="nacionalidad_e" class="form-control" required value="Venezolana">
+                        <label for="lugar_nac_e">Lugar de Nacimiento</label>
+                        <input type="text" name="lugar_nac_e" class="form-control" required>
                       </div>
                     </div>
+
                     <div class="col-md-4">
                       <div class="form-group">
                         <label for="telefono_e">Teléfono</label>
@@ -432,6 +440,42 @@ try {
                     </div>
                   </div>
 
+                  <!-- PATOLOGÍAS -->
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label>Patologías/Alergias (Seleccione las que apliquen)</label>
+                        <div class="row">
+                          <?php
+                          $patologias = [
+                            1 => 'Asma',
+                            2 => 'Alergia a lácteos',
+                            3 => 'Alergia al polen',
+                            4 => 'Rinitis alérgica'
+                          ];
+                          foreach ($patologias as $id => $patologia) {
+                            echo "
+                            <div class='col-md-3'>
+                              <div class='form-check'>
+                                <input type='checkbox' name='patologias[]' value='$id' class='form-check-input' id='patologia_$id'>
+                                <label class='form-check-label' for='patologia_$id'>$patologia</label>
+                              </div>
+                            </div>";
+                          }
+                          ?>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="observaciones">Observaciones</label>
+                        <textarea name="observaciones" class="form-control" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                      </div>
+                    </div>
+                  </div>
                   <!-- Pregunta si el almuno vive en la casa del representante -->
                   <input type="hidden" name="juntos" id="juntos" value="1">
                   <div class="card-header mt-4">
@@ -513,81 +557,59 @@ try {
                   </div>
 
                   <!-- INFORMACIÓN ACADÉMICA -->
-                  <div class="row">
-                    <div class="col-md-4">
-                      <div class="form-group">
-                        <label for="id_periodo">Período Académico</label>
-                        <select name="id_periodo" class="form-control" required>
-                          <option value="">Seleccionar Período</option>
-                          <?php
-                          echo "<option value='1' selected>Año Escolar 2024-2025</option>";
-                          ?>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="form-group">
-                        <label for="id_nivel">Nivel/Grado</label>
-                        <select name="id_nivel" id="id_nivel" class="form-control" required>
-                          <option value="">Seleccionar Nivel</option>
-                          <?php
-                          $niveles = [1 => 'Primer Grado', 2 => 'Segundo Grado'];
-                          foreach ($niveles as $id => $nivel) {
-                            echo "<option value='$id'>$nivel</option>";
-                          }
-                          ?>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="form-group">
-                        <label for="id_seccion">Sección</label>
-                        <select name="id_seccion" class="form-control" required>
-                          <option value="">Seleccionar Sección</option>
-                          <?php
-                          $secciones = [1 => 'Sección A', 2 => 'Sección B'];
-                          foreach ($secciones as $id => $seccion) {
-                            echo "<option value='$id'>$seccion</option>";
-                          }
-                          ?>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
 
-                  <!-- PATOLOGÍAS -->
-                  <div class="row">
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <label>Patologías/Alergias (Seleccione las que apliquen)</label>
-                        <div class="row">
-                          <?php
-                          $patologias = [
-                            1 => 'Asma',
-                            2 => 'Alergia a lácteos',
-                            3 => 'Alergia al polen',
-                            4 => 'Rinitis alérgica'
-                          ];
-                          foreach ($patologias as $id => $patologia) {
-                            echo "
-                            <div class='col-md-3'>
-                              <div class='form-check'>
-                                <input type='checkbox' name='patologias[]' value='$id' class='form-check-input' id='patologia_$id'>
-                                <label class='form-check-label' for='patologia_$id'>$patologia</label>
-                              </div>
-                            </div>";
-                          }
-                          ?>
+                  <div class="informacion_academica">
+                    <div class="card-header mt-4">
+                      <h3 class="card-title"><b>Informacion Academica</b></h3>
+                    </div>
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="id_periodo">Período Académico</label>
+                            <select name="id_periodo" class="form-control" required>
+                              <option value="">Seleccionar Período</option>
+                              <?php
+                              if (!empty($periodos)) {
+                                foreach ($periodos as $periodo) {
+                                  $selected = ($periodo['estatus'] == 1) ? 'selected' : '';
+                                  echo "<option value='{$periodo['id_periodo']}' $selected>{$periodo['descripcion_periodo']}</option>";
+                                }
+                              } else {
+                                echo "<option value=''>No hay períodos disponibles</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <label for="observaciones">Observaciones</label>
-                        <textarea name="observaciones" class="form-control" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="id_nivel">Nivel/Grado</label>
+                            <select name="id_nivel" id="id_nivel" class="form-control" required>
+                              <option value="">Seleccionar Nivel</option>
+                              <?php
+                              $niveles = [1 => 'Primer Grado', 2 => 'Segundo Grado'];
+                              foreach ($niveles as $id => $nivel) {
+                                echo "<option value='$id'>$nivel</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="id_seccion">Sección</label>
+                            <select name="id_seccion" class="form-control" required>
+                              <option value="">Seleccionar Sección</option>
+                              <?php
+                              $secciones = [1 => 'Sección A', 2 => 'Sección B'];
+                              foreach ($secciones as $id => $seccion) {
+                                echo "<option value='$id'>$seccion</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -635,6 +657,7 @@ try {
         document.getElementById('estado_e').required = true;
         document.getElementById('direccion_e').required = true;
       } else {
+        document.getElementById('juntos').value = '1';
         // Ocultar la sección de dirección
         seccionDireccion.style.display = 'none';
 
@@ -691,12 +714,16 @@ try {
       const esMenor12 = esMenor(fecha);
 
       if (esMenor12) {
+        const cedulaRInput = document.getElementById('cedula_r');
+
 
         const anioNacimiento = fecha.substring(2, 4);
         if (tp === 'representante') {
           console.log(tp);
 
           try {
+            cedulaRInput.disabled = true;
+
             const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaR);
             document.getElementById('cedula_e').value = `${numeroDEstudiantes}`;
           } catch (error) {
@@ -743,6 +770,7 @@ try {
     }
 
     async function validarYGenerarCedula(idRepre, a, c) {
+
       try {
         console.log('Solicitando cuenta de alumnos para ID:', idRepre);
 
@@ -801,38 +829,6 @@ try {
         return 0;
       }
     }
-
-    // async function validarYGenerarCedula(idRepre) {
-    //   try {
-
-    //     const formData = new FormData();
-    //     formData.append('id', idRepre);
-
-
-    //     fetch('/final/app/controllers/representantes/cuentaDeAlumnos.php', {
-    //         method: 'POST',
-    //         body: formData
-    //       })
-    //       .then(response => {
-    //         if (!response.ok) {
-    //           throw new Error('Error en la respuesta del servidor en data');
-    //         }
-    //         return response.json();
-    //       })
-    //       .then(data => {
-    //         console.log(data.total_estudiantes);
-    //         console.log(data);
-
-    //       })
-    //       .catch(error => {
-    //         console.error('Error al cargar municipios:', error);
-    //         reject(error);
-    //       })
-    //   } catch (error) {
-
-    //   }
-    // }
-
   });
 </script>
 
@@ -1069,281 +1065,6 @@ try {
       validarRepresentante(cedula);
     });
 
-    // function validarRepresentante(cedula) {
-    //   // Crear FormData para enviar por POST
-    //   const formData = new FormData();
-    //   formData.append('cedula', cedula);
-
-    //   fetch('/final/app/controllers/representantes/validar.php', {
-    //       method: 'POST',
-    //       body: formData
-    //     })
-    //     .then(response => {
-    //       if (!response.ok) {
-    //         throw new Error('Error en la respuesta del servidor');
-    //       }
-    //       return response.json();
-    //     })
-    //     .then(data => {
-    //       const resultado = document.getElementById('resultado-validacion');
-    //       const nextButton = document.getElementById('btn-next-to-step2');
-
-    //       if (data.existe) {
-    //         resultado.innerHTML = `
-    //         <div class="alert alert-success">
-    //             <strong>Representante encontrado:</strong> ${data.nombre_completo}
-    //             <br>Los datos se cargarán automáticamente.
-    //         </div>
-    //         `;
-
-    //         // Llenar los campos con los datos del representante
-    //         document.getElementById('representante_existente').value = '1';
-    //         document.getElementById('id_direccion_repre').value = data.id_direccion;
-    //         document.getElementById('id_representante_existente').value = data.id_representante;
-
-
-    //         // Mostrar botón siguiente
-    //         nextButton.style.display = 'inline-block';
-
-    //         // Datos personales
-    //         document.getElementById('cedula_r').value = data.cedula;
-    //         document.getElementById('primer_nombre_r').value = data.primer_nombre;
-    //         document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
-    //         document.getElementById('primer_apellido_r').value = data.primer_apellido;
-    //         document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
-    //         document.getElementById('correo_r').value = data.correo || '';
-    //         document.getElementById('telefono_r').value = data.telefono || '';
-    //         document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
-    //         document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
-    //         document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
-    //         document.getElementById('sexo_r').value = data.sexo || '';
-    //         document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
-    //         document.getElementById('ocupacion_r').value = data.ocupacion || '';
-    //         document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
-
-    //         // Datos de dirección
-    //         if (data.id_estado) {
-    //           document.getElementById('estado_r').value = data.id_estado;
-
-    //           // Cargar municipios para este estado
-    //           cargarMunicipios(data.id_estado).then(() => {
-    //             if (data.id_municipio) {
-    //               document.getElementById('municipio_r').value = data.id_municipio;
-
-    //               // Cargar parroquias para este municipio
-    //               cargarParroquias(data.id_municipio).then(() => {
-    //                 if (data.id_parroquia) {
-    //                   document.getElementById('parroquia_r').value = data.id_parroquia;
-    //                 }
-    //               });
-    //             }
-    //           });
-    //         }
-    //         if (data.profesion) {
-    //           document.getElementById('profesion_r').value = data.profesion;
-
-    //         }
-
-
-    //         document.getElementById('direccion_r').value = data.direccion || '';
-    //         document.getElementById('calle_r').value = data.calle || '';
-    //         document.getElementById('casa_r').value = data.casa || '';
-
-    //         // Deshabilitar campos del representante
-    //         document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-    //           if (element.name.includes('_r') && element.name !== 'parentesco') {
-    //             element.disabled = true;
-    //           }
-    //         });
-
-    //       } else {
-    //         resultado.innerHTML = `
-    //         <div class="alert alert-info">
-    //             <strong>Representante no encontrado.</strong> Por favor complete todos los datos del representante.
-    //         </div>
-    //         `;
-    //         document.getElementById('cedula_r').value = cedula;
-    //         document.getElementById('representante_existente').value = '0';
-
-    //         // Habilitar todos los campos por si estaban deshabilitados
-    //         document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-    //           element.disabled = false;
-    //         });
-    //       }
-    //     })
-    //     .catch(error => {
-    //       console.error('Error:', error);
-    //       document.getElementById('resultado-validacion').innerHTML = `
-    //     <div class="alert alert-danger">
-    //         Error al validar el representante. Intente nuevamente.
-    //     </div>
-    //     `;
-    //     });
-    // }
-
-    // function validarRepresentante(cedula) {
-    //   // Crear FormData para enviar por POST
-    //   const formData = new FormData();
-    //   formData.append('cedula', cedula);
-
-    //   fetch('/final/app/controllers/representantes/validar.php', {
-    //       method: 'POST',
-    //       body: formData
-    //     })
-    //     .then(response => {
-    //       if (!response.ok) {
-    //         throw new Error('Error en la respuesta del servidor');
-    //       }
-    //       return response.json();
-    //     })
-    //     .then(data => {
-    //       const resultado = document.getElementById('resultado-validacion');
-    //       const nextButton = document.getElementById('btn-next-to-step2');
-
-    //       if (data.existe) {
-    //         // Determinar el tipo de persona encontrada
-    //         const tipoPersona = data.tipo || 'representante'; // Por defecto representante para compatibilidad
-    //         const esDocente = tipoPersona === 'docente';
-    //         const esRepresentante = tipoPersona === 'representante';
-
-    //         resultado.innerHTML = `
-    //     <div class="alert alert-success">
-    //         <strong>${esDocente ? 'Docente' : 'Representante'} encontrado:</strong> ${data.nombre_completo}
-    //         <br>Los datos se cargarán automáticamente.
-    //         ${esDocente ? '<br><em>Nota: Como es docente, algunos campos estarán disponibles para completar</em>' : ''}
-    //     </div>
-    //     `;
-
-    //         // Llenar los campos comunes
-    //         document.getElementById('representante_existente').value = '1';
-    //         document.getElementById('id_direccion_repre').value = data.id_direccion;
-
-    //         if (esRepresentante) {
-    //           document.getElementById('id_representante_existente').value = data.id_representante;
-
-    //           document.getElementById('tipo_persona').value = 'representante';
-    //         } else if (esDocente) {
-    //           document.getElementById('id_representante_existente').value = data.id_docente;
-    //           document.getElementById('tipo_persona').value = 'docente';
-    //         }
-
-    //         // Mostrar botón siguiente
-    //         nextButton.style.display = 'inline-block';
-
-    //         // Datos personales (comunes para ambos)
-    //         document.getElementById('cedula_r').value = data.cedula;
-    //         document.getElementById('primer_nombre_r').value = data.primer_nombre;
-    //         document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
-    //         document.getElementById('primer_apellido_r').value = data.primer_apellido;
-    //         document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
-    //         document.getElementById('correo_r').value = data.correo || '';
-    //         document.getElementById('telefono_r').value = data.telefono || '';
-    //         document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
-    //         document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
-    //         document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
-    //         document.getElementById('sexo_r').value = data.sexo || '';
-    //         document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
-
-    //         // Profesión (común para ambos)
-    //         if (data.profesion) {
-    //           document.getElementById('profesion_r').value = data.profesion;
-    //         }
-
-    //         // Datos de dirección (comunes para ambos)
-    //         if (data.id_estado) {
-    //           document.getElementById('estado_r').value = data.id_estado;
-
-    //           // Cargar municipios para este estado
-    //           cargarMunicipios(data.id_estado).then(() => {
-    //             if (data.id_municipio) {
-    //               document.getElementById('municipio_r').value = data.id_municipio;
-
-    //               // Cargar parroquias para este municipio
-    //               cargarParroquias(data.id_municipio).then(() => {
-    //                 if (data.id_parroquia) {
-    //                   document.getElementById('parroquia_r').value = data.id_parroquia;
-    //                 }
-    //               });
-    //             }
-    //           });
-    //         }
-
-    //         // DIFERENCIAS ENTRE DOCENTE Y REPRESENTANTE
-    //         if (esRepresentante) {
-    //           // REPRESENTANTE: Cargar todos los datos y deshabilitar
-    //           document.getElementById('ocupacion_r').value = data.ocupacion || '';
-    //           document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
-    //           document.getElementById('direccion_r').value = data.direccion || '';
-    //           document.getElementById('calle_r').value = data.calle || '';
-    //           document.getElementById('casa_r').value = data.casa || '';
-
-    //           // Deshabilitar TODOS los campos del representante
-    //           document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-    //             if (element.name.includes('_r') && element.name !== 'parentesco') {
-    //               element.disabled = true;
-    //             }
-    //           });
-
-    //         } else if (esDocente) {
-    //           // DOCENTE: Solo cargar datos básicos y mantener habilitados ciertos campos
-    //           document.getElementById('ocupacion_r').value = ''; // Vacío porque no existe en docente
-    //           document.getElementById('lugar_trabajo_r').value = ''; // Vacío porque no existe en docente
-    //           document.getElementById('direccion_r').value = data.direccion || '';
-    //           document.getElementById('calle_r').value = data.calle || '';
-    //           document.getElementById('casa_r').value = data.casa || '';
-
-    //           // Deshabilitar solo los campos básicos, mantener habilitados los específicos
-    //           const camposDeshabilitados = [
-    //             'cedula_r', 'primer_nombre_r', 'segundo_nombre_r',
-    //             'primer_apellido_r', 'segundo_apellido_r', 'correo_r',
-    //             'telefono_r', 'telefono_hab_r', 'fecha_nac_r', 'lugar_nac_r',
-    //             'sexo_r', 'nacionalidad_r', 'profesion_r', 'estado_r',
-    //             'municipio_r', 'parroquia_r'
-    //           ];
-
-    //           // Deshabilitar campos básicos
-    //           camposDeshabilitados.forEach(campoId => {
-    //             const elemento = document.getElementById(campoId);
-    //             if (elemento) elemento.disabled = true;
-    //           });
-
-    //           // Mantener HABILITADOS los campos específicos que el docente debe completar
-    //           const camposHabilitados = [
-    //             'ocupacion_r', 'lugar_trabajo_r', 'direccion_r',
-    //             'calle_r', 'casa_r'
-    //           ];
-
-    //           camposHabilitados.forEach(campoId => {
-    //             const elemento = document.getElementById(campoId);
-    //             if (elemento) elemento.disabled = false;
-    //           });
-    //         }
-
-    //       } else {
-    //         resultado.innerHTML = `
-    //     <div class="alert alert-info">
-    //         <strong>Persona no encontrada.</strong> Por favor complete todos los datos del representante.
-    //     </div>
-    //     `;
-    //         document.getElementById('cedula_r').value = cedula;
-    //         document.getElementById('representante_existente').value = '0';
-
-    //         // Habilitar todos los campos por si estaban deshabilitados
-    //         document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-    //           element.disabled = false;
-    //         });
-    //       }
-    //     })
-    //     .catch(error => {
-    //       console.error('Error:', error);
-    //       document.getElementById('resultado-validacion').innerHTML = `
-    //   <div class="alert alert-danger">
-    //       Error al validar la persona. Intente nuevamente.
-    //   </div>
-    //   `;
-    //     });
-    // }
-
     function validarRepresentante(cedula) {
       // Crear FormData para enviar por POST
       const formData = new FormData();
@@ -1443,6 +1164,23 @@ try {
               // Deshabilitar TODOS los campos del representante
               document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
                 if (element.name.includes('_r') && element.name !== 'parentesco') {
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
+                  // kkksksksk
                   element.disabled = true;
                 }
               });
