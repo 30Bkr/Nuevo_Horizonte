@@ -351,6 +351,38 @@ try {
           <div class="row">
             <div class="col-md-12">
               <div class="card card-outline card-success">
+                <!-- Pregunta si el almuno vive en la casa del representante -->
+                <input type="hidden" name="juntos" id="juntos" value="1">
+                <div class="card-header mt-4">
+                  <h3 class="card-title"><b>Datos de interés</b></h3>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="misma_casa">¿El alumno vive en la misma casa del representante?</label>
+                        <select name="misma_casa" id="misma_casa" class="form-control" required>
+                          <option value="">Seleccionar...</option>
+                          <option value="si">Sí</option>
+                          <option value="no">No</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="ci_si">¿El alumno cuenta con cédula de identidad?</label>
+                        <select name="ci_si" id="ci_si" class="form-control">
+                          <option value="">Seleccionar...</option>
+                          <option value="si">Sí</option>
+                          <option value="no">No</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
                 <div class="card-header">
                   <h3 class="card-title"><b>Paso 3: Datos del Estudiante</b></h3>
                 </div>
@@ -473,25 +505,6 @@ try {
                       <div class="form-group">
                         <label for="observaciones">Observaciones</label>
                         <textarea name="observaciones" class="form-control" rows="3" placeholder="Observaciones adicionales..."></textarea>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Pregunta si el almuno vive en la casa del representante -->
-                  <input type="hidden" name="juntos" id="juntos" value="1">
-                  <div class="card-header mt-4">
-                    <h3 class="card-title"><b>Datos de Residencia</b></h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-group">
-                          <label for="misma_casa">¿El alumno vive en la misma casa del representante?</label>
-                          <select name="misma_casa" id="misma_casa" class="form-control" required>
-                            <option value="">Seleccionar</option>
-                            <option value="si">Sí</option>
-                            <option value="no">No</option>
-                          </select>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -681,6 +694,7 @@ try {
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_nac_e');
@@ -688,91 +702,125 @@ try {
     const cedulaRInput = document.getElementById('cedula_r');
     const id_representante_esc = document.getElementById('id_representante_existente');
     const tipo = document.getElementById('tipo_persona');
-
+    const selectCi = document.getElementById('ci_si');
 
     const hoy = new Date();
     const añoActual = hoy.getFullYear();
-
     const añoMinimo = añoActual - 19;
     const añoMaximo = añoActual - 5;
 
     fechaInput.min = `${añoMinimo}-01-01`;
     fechaInput.max = `${añoMaximo}-12-31`;
 
-    fechaInput.addEventListener('change', validarRegistro);
-
+    // Función para validar y generar cédula
     async function validarRegistro() {
+      console.log('📅 Evento de cambio de fecha detectado');
+
       const fecha = fechaInput.value;
-      const cedulaR = cedulaRInput.value
       const idR = id_representante_esc.value;
       const tp = tipo.value;
 
-      const cedulaEscolar = null;
+      // Obtener el valor ACTUAL de la cédula
+      const cedulaRActual = cedulaRInput.value;
+      console.log('Datos obtenidos:', {
+        fecha: fecha,
+        cedulaRActual: cedulaRActual,
+        idR: idR,
+        tp: tp
+      });
 
-      console.log('guardamos datos de fecha:', fecha);
+      // Verificar que tenemos todos los datos necesarios
+      if (!fecha) {
+        console.log('❌ No hay fecha seleccionada');
+        return;
+      }
 
-      const esMenor12 = esMenor(fecha);
+      if (!cedulaRActual) {
+        console.log('❌ No hay cédula de representante');
+        return;
+      }
 
-      if (esMenor12) {
-        const cedulaRInput = document.getElementById('cedula_r');
+      const anioNacimiento = fecha.substring(2, 4);
+      console.log('🔢 Año de nacimiento extraído:', anioNacimiento);
 
-
-        const anioNacimiento = fecha.substring(2, 4);
-        if (tp === 'representante') {
-          console.log(tp);
-
-          try {
-            cedulaRInput.disabled = true;
-
-            const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaR);
-            document.getElementById('cedula_e').value = `${numeroDEstudiantes}`;
-          } catch (error) {
-
+      if (tp === 'representante') {
+        console.log('👨‍👦 Tipo: representante - generando cédula escolar');
+        try {
+          cedulaRInput.disabled = true;
+          const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaRActual);
+          if (numeroDEstudiantes) {
+            cedulaEInput.value = numeroDEstudiantes;
+            // ✅ Hacer el campo de solo lectura
+            cedulaEInput.readOnly = true;
+            cedulaEInput.style.backgroundColor = '#f8f9fa';
+            cedulaEInput.style.cursor = 'not-allowed';
+            console.log('✅ Cédula escolar generada:', numeroDEstudiantes);
           }
-          console.log(typeof(numeroDEstudiantes));
-        } else {
-          const c_esc = anioNacimiento + '1' + cedulaR;
-          document.getElementById('cedula_e').value = `${c_esc}`;
-
+        } catch (error) {
+          console.error('❌ Error:', error);
         }
-        console.log('si es menor de 12 a;os: ', anioNacimiento);
-        console.log('cedula del repre: ', cedulaR);
-        console.log('ID del repre: ', idR);
-        console.log('tipo del repre: ', tp);
-
-
-
       } else {
-        console.log('Es maoyr de 12 a;os');
-
+        console.log('👤 Tipo: otro - generando cédula simple');
+        const c_esc = anioNacimiento + '1' + cedulaRActual;
+        cedulaEInput.value = c_esc;
+        // ✅ Hacer el campo de solo lectura
+        cedulaEInput.readOnly = true;
+        cedulaEInput.style.backgroundColor = '#f8f9fa';
+        cedulaEInput.style.cursor = 'not-allowed';
+        console.log('✅ Cédula escolar generada:', c_esc);
       }
-
     }
 
-    function esMenor(fechaNacimiento) {
-      const fechaNac = new Date(fechaNacimiento);
-      const hoy = new Date();
+    // Manejar cambio en el select de CI
+    selectCi.addEventListener('change', function() {
+      console.log('🔄 Select CI cambiado a:', this.value);
 
-      // Calcular diferencia en años
-      let edad = hoy.getFullYear() - fechaNac.getFullYear();
+      if (this.value === 'no') {
+        console.log('🎯 Modo: Sin cédula - activando generación automática');
 
-      // Ajustar si aún no ha pasado el cumpleaños este año
-      const mesActual = hoy.getMonth();
-      const diaActual = hoy.getDate();
-      const mesNacimiento = fechaNac.getMonth();
-      const diaNacimiento = fechaNac.getDate();
+        // ✅ Asegurar que el campo esté listo para ser de solo lectura
+        cedulaEInput.placeholder = "Se generará automáticamente";
 
-      if (mesActual < mesNacimiento ||
-        (mesActual === mesNacimiento && diaActual < diaNacimiento)) {
-        edad--;
+        // Agregar event listener para cambios de fecha
+        fechaInput.addEventListener('change', validarRegistro);
+        console.log('👂 Escuchando cambios en fecha...');
+
+        // Ejecutar inmediatamente si ya hay una fecha seleccionada
+        if (fechaInput.value) {
+          console.log('📋 Fecha ya seleccionada, ejecutando validación...');
+          validarRegistro();
+        } else {
+          console.log('⏳ Esperando selección de fecha...');
+        }
+
+      } else if (this.value === 'si') {
+        console.log('🆗 Modo: Con cédula - desactivando generación automática');
+        // Remover el event listener cuando no es necesario
+        fechaInput.removeEventListener('change', validarRegistro);
+        // ✅ Limpiar y habilitar el campo para ingreso manual
+        cedulaEInput.value = '';
+        cedulaEInput.readOnly = false;
+        cedulaEInput.style.backgroundColor = '';
+        cedulaEInput.style.cursor = '';
+        cedulaEInput.placeholder = "Ingrese la cédula de identidad";
+        // cedulaEInput.focus();
       }
-      return edad < 12;
-    }
+    });
 
+    // También escuchar cambios en la cédula del representante por si cambia
+    cedulaRInput.addEventListener('input', function() {
+      console.log('✏️ Cédula representante cambiada:', this.value);
+      // Si ya hay fecha seleccionada y estamos en modo "no CI", regenerar
+      if (selectCi.value === 'no' && fechaInput.value) {
+        console.log('🔄 Regenerando cédula escolar por cambio en cédula representante');
+        validarRegistro();
+      }
+    });
+
+    // Función para contar estudiantes (mantener igual)
     async function validarYGenerarCedula(idRepre, a, c) {
-
       try {
-        console.log('Solicitando cuenta de alumnos para ID:', idRepre);
+        console.log('📊 Solicitando cuenta de alumnos para ID:', idRepre);
 
         const response = await fetch('/final/app/controllers/representantes/cuentaDeAlumnos.php', {
           method: 'POST',
@@ -782,46 +830,24 @@ try {
           body: `id=${encodeURIComponent(idRepre)}`
         });
 
-        // Obtener el texto completo de la respuesta
         const responseText = await response.text();
-        console.log('Respuesta completa del servidor:', responseText);
+        console.log('📨 Respuesta del servidor:', responseText);
 
-        // Mostrar posición del error para debug
-        console.log('Longitud de la respuesta:', responseText.length);
-        console.log('Primeros 100 caracteres:', responseText.substring(0, 100));
-
-        // Buscar caracteres problemáticos
-        const problemChars = responseText.match(/[^\x20-\x7E\n\r\t]/);
-        if (problemChars) {
-          console.warn('Caracteres no ASCII encontrados:', problemChars);
-        }
-
-        // Intentar parsear como JSON
         let data;
         try {
           data = JSON.parse(responseText);
         } catch (parseError) {
-          console.error('Error detallado al parsear JSON:');
-          console.error('Mensaje:', parseError.message);
-          console.error('Posición:', parseError.position);
-          console.error('Línea donde falló:', responseText.split('\n')[0]);
-
-          // Mostrar el contexto del error
-          const errorPosition = parseError.position;
-          const contextStart = Math.max(0, errorPosition - 20);
-          const contextEnd = Math.min(responseText.length, errorPosition + 20);
-          console.error('Contexto del error:', responseText.substring(contextStart, contextEnd));
-
+          console.error('❌ Error al parsear JSON:', parseError.message);
           throw new Error(`Error de formato JSON: ${parseError.message}`);
         }
 
-        // Verificar si hay error en la respuesta
         if (!data.success) {
           throw new Error(data.error || 'Error del servidor');
         }
 
-        console.log('✓ Total estudiantes:', data.total_estudiantes);
+        console.log('✅ Total estudiantes:', data.total_estudiantes);
         const cedulaEsc = a + (data.total_estudiantes + 1) + c;
+        console.log('🔢 Cédula escolar compuesta:', cedulaEsc);
         return cedulaEsc;
 
       } catch (error) {
@@ -829,6 +855,15 @@ try {
         return 0;
       }
     }
+
+    // Debug inicial
+    console.log('🔍 Estado inicial:', {
+      fechaInput: fechaInput ? 'Encontrado' : 'No encontrado',
+      cedulaRInput: cedulaRInput ? 'Encontrado' : 'No encontrado',
+      cedulaEInput: cedulaEInput ? 'Encontrado' : 'No encontrado',
+      selectCi: selectCi ? 'Encontrado' : 'No encontrado',
+      selectCiValue: selectCi ? selectCi.value : 'N/A'
+    });
   });
 </script>
 
@@ -1164,23 +1199,6 @@ try {
               // Deshabilitar TODOS los campos del representante
               document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
                 if (element.name.includes('_r') && element.name !== 'parentesco') {
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
-                  // kkksksksk
                   element.disabled = true;
                 }
               });
