@@ -50,6 +50,21 @@ try {
   }
 </style>
 
+<style>
+  /* Estilo para campos de solo lectura */
+  .form-control[readonly] {
+    background-color: #f8f9fa !important;
+    cursor: not-allowed !important;
+    opacity: 1 !important;
+  }
+
+  /* Estilo específico para cédula generada automáticamente */
+  .cedula-generada {
+    background-color: #e9ecef !important;
+    border-color: #ced4da !important;
+    color: #495057 !important;
+  }
+</style>
 <div class="content-wrapper">
   <div class="content">
     <br>
@@ -435,8 +450,16 @@ try {
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="cedula_e">Cédula de Identidad</label>
-                        <input type="text" name="cedula_e" id="cedula_e" class="form-control" required>
+                        <input type="text" name="cedula_e" id="cedula_e" class="form-control"
+                          placeholder="Seleccione 'No' para generar automáticamente" required>
+                        <small class="form-text text-muted">
+                          Si el estudiante no tiene cédula, seleccione "No" y se generará una cédula escolar automáticamente
+                        </small>
                       </div>
+                      <!-- <div class="form-group">
+                        <label for="cedula_e">Cédula de Identidad</label>
+                        <input type="text" name="cedula_e" id="cedula_e" class="form-control" required>
+                      </div> -->
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
@@ -694,6 +717,8 @@ try {
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
+
+
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {

@@ -2,7 +2,6 @@
 include_once("/xampp/htdocs/final/app/conexion.php");
 
 header('Content-Type: application/json');
-
 try {
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
