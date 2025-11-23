@@ -37,20 +37,21 @@ class Grado {
         return false;
     }
 
-    // Listar todos los grados con conteo de alumnos
+    // Listar todos los grados con conteo de alumnos (incluye inactivos)
     public function listarGradosConAlumnos() {
         $query = "SELECT 
                     ns.id_nivel_seccion,
                     n.nom_nivel as nombre_grado,
                     s.nom_seccion as seccion,
                     ns.capacidad,
+                    ns.estatus,
                     COUNT(i.id_inscripcion) as total_alumnos
                   FROM " . $this->table_name . " ns
                   INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
                   INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
                   LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
                     AND i.estatus = 1
-                  WHERE ns.estatus = 1
+                  WHERE n.estatus = 1 AND s.estatus = 1  -- Solo niveles y secciones activos
                   GROUP BY ns.id_nivel_seccion
                   ORDER BY n.num_nivel, s.nom_seccion";
         
@@ -90,13 +91,13 @@ class Grado {
         return $stmt->rowCount() > 0;
     }
 
-    // Obtener grado por ID
+    // Obtener grado por ID (incluye inactivos)
     public function obtenerPorId($id) {
         $query = "SELECT ns.*, n.nom_nivel, s.nom_seccion 
                   FROM " . $this->table_name . " ns
                   INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
                   INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  WHERE ns.id_nivel_seccion = ? AND ns.estatus = 1 
+                  WHERE ns.id_nivel_seccion = ? 
                   LIMIT 0,1";
         
         $stmt = $this->conn->prepare($query);
@@ -115,41 +116,41 @@ class Grado {
     }
 
     // Actualizar grado
-   public function actualizar() {
-    // Validar que la capacidad no sea menor a los estudiantes registrados
-    $query_check = "SELECT COUNT(*) as total_estudiantes 
-                   FROM inscripciones 
-                   WHERE id_nivel_seccion = ? AND estatus = 1";
-    $stmt_check = $this->conn->prepare($query_check);
-    $stmt_check->bindParam(1, $this->id_nivel_seccion);
-    $stmt_check->execute();
-    $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
-    
-    $total_estudiantes = $result['total_estudiantes'];
-    
-    if ($this->capacidad < $total_estudiantes) {
-        return false; // No se puede actualizar si la capacidad es menor a los estudiantes registrados
+    public function actualizar() {
+        // Validar que la capacidad no sea menor a los estudiantes registrados
+        $query_check = "SELECT COUNT(*) as total_estudiantes 
+                       FROM inscripciones 
+                       WHERE id_nivel_seccion = ? AND estatus = 1";
+        $stmt_check = $this->conn->prepare($query_check);
+        $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->execute();
+        $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
+        
+        $total_estudiantes = $result['total_estudiantes'];
+        
+        if ($this->capacidad < $total_estudiantes) {
+            return false; // No se puede actualizar si la capacidad es menor a los estudiantes registrados
+        }
+        
+        $query = "UPDATE " . $this->table_name . " 
+                  SET capacidad = :capacidad
+                  WHERE id_nivel_seccion = :id_nivel_seccion";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        $this->capacidad = htmlspecialchars(strip_tags($this->capacidad));
+        $this->id_nivel_seccion = htmlspecialchars(strip_tags($this->id_nivel_seccion));
+        
+        $stmt->bindParam(":capacidad", $this->capacidad);
+        $stmt->bindParam(":id_nivel_seccion", $this->id_nivel_seccion);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
     }
-    
-    $query = "UPDATE " . $this->table_name . " 
-              SET capacidad = :capacidad
-              WHERE id_nivel_seccion = :id_nivel_seccion";
-    
-    $stmt = $this->conn->prepare($query);
-    
-    $this->capacidad = htmlspecialchars(strip_tags($this->capacidad));
-    $this->id_nivel_seccion = htmlspecialchars(strip_tags($this->id_nivel_seccion));
-    
-    $stmt->bindParam(":capacidad", $this->capacidad);
-    $stmt->bindParam(":id_nivel_seccion", $this->id_nivel_seccion);
-    
-    if ($stmt->execute()) {
-        return true;
-    }
-    return false;
-}
 
-    // Eliminar grado (cambiar estado)
+    // Eliminar grado (cambiar estado) - MANTENIDO POR COMPATIBILIDAD
     public function eliminar() {
         // Verificar si hay estudiantes inscritos
         $query_check = "SELECT COUNT(*) as total FROM inscripciones 
@@ -302,6 +303,110 @@ class Grado {
         $stmt->execute();
         
         return $stmt;
+    }
+
+    // ========== NUEVOS MÉTODOS PARA HABILITAR/INHABILITAR ==========
+
+    /**
+     * Obtener el estado actual de un grado
+     * @param int $id_nivel_seccion ID del nivel_sección
+     * @return bool True si está activo, False si está inactivo
+     */
+    public function obtenerEstadoGrado($id_nivel_seccion) {
+        $query = "SELECT estatus FROM " . $this->table_name . " 
+                  WHERE id_nivel_seccion = :id_nivel_seccion";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['estatus'] == 1;
+    }
+
+    /**
+     * Habilitar un grado/sección
+     * @return bool True si se habilitó correctamente
+     */
+    public function habilitar() {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET estatus = 1 
+                  WHERE id_nivel_seccion = ?";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $this->id_nivel_seccion);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Inhabilitar un grado/sección
+     * @return bool True si se inhabilitó correctamente
+     */
+    public function inhabilitar() {
+        // Verificar si hay estudiantes inscritos activos
+        $query_check = "SELECT COUNT(*) as total FROM inscripciones 
+                       WHERE id_nivel_seccion = ? AND estatus = 1";
+        $stmt_check = $this->conn->prepare($query_check);
+        $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->execute();
+        $row = $stmt_check->fetch(PDO::FETCH_ASSOC);
+        
+        if ($row['total'] > 0) {
+            // No se puede inhabilitar si hay estudiantes activos
+            return false;
+        }
+        
+        $query = "UPDATE " . $this->table_name . " 
+                  SET estatus = 0 
+                  WHERE id_nivel_seccion = ?";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $this->id_nivel_seccion);
+        
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Obtener información completa de un grado incluyendo estado
+     * @param int $id_nivel_seccion ID del nivel_sección
+     * @return array Información completa del grado
+     */
+    public function obtenerGradoCompletoPorId($id_nivel_seccion) {
+        $query = "SELECT ns.id_nivel_seccion, n.nom_nivel as nombre_grado, 
+                         s.nom_seccion as seccion, ns.capacidad, ns.estatus
+                  FROM " . $this->table_name . " ns
+                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                  WHERE ns.id_nivel_seccion = :id_nivel_seccion";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Cambiar el estado de un grado (habilitar/inhabilitar)
+     * @param int $id_nivel_seccion ID del nivel_sección
+     * @param bool $nuevo_estado True para habilitar, False para inhabilitar
+     * @return bool True si se cambió el estado correctamente
+     */
+    public function cambiarEstado($id_nivel_seccion, $nuevo_estado) {
+        $this->id_nivel_seccion = $id_nivel_seccion;
+        
+        if ($nuevo_estado) {
+            return $this->habilitar();
+        } else {
+            return $this->inhabilitar();
+        }
     }
 }
 ?>

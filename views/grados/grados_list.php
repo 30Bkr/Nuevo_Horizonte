@@ -7,6 +7,7 @@ $database = new Conexion();
 $db = $database->conectar();
 $grado = new Grado($db);
 
+// Obtener todos los grados (incluyendo los inactivos)
 $stmt = $grado->listarGradosConAlumnos();
 
 include_once("/xampp/htdocs/final/layout/layaout1.php");
@@ -80,6 +81,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                         <th>Capacidad</th>
                                                         <th>Alumnos Registrados</th>
                                                         <th>Disponibilidad</th>
+                                                        <th>Estado</th>
                                                         <th>Acciones</th>
                                                     </tr>
                                                 </thead>
@@ -96,6 +98,12 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                         $totalCapacidad += $row['capacidad'];
                                         $totalAlumnos += $row['total_alumnos'];
 
+                                        // Obtener el estado actual del grado
+                                        $estado_grado = $grado->obtenerEstadoGrado($row['id_nivel_seccion']);
+                                        $estado_texto = $estado_grado ? 'Activo' : 'Inactivo';
+                                        $estado_clase = $estado_grado ? 'success' : 'danger';
+                                        $estado_icono = $estado_grado ? 'check' : 'times';
+
                                         echo "<tr>";
                                         echo "<td>{$row['id_nivel_seccion']}</td>";
                                         echo "<td>{$row['nombre_grado']}</td>";
@@ -109,6 +117,11 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                     <small>{$cuposDisponibles} cupos disponibles (" . number_format($porcentaje, 1) . "%)</small>
                                                 </td>";
                                         echo "<td>
+                                                    <span class='badge badge-{$estado_clase}'>
+                                                        <i class='fas fa-{$estado_icono}'></i> {$estado_texto}
+                                                    </span>
+                                                </td>";
+                                        echo "<td>
                                                     <div class='btn-group'>
                                                         <a href='estudiantes_por_grado.php?id_nivel_seccion={$row['id_nivel_seccion']}' 
                                                            class='btn btn-info btn-sm' title='Ver Estudiantes'>
@@ -117,13 +130,26 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                         <a href='grado_editar.php?id={$row['id_nivel_seccion']}' 
                                                            class='btn btn-warning btn-sm' title='Editar'>
                                                             <i class='fas fa-edit'></i>
-                                                        </a>
-                                                        <button type='button' class='btn btn-danger btn-sm' 
-                                                                title='Eliminar' 
-                                                                onclick='confirmarEliminacion({$row['id_nivel_seccion']})'>
-                                                            <i class='fas fa-trash'></i>
-                                                        </button>
-                                                    </div>
+                                                        </a>";
+                                        
+                                        // Botón para habilitar/inhabilitar
+                                        if ($estado_grado) {
+                                            // Si está activo, mostrar botón para inhabilitar
+                                            echo "<button type='button' class='btn btn-danger btn-sm' 
+                                                    title='Inhabilitar Grado' 
+                                                    onclick='confirmarCambioEstado({$row['id_nivel_seccion']}, false)'>
+                                                    <i class='fas fa-ban'></i>
+                                                </button>";
+                                        } else {
+                                            // Si está inactivo, mostrar botón para habilitar
+                                            echo "<button type='button' class='btn btn-success btn-sm' 
+                                                    title='Habilitar Grado' 
+                                                    onclick='confirmarCambioEstado({$row['id_nivel_seccion']}, true)'>
+                                                    <i class='fas fa-check'></i>
+                                                </button>";
+                                        }
+                                        
+                                        echo "</div>
                                                 </td>";
                                         echo "</tr>";
                                     }
@@ -134,7 +160,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                     <th colspan="3" class="text-right"><strong>TOTALES:</strong></th>
                                                     <th><strong>' . $totalCapacidad . '</strong></th>
                                                     <th><strong>' . $totalAlumnos . '</strong></th>
-                                                    <th colspan="2">
+                                                    <th colspan="3">
                                                         <strong>' . ($totalCapacidad - $totalAlumnos) . ' cupos disponibles totales</strong>
                                                     </th>
                                                 </tr>
@@ -205,9 +231,14 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
         });
     });
 
-    function confirmarEliminacion(id) {
-        if (confirm('¿Está seguro de que desea eliminar este grado/sección?\n\nNota: No se puede eliminar si tiene estudiantes inscritos.')) {
-            window.location.href = 'grado_eliminar.php?id=' + id;
+    function confirmarCambioEstado(id, habilitar) {
+        var accion = habilitar ? 'habilitar' : 'inhabilitar';
+        var mensaje = habilitar ? 
+            '¿Está seguro de que desea habilitar este grado/sección?' : 
+            '¿Está seguro de que desea inhabilitar este grado/sección?\n\nNota: No se podrán realizar nuevas inscripciones en grados inhabilitados.';
+        
+        if (confirm(mensaje)) {
+            window.location.href = 'grado_cambiar_estado.php?id=' + id + '&accion=' + accion;
         }
     }
 </script>
