@@ -116,6 +116,21 @@ class Grado {
 
     // Actualizar grado
    public function actualizar() {
+    // Validar que la capacidad no sea menor a los estudiantes registrados
+    $query_check = "SELECT COUNT(*) as total_estudiantes 
+                   FROM inscripciones 
+                   WHERE id_nivel_seccion = ? AND estatus = 1";
+    $stmt_check = $this->conn->prepare($query_check);
+    $stmt_check->bindParam(1, $this->id_nivel_seccion);
+    $stmt_check->execute();
+    $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
+    
+    $total_estudiantes = $result['total_estudiantes'];
+    
+    if ($this->capacidad < $total_estudiantes) {
+        return false; // No se puede actualizar si la capacidad es menor a los estudiantes registrados
+    }
+    
     $query = "UPDATE " . $this->table_name . " 
               SET capacidad = :capacidad
               WHERE id_nivel_seccion = :id_nivel_seccion";
