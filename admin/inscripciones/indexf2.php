@@ -466,8 +466,8 @@ try {
                         <label for="sexo_e">Sexo</label>
                         <select name="sexo_e" class="form-control" required>
                           <option value="">Seleccionar</option>
-                          <option value="Masculino">Masculino</option>
                           <option value="Femenino">Femenino</option>
+                          <option value="Masculino">Masculino</option>
                         </select>
                       </div>
                     </div>
