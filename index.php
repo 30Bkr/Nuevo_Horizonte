@@ -17,7 +17,7 @@ include_once('./layout/layaout1.php');
 
 <?php
 include_once('./layout/layaout2.php')
-?> 
+?>
 
 <!-- ==================================================      Tablas de base de datos:    =================================================================-->
 
@@ -26,7 +26,7 @@ include_once('./layout/layaout2.php')
 <!-- ==================================================      Tablas maestras:    =================================================================-->
 
 <!-- Tablas de edicion de la tabla globales  -->
- <!-- hacer tabla de inicio del periodo escolar  -->
+<!-- hacer tabla de inicio del periodo escolar  -->
 
 
 
@@ -34,18 +34,16 @@ include_once('./layout/layaout2.php')
 <!-- ==================================================      Inscripcion:  -->
 
 <!-- Agregar especiales a la tabla de especialidades (ingles, mates, etc) -->
-<!-- Agregar la validacion dentro de la tabla de docentes a la hora de traer la informacion de todos los que no son estudiantes para inscripcion++ -->
 <!-- Agregar validacion en el apartado de re-inscripciones para validar que el estudiante solo pueda ser inscrito en 1 solo periodo academico -->
- <!-- Agregar un boton de si el estudiante tiene o no tiene cedula de identidad  -->
-<!-- validar que no aparezcan datos precargados si el representante no existe -->
-
+<!-- Validar antes de inscribir que 1 estudiante pueda estar inscrito solo si hay cupos disponibles  -->
+<!-- Agregar y traer en la fecha de nacimiento de los estudiantes el max y min de edad que pueden tener directamente de la nueva tabla de utilidades o globales que se crearan en la base de datos  -->
 
 <!-- ==================================================      Cursos:    =================================================================-->
 
 <!-- Agregar en las listas de las secciones un boton que solicita ficha tecnica del estudiante (debe ser solo visible, no editable) -->
 <!-- Agregar en las listas de las secciones un boton que solicita ficha tecnica del representante (debe ser solo visible, no editable) -->
-<!-- En el apartado de edición de grado, el grado y la seccion solo deben ser visibles y no editables (LIIIISTO) ---> 
- <!-- En el apartado de grado, agregar para crear nuevos grados y secciones---->
+<!-- En el apartado de edición de grado, el grado y la seccion solo deben ser visibles y no editables (LIIIISTO) --->
+<!-- En el apartado de grado, agregar para crear nuevos grados y secciones---->
 <!-- En el apartado de edición de grado, la capacidad no puede ser menor a la de los estudiantes ya registrados---->
 <!-- En el apartado de edición de grado, la capacidad no puede ser menor a la de los estudiantes ya registrados---->
 <!-- En la ficha tecnica del representante existe un boton de actualizar data--->
@@ -56,11 +54,11 @@ include_once('./layout/layaout2.php')
 
 
 <!-- ==================================================      Docentes:    =================================================================-->
- <!-- El usuario se debe crear automaticamente con la CI.  -->
-  <!-- Terminar de agregar todos los campos del formulario y quitar la edicion del usuario.  -->
-   <!-- cambiar el boton de borrar a tipo switch una vaina asi (habilitar e inhabilitar) -->
+<!-- El usuario se debe crear automaticamente con la CI.  -->
+<!-- Terminar de agregar todos los campos del formulario y quitar la edicion del usuario.  -->
+<!-- cambiar el boton de borrar a tipo switch una vaina asi (habilitar e inhabilitar) -->
 
- 
+
 
 
 
