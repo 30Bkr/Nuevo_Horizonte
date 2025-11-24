@@ -124,8 +124,7 @@ include_once __DIR__ . '/../../models/Docente.php';
                                     $db = $database->conectar();
                                     
                                     if ($db) {
-                                        //echo "<p class='text-success'>✓ Conexión a la base de datos exitosa</p>";
-                                                $docente = new Docente($db);
+                                        $docente = new Docente($db);
                                         $stmt = $docente->listarDocentes();
                                         
                                         if ($stmt) {
@@ -140,6 +139,7 @@ include_once __DIR__ . '/../../models/Docente.php';
                                                                 <th>Teléfono</th>
                                                                 <th>Correo</th>
                                                                 <th>Usuario</th>
+                                                                <th>Estado</th>
                                                                 <th>Acciones</th>
                                                             </tr>
                                                         </thead>
@@ -151,6 +151,18 @@ include_once __DIR__ . '/../../models/Docente.php';
                                                                      $row['primer_apellido'] . ' ' . 
                                                                      ($row['segundo_apellido'] ? $row['segundo_apellido'] : '');
                                                     
+                                                    $estado_badge = $row['estatus'] == 1 ? 
+                                                        '<span class="badge badge-success">Activo</span>' : 
+                                                        '<span class="badge badge-danger">Inactivo</span>';
+                                                    
+                                                    $boton_estado = $row['estatus'] == 1 ? 
+                                                        '<button type="button" class="btn btn-warning btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_docente'] . ', 0)">
+                                                            <i class="fas fa-ban"></i>
+                                                        </button>' : 
+                                                        '<button type="button" class="btn btn-success btn-sm" title="Habilitar" onclick="cambiarEstado(' . $row['id_docente'] . ', 1)">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>';
+                                                    
                                                     echo "<tr>";
                                                     echo "<td>{$row['id_docente']}</td>";
                                                     echo "<td>{$row['cedula']}</td>";
@@ -159,17 +171,16 @@ include_once __DIR__ . '/../../models/Docente.php';
                                                     echo "<td>{$row['telefono']}</td>";
                                                     echo "<td>{$row['correo']}</td>";
                                                     echo "<td>{$row['usuario']}</td>";
-                                                   echo "<td>
+                                                    echo "<td>{$estado_badge}</td>";
+                                                    echo "<td>
                                                             <div class='btn-group'>
-                                                                <a href='docente_editar.php?id={$row['id_docente']}' class='btn btn-warning btn-sm' title='Editar'>
+                                                                <a href='docente_editar.php?id={$row['id_docente']}' class='btn btn-info btn-sm' title='Editar'>
                                                                     <i class='fas fa-edit'></i>
                                                                 </a>
-                                                                <a href='docente_ver.php?id={$row['id_docente']}' class='btn btn-info btn-sm' title='Ver'>
+                                                                <a href='docente_ver.php?id={$row['id_docente']}' class='btn btn-secondary btn-sm' title='Ver'>
                                                                     <i class='fas fa-eye'></i>
                                                                 </a>
-                                                                <button type='button' class='btn btn-danger btn-sm' title='Eliminar' onclick='confirmarEliminacion({$row['id_docente']})'>
-                                                                    <i class='fas fa-trash'></i>
-                                                                </button>
+                                                                {$boton_estado}
                                                             </div>
                                                         </td>";
                                                     echo "</tr>";
@@ -256,10 +267,30 @@ $(function () {
     });
 });
 
-function confirmarEliminacion(id) {
-    if (confirm('¿Está seguro de que desea eliminar este docente?\n\nEsta acción no se puede deshacer.')) {
-        // Redirigir al script de eliminación
-        window.location.href = 'docente_eliminar.php?id=' + id;
+function cambiarEstado(id_docente, nuevo_estado) {
+    const accion = nuevo_estado ? 'habilitar' : 'inhabilitar';
+    
+    if (confirm(`¿Está seguro de que desea ${accion} este docente?`)) {
+        $.ajax({
+            url: 'docente_cambiar_estado.php',
+            type: 'POST',
+            data: {
+                id_docente: id_docente,
+                estado: nuevo_estado
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Error al procesar la solicitud');
+            }
+        });
     }
 }
 </script>

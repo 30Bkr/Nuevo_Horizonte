@@ -14,6 +14,9 @@ session_start();
     <link rel="stylesheet" href="../../public/plugins/fontawesome-free/css/all.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="../../public/dist/css/adminlte.min.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="../../public/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="../../public/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
@@ -71,7 +74,7 @@ session_start();
                                             <h5>Datos Personales</h5>
                                             
                                             <div class="form-group">
-                                                <label for="primer_nombre">Primer Nombre *</label>
+                                                <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" required>
                                             </div>
 
@@ -81,7 +84,7 @@ session_start();
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="primer_apellido">Primer Apellido *</label>
+                                                <label for="primer_apellido">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="primer_apellido" name="primer_apellido" required>
                                             </div>
 
@@ -91,13 +94,37 @@ session_start();
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="cedula">Cédula *</label>
+                                                <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="cedula" name="cedula" required>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="fecha_nac">Fecha de Nacimiento</label>
+                                                <input type="date" class="form-control" id="fecha_nac" name="fecha_nac">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="lugar_nac">Lugar de Nacimiento</label>
+                                                <input type="text" class="form-control" id="lugar_nac" name="lugar_nac" value="Caracas">
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <h5>Información de Contacto</h5>
+
+                                            <div class="form-group">
+                                                <label for="sexo">Sexo</label>
+                                                <select class="form-control" id="sexo" name="sexo">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="Masculino">Masculino</option>
+                                                    <option value="Femenino">Femenino</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="nacionalidad">Nacionalidad</label>
+                                                <input type="text" class="form-control" id="nacionalidad" name="nacionalidad" value="Venezolana">
+                                            </div>
 
                                             <div class="form-group">
                                                 <label for="telefono">Teléfono Móvil</label>
@@ -116,7 +143,7 @@ session_start();
 
                                             <div class="form-group">
                                                 <label for="id_profesion">Profesión</label>
-                                                <select class="form-control" id="id_profesion" name="id_profesion">
+                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;">
                                                     <option value="">Seleccionar profesión...</option>
                                                     <?php
                                                     include_once __DIR__ . '/../../app/conexion.php';
@@ -139,20 +166,48 @@ session_start();
                                         </div>
                                     </div>
 
-                                    <hr>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <h5>Información de Dirección</h5>
+                                            
+                                            <div class="form-group">
+                                                <label for="id_parroquia">Parroquia</label>
+                                                <select class="form-control select2" id="id_parroquia" name="id_parroquia" style="width: 100%;">
+                                                    <option value="">Seleccionar parroquia...</option>
+                                                    <?php
+                                                    if ($db) {
+                                                        $parroquias = $docente->obtenerParroquias();
+                                                        while ($row = $parroquias->fetch(PDO::FETCH_ASSOC)) {
+                                                            $texto = $row['nom_parroquia'] . ' - ' . $row['nom_municipio'] . ' - ' . $row['nom_estado'];
+                                                            echo "<option value='{$row['id_parroquia']}'>{$texto}</option>";
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
 
-                                    <div class="row">
+                                            <div class="form-group">
+                                                <label for="direccion">Dirección</label>
+                                                <input type="text" class="form-control" id="direccion" name="direccion" value="Por definir">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="calle">Calle</label>
+                                                <input type="text" class="form-control" id="calle" name="calle">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="casa">Casa/Edificio</label>
+                                                <input type="text" class="form-control" id="casa" name="casa">
+                                            </div>
+                                        </div>
+
                                         <div class="col-md-6">
                                             <h5>Información del Usuario</h5>
 
-                                            <div class="form-group">
-                                                <label for="usuario">Nombre de Usuario *</label>
-                                                <input type="text" class="form-control" id="usuario" name="usuario" required>
-                                                <small class="form-text text-muted">El docente usará este usuario para acceder al sistema</small>
-                                            </div>
-
                                             <div class="alert alert-info">
-                                                <h6><i class="icon fas fa-info"></i> Información</h6>
+                                                <h6><i class="icon fas fa-info"></i> Información Automática</h6>
+                                                El nombre de usuario se generará automáticamente con la cédula del docente.<br>
                                                 La contraseña por defecto será la cédula del docente. Se recomienda que el docente cambie su contraseña al primer acceso.
                                             </div>
                                         </div>
@@ -185,26 +240,26 @@ session_start();
 <script src="../../public/plugins/jquery/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="../../public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 -->
+<script src="../../public/plugins/select2/js/select2.full.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../../public/dist/js/adminlte.min.js"></script>
 
 <script>
 $(function () {
+    // Inicializar Select2
+    $('.select2').select2({
+        theme: 'bootstrap4'
+    });
+
     // Validación del formulario
     $('#formDocente').on('submit', function(e) {
         let cedula = $('#cedula').val();
-        let usuario = $('#usuario').val();
         let isValid = true;
 
         // Validar cédula (solo números)
         if (cedula && !/^\d+$/.test(cedula)) {
             alert('La cédula debe contener solo números');
-            isValid = false;
-        }
-
-        // Validar usuario (sin espacios)
-        if (usuario && /\s/.test(usuario)) {
-            alert('El nombre de usuario no puede contener espacios');
             isValid = false;
         }
 

@@ -40,11 +40,12 @@ class Docente {
         $this->conn = $db;
     }
 
-    // Listar todos los docentes
+    // Listar todos los docentes (activos e inactivos)
     public function listarDocentes() {
         $query = "SELECT 
                     d.id_docente,
                     d.id_profesion,
+                    d.estatus,
                     p.primer_nombre,
                     p.segundo_nombre,
                     p.primer_apellido,
@@ -54,7 +55,6 @@ class Docente {
                     p.correo,
                     pr.profesion,
                     d.creacion,
-                    d.estatus,
                     u.usuario,
                     r.nom_rol
                   FROM " . $this->table_name . " d
@@ -62,8 +62,7 @@ class Docente {
                   LEFT JOIN profesiones pr ON d.id_profesion = pr.id_profesion
                   LEFT JOIN usuarios u ON p.id_persona = u.id_persona
                   LEFT JOIN roles r ON u.id_rol = r.id_rol
-                  WHERE d.estatus = 1
-                  ORDER BY p.primer_apellido, p.primer_nombre";
+                  ORDER BY d.estatus DESC, p.primer_apellido, p.primer_nombre";
 
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -71,7 +70,7 @@ class Docente {
         return $stmt;
     }
 
-    // Obtener docente por ID
+    // Obtener docente por ID (incluye inactivos)
     public function obtenerPorId($id) {
         $query = "SELECT 
                     d.*, p.*, dir.*, u.usuario, u.id_rol
@@ -79,7 +78,7 @@ class Docente {
                   INNER JOIN personas p ON d.id_persona = p.id_persona
                   INNER JOIN direcciones dir ON p.id_direccion = dir.id_direccion
                   LEFT JOIN usuarios u ON p.id_persona = u.id_persona
-                  WHERE d.id_docente = ? AND d.estatus = 1";
+                  WHERE d.id_docente = ?";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id);
@@ -92,6 +91,7 @@ class Docente {
             $this->id_docente = $row['id_docente'];
             $this->id_persona = $row['id_persona'];
             $this->id_profesion = $row['id_profesion'];
+            $this->estatus = $row['estatus'];
             
             // Datos de persona
             $this->primer_nombre = $row['primer_nombre'];
@@ -177,21 +177,20 @@ class Docente {
             
             $this->id_docente = $this->conn->lastInsertId();
 
-            // 4. Crear usuario automáticamente
-            if (!empty($this->usuario)) {
-                $queryUsuario = "INSERT INTO usuarios (id_persona, id_rol, usuario, contrasena, creacion, estatus) 
-                                VALUES (?, ?, ?, ?, NOW(), 1)";
-                
-                // Hash de contraseña (por defecto: cédula)
-                $contrasena_hash = hash('sha256', $this->cedula);
-                
-                $stmtUsuario = $this->conn->prepare($queryUsuario);
-                $stmtUsuario->bindParam(1, $this->id_persona);
-                $stmtUsuario->bindParam(2, $this->id_rol);
-                $stmtUsuario->bindParam(3, $this->usuario);
-                $stmtUsuario->bindParam(4, $contrasena_hash);
-                $stmtUsuario->execute();
-            }
+            // 4. Crear usuario automáticamente con la cédula
+            $this->usuario = $this->cedula; // Usuario = cédula
+            $queryUsuario = "INSERT INTO usuarios (id_persona, id_rol, usuario, contrasena, creacion, estatus) 
+                            VALUES (?, ?, ?, ?, NOW(), 1)";
+            
+            // Hash de contraseña (por defecto: cédula)
+            $contrasena_hash = hash('sha256', $this->cedula);
+            
+            $stmtUsuario = $this->conn->prepare($queryUsuario);
+            $stmtUsuario->bindParam(1, $this->id_persona);
+            $stmtUsuario->bindParam(2, $this->id_rol);
+            $stmtUsuario->bindParam(3, $this->usuario);
+            $stmtUsuario->bindParam(4, $contrasena_hash);
+            $stmtUsuario->execute();
 
             $this->conn->commit();
             return true;
@@ -253,34 +252,6 @@ class Docente {
             $stmtDocente->bindParam(2, $this->id_docente);
             $stmtDocente->execute();
 
-            // 4. Actualizar usuario si existe, o crear si no existe
-            $queryCheckUsuario = "SELECT id_usuario FROM usuarios WHERE id_persona = ?";
-            $stmtCheck = $this->conn->prepare($queryCheckUsuario);
-            $stmtCheck->bindParam(1, $this->id_persona);
-            $stmtCheck->execute();
-
-            if ($stmtCheck->rowCount() > 0) {
-                // Actualizar usuario existente
-                $queryUsuario = "UPDATE usuarios SET usuario = ?, id_rol = ?, actualizacion = NOW() WHERE id_persona = ?";
-                $stmtUsuario = $this->conn->prepare($queryUsuario);
-                $stmtUsuario->bindParam(1, $this->usuario);
-                $stmtUsuario->bindParam(2, $this->id_rol);
-                $stmtUsuario->bindParam(3, $this->id_persona);
-                $stmtUsuario->execute();
-            } else {
-                // Crear nuevo usuario
-                $queryUsuario = "INSERT INTO usuarios (id_persona, id_rol, usuario, contrasena, creacion, estatus) 
-                                VALUES (?, ?, ?, ?, NOW(), 1)";
-                $contrasena_hash = hash('sha256', $this->cedula);
-                
-                $stmtUsuario = $this->conn->prepare($queryUsuario);
-                $stmtUsuario->bindParam(1, $this->id_persona);
-                $stmtUsuario->bindParam(2, $this->id_rol);
-                $stmtUsuario->bindParam(3, $this->usuario);
-                $stmtUsuario->bindParam(4, $contrasena_hash);
-                $stmtUsuario->execute();
-            }
-
             $this->conn->commit();
             return true;
 
@@ -290,18 +261,19 @@ class Docente {
         }
     }
 
-    // Eliminar docente (soft delete)
-    public function eliminar($id) {
-        $query = "UPDATE docentes SET estatus = 0, actualizacion = NOW() WHERE id_docente = ?";
+    // Cambiar estado del docente (habilitar/inhabilitar)
+    public function cambiarEstado($id, $estado) {
+        $query = "UPDATE docentes SET estatus = ?, actualizacion = NOW() WHERE id_docente = ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $id);
+        $stmt->bindParam(1, $estado);
+        $stmt->bindParam(2, $id);
         
-       if ($stmt->execute()) {
-        return true;
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
     // Obtener lista de profesiones
     public function obtenerProfesiones() {
