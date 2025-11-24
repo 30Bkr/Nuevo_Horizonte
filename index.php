@@ -48,9 +48,12 @@ include_once('./layout/layaout2.php')
 <!-- En el apartado de edición de grado, la capacidad no puede ser menor a la de los estudiantes ya registrados---->
 <!-- En la ficha tecnica del representante existe un boton de actualizar data--->
 <!-- En la ficha tecnica del estudiante existe un boton de actualizar data--->
-<!-- En en el reporte de pdf corregir la numeración--->
-<!-- En en el reporte de pdf de estudiantes se deben respetar los margenes, e intercambiar el orden del listado y estadisticas--->
-<!-- Quitar de la lista de estudiantes la accion de eliminar--->
+<!-- En el apartado de edición de grado, el grado y la seccion solo deben ser visibles y no editables (LIIIISTO) --->
+<!-- En el apartado de grado, agregar para crear nuevos grados y secciones (LIIIIISTO)---->
+<!-- En el apartado de edición de grado, la capacidad no puede ser menor a la de los estudiantes ya registrados (LIIIIIISTO)---->
+<!-- Quitar de la lista de estudiantes la accion de eliminar (LIIIIIISTO)--->
+<!-- En en el reporte de pdf corregir la numeración (LIIIIISTO)--->
+<!-- En en el reporte de pdf de estudiantes se deben respetar los margenes, e intercambiar el orden del listado y estadisticas (LIIISTO)--->
 
 
 <!-- ==================================================      Docentes:    =================================================================-->
