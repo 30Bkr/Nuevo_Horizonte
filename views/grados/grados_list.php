@@ -131,7 +131,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                            class='btn btn-warning btn-sm' title='Editar'>
                                                             <i class='fas fa-edit'></i>
                                                         </a>";
-                                        
+
                                         // Botón para habilitar/inhabilitar
                                         if ($estado_grado) {
                                             // Si está activo, mostrar botón para inhabilitar
@@ -148,7 +148,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                     <i class='fas fa-check'></i>
                                                 </button>";
                                         }
-                                        
+
                                         echo "</div>
                                                 </td>";
                                         echo "</tr>";
@@ -181,19 +181,16 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
     </section>
 </div>
 
-<!-- Footer -->
-<footer class="main-footer">
-    <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
-    Todos los derechos reservados.
-</footer>
 </div>
 
+<?php
+include_once('../../layout/layaout2.php');
+include_once('../../layout/mensajes.php');
+?>
+
 <!-- Scripts -->
-<script src="/final/public/plugins/jquery/jquery.min.js"></script>
-<script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="/final/public/dist/js/adminlte.min.js"></script>
 
 <script>
     $(function() {
@@ -233,16 +230,12 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
     function confirmarCambioEstado(id, habilitar) {
         var accion = habilitar ? 'habilitar' : 'inhabilitar';
-        var mensaje = habilitar ? 
-            '¿Está seguro de que desea habilitar este grado/sección?' : 
+        var mensaje = habilitar ?
+            '¿Está seguro de que desea habilitar este grado/sección?' :
             '¿Está seguro de que desea inhabilitar este grado/sección?\n\nNota: No se podrán realizar nuevas inscripciones en grados inhabilitados.';
-        
+
         if (confirm(mensaje)) {
             window.location.href = 'grado_cambiar_estado.php?id=' + id + '&accion=' + accion;
         }
     }
 </script>
-<?php
-include_once('../../layout/layaout2.php'); 
-include_once('../../layout/mensajes.php');
-?>
