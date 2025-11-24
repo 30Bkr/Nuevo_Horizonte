@@ -17,19 +17,21 @@ try {
     $database = new Conexion();
     $db = $database->conectar();
     $grado = new Grado($db);
+    
     $stmt = $grado->listarGradosConAlumnos();
 
+    // Configurar zona horaria de Venezuela
+    date_default_timezone_set('America/Caracas');
+    $fecha_actual = date('d/m/Y H:i:s');
+
     // Ruta de la imagen del cintillo
-    $ruta_cintillo = __DIR__ . '/../../public/images/cintillo_oficial.png';
+    $ruta_cintillo = $_SERVER['DOCUMENT_ROOT'] . '/final/public/images/cintillo_oficial.png';
     $cintillo_base64 = '';
     
     // Convertir imagen a base64 para incluirla en el HTML
     if (file_exists($ruta_cintillo)) {
         $image_data = file_get_contents($ruta_cintillo);
         $cintillo_base64 = 'data:image/png;base64,' . base64_encode($image_data);
-    } else {
-        // Si no encuentra la imagen, mostrar mensaje de error
-        throw new Exception("No se encontró la imagen del cintillo en: " . $ruta_cintillo);
     }
 
     // Crear contenido HTML para el PDF
@@ -56,6 +58,17 @@ try {
             .cintillo-img {
                 max-width: 100%;
                 height: auto;
+                max-height: 80px;
+            }
+            .cintillo-texto {
+                text-align: center;
+                font-weight: bold;
+                font-size: 14px;
+                color: #003366;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border: 1px solid #003366;
+                margin-bottom: 15px;
             }
             /* TÍTULO DEL REPORTE */
             .report-title {
@@ -74,6 +87,7 @@ try {
                 background-color: #f8f9fa;
                 padding: 8px;
                 border-radius: 3px;
+                text-align: center;
             }
             /* TABLA */
             table { 
@@ -104,39 +118,6 @@ try {
             .odd-row {
                 background-color: #ffffff;
             }
-            /* RESUMEN */
-            .summary { 
-                margin-top: 15px;
-                padding: 10px;
-                background-color: #f8f9fa;
-                border: 1px solid #ddd;
-                border-radius: 3px;
-                font-size: 10px;
-            }
-            .summary h3 {
-                margin: 0 0 8px 0;
-                color: #003366;
-                font-size: 11px;
-                border-bottom: 1px solid #ccc;
-                padding-bottom: 3px;
-            }
-            .progress-container {
-                width: 100%;
-                background-color: #e9ecef;
-                border-radius: 2px;
-                overflow: hidden;
-                height: 16px;
-                margin: 3px 0;
-            }
-            .progress-bar {
-                height: 100%;
-                background-color: #003366;
-                text-align: center;
-                color: white;
-                font-size: 9px;
-                line-height: 16px;
-                font-weight: bold;
-            }
             /* PIE DE PÁGINA */
             .footer {
                 margin-top: 20px;
@@ -145,24 +126,18 @@ try {
                 color: #666;
                 border-top: 1px solid #ccc;
                 padding-top: 5px;
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-            }
-            /* ESTILOS PARA PAGINACIÓN */
-            .page {
-                page-break-after: always;
-            }
-            .page:last-child {
-                page-break-after: avoid;
             }
         </style>
     </head>
     <body>
-        <!-- CINTILLO CON IMAGEN OFICIAL -->
+        <!-- CINTILLO CON IMAGEN OFICIAL O TEXTO ALTERNATIVO -->
+        ' . ($cintillo_base64 ? '
         <div class="cintillo-imagen">
             <img src="' . $cintillo_base64 . '" class="cintillo-img" alt="Cintillo Oficial">
-        </div>
+        </div>' : '
+        <div class="cintillo-texto">
+            UNIDAD EDUCATIVA NACIONAL "NUEVO HORIZONTE"
+        </div>') . '
         
         <!-- TÍTULO DEL REPORTE -->
         <div class="report-title">
@@ -171,7 +146,7 @@ try {
         
         <!-- INFORMACIÓN -->
         <div class="info">
-            <strong>Fecha:</strong> ' . date('d/m/Y H:i:s') . ' | 
+            <strong>Fecha:</strong> ' . $fecha_actual . ' | 
             <strong>Período:</strong> 2024-2025 | 
             <strong>Secciones:</strong> ' . $stmt->rowCount() . '
         </div>';
@@ -203,11 +178,11 @@ try {
             
             $html .= '
                 <tr class="' . $rowClass . '">
-                    <td class="text-center">' . $row['id_nivel_seccion'] . '</td>
+                    <td class="text-center">' . htmlspecialchars($row['id_nivel_seccion']) . '</td>
                     <td>' . htmlspecialchars($row['nombre_grado']) . '</td>
                     <td class="text-center">' . htmlspecialchars($row['seccion']) . '</td>
-                    <td class="text-center">' . $row['capacidad'] . '</td>
-                    <td class="text-center">' . $row['total_alumnos'] . '</td>
+                    <td class="text-center">' . htmlspecialchars($row['capacidad']) . '</td>
+                    <td class="text-center">' . htmlspecialchars($row['total_alumnos']) . '</td>
                     <td class="text-center">' . number_format($porcentaje, 1) . '%</td>
                     <td class="text-center">' . $cuposDisponibles . ' cupos</td>
                 </tr>';
@@ -222,34 +197,16 @@ try {
         
         $html .= '
             </tbody>
-        </table>
-        
-        <div class="summary">
-            <h3>RESUMEN ESTADÍSTICO</h3>
-            <table style="width: 100%; border: none; background: transparent;">
+            <tfoot>
                 <tr>
-                    <td style="border: none; padding: 2px;"><strong>Total Capacidad:</strong></td>
-                    <td style="border: none; padding: 2px;">' . $totalCapacidad . ' estudiantes</td>
-                    <td style="border: none; padding: 2px;"><strong>Alumnos Inscritos:</strong></td>
-                    <td style="border: none; padding: 2px;">' . $totalAlumnos . ' estudiantes</td>
+                    <td colspan="3" class="text-right" style="border: none; padding: 8px 6px;"><strong>TOTALES:</strong></td>
+                    <td class="text-center" style="border: 1px solid #ddd;"><strong>' . $totalCapacidad . '</strong></td>
+                    <td class="text-center" style="border: 1px solid #ddd;"><strong>' . $totalAlumnos . '</strong></td>
+                    <td class="text-center" style="border: 1px solid #ddd;"><strong>' . number_format($porcentajeTotal, 1) . '%</strong></td>
+                    <td class="text-center" style="border: 1px solid #ddd;"><strong>' . $cuposDisponiblesTotal . ' cupos</strong></td>
                 </tr>
-                <tr>
-                    <td style="border: none; padding: 2px;"><strong>Ocupación:</strong></td>
-                    <td style="border: none; padding: 2px;">' . number_format($porcentajeTotal, 1) . '%</td>
-                    <td style="border: none; padding: 2px;"><strong>Cupos Disponibles:</strong></td>
-                    <td style="border: none; padding: 2px;">' . $cuposDisponiblesTotal . ' cupos</td>
-                </tr>
-            </table>
-            
-            <div style="margin-top: 8px;">
-                <strong>Nivel de Ocupación General:</strong>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: ' . number_format($porcentajeTotal, 1) . '%;">
-                        ' . number_format($porcentajeTotal, 1) . '%
-                    </div>
-                </div>
-            </div>
-        </div>';
+            </tfoot>
+        </table>';
     } else {
         $html .= '
         <div style="text-align: center; padding: 30px; color: #666; font-size: 12px;">
@@ -259,14 +216,14 @@ try {
     
     $html .= '
         <div class="footer">
-            Unidad Educativa Nacional "Nuevo Horizonte" - Sistema de Gestión Escolar<br>
-            Página <span style="color: #003366; font-weight: bold;">{PAGENO}</span> de <span style="color: #003366; font-weight: bold;">{nbpg}</span>
-        </div>
+    Unidad Educativa Nacional "Nuevo Horizonte"<br>
+    Página <span style="color: #003366; font-weight: bold;">[[page_cu]]</span> de <span style="color: #003366; font-weight: bold;">[[page_nb]]</span>
+</div>
     </body>
     </html>';
 
-    // Configurar y generar PDF
-    $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(8, 8, 8, 8));
+    // Configurar y generar PDF con márgenes de 2.54 cm (equivalente a 1 pulgada)
+    $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(25.4, 25.4, 25.4, 25.4));
     $html2pdf->setDefaultFont('dejavusans');
     
     // Configurar la paginación automática
@@ -279,11 +236,20 @@ try {
 
 } catch (Html2PdfException $e) {
     // Manejar errores de HTML2PDF
-    $formatter = new ExceptionFormatter($e);
-    echo $formatter->getHtmlMessage();
+    echo "<div style='padding: 20px; color: red; font-family: Arial;'>
+            <h3>Error al generar PDF</h3>
+            <p>" . $e->getMessage() . "</p>
+            <p><strong>Archivo:</strong> " . $e->getFile() . "</p>
+            <p><strong>Línea:</strong> " . $e->getLine() . "</p>
+          </div>";
     
 } catch (Exception $e) {
     // Manejar otros errores
-    echo "<div class='alert alert-danger'>Error al generar el reporte: " . $e->getMessage() . "</div>";
+    echo "<div style='padding: 20px; color: red; font-family: Arial;'>
+            <h3>Error</h3>
+            <p>" . $e->getMessage() . "</p>
+            <p><strong>Archivo:</strong> " . $e->getFile() . "</p>
+            <p><strong>Línea:</strong> " . $e->getLine() . "</p>
+          </div>";
 }
 ?>
