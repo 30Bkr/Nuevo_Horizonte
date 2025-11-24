@@ -270,7 +270,6 @@ try {
     error_log("Representante creado con ID: " . $id_representante);
   }
 
-  // ... (el resto del código para estudiante, relación e inscripción se mantiene igual)
   // ========== PROCESAMIENTO DEL ESTUDIANTE ==========
   if ($estudiante_existente === '1') {
     // Estudiante existe - actualizar datos
@@ -436,7 +435,7 @@ try {
 
     if ($relacion_existente) {
       // Actualizar relación existente
-      $sql_update_relacion = "UPDATE estudiantes_representantes SET parentesco = ? 
+      $sql_update_relacion = "UPDATE estudiantes_representantes SET id_parentesco = ? 
                                    WHERE id_estudiante = ? AND id_representante = ?";
       $stmt_update = $pdo->prepare($sql_update_relacion);
       $stmt_update->execute([$parentesco, $id_estudiante, $id_representante]);

@@ -8,6 +8,7 @@ class RepresentanteController
     $this->pdo = $pdo;
   }
 
+
   // Crear nuevo representante
   public function crearRepresentante($id_persona, $datos)
   {
@@ -232,13 +233,13 @@ class RepresentanteController
   public function crearRelacionEstudianteRepresentante($id_estudiante, $id_representante, $parentesco)
   {
     try {
-      $sql = "INSERT INTO estudiantes_representantes (id_estudiante, id_representante, parentesco) 
-                    VALUES (:id_estudiante, :id_representante, :parentesco)";
+      $sql = "INSERT INTO estudiantes_representantes (id_estudiante, id_representante, id_parentesco) 
+                    VALUES (:id_estudiante, :id_representante, :id_parentesco)";
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute([
         ':id_estudiante' => $id_estudiante,
         ':id_representante' => $id_representante,
-        ':parentesco' => $parentesco
+        ':id_parentesco' => $parentesco
       ]);
 
       return $this->pdo->lastInsertId();

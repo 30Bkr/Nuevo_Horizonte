@@ -9,6 +9,7 @@ include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
 include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.php");
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
+include_once("/xampp/htdocs/final/app/controllers/parentesco/parentesco.php");
 
 // include_once("/xampp/htdocs/final/app/controllers/representantes/profesiones.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
@@ -21,6 +22,9 @@ try {
   $profesionesController = new RepresentanteController($pdo);
   $profesiones = $profesionesController->obtenerProfesiones();
   $ubicacionController = new UbicacionController($pdo);
+  $parentesco = new ParentescoController($pdo);
+  $parentescos = $parentesco->mostrarParentescos();
+
   $estados = $ubicacionController->obtenerEstados();
 } catch (PDOException $e) {
   die("Error de conexión: " . $e->getMessage());
@@ -244,15 +248,11 @@ try {
                         <label for="parentesco">Parentesco con Estudiante</label>
                         <select name="parentesco" id="parentesco" class="form-control" required>
                           <option value="">Seleccionar</option>
-                          <option value="Madre">Madre</option>
-                          <option value="Padre">Padre</option>
-                          <option value="Abuelo">Abuelo</option>
-                          <option value="Abuela">Abuela</option>
-                          <option value="Tío">Tío</option>
-                          <option value="Tía">Tía</option>
-                          <option value="Hermano">Hermano</option>
-                          <option value="Hermana">Hermana</option>
-                          <option value="Otro">Otro</option>
+                          <?php
+                          foreach ($parentescos as $pa) {
+                            echo "<option value='{$pa['id_parentesco']}'>{$pa['parentesco']}</option>";
+                          }
+                          ?>
                         </select>
                       </div>
                     </div>
