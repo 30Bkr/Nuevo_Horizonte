@@ -8,6 +8,7 @@ include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
 include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.php");
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
+// ... otros includes existentes ...
 include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
 
 error_reporting(E_ALL);
@@ -70,7 +71,7 @@ try {
   $alumno_VCP = $_POST['juntos'] ?? '0';
   $representante_existente = $_POST['representante_existente'] ?? '0';
   $estudiante_existente = $_POST['estudiante_existente'] ?? '0';
-  $tipo_persona = $_POST['tipo_persona'] ?? 'representante';
+  $tipo_persona = $_POST['tipo_persona'] ?? 'representante'; // Nuevo campo para identificar tipo
 
   $id_representante = null;
   $id_estudiante = null;
@@ -112,7 +113,7 @@ try {
       // Actualizar la persona del docente
       $datosPersonaRepresentante = [
         'id_persona' => $id_persona_docente,
-        'id_direccion' => $id_direccion_representante,
+        'id_direccion' => $id_direccion_representante, // ESTE ES EL CAMPO CLAVE
         'primer_nombre' => $_POST['primer_nombre_r'],
         'segundo_nombre' => $_POST['segundo_nombre_r'] ?? '',
         'primer_apellido' => $_POST['primer_apellido_r'],
@@ -128,6 +129,8 @@ try {
       ];
 
       error_log("Actualizando persona con id_direccion: " . $id_direccion_representante);
+      error_log("Datos completos persona: " . print_r($datosPersonaRepresentante, true));
+
       $personaController->actualizarPersona($datosPersonaRepresentante);
 
       // Crear representante
@@ -172,7 +175,7 @@ try {
       // Actualizar datos de la persona representante
       $datosPersonaRepresentante = [
         'id_persona' => $id_persona_representante,
-        'id_direccion' => $direccionesRepre,
+        'id_direccion' => $direccionesRepre, // ESTE ES EL CAMPO CLAVE
         'primer_nombre' => $_POST['primer_nombre_r'],
         'segundo_nombre' => $_POST['segundo_nombre_r'] ?? '',
         'primer_apellido' => $_POST['primer_apellido_r'],
@@ -233,6 +236,7 @@ try {
 
     error_log("Dirección creada con ID: " . $id_direccion_representante);
     $direccionesRepre = $id_direccion_representante;
+
 
     // Crear persona representante
     $datosPersonaRepresentante = [
@@ -357,10 +361,7 @@ try {
     if (isset($_POST['patologias']) && is_array($_POST['patologias'])) {
       error_log("Agregando " . count($_POST['patologias']) . " patologías");
       foreach ($_POST['patologias'] as $id_patologia) {
-        // Solo procesar valores válidos (no vacíos y diferentes de "0")
-        if (!empty($id_patologia) && $id_patologia != '0') {
-          $estudianteController->agregarPatologia($id_estudiante, $id_patologia);
-        }
+        $estudianteController->agregarPatologia($id_estudiante, $id_patologia);
       }
     }
   } else {
@@ -414,10 +415,7 @@ try {
     if (isset($_POST['patologias']) && is_array($_POST['patologias'])) {
       error_log("Agregando patologías: " . count($_POST['patologias']));
       foreach ($_POST['patologias'] as $id_patologia) {
-        // Solo procesar valores válidos (no vacíos y diferentes de "0")
-        if (!empty($id_patologia) && $id_patologia != '0') {
-          $estudianteController->agregarPatologia($id_estudiante, $id_patologia);
-        }
+        $estudianteController->agregarPatologia($id_estudiante, $id_patologia);
       }
     }
   }
@@ -478,7 +476,7 @@ try {
     'id_inscripcion' => $id_inscripcion,
     'id_estudiante' => $id_estudiante,
     'id_representante' => $id_representante,
-    'tipo_persona' => $tipo_persona
+    'tipo_persona' => $tipo_persona // Incluir tipo en respuesta para debugging
   ]);
 } catch (Exception $e) {
   // Revertir transacción en caso de error
@@ -492,7 +490,7 @@ try {
   http_response_code(400);
   echo json_encode([
     'success' => false,
-    'message' => 'Error en la REinscripción: ' . $e->getMessage()
+    'message' => 'Error en la REinscripción: ' . $e->getMessage() . $e->getLine()
   ]);
 } finally {
   // Cerrar conexión si existe

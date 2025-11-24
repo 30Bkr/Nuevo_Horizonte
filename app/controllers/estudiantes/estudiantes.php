@@ -66,7 +66,7 @@ class EstudianteController
         ':id_patologia' => $id_patologia
       ]);
 
-      return true;
+      return $this->pdo->lastInsertId();
     } catch (PDOException $e) {
       throw new Exception("Error al agregar patología: " . $e->getMessage());
     }

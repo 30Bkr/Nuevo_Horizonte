@@ -40,7 +40,7 @@ try {
     if ($resultado2['existe']) {
       echo json_encode($resultado2);
     } else {
-      echo json_encode(['Existe' => false]);
+      echo json_encode(['existe' => false]);
     }
   }
   // Devolver resultado en formato JSON

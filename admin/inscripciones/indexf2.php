@@ -10,6 +10,7 @@ include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
 include_once("/xampp/htdocs/final/app/controllers/parentesco/parentesco.php");
+include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
 
 // include_once("/xampp/htdocs/final/app/controllers/representantes/profesiones.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
@@ -24,6 +25,7 @@ try {
   $ubicacionController = new UbicacionController($pdo);
   $parentesco = new ParentescoController($pdo);
   $parentescos = $parentesco->mostrarParentescos();
+  $patologiaController = new PatologiaController($pdo);
 
   $estados = $ubicacionController->obtenerEstados();
 } catch (PDOException $e) {
@@ -51,6 +53,25 @@ try {
 
   .btn-step {
     margin: 0 5px;
+  }
+</style>
+
+<style>
+  .patologia-item {
+    transition: all 0.3s ease;
+  }
+
+  .btn-eliminar-patologia {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+  }
+
+  .btn-eliminar-patologia:hover {
+    opacity: 1;
+  }
+
+  .select-patologia {
+    min-width: 200px;
   }
 </style>
 
@@ -198,7 +219,7 @@ try {
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="nacionalidad_r">Nacionalidad</label>
-                        <select name="nacionalidad_r" class="form-control" required>
+                        <select name="nacionalidad_r" id="nacionalidad_r" class="form-control" required>
                           <option value="">Seleccionar</option>
                           <option value="Venezolana">Venezolano</option>
                           <option value="Extranjero">Extranjero</option>
@@ -442,7 +463,7 @@ try {
                         <label for="nacionalidad_e">Nacionalidad</label>
                         <select name="nacionalidad_e" class="form-control" required>
                           <option value="">Seleccionar</option>
-                          <option value="Venezolano">Venezolano</option>
+                          <option value="Venezolana">Venezolano</option>
                           <option value="Extranjero">Extranjero</option>
                         </select>
                       </div>
@@ -502,7 +523,7 @@ try {
                   </div>
 
                   <!-- PATOLOGÍAS -->
-                  <div class="row">
+                  <!-- <div class="row">
                     <div class="col-md-12">
                       <div class="form-group">
                         <label>Patologías/Alergias (Seleccione las que apliquen)</label>
@@ -524,6 +545,83 @@ try {
                             </div>";
                           }
                           ?>
+                        </div>
+                      </div>
+                    </div>
+                  </div> -->
+
+                  <!-- <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label>Patologías/Alergias</label>
+
+                        Contenedor para los selects dinámicos
+                        <div id="contenedor-patologias">
+                          Select Principal
+                          <div class="mb-2 patologia-item">
+                            <select name="patologias[]" class="form-control select-patologia">
+                              <option value="">Seleccione una patología...</option>
+                              <option value="0">Ninguna</option>
+                              <?php
+                              $patologias = [
+                                1 => 'Asma',
+                                2 => 'Alergia a lácteos',
+                                3 => 'Alergia al polen',
+                                4 => 'Rinitis alérgica'
+                              ];
+                              foreach ($patologias as $id => $patologia) {
+                                echo "<option value='$id'>$patologia</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+
+                        Botón para agregar más patologías
+                        <div class="mt-2">
+                          <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
+                            <i class="fas fa-plus"></i> Agregar otra patología
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div> -->
+
+                  <!-- PATOLOGÍAS DEL SISTEMA - CARGADAS DESDE BASE DE DATOS -->
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label>Patologías/Alergias</label>
+
+                        <!-- Contenedor para los selects dinámicos -->
+                        <div id="contenedor-patologias">
+                          <!-- Select Principal -->
+                          <div class="mb-2 patologia-item">
+                            <select name="patologias[]" class="form-control select-patologia">
+                              <option value="">Seleccione una patología...</option>
+                              <option value="0">Ninguna</option>
+                              <?php
+                              // Cargar patologías desde la base de datos
+                              $patologiaController = new PatologiaController($pdo);
+                              $patologias = $patologiaController->obtenerPatologiasActivas();
+
+                              if (!empty($patologias)) {
+                                foreach ($patologias as $patologia) {
+                                  echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
+                                }
+                              } else {
+                                echo "<option value=''>No hay patologías registradas</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- Botón para agregar más patologías -->
+                        <div class="mt-2">
+                          <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
+                            <i class="fas fa-plus"></i> Agregar otra patología
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -910,17 +1008,16 @@ try {
   });
 </script>
 
-<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
-<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
-<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
-<!-- Aqui validamos si la cedula de identidad se encuentra registrada en personas -->
-
+<!-- Aca validamos la cedula de identidad y llenamos campo  -->
+<!-- Aca validamos la cedula de identidad y llenamos campo  -->
+<!-- Aca validamos la cedula de identidad y llenamos campo  -->
+<!-- Aca validamos la cedula de identidad y llenamos campo  -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 1;
     const totalSteps = 3;
 
-    // Funciones para navegación entre pasos
+    // ========== NAVEGACIÓN ENTRE PASOS ==========
     function showStep(step) {
       // Ocultar todos los pasos
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -978,64 +1075,7 @@ try {
       showStep(2);
     });
 
-    // Modificar la función validarRepresentante para mostrar botón siguiente
-    function validarRepresentante(cedula) {
-      const formData = new FormData();
-      formData.append('cedula', cedula);
-
-      fetch('/final/app/controllers/representantes/validar.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          const resultado = document.getElementById('resultado-validacion');
-          const nextButton = document.getElementById('btn-next-to-step2');
-
-          if (data.existe) {
-            resultado.innerHTML = `
-                <div class="alert alert-success">
-                    <strong>Representante encontrado:</strong> ${data.nombre_completo}
-                    <br>Los datos se cargarán automáticamente en el siguiente paso.
-                </div>
-                `;
-
-            // Llenar los campos con los datos del representante
-            document.getElementById('representante_existente').value = '1';
-            document.getElementById('id_representante_existente').value = data.id_representante || data.id_docente;
-            document.getElementById('cedula_r').value = data.cedula;
-
-            // Mostrar botón siguiente
-            nextButton.style.display = 'inline-block';
-
-          } else {
-            resultado.innerHTML = `
-                <div class="alert alert-info">
-                    <strong>Representante no encontrado.</strong> 
-                    <br>Será redirigido al formulario para registrar los datos del representante.
-                </div>
-                `;
-
-            document.getElementById('cedula_r').value = cedula;
-            document.getElementById('representante_existente').value = '0';
-
-            // Mostrar botón siguiente después de 2 segundos
-            setTimeout(() => {
-              nextButton.style.display = 'inline-block';
-            }, 2000);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('resultado-validacion').innerHTML = `
-            <div class="alert alert-danger">
-                Error al validar el representante. Intente nuevamente.
-            </div>
-            `;
-        });
-    }
-
-    // Mantener el resto del JavaScript existente para validación y carga de ubicaciones
+    // ========== VALIDACIÓN DE REPRESENTANTE ==========
     document.getElementById('btn-validar-representante').addEventListener('click', function() {
       const cedula = document.getElementById('cedula_representante').value;
       if (!cedula) {
@@ -1045,7 +1085,318 @@ try {
       validarRepresentante(cedula);
     });
 
-    // ... (mantener el resto del código JavaScript existente para ubicaciones y envío del formulario)
+    function validarRepresentante(cedula) {
+      // Crear FormData para enviar por POST
+      const formData = new FormData();
+      formData.append('cedula', cedula);
+
+      fetch('/final/app/controllers/representantes/validar.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const resultado = document.getElementById('resultado-validacion');
+          const nextButton = document.getElementById('btn-next-to-step2');
+
+          console.log('📊 Datos recibidos:', data);
+
+          // ✅ FUNCIÓN AUXILIAR PARA ASIGNAR VALORES SEGUROS
+          function setValueSafe(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+              element.value = value || '';
+              console.log(`✅ Asignado ${elementId}:`, value);
+            } else {
+              console.warn(`⚠️ Elemento no encontrado: ${elementId}`);
+            }
+          }
+
+          if (data.existe === true) {
+            // Determinar el tipo de persona encontrada
+            const tipoPersona = data.tipo;
+            const esDocente = tipoPersona === 'docente';
+            const esRepresentante = tipoPersona === 'representante';
+
+            resultado.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>${esDocente ? 'Docente' : 'Representante'} encontrado:</strong> ${data.nombre_completo}
+                        <br>Los datos se cargarán automáticamente.
+                        ${esDocente ? '<br><em>Nota: Como es docente, algunos campos estarán disponibles para completar</em>' : ''}
+                    </div>
+                `;
+
+            // PRIMERO: Habilitar TODOS los campos
+            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+              element.disabled = false;
+            });
+
+            // Llenar los campos comunes (USANDO LA FUNCIÓN SEGURA)
+            setValueSafe('representante_existente', '1');
+            setValueSafe('id_direccion_repre', data.id_direccion);
+            setValueSafe('tipo_persona', tipoPersona);
+
+            if (esRepresentante) {
+              setValueSafe('id_representante_existente', data.id_representante);
+              setValueSafe('id_representante_existente_esc', data.id_representante);
+            } else if (esDocente) {
+              setValueSafe('id_representante_existente', data.id_docente);
+              setValueSafe('id_representante_existente_esc', data.id_persona);
+            }
+
+            // Datos personales (comunes para ambos)
+            setValueSafe('cedula_r', data.cedula);
+            setValueSafe('primer_nombre_r', data.primer_nombre);
+            setValueSafe('segundo_nombre_r', data.segundo_nombre);
+            setValueSafe('primer_apellido_r', data.primer_apellido);
+            setValueSafe('segundo_apellido_r', data.segundo_apellido);
+            setValueSafe('correo_r', data.correo);
+            setValueSafe('telefono_r', data.telefono);
+            setValueSafe('telefono_hab_r', data.telefono_hab);
+            setValueSafe('fecha_nac_r', data.fecha_nac);
+            setValueSafe('lugar_nac_r', data.lugar_nac);
+            setValueSafe('sexo_r', data.sexo);
+            setValueSafe('nacionalidad_r', data.nacionalidad);
+
+            // Cargar SELECT de profesión
+            if (data.profesion) {
+              setValueSafe('profesion_r', data.profesion);
+            }
+
+            // Datos de dirección (comunes para ambos)
+            if (data.id_estado) {
+              setValueSafe('estado_r', data.id_estado);
+
+              // Cargar municipios para este estado
+              cargarMunicipios(data.id_estado).then(() => {
+                if (data.id_municipio) {
+                  setValueSafe('municipio_r', data.id_municipio);
+
+                  // Cargar parroquias para este municipio
+                  cargarParroquias(data.id_municipio).then(() => {
+                    if (data.id_parroquia) {
+                      setValueSafe('parroquia_r', data.id_parroquia);
+                    }
+                  });
+                }
+              });
+            }
+
+            // DIFERENCIAS ENTRE DOCENTE Y REPRESENTANTE
+            if (esRepresentante) {
+              console.log('👨‍👦 Es representante - inhabilitando campos');
+
+              // REPRESENTANTE: Cargar todos los datos
+              setValueSafe('ocupacion_r', data.ocupacion);
+              setValueSafe('lugar_trabajo_r', data.lugar_trabajo);
+              setValueSafe('direccion_r', data.direccion);
+              setValueSafe('calle_r', data.calle);
+              setValueSafe('casa_r', data.casa);
+
+              // Deshabilitar campos específicos
+              const camposDeshabilitar = [
+                'primer_nombre_r', 'segundo_nombre_r', 'primer_apellido_r', 'segundo_apellido_r',
+                'cedula_r', 'correo_r', 'telefono_r', 'telefono_hab_r', 'fecha_nac_r',
+                'lugar_nac_r', 'sexo_r', 'nacionalidad_r', 'profesion_r', 'ocupacion_r',
+                'lugar_trabajo_r', 'estado_r', 'municipio_r', 'parroquia_r', 'direccion_r',
+                'calle_r', 'casa_r'
+              ];
+
+              camposDeshabilitar.forEach(campoId => {
+                const elemento = document.getElementById(campoId);
+                if (elemento) {
+                  elemento.disabled = true;
+                  console.log(`🔒 Deshabilitado: ${campoId}`);
+                } else {
+                  console.warn(`⚠️ No se pudo deshabilitar (no existe): ${campoId}`);
+                }
+              });
+
+            } else if (esDocente) {
+              console.log('👨‍🏫 Es docente - campos específicos habilitados');
+
+              // DOCENTE: Solo cargar datos básicos
+              setValueSafe('ocupacion_r', data.ocupacion);
+              setValueSafe('lugar_trabajo_r', data.lugar_trabajo);
+              setValueSafe('direccion_r', data.direccion);
+              setValueSafe('calle_r', data.calle);
+              setValueSafe('casa_r', data.casa);
+
+              // Deshabilitar solo campos básicos
+              const camposDeshabilitados = [
+                'primer_nombre_r', 'segundo_nombre_r', 'primer_apellido_r', 'segundo_apellido_r',
+                'cedula_r', 'correo_r', 'telefono_r', 'telefono_hab_r', 'fecha_nac_r',
+                'lugar_nac_r', 'sexo_r', 'nacionalidad_r', 'profesion_r', 'estado_r',
+                'municipio_r', 'parroquia_r'
+              ];
+
+              camposDeshabilitados.forEach(campoId => {
+                const elemento = document.getElementById(campoId);
+                if (elemento) {
+                  elemento.disabled = true;
+                  console.log(`🔒 Deshabilitado: ${campoId}`);
+                } else {
+                  console.warn(`⚠️ No se pudo deshabilitar (no existe): ${campoId}`);
+                }
+              });
+
+              // Mantener HABILITADOS los campos específicos
+              const camposHabilitados = [
+                'ocupacion_r', 'lugar_trabajo_r', 'direccion_r', 'calle_r', 'casa_r'
+              ];
+
+              camposHabilitados.forEach(campoId => {
+                const elemento = document.getElementById(campoId);
+                if (elemento) {
+                  elemento.disabled = false;
+                  console.log(`🔓 Habilitado: ${campoId}`);
+                } else {
+                  console.warn(`⚠️ No se pudo habilitar (no existe): ${campoId}`);
+                }
+              });
+            }
+
+            // Mostrar botón siguiente
+            if (nextButton) {
+              nextButton.style.display = 'inline-block';
+            }
+
+          } else {
+            console.log('❌ Persona no encontrada');
+            resultado.innerHTML = `
+                    <div class="alert alert-info">
+                        <strong>Persona no encontrada.</strong> Por favor complete todos los datos del representante.
+                    </div>
+                `;
+
+            setValueSafe('cedula_r', cedula);
+            setValueSafe('representante_existente', '0');
+            setValueSafe('tipo_persona', '');
+
+            // Habilitar todos los campos
+            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
+              element.disabled = false;
+            });
+
+            // Mostrar botón siguiente después de 2 segundos
+            setTimeout(() => {
+              if (nextButton) {
+                nextButton.style.display = 'inline-block';
+              }
+            }, 2000);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error:', error);
+          const resultado = document.getElementById('resultado-validacion');
+          if (resultado) {
+            resultado.innerHTML = `
+                    <div class="alert alert-danger">
+                        Error al validar la persona. Intente nuevamente.
+                    </div>
+                `;
+          }
+        });
+    }
+
+    // ========== CARGAR MUNICIPIOS Y PARROQUIAS ==========
+    document.getElementById('estado_r').addEventListener('change', function() {
+      const estadoId = this.value;
+      const municipioSelect = document.getElementById('municipio_r');
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (estadoId) {
+        municipioSelect.disabled = false;
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        cargarMunicipios(estadoId);
+      } else {
+        municipioSelect.disabled = true;
+        parroquiaSelect.disabled = true;
+        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    document.getElementById('municipio_r').addEventListener('change', function() {
+      const municipioId = this.value;
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (municipioId) {
+        parroquiaSelect.disabled = false;
+        cargarParroquias(municipioId);
+      } else {
+        parroquiaSelect.disabled = true;
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+      }
+    });
+
+    function cargarMunicipios(estadoId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('estado_id', estadoId);
+
+        fetch('/final/app/controllers/ubicaciones/municipios.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('municipio_r');
+            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+
+            data.forEach(municipio => {
+              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar municipios:', error);
+            reject(error);
+          });
+      });
+    }
+
+    function cargarParroquias(municipioId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('municipio_id', municipioId);
+
+        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const select = document.getElementById('parroquia_r');
+            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+
+            data.forEach(parroquia => {
+              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+            });
+            resolve();
+          })
+          .catch(error => {
+            console.error('Error al cargar parroquias:', error);
+            reject(error);
+          });
+      });
+    }
   });
 </script>
 
@@ -1122,328 +1473,6 @@ try {
   });
 </script>
 </script>
-
-
-
-<!-- Para validar la cedula de identidad y recoger datos de personas -->
-<!-- Para validar la cedula de identidad  y recoger datos de personas -->
-<!-- Para validar la cedula de identidad y recoger datos de personas -->
-<!-- Para validar la cedula de identidad y recoger datos de personas -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Validar representante existente
-    document.getElementById('btn-validar-representante').addEventListener('click', function() {
-      const cedula = document.getElementById('cedula_representante').value;
-
-      if (!cedula) {
-        alert('Por favor ingrese la cédula del representante');
-        return;
-      }
-
-      validarRepresentante(cedula);
-    });
-
-    function validarRepresentante(cedula) {
-      // Crear FormData para enviar por POST
-      const formData = new FormData();
-      formData.append('cedula', cedula);
-
-      fetch('/final/app/controllers/representantes/validar.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          const resultado = document.getElementById('resultado-validacion');
-          const nextButton = document.getElementById('btn-next-to-step2');
-
-          if (data.existe) {
-            // Determinar el tipo de persona encontrada
-            console.log(data);
-
-            const tipoPersona = data.tipo;
-            const esDocente = tipoPersona === 'docente';
-            const esRepresentante = tipoPersona === 'representante';
-
-            resultado.innerHTML = `
-        <div class="alert alert-success">
-            <strong>${esDocente ? 'Docente' : 'Representante'} encontrado:</strong> ${data.nombre_completo}
-            <br>Los datos se cargarán automáticamente.
-            ${esDocente ? '<br><em>Nota: Como es docente, algunos campos estarán disponibles para completar</em>' : ''}
-        </div>
-        `;
-
-            // Llenar los campos comunes
-            document.getElementById('representante_existente').value = '1';
-            document.getElementById('id_direccion_repre').value = data.id_direccion;
-            document.getElementById('tipo_persona').value = tipoPersona;
-
-            if (esRepresentante) {
-              document.getElementById('id_representante_existente').value = data.id_representante;
-              document.getElementById('id_representante_existente_esc').value = data.id_representante;
-            } else if (esDocente) {
-              document.getElementById('id_representante_existente').value = data.id_docente;
-              document.getElementById('id_representante_existente_esc').value = data.id_persona; // IMPORTANTE: Usar id_persona para docente
-            }
-
-            // Mostrar botón siguiente
-            nextButton.style.display = 'inline-block';
-
-            // Datos personales (comunes para ambos)
-            document.getElementById('cedula_r').value = data.cedula;
-            document.getElementById('primer_nombre_r').value = data.primer_nombre;
-            document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
-            document.getElementById('primer_apellido_r').value = data.primer_apellido;
-            document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
-            document.getElementById('correo_r').value = data.correo || '';
-            document.getElementById('telefono_r').value = data.telefono || '';
-            document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
-            document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
-            document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
-            document.getElementById('sexo_r').value = data.sexo || '';
-            document.getElementById('nacionalidad_r').value = data.nacionalidad || '';
-
-            // Profesión (común para ambos)
-            if (data.profesion) {
-              document.getElementById('profesion_r').value = data.profesion;
-            }
-
-            // Datos de dirección (comunes para ambos)
-            if (data.id_estado) {
-              document.getElementById('estado_r').value = data.id_estado;
-
-              // Cargar municipios para este estado
-              cargarMunicipios(data.id_estado).then(() => {
-                if (data.id_municipio) {
-                  document.getElementById('municipio_r').value = data.id_municipio;
-
-                  // Cargar parroquias para este municipio
-                  cargarParroquias(data.id_municipio).then(() => {
-                    if (data.id_parroquia) {
-                      document.getElementById('parroquia_r').value = data.id_parroquia;
-                    }
-                  });
-                }
-              });
-            }
-
-            // DIFERENCIAS ENTRE DOCENTE Y REPRESENTANTE
-            if (esRepresentante) {
-              // REPRESENTANTE: Cargar todos los datos y deshabilitar
-              document.getElementById('ocupacion_r').value = data.ocupacion || '';
-              document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
-              document.getElementById('direccion_r').value = data.direccion || '';
-              document.getElementById('calle_r').value = data.calle || '';
-              document.getElementById('casa_r').value = data.casa || '';
-              console.log('Es representante');
-
-              // Deshabilitar TODOS los campos del representante
-              document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-                if (element.name.includes('_r') && element.name !== 'parentesco') {
-                  element.disabled = true;
-                }
-              });
-
-            } else if (esDocente) {
-              console.log('Es docente');
-
-              // DOCENTE: Solo cargar datos básicos y mantener habilitados ciertos campos
-              document.getElementById('ocupacion_r').value = ''; // Vacío porque no existe en docente
-              document.getElementById('lugar_trabajo_r').value = ''; // Vacío porque no existe en docente
-              document.getElementById('direccion_r').value = data.direccion || '';
-              document.getElementById('calle_r').value = data.calle || '';
-              document.getElementById('casa_r').value = data.casa || '';
-
-              // Deshabilitar solo los campos básicos, mantener habilitados los específicos
-              const camposDeshabilitados = [
-                'cedula_r', 'primer_nombre_r', 'segundo_nombre_r',
-                'primer_apellido_r', 'segundo_apellido_r', 'correo_r',
-                'telefono_r', 'telefono_hab_r', 'fecha_nac_r', 'lugar_nac_r',
-                'sexo_r', 'nacionalidad_r', 'profesion_r', 'estado_r',
-                'municipio_r', 'parroquia_r'
-              ];
-
-              // Deshabilitar campos básicos
-              camposDeshabilitados.forEach(campoId => {
-                const elemento = document.getElementById(campoId);
-                if (elemento) elemento.disabled = true;
-              });
-              // Mantener HABILITADOS los campos específicos que el docente debe completar
-              const camposHabilitados = [
-                'ocupacion_r', 'lugar_trabajo_r', 'direccion_r',
-                'calle_r', 'casa_r'
-              ];
-
-              camposHabilitados.forEach(campoId => {
-                const elemento = document.getElementById(campoId);
-                if (elemento) elemento.disabled = false;
-              });
-            }
-
-          } else {
-            resultado.innerHTML = `
-        <div class="alert alert-info">
-            <strong>Persona no encontrada.</strong> Por favor complete todos los datos del representante.
-        </div>
-        `;
-            document.getElementById('cedula_r').value = cedula;
-            document.getElementById('representante_existente').value = '0';
-            document.getElementById('tipo_persona').value = '';
-
-            // Habilitar todos los campos por si estaban deshabilitados
-            document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
-              element.disabled = false;
-            });
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('resultado-validacion').innerHTML = `
-      <div class="alert alert-danger">
-          Error al validar la persona. Intente nuevamente.
-      </div>
-      `;
-        });
-    }
-
-    // Cargar municipios cuando cambie el estado
-    document.getElementById('estado_r').addEventListener('change', function() {
-      const estadoId = this.value;
-      const municipioSelect = document.getElementById('municipio_r');
-      const parroquiaSelect = document.getElementById('parroquia_r');
-
-      if (estadoId) {
-        municipioSelect.disabled = false;
-        parroquiaSelect.disabled = true;
-        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
-        cargarMunicipios(estadoId);
-      } else {
-        municipioSelect.disabled = true;
-        parroquiaSelect.disabled = true;
-        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
-        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
-      }
-    });
-
-    // Cargar parroquias cuando cambie el municipio
-    document.getElementById('municipio_r').addEventListener('change', function() {
-      const municipioId = this.value;
-      const parroquiaSelect = document.getElementById('parroquia_r');
-
-      if (municipioId) {
-        parroquiaSelect.disabled = false;
-        cargarParroquias(municipioId);
-      } else {
-        parroquiaSelect.disabled = true;
-        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
-      }
-    });
-
-    function cargarMunicipios(estadoId) {
-      return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('estado_id', estadoId);
-
-        fetch('/final/app/controllers/ubicaciones/municipios.php', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Error en la respuesta del servidor');
-            }
-            return response.json();
-          })
-          .then(data => {
-            const select = document.getElementById('municipio_r');
-            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
-
-            data.forEach(municipio => {
-              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
-            });
-            resolve();
-          })
-          .catch(error => {
-            console.error('Error al cargar municipios:', error);
-            reject(error);
-          });
-      });
-    }
-
-    function cargarProfesiones(profesionesId) {
-      return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('profesionesId', profesionesId);
-
-        fetch('/final/app/controllers/representantes/profesiones.php', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Error2 en la respuesta del servidor');
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log("DAta: ", data);
-
-            const select = document.getElementById('profesion_r');
-            select.innerHTML = '<option value="">Seleccionar Profesión</option>';
-
-            select.innerHTML += `<option value="${data[0].id_profesion}">${data[0].profesion}</option>`;
-
-            resolve();
-          })
-          .catch(error => {
-            console.error('Error al cargar profesiones:', error);
-            reject(error);
-          });
-      });
-    }
-
-    function cargarParroquias(municipioId) {
-      return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('municipio_id', municipioId);
-
-        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Error en la respuesta del servidor');
-            }
-            return response.json();
-          })
-          .then(data => {
-            const select = document.getElementById('parroquia_r');
-            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
-
-            data.forEach(parroquia => {
-              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
-            });
-            resolve();
-          })
-          .catch(error => {
-            console.error('Error al cargar parroquias:', error);
-            reject(error);
-          });
-      });
-    }
-
-
-
-  });
-</script>
-
-
 
 <!-- Carga de estados, municipios, parroquias del representante -->
 <!-- Carga de estados, municipios, parroquias del representante -->
@@ -1648,6 +1677,73 @@ try {
       });
     }
 
+  });
+</script>
+
+<!-- Manejo de patologias con select adicionales  -->
+<!-- Manejo de patologias con select adicionales  -->
+<!-- Manejo de patologias con select adicionales  -->
+<!-- Manejo de patologias con select adicionales  -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const contenedorPatologias = document.getElementById('contenedor-patologias');
+    const btnAgregarPatologia = document.getElementById('btn-agregar-patologia');
+
+    // Obtener las patologías desde el primer select (que ya viene de la base de datos)
+    function obtenerOpcionesPatologias() {
+      const primerSelect = document.querySelector('.select-patologia');
+      if (!primerSelect) return '';
+
+      // Clonar todas las opciones excepto la primera (placeholder)
+      const opciones = Array.from(primerSelect.options)
+        .filter(option => option.value !== '')
+        .map(option => `<option value="${option.value}">${option.text}</option>`)
+        .join('');
+
+      return opciones;
+    }
+
+    // Función para crear un nuevo select de patología
+    function crearSelectPatologia() {
+      const opciones = obtenerOpcionesPatologias();
+
+      const div = document.createElement('div');
+      div.className = 'mb-2 patologia-item d-flex align-items-center';
+
+      div.innerHTML = `
+            <select name="patologias[]" class="form-control select-patologia me-2">
+                <option value="">Seleccione una patología...</option>
+                ${opciones}
+            </select>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-patologia">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+      return div;
+    }
+
+    // Agregar nuevo select
+    btnAgregarPatologia.addEventListener('click', function() {
+      const nuevoSelect = crearSelectPatologia();
+      contenedorPatologias.appendChild(nuevoSelect);
+
+      // Agregar evento al botón eliminar
+      const btnEliminar = nuevoSelect.querySelector('.btn-eliminar-patologia');
+      btnEliminar.addEventListener('click', function() {
+        nuevoSelect.remove();
+      });
+    });
+
+    // Eliminar select (evento delegado)
+    contenedorPatologias.addEventListener('click', function(e) {
+      if (e.target.classList.contains('btn-eliminar-patologia') ||
+        e.target.closest('.btn-eliminar-patologia')) {
+        const btn = e.target.classList.contains('btn-eliminar-patologia') ?
+          e.target : e.target.closest('.btn-eliminar-patologia');
+        btn.closest('.patologia-item').remove();
+      }
+    });
   });
 </script>
 <?php
