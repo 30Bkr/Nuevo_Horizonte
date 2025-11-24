@@ -485,14 +485,7 @@ try {
   ];
 
   error_log("Creando REinscripción");
-  $id_inscripcion = $inscripcionController->crearInscripcionConNivelSeccion(
-    $id_estudiante,
-    $_POST['id_periodo'],
-    $_POST['id_nivel'],
-    $_POST['id_seccion'],
-    $_SESSION['id_usuario'] ?? 1,
-    $_POST['observaciones'] ?? ''
-  );
+  $id_inscripcion = $inscripcionController->crearInscripcion($datosInscripcion);
   error_log("REinscripción creada con ID: " . $id_inscripcion);
 
   // Confirmar transacción

@@ -8,6 +8,46 @@ class InscripcionController
     $this->pdo = $pdo;
   }
 
+  //crear inscripcion nueva
+  // En InscripcionController
+  public function crearInscripcionConNivelSeccion($id_estudiante, $id_periodo, $id_nivel, $id_seccion, $id_usuario, $observaciones = '')
+  {
+    try {
+      // Primero obtener el id_nivel_seccion
+      $sql_nivel_seccion = "SELECT id_nivel_seccion FROM niveles_secciones 
+                             WHERE id_nivel = ? AND id_seccion = ? AND estatus = 1";
+      $stmt = $this->pdo->prepare($sql_nivel_seccion);
+      $stmt->execute([$id_nivel, $id_seccion]);
+      $nivel_seccion = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if (!$nivel_seccion) {
+        throw new Exception('No se encontró la combinación nivel-sección');
+      }
+
+      $id_nivel_seccion = $nivel_seccion['id_nivel_seccion'];
+
+      // Crear la inscripción
+      $sql = "INSERT INTO inscripciones 
+                (id_estudiante, id_periodo, id_nivel_seccion, id_usuario, fecha_inscripcion, observaciones) 
+                VALUES (?, ?, ?, ?, ?, ?)";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([
+        $id_estudiante,
+        $id_periodo,
+        $id_nivel_seccion,
+        $id_usuario,
+        date('Y-m-d'),
+        $observaciones
+      ]);
+
+      return $this->pdo->lastInsertId();
+    } catch (PDOException $e) {
+      error_log("Error en crearInscripcionConNivelSeccion: " . $e->getMessage());
+      throw new Exception('Error al crear la inscripción: ' . $e->getMessage());
+    }
+  }
+
   // Crear nueva inscripción
   public function crearInscripcion($datos)
   {
