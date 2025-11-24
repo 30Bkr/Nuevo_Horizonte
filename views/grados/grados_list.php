@@ -243,6 +243,6 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
     }
 </script>
 <?php
-include_once('../layout/layaout2.php');
-include_once('../layout/mensajes.php')
+include_once('../../layout/layaout2.php'); 
+include_once('../../layout/mensajes.php');
 ?>

@@ -22,7 +22,7 @@ try {
             if ($grado->inhabilitar()) {
                 $_SESSION['success'] = "Grado inhabilitado exitosamente.";
             } else {
-                $_SESSION['error'] = "No se pudo inhabilitar el grado.";
+                $_SESSION['error'] = "No se pudo inhabilitar el grado porque ya existen alumnos inscritos.";
             }
         } else {
             $_SESSION['error'] = "Acción no válida.";
