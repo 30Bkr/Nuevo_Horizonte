@@ -2,7 +2,9 @@
 include_once('/xampp/htdocs/final/global/utils.php');
 include_once('/xampp/htdocs/final/app/users.php');
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $esto = $_SESSION['sesion_email'];
 $user = new Usuarios;
 $info = $user->consultar($esto);
