@@ -188,12 +188,49 @@ try {
                   </div>
 
                   <div class="row">
+
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="fecha_nac_r">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nac_r" id="fecha_nac_r" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="nacionalidad_r">Nacionalidad</label>
+                        <select name="nacionalidad_r" class="form-control" required>
+                          <option value="">Seleccionar</option>
+                          <option value="Venezolano">Venezolano</option>
+                          <option value="Extranjero">Extranjero</option>
+                        </select>
+                      </div>
+                    </div>
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="cedula_r">Cédula de Identidad</label>
                         <input type="number" name="cedula_r" id="cedula_r" class="form-control" required readonly>
                       </div>
                     </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="sexo_r">Sexo</label>
+                        <select name="sexo_r" id="sexo_r" class="form-control" required>
+                          <option value="">Seleccionar</option>
+                          <option value="Masculino">Masculino</option>
+                          <option value="Femenino">Femenino</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="lugar_nac_r">Lugar de Nacimiento</label>
+                        <input type="text" name="lugar_nac_r" id="lugar_nac_r" class="form-control" required>
+                      </div>
+                    </div>
+
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="correo_r">Correo Electrónico</label>
@@ -209,57 +246,13 @@ try {
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="telefono_hab_r">Teléfono Habitación</label>
-                        <input type="text" name="telefono_hab_r" id="telefono_hab_r" class="form-control" required>
+                        <input type="text" name="telefono_hab_r" id="telefono_hab_r" class="form-control">
                       </div>
                     </div>
                   </div>
 
                   <div class="row">
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <label for="fecha_nac_r">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nac_r" id="fecha_nac_r" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <label for="lugar_nac_r">Lugar de Nacimiento</label>
-                        <input type="text" name="lugar_nac_r" id="lugar_nac_r" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <label for="sexo_r">Sexo</label>
-                        <select name="sexo_r" id="sexo_r" class="form-control" required>
-                          <option value="">Seleccionar</option>
-                          <option value="Masculino">Masculino</option>
-                          <option value="Femenino">Femenino</option>
-                        </select>
-                      </div>
-                    </div>
                     <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="nacionalidad_r">Nacionalidad</label>
-                        <input type="text" name="nacionalidad_r" id="nacionalidad_r" class="form-control" required value="Venezolana">
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="parentesco">Parentesco con Estudiante</label>
-                        <select name="parentesco" id="parentesco" class="form-control" required>
-                          <option value="">Seleccionar</option>
-                          <?php
-                          foreach ($parentescos as $pa) {
-                            echo "<option value='{$pa['id_parentesco']}'>{$pa['parentesco']}</option>";
-                          }
-                          ?>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-md-4">
                       <div class="form-group">
                         <label for="profesion_r">Profesión</label>
                         <select name="profesion_r" id="profesion_r" class="form-control" required>
@@ -272,16 +265,29 @@ try {
                         </select>
                       </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                       <div class="form-group">
                         <label for="ocupacion_r">Ocupación</label>
                         <input type="text" name="ocupacion_r" id="ocupacion_r" class="form-control" required>
                       </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                       <div class="form-group">
                         <label for="lugar_trabajo_r">Lugar de Trabajo</label>
                         <input type="text" name="lugar_trabajo_r" id="lugar_trabajo_r" class="form-control">
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="parentesco">Parentesco familiar</label>
+                        <select name="parentesco" id="parentesco" class="form-control" required>
+                          <option value="">Seleccionar</option>
+                          <?php
+                          foreach ($parentescos as $pa) {
+                            echo "<option value='{$pa['id_parentesco']}'>{$pa['parentesco']}</option>";
+                          }
+                          ?>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -708,6 +714,18 @@ try {
         document.getElementById('direccion_e').value = '';
         document.getElementById('calle_e').value = '';
         document.getElementById('casa_e').value = '';
+      }
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Agregar asterisco a todos los labels de campos required
+    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+      const label = document.querySelector(`label[for="${field.id}"]`);
+      if (label && !label.querySelector('.required-asterisk')) {
+        label.innerHTML += ' <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span>';
       }
     });
   });
