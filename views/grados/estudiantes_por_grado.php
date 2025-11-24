@@ -1,4 +1,4 @@
-   <?php
+<?php
     session_start();
 
     include_once __DIR__ . '/../../app/conexion.php';
@@ -300,4 +300,4 @@
     </script>
     </script>
     </body>
-    </html> 
+    </html>  
