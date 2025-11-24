@@ -21,6 +21,10 @@ try {
         throw new Exception("Debe seleccionar un grado/sección válido");
     }
 
+    // Configurar zona horaria de Venezuela
+    date_default_timezone_set('America/Caracas');
+    $fecha_actual = date('d/m/Y H:i:s');
+
     // Obtener datos de la base de datos
     $database = new Conexion();
     $db = $database->conectar();
@@ -78,6 +82,16 @@ try {
                 max-width: 100%;
                 height: 60px;
             }
+            .cintillo-texto {
+                text-align: center;
+                font-weight: bold;
+                font-size: 14px;
+                color: #003366;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border: 1px solid #003366;
+                margin-bottom: 15px;
+            }
             /* TÍTULO DEL REPORTE */
             .report-title {
                 text-align: center;
@@ -97,66 +111,6 @@ try {
                 padding: 8px;
                 border-radius: 4px;
                 border: 1px solid #dee2e6;
-            }
-            /* ESTADÍSTICAS */
-            .stats-container {
-                display: table;
-                width: 100%;
-                margin-bottom: 15px;
-                font-size: 10px;
-                border-collapse: collapse;
-            }
-            .stat-box {
-                display: table-cell;
-                width: 33.33%;
-                padding: 10px;
-                background-color: #e9ecef;
-                border: 1px solid #ced4da;
-                text-align: center;
-                vertical-align: middle;
-            }
-            .stat-number {
-                font-size: 18px;
-                font-weight: bold;
-                color: #003366;
-                display: block;
-                margin-bottom: 5px;
-            }
-            .stat-text {
-                font-size: 10px;
-                color: #495057;
-                font-weight: bold;
-            }
-            /* BARRA DE PROGRESO */
-            .progress-section {
-                margin-bottom: 15px;
-                padding: 8px;
-                background-color: #f8f9fa;
-                border-radius: 4px;
-                border: 1px solid #dee2e6;
-            }
-            .progress-label {
-                font-weight: bold;
-                margin-bottom: 5px;
-                color: #495057;
-                font-size: 11px;
-            }
-            .progress-container {
-                width: 100%;
-                background-color: #e9ecef;
-                border-radius: 4px;
-                overflow: hidden;
-                height: 20px;
-                border: 1px solid #ced4da;
-            }
-            .progress-bar {
-                height: 100%;
-                background-color: #003366;
-                text-align: center;
-                color: white;
-                font-size: 11px;
-                line-height: 20px;
-                font-weight: bold;
             }
             /* TABLA */
             table { 
@@ -181,20 +135,37 @@ try {
             }
             .text-center { text-align: center; }
             .text-left { text-align: left; }
+            .text-right { text-align: right; }
             .even-row {
                 background-color: #f8f9fa;
             }
             .odd-row {
                 background-color: #ffffff;
             }
+            /* ESTADÍSTICAS AL FINAL */
+            .stats-final {
+                margin-top: 15px;
+                padding: 10px;
+                background-color: #f8f9fa;
+                border: 1px solid #ddd;
+                border-radius: 3px;
+                font-size: 10px;
+            }
+            .stats-final h3 {
+                margin: 0 0 8px 0;
+                color: #003366;
+                font-size: 11px;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 3px;
+            }
             /* PIE DE PÁGINA */
             .footer {
                 margin-top: 20px;
                 text-align: center;
-                font-size: 9px;
+                font-size: 8px;
                 color: #666;
                 border-top: 1px solid #ccc;
-                padding-top: 8px;
+                padding-top: 5px;
             }
             .no-data {
                 text-align: center;
@@ -207,10 +178,14 @@ try {
     </head>
     <body>
         <div class="container">
-            <!-- CINTILLO CON IMAGEN OFICIAL -->
+            <!-- CINTILLO CON IMAGEN OFICIAL O TEXTO ALTERNATIVO -->
+            ' . ($cintillo_base64 ? '
             <div class="cintillo-imagen">
                 <img src="' . $cintillo_base64 . '" class="cintillo-img" alt="Cintillo Oficial">
-            </div>
+            </div>' : '
+            <div class="cintillo-texto">
+                UNIDAD EDUCATIVA NACIONAL "NUEVO HORIZONTE"
+            </div>') . '
             
             <!-- TÍTULO DEL REPORTE -->
             <div class="report-title">
@@ -219,35 +194,9 @@ try {
             
             <!-- INFORMACIÓN DEL GRADO -->
             <div class="grado-info">
-                <strong>Fecha de Generación:</strong> ' . date('d/m/Y H:i:s') . ' | 
+                <strong>Fecha de Generación:</strong> ' . $fecha_actual . ' | 
                 <strong>Período Escolar:</strong> 2024-2025 | 
                 <strong>Capacidad Total:</strong> ' . $info_grado['capacidad'] . ' estudiantes
-            </div>
-
-            <!-- ESTADÍSTICAS -->
-            <div class="stats-container">
-                <div class="stat-box">
-                    <span class="stat-number">' . $totalEstudiantes . '</span>
-                    <span class="stat-text">TOTAL ESTUDIANTES</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-number">' . number_format($porcentajeOcupacion, 1) . '%</span>
-                    <span class="stat-text">OCUPACIÓN</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-number">' . $cuposDisponibles . '</span>
-                    <span class="stat-text">CUPOS DISPONIBLES</span>
-                </div>
-            </div>
-
-            <!-- BARRA DE PROGRESO -->
-            <div class="progress-section">
-                <div class="progress-label">NIVEL DE OCUPACIÓN DEL AULA:</div>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: ' . number_format($porcentajeOcupacion, 1) . '%;">
-                        ' . number_format($porcentajeOcupacion, 1) . '% COMPLETADO
-                    </div>
-                </div>
             </div>';
 
     if ($totalEstudiantes > 0) {
@@ -331,19 +280,39 @@ try {
                 No hay estudiantes inscritos en este grado/sección.
             </div>';
     }
+
+    // ESTADÍSTICAS AL FINAL (después de la tabla)
+    $html .= '
+            <div class="stats-final">
+                <h3>RESUMEN ESTADÍSTICO</h3>
+                <table style="width: 100%; border: none; background: transparent;">
+                    <tr>
+                        <td style="border: none; padding: 2px;"><strong>Total Estudiantes:</strong></td>
+                        <td style="border: none; padding: 2px;">' . $totalEstudiantes . ' estudiantes</td>
+                        <td style="border: none; padding: 2px;"><strong>Capacidad Total:</strong></td>
+                        <td style="border: none; padding: 2px;">' . $info_grado['capacidad'] . ' estudiantes</td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; padding: 2px;"><strong>Ocupación:</strong></td>
+                        <td style="border: none; padding: 2px;">' . number_format($porcentajeOcupacion, 1) . '%</td>
+                        <td style="border: none; padding: 2px;"><strong>Cupos Disponibles:</strong></td>
+                        <td style="border: none; padding: 2px;">' . $cuposDisponibles . ' cupos</td>
+                    </tr>
+                </table>
+            </div>';
     
     $html .= '
             <!-- PIE DE PÁGINA -->
             <div class="footer">
-                Unidad Educativa Nacional "Nuevo Horizonte" - Sistema de Gestión Escolar<br>
-                Página <span style="color: #003366; font-weight: bold;">{PAGENO}</span> de <span style="color: #003366; font-weight: bold;">{nbpg}</span>
+                Unidad Educativa Nacional "Nuevo Horizonte"<br>
+                Página <span style="color: #003366; font-weight: bold;">[[page_cu]]</span> de <span style="color: #003366; font-weight: bold;">[[page_nb]]</span>
             </div>
         </div>
     </body>
     </html>';
 
-    // Configurar y generar PDF
-    $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(10, 10, 10, 10));
+    // Configurar y generar PDF con márgenes de 2.54 cm (equivalente a 1 pulgada)
+    $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(25.4, 25.4, 25.4, 25.4));
     $html2pdf->setDefaultFont('dejavusans');
     $html2pdf->setTestTdInOnePage(false);
     $html2pdf->writeHTML($html);
