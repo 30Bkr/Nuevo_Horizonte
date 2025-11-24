@@ -200,7 +200,7 @@ try {
                         <label for="nacionalidad_r">Nacionalidad</label>
                         <select name="nacionalidad_r" class="form-control" required>
                           <option value="">Seleccionar</option>
-                          <option value="Venezolano">Venezolano</option>
+                          <option value="Venezolana">Venezolano</option>
                           <option value="Extranjero">Extranjero</option>
                         </select>
                       </div>
@@ -1164,6 +1164,8 @@ try {
 
           if (data.existe) {
             // Determinar el tipo de persona encontrada
+            console.log(data);
+
             const tipoPersona = data.tipo;
             const esDocente = tipoPersona === 'docente';
             const esRepresentante = tipoPersona === 'representante';
@@ -1204,7 +1206,7 @@ try {
             document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
             document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
             document.getElementById('sexo_r').value = data.sexo || '';
-            document.getElementById('nacionalidad_r').value = data.nacionalidad || 'Venezolana';
+            document.getElementById('nacionalidad_r').value = data.nacionalidad || '';
 
             // Profesión (común para ambos)
             if (data.profesion) {
@@ -1238,6 +1240,7 @@ try {
               document.getElementById('direccion_r').value = data.direccion || '';
               document.getElementById('calle_r').value = data.calle || '';
               document.getElementById('casa_r').value = data.casa || '';
+              console.log('Es representante');
 
               // Deshabilitar TODOS los campos del representante
               document.querySelectorAll('#form-inscripcion input, #form-inscripcion select').forEach(element => {
@@ -1247,6 +1250,8 @@ try {
               });
 
             } else if (esDocente) {
+              console.log('Es docente');
+
               // DOCENTE: Solo cargar datos básicos y mantener habilitados ciertos campos
               document.getElementById('ocupacion_r').value = ''; // Vacío porque no existe en docente
               document.getElementById('lugar_trabajo_r').value = ''; // Vacío porque no existe en docente
@@ -1268,7 +1273,6 @@ try {
                 const elemento = document.getElementById(campoId);
                 if (elemento) elemento.disabled = true;
               });
-
               // Mantener HABILITADOS los campos específicos que el docente debe completar
               const camposHabilitados = [
                 'ocupacion_r', 'lugar_trabajo_r', 'direccion_r',
