@@ -205,39 +205,40 @@ class Grado {
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return PDOStatement Lista de estudiantes
      */
-    public function obtenerEstudiantesPorGrado($id_nivel_seccion) {
-        $query = "SELECT 
-                    p.cedula,
-                    p.primer_nombre,
-                    p.segundo_nombre,
-                    p.primer_apellido,
-                    p.segundo_apellido,
-                    p.sexo,
-                    p.fecha_nac,
-                    i.fecha_inscripcion,
-                    rp.primer_nombre as rep_primer_nombre,
-                    rp.segundo_nombre as rep_segundo_nombre,
-                    rp.primer_apellido as rep_primer_apellido,
-                    rp.segundo_apellido as rep_segundo_apellido,
-                    er.parentesco,
-                    CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre
-                  FROM inscripciones i
-                  INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
-                  INNER JOIN personas p ON e.id_persona = p.id_persona
-                  LEFT JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
-                  LEFT JOIN representantes r ON er.id_representante = r.id_representante
-                  LEFT JOIN personas rp ON r.id_persona = rp.id_persona
-                  WHERE i.id_nivel_seccion = :id_nivel_seccion 
-                  AND i.estatus = 1 
-                  AND e.estatus = 1
-                  ORDER BY p.primer_apellido, p.primer_nombre";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
-        $stmt->execute();
-        
-        return $stmt;
-    }
+   public function obtenerEstudiantesPorGrado($id_nivel_seccion) {
+    $query = "SELECT 
+                p.cedula,
+                p.primer_nombre,
+                p.segundo_nombre,
+                p.primer_apellido,
+                p.segundo_apellido,
+                p.sexo,
+                p.fecha_nac,
+                i.fecha_inscripcion,
+                rp.primer_nombre as rep_primer_nombre,
+                rp.segundo_nombre as rep_segundo_nombre,
+                rp.primer_apellido as rep_primer_apellido,
+                rp.segundo_apellido as rep_segundo_apellido,
+                par.parentesco, 
+                CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre
+              FROM inscripciones i
+              INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
+              INNER JOIN personas p ON e.id_persona = p.id_persona
+              LEFT JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
+              LEFT JOIN representantes r ON er.id_representante = r.id_representante
+              LEFT JOIN personas rp ON r.id_persona = rp.id_persona
+              LEFT JOIN parentesco par ON er.id_parentesco = par.id_parentesco 
+              WHERE i.id_nivel_seccion = :id_nivel_seccion 
+              AND i.estatus = 1 
+              AND e.estatus = 1
+              ORDER BY p.primer_apellido, p.primer_nombre";
+    
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
+    $stmt->execute();
+    
+    return $stmt;
+}
 
     /**
      * Obtener estadísticas detalladas de un grado/sección
