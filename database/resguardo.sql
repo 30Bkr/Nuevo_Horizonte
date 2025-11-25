@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 11-11-2025 a las 02:36:26
+-- Tiempo de generación: 24-11-2025 a las 01:29:48
 -- Versión del servidor: 11.7.2-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -23,7 +23,7 @@ SET time_zone = "+00:00";
 ;
 
 --
--- Base de datos: `neudelys`
+-- Base de datos: `nuevo_horizonte`
 --
 
 -- --------------------------------------------------------
@@ -65,7 +65,7 @@ VALUES (
         'Av Principal',
         'Casa 123',
         '2025-11-10 06:17:16',
-        '2025-11-10 02:17:16',
+        '2025-11-23 20:27:06',
         1
     ),
     (
@@ -127,6 +127,156 @@ VALUES (
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
+    ),
+    (
+        13,
+        1,
+        'Av Principal de Petare',
+        'Av Principal',
+        'Casa 123',
+        '2025-11-11 18:59:50',
+        NULL,
+        1
+    ),
+    (
+        14,
+        77,
+        'Quinta Crespo',
+        'av sur 4. oeste 16',
+        'Res siena',
+        '2025-11-11 19:30:17',
+        '2025-11-20 16:05:39',
+        1
+    ),
+    (
+        15,
+        77,
+        'Quinta Crespo',
+        'av sur 4. oeste 16',
+        'Res siena',
+        '2025-11-11 19:30:17',
+        NULL,
+        1
+    ),
+    (
+        16,
+        1,
+        'Av Principal de Petare',
+        'Av Principal',
+        'Casa 123',
+        '2025-11-11 20:02:31',
+        NULL,
+        1
+    ),
+    (
+        17,
+        81,
+        'Quinta Crespo',
+        'av sur 4. oeste 16',
+        'Res siena',
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        18,
+        81,
+        'Quinta Crespo',
+        'av sur 4. oeste 16',
+        'Res siena',
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        19,
+        78,
+        'Quinta Crespo',
+        'Av 2',
+        'Montalban 3',
+        '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        20,
+        78,
+        'Quinta Crespo',
+        'Av 2',
+        'Montalban 3',
+        '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        21,
+        1,
+        'Por definir',
+        NULL,
+        NULL,
+        '2025-11-17 04:30:35',
+        NULL,
+        1
+    ),
+    (
+        22,
+        1,
+        'Por definir',
+        NULL,
+        NULL,
+        '2025-11-17 04:41:45',
+        NULL,
+        1
+    ),
+    (
+        29,
+        1,
+        'K',
+        'K',
+        'K',
+        '2025-11-20 03:45:22',
+        '2025-11-20 00:15:06',
+        1
+    ),
+    (
+        30,
+        69,
+        'Quinta Crespo',
+        'K',
+        'Montalban 3',
+        '2025-11-20 04:38:27',
+        NULL,
+        1
+    ),
+    (
+        31,
+        67,
+        'Quinta Crespo',
+        'K',
+        'Res siena',
+        '2025-11-20 20:09:12',
+        NULL,
+        1
+    ),
+    (
+        32,
+        64,
+        'Quinta Crespo',
+        'av sur 4',
+        'res siena',
+        '2025-11-20 21:54:05',
+        NULL,
+        1
+    ),
+    (
+        33,
+        61,
+        'Quinta Crespo',
+        'Nueva Granada',
+        'Torre B',
+        '2025-11-20 22:01:18',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -140,8 +290,47 @@ CREATE TABLE `docentes` (
     `id_persona` int(11) NOT NULL,
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
-    `estatus` tinyint(4) DEFAULT 1
+    `estatus` tinyint(4) DEFAULT 1,
+    `id_profesion` int(11) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `docentes`
+--
+
+INSERT INTO
+    `docentes` (
+        `id_docente`,
+        `id_persona`,
+        `creacion`,
+        `actualizacion`,
+        `estatus`,
+        `id_profesion`
+    )
+VALUES (
+        1,
+        1,
+        '2025-11-17 02:31:17',
+        NULL,
+        1,
+        12
+    ),
+    (
+        2,
+        33,
+        '2025-11-17 04:30:35',
+        NULL,
+        1,
+        12
+    ),
+    (
+        3,
+        34,
+        '2025-11-17 04:41:45',
+        NULL,
+        1,
+        12
+    );
 
 -- --------------------------------------------------------
 
@@ -294,6 +483,111 @@ VALUES (
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
+    ),
+    (
+        11,
+        24,
+        '2025-11-11 18:59:50',
+        NULL,
+        1
+    ),
+    (
+        12,
+        26,
+        '2025-11-11 19:30:17',
+        NULL,
+        1
+    ),
+    (
+        13,
+        27,
+        '2025-11-11 20:02:31',
+        NULL,
+        1
+    ),
+    (
+        14,
+        29,
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        15,
+        31,
+        '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        16,
+        32,
+        '2025-11-13 01:21:00',
+        NULL,
+        1
+    ),
+    (
+        17,
+        35,
+        '2025-11-20 03:45:22',
+        NULL,
+        1
+    ),
+    (
+        18,
+        36,
+        '2025-11-20 04:15:06',
+        NULL,
+        1
+    ),
+    (
+        19,
+        38,
+        '2025-11-20 04:38:27',
+        NULL,
+        1
+    ),
+    (
+        20,
+        39,
+        '2025-11-20 20:05:39',
+        NULL,
+        1
+    ),
+    (
+        21,
+        41,
+        '2025-11-20 20:09:12',
+        NULL,
+        1
+    ),
+    (
+        22,
+        42,
+        '2025-11-20 21:54:05',
+        NULL,
+        1
+    ),
+    (
+        23,
+        43,
+        '2025-11-20 22:01:18',
+        NULL,
+        1
+    ),
+    (
+        24,
+        44,
+        '2025-11-22 22:32:30',
+        NULL,
+        1
+    ),
+    (
+        26,
+        46,
+        '2025-11-24 00:27:06',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -355,6 +649,46 @@ VALUES (
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
+    ),
+    (
+        5,
+        11,
+        4,
+        '2025-11-11 18:59:50',
+        NULL,
+        1
+    ),
+    (
+        6,
+        12,
+        4,
+        '2025-11-11 19:30:17',
+        NULL,
+        1
+    ),
+    (
+        7,
+        14,
+        2,
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        8,
+        14,
+        3,
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        9,
+        15,
+        2,
+        '2025-11-11 22:52:57',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -367,7 +701,7 @@ CREATE TABLE `estudiantes_representantes` (
     `id_estudiante_representante` int(11) NOT NULL,
     `id_estudiante` int(11) NOT NULL,
     `id_representante` int(11) NOT NULL,
-    `parentesco` varchar(20) NOT NULL,
+    `id_parentesco` int(11) NOT NULL,
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
@@ -382,7 +716,7 @@ INSERT INTO
         `id_estudiante_representante`,
         `id_estudiante`,
         `id_representante`,
-        `parentesco`,
+        `id_parentesco`,
         `creacion`,
         `actualizacion`,
         `estatus`
@@ -391,7 +725,7 @@ VALUES (
         1,
         1,
         1,
-        'Madre',
+        1,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -400,7 +734,7 @@ VALUES (
         2,
         2,
         2,
-        'Padre',
+        1,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -409,7 +743,7 @@ VALUES (
         3,
         3,
         3,
-        'Madre',
+        1,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -418,7 +752,7 @@ VALUES (
         4,
         4,
         4,
-        'Padre',
+        1,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -427,7 +761,7 @@ VALUES (
         5,
         5,
         5,
-        'Padre',
+        1,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -436,7 +770,7 @@ VALUES (
         6,
         6,
         6,
-        'Madre',
+        1,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -445,9 +779,144 @@ VALUES (
         7,
         7,
         7,
-        'Padre',
+        1,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
+        1
+    ),
+    (
+        8,
+        11,
+        1,
+        1,
+        '2025-11-11 18:59:50',
+        NULL,
+        1
+    ),
+    (
+        9,
+        12,
+        11,
+        1,
+        '2025-11-11 19:30:17',
+        NULL,
+        1
+    ),
+    (
+        10,
+        13,
+        1,
+        1,
+        '2025-11-11 20:02:31',
+        NULL,
+        1
+    ),
+    (
+        11,
+        14,
+        12,
+        1,
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        12,
+        15,
+        13,
+        1,
+        '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        13,
+        16,
+        7,
+        1,
+        '2025-11-13 01:21:00',
+        NULL,
+        1
+    ),
+    (
+        14,
+        17,
+        14,
+        1,
+        '2025-11-20 03:45:22',
+        NULL,
+        1
+    ),
+    (
+        15,
+        18,
+        14,
+        1,
+        '2025-11-20 04:15:06',
+        NULL,
+        1
+    ),
+    (
+        16,
+        19,
+        15,
+        1,
+        '2025-11-20 04:38:27',
+        NULL,
+        1
+    ),
+    (
+        17,
+        20,
+        11,
+        1,
+        '2025-11-20 20:05:39',
+        NULL,
+        1
+    ),
+    (
+        18,
+        21,
+        16,
+        1,
+        '2025-11-20 20:09:12',
+        NULL,
+        1
+    ),
+    (
+        19,
+        22,
+        1,
+        1,
+        '2025-11-20 21:54:05',
+        NULL,
+        1
+    ),
+    (
+        20,
+        23,
+        1,
+        1,
+        '2025-11-20 22:01:18',
+        NULL,
+        1
+    ),
+    (
+        21,
+        24,
+        1,
+        1,
+        '2025-11-22 22:32:30',
+        NULL,
+        1
+    ),
+    (
+        22,
+        26,
+        1,
+        6,
+        '2025-11-24 00:27:06',
+        NULL,
         1
     );
 
@@ -569,6 +1038,234 @@ VALUES (
         'Rinitis alérgica, traer medicamento',
         '2025-11-10 06:17:18',
         '2025-11-10 02:17:18',
+        1
+    ),
+    (
+        8,
+        11,
+        1,
+        3,
+        1,
+        '2025-11-11',
+        '',
+        '2025-11-11 18:59:50',
+        NULL,
+        1
+    ),
+    (
+        9,
+        12,
+        1,
+        1,
+        1,
+        '2025-11-11',
+        '',
+        '2025-11-11 19:30:17',
+        NULL,
+        1
+    ),
+    (
+        10,
+        13,
+        1,
+        1,
+        1,
+        '2025-11-11',
+        '',
+        '2025-11-11 20:02:31',
+        NULL,
+        1
+    ),
+    (
+        11,
+        14,
+        1,
+        2,
+        1,
+        '2025-11-11',
+        '',
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        12,
+        15,
+        1,
+        3,
+        1,
+        '2025-11-11',
+        '',
+        '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        13,
+        16,
+        1,
+        1,
+        1,
+        '2025-11-13',
+        '',
+        '2025-11-13 01:21:00',
+        NULL,
+        1
+    ),
+    (
+        14,
+        17,
+        1,
+        1,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 03:45:22',
+        NULL,
+        1
+    ),
+    (
+        15,
+        18,
+        1,
+        2,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 04:15:06',
+        NULL,
+        1
+    ),
+    (
+        16,
+        19,
+        1,
+        1,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 04:38:27',
+        NULL,
+        1
+    ),
+    (
+        17,
+        11,
+        2,
+        2,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 05:19:15',
+        NULL,
+        1
+    ),
+    (
+        18,
+        1,
+        2,
+        2,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 05:27:22',
+        NULL,
+        1
+    ),
+    (
+        19,
+        13,
+        2,
+        1,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 05:28:32',
+        NULL,
+        1
+    ),
+    (
+        20,
+        20,
+        1,
+        1,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 20:05:39',
+        NULL,
+        1
+    ),
+    (
+        21,
+        21,
+        1,
+        2,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 20:09:12',
+        NULL,
+        1
+    ),
+    (
+        22,
+        14,
+        2,
+        3,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 21:37:57',
+        NULL,
+        1
+    ),
+    (
+        23,
+        22,
+        1,
+        2,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 21:54:05',
+        NULL,
+        1
+    ),
+    (
+        24,
+        23,
+        1,
+        1,
+        1,
+        '2025-11-20',
+        '',
+        '2025-11-20 22:01:18',
+        NULL,
+        1
+    ),
+    (
+        25,
+        24,
+        1,
+        2,
+        1,
+        '2025-11-22',
+        '',
+        '2025-11-22 22:32:30',
+        NULL,
+        1
+    ),
+    (
+        26,
+        26,
+        1,
+        1,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 00:27:06',
+        NULL,
         1
     );
 
@@ -864,7 +1561,7 @@ VALUES (
         1,
         1,
         1,
-        25,
+        11,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -885,6 +1582,75 @@ VALUES (
         25,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
+        1
+    );
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `parentesco`
+--
+
+CREATE TABLE `parentesco` (
+    `id_parentesco` int(11) NOT NULL,
+    `parentesco` varchar(20) NOT NULL,
+    `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
+    `actualizacion` varchar(255) DEFAULT NULL,
+    `estatus` tinyint(4) DEFAULT 1
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `parentesco`
+--
+
+INSERT INTO
+    `parentesco` (
+        `id_parentesco`,
+        `parentesco`,
+        `creacion`,
+        `actualizacion`,
+        `estatus`
+    )
+VALUES (
+        1,
+        'Padre',
+        '2025-11-23 23:38:42',
+        NULL,
+        1
+    ),
+    (
+        2,
+        'Madre',
+        '2025-11-23 23:38:50',
+        NULL,
+        1
+    ),
+    (
+        3,
+        'Abuelo',
+        '2025-11-23 23:38:59',
+        NULL,
+        1
+    ),
+    (
+        4,
+        'Abuela',
+        '2025-11-23 23:39:06',
+        NULL,
+        1
+    ),
+    (
+        5,
+        'Tío',
+        '2025-11-23 23:39:17',
+        NULL,
+        1
+    ),
+    (
+        6,
+        'Tía',
+        '2025-11-23 23:39:24',
+        NULL,
         1
     );
 
@@ -1714,6 +2480,15 @@ VALUES (
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
+    ),
+    (
+        2,
+        'Año Escolar 2023-2024',
+        '2023-09-01',
+        '2024-07-15',
+        '2025-11-20 05:11:53',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -1931,7 +2706,7 @@ VALUES (
         'Femenino',
         'Venezolana',
         '2025-11-10 06:17:16',
-        '2025-11-10 02:17:16',
+        '2025-11-23 20:27:06',
         1
     ),
     (
@@ -2066,6 +2841,661 @@ VALUES (
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
+    ),
+    (
+        24,
+        13,
+        'Briant',
+        'briant',
+        'Sanchez',
+        'carrillo',
+        '12344321',
+        '04149105229',
+        '02127788992',
+        'briant@gmail.com',
+        'El paraiso',
+        '2025-10-28',
+        'Masculino',
+        'Venezolana',
+        '2025-11-11 18:59:50',
+        NULL,
+        1
+    ),
+    (
+        25,
+        14,
+        'Briant',
+        'Alessandro',
+        'Carrillo',
+        'Sanchez',
+        '27318765',
+        '04149105229',
+        '04149105229',
+        'Briant1@gmail.com',
+        'Caracas',
+        '2025-11-04',
+        'Masculino',
+        'Venezolana',
+        '2025-11-11 19:30:17',
+        '2025-11-20 16:05:39',
+        1
+    ),
+    (
+        26,
+        15,
+        'Hugo',
+        'massimo',
+        'Carrillo',
+        'Mendez',
+        '32846139',
+        '04149015229',
+        '04149105229',
+        'hugo@gmail.com',
+        'El paraiso',
+        '2025-10-26',
+        'Masculino',
+        'Venezolana',
+        '2025-11-11 19:30:17',
+        NULL,
+        1
+    ),
+    (
+        27,
+        16,
+        'Aharon',
+        'Orlando',
+        'Stojs',
+        'Shein',
+        '123456783',
+        '04149015229',
+        '02127788992',
+        'aharon@gmail.com',
+        'El paraiso',
+        '1879-12-30',
+        'Femenino',
+        'Venezolana',
+        '2025-11-11 20:02:31',
+        NULL,
+        1
+    ),
+    (
+        28,
+        17,
+        'Maria',
+        'Alicia',
+        'Sanchez',
+        'Devia',
+        '9344828',
+        '04149105229',
+        '04149105229',
+        'alicias@gmail.com',
+        'El paraiso',
+        '1998-11-30',
+        'Femenino',
+        'Venezolana',
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        29,
+        18,
+        'Pablo',
+        'Hugo',
+        'Chacon',
+        'Mejias',
+        '76544567',
+        '04149105229',
+        '04149105229',
+        'pablo@gmail.com',
+        'El paraiso',
+        '2025-10-28',
+        'Masculino',
+        'Venezolana',
+        '2025-11-11 22:16:43',
+        NULL,
+        1
+    ),
+    (
+        30,
+        19,
+        'Meyly',
+        'J',
+        'Pinto',
+        'G',
+        '657483762',
+        '04125079067',
+        '04125079067',
+        'meylypinto@gmail.com',
+        'Caracas',
+        '1971-12-14',
+        'Femenino',
+        'Venezolana',
+        '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        31,
+        20,
+        'Jose',
+        'Carlos',
+        'Andrades',
+        'Pinto',
+        '34562738',
+        '04149105229',
+        '04125079067',
+        'Jose@gmail.com',
+        'El paraiso',
+        '2025-01-11',
+        'Masculino',
+        'Venezolana',
+        '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        32,
+        7,
+        'Luny',
+        'k',
+        'Lopez',
+        'm',
+        '57481293',
+        '04149105229',
+        '02123322111',
+        'luny@gmail.com',
+        'El paraiso',
+        '1199-11-30',
+        'Masculino',
+        'Venezolana',
+        '2025-11-13 01:21:00',
+        NULL,
+        1
+    ),
+    (
+        33,
+        21,
+        'Carlos',
+        'Enrique',
+        'Moreno',
+        'Salazar',
+        '27654322',
+        '0416789542',
+        '',
+        'cmoreno@gmail.com',
+        'Caracas',
+        '1990-01-01',
+        'Masculino',
+        'Venezolana',
+        '2025-11-17 04:30:35',
+        NULL,
+        1
+    ),
+    (
+        34,
+        29,
+        'Roberto',
+        'Andres',
+        'Dela',
+        'Salazar',
+        '12333666',
+        '000000000',
+        '000000000',
+        'rdela@gmail.com',
+        'Caracas',
+        '1990-01-01',
+        'Masculino',
+        'Venezolana',
+        '2025-11-17 04:41:45',
+        '2025-11-20 00:15:06',
+        1
+    ),
+    (
+        35,
+        29,
+        'K',
+        'K',
+        'K',
+        'K',
+        '20112333666',
+        '04149105229',
+        '000000000',
+        'K@gmail.com',
+        'El paraiso',
+        '2020-12-22',
+        'Masculino',
+        'Venezolana',
+        '2025-11-20 03:45:22',
+        NULL,
+        1
+    ),
+    (
+        36,
+        29,
+        'S',
+        's',
+        's',
+        's',
+        '20212333666',
+        '04149105229',
+        '000000000',
+        'S@gmail.com',
+        'El paraiso',
+        '2020-12-09',
+        'Masculino',
+        'Venezolana',
+        '2025-11-20 04:15:06',
+        NULL,
+        1
+    ),
+    (
+        37,
+        30,
+        'a',
+        'a',
+        'a',
+        'a',
+        '123151',
+        '04149105229',
+        '04149105229',
+        'a@mgil.com',
+        'Caracas',
+        '2025-11-05',
+        'Masculino',
+        'Venezolana',
+        '2025-11-20 04:38:27',
+        NULL,
+        1
+    ),
+    (
+        38,
+        30,
+        'A',
+        'a',
+        'a',
+        'm',
+        '201123151',
+        '04149015229',
+        '04149105229',
+        'ak@gmial.com',
+        'El paraisoe',
+        '2020-12-02',
+        'Femenino',
+        'Venezolana',
+        '2025-11-20 04:38:27',
+        NULL,
+        1
+    ),
+    (
+        39,
+        14,
+        'Nn',
+        'N',
+        'N',
+        'N',
+        '20227318765',
+        '04149105229',
+        '04149105229',
+        'N@GMAIL.COM',
+        'El paraisoe',
+        '2020-12-14',
+        'Masculino',
+        'Venezolana',
+        '2025-11-20 20:05:39',
+        NULL,
+        1
+    ),
+    (
+        40,
+        31,
+        'f',
+        'F',
+        'F',
+        'F',
+        '15521097',
+        '04125079067',
+        '04125079067',
+        'F@GMAIL.COM',
+        'Caracas',
+        '2025-12-31',
+        'Masculino',
+        'Venezolana',
+        '2025-11-20 20:09:12',
+        NULL,
+        1
+    ),
+    (
+        41,
+        31,
+        'g',
+        'G',
+        'G',
+        'G',
+        '20115521097',
+        '04149105229',
+        '04125079067',
+        'GH@GMAIL.COM',
+        'G',
+        '2020-12-31',
+        'Masculino',
+        'Venezolana',
+        '2025-11-20 20:09:12',
+        NULL,
+        1
+    ),
+    (
+        42,
+        32,
+        'Z',
+        'Z',
+        'Z',
+        'Z',
+        '20415678901',
+        '04149105229',
+        '02127788992',
+        'J@gmail.com',
+        'El paraisoe',
+        '2020-12-17',
+        'Femenino',
+        'Venezolana',
+        '2025-11-20 21:54:05',
+        NULL,
+        1
+    ),
+    (
+        43,
+        33,
+        'T',
+        'briant',
+        'T',
+        'carrillo',
+        '20515678901',
+        '0412785942',
+        '02127788992',
+        't@GMAIL.COM',
+        'El paraiso',
+        '2020-12-16',
+        'Masculino',
+        'Venezolana',
+        '2025-11-20 22:01:18',
+        NULL,
+        1
+    ),
+    (
+        44,
+        1,
+        'elo',
+        'eli',
+        'as',
+        'ta',
+        '20615678901',
+        '04149015229',
+        '02127788992',
+        'elo@gmail.com',
+        'El paraisoe',
+        '2020-12-09',
+        'Masculino',
+        'Venezolana',
+        '2025-11-22 22:32:30',
+        NULL,
+        1
+    ),
+    (
+        46,
+        1,
+        'z',
+        'z',
+        'z',
+        'z',
+        '20715678901',
+        '04149105229',
+        '02127788992',
+        'z@gmail.com',
+        'El paraiso',
+        '2020-12-31',
+        'Masculino',
+        'Venezolano',
+        '2025-11-24 00:27:06',
+        NULL,
+        1
+    );
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `profesiones`
+--
+
+CREATE TABLE `profesiones` (
+    `id_profesion` int(11) NOT NULL,
+    `profesion` varchar(25) NOT NULL,
+    `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
+    `actualizacion` varchar(255) DEFAULT NULL,
+    `estatus` tinyint(4) DEFAULT 1
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+
+--
+-- Volcado de datos para la tabla `profesiones`
+--
+
+INSERT INTO
+    `profesiones` (
+        `id_profesion`,
+        `profesion`,
+        `creacion`,
+        `actualizacion`,
+        `estatus`
+    )
+VALUES (
+        1,
+        'Abogado',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        2,
+        'Arquitecto',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        3,
+        'Artista',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        4,
+        'Biólogo',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        5,
+        'Chef o cocinero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        6,
+        'Dentista',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        7,
+        'Diseñador gráfico',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        8,
+        'Doctor o médico',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        9,
+        'Enfermero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        10,
+        'Ingeniero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        11,
+        'Juez',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        12,
+        'Maestro o profesor',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        13,
+        'Mecánico',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        14,
+        'Periodista',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        15,
+        'Psicólogo',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        16,
+        'Veterinario',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        17,
+        'Albañil',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        18,
+        'Carnicero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        19,
+        'Carpintero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        20,
+        'Cerrajero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        21,
+        'Chofer o conductor',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        22,
+        'Electricista',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        23,
+        'Peluquero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        24,
+        'Pescador',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        25,
+        'Plomero',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        26,
+        'Sastre',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        27,
+        'Ama de casa',
+        '2025-11-13 02:09:21',
+        NULL,
+        1
+    ),
+    (
+        28,
+        'Contador',
+        '2025-11-13 02:27:14',
+        NULL,
+        1
+    ),
+    (
+        29,
+        'Técnico superior',
+        '2025-11-22 20:46:11',
+        NULL,
+        1
+    ),
+    (
+        30,
+        'Bachiller',
+        '2025-11-22 20:46:32',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -2077,12 +3507,12 @@ VALUES (
 CREATE TABLE `representantes` (
     `id_representante` int(11) NOT NULL,
     `id_persona` int(11) NOT NULL,
-    `profesion` varchar(255) DEFAULT NULL,
     `ocupacion` varchar(255) DEFAULT NULL,
     `lugar_trabajo` varchar(255) DEFAULT NULL,
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
-    `estatus` tinyint(4) DEFAULT 1
+    `estatus` tinyint(4) DEFAULT 1,
+    `id_profesion` int(11) DEFAULT NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
 
 --
@@ -2093,81 +3523,141 @@ INSERT INTO
     `representantes` (
         `id_representante`,
         `id_persona`,
-        `profesion`,
         `ocupacion`,
         `lugar_trabajo`,
         `creacion`,
         `actualizacion`,
-        `estatus`
+        `estatus`,
+        `id_profesion`
     )
 VALUES (
         1,
         8,
-        'Ingeniero',
         'Ingeniero Civil',
         'Constructora Nacional',
         '2025-11-10 06:17:16',
-        '2025-11-10 02:17:16',
-        1
+        '2025-11-23 20:27:06',
+        1,
+        10
     ),
     (
         2,
         9,
-        'Doctor',
         'Médico',
         'Hospital Central',
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
-        1
+        1,
+        8
     ),
     (
         3,
         10,
-        'Licenciada',
         'Contadora',
         'Firma Contable',
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
-        1
+        1,
+        28
     ),
     (
         4,
         11,
-        'Profesor',
         'Docente',
         'Universidad Central',
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
-        1
+        1,
+        12
     ),
     (
         5,
         12,
         'Arquitecto',
-        'Arquitecto',
         'Estudio de Arquitectura',
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
-        1
+        1,
+        2
     ),
     (
         6,
         13,
         'Abogada',
-        'Abogada',
         'Bufete Legal',
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
+        1,
         1
     ),
     (
         7,
         14,
-        'Ingeniero',
         'Ingeniero de Sistemas',
         'Empresa Tecnológica',
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
+        1,
+        10
+    ),
+    (
+        11,
+        25,
+        'mecanico',
+        'Mercedes',
+        '2025-11-11 19:30:17',
+        '2025-11-20 16:05:39',
+        1,
+        13
+    ),
+    (
+        12,
+        28,
+        'mecanico',
+        'Mercedes',
+        '2025-11-11 22:16:43',
+        NULL,
+        1,
+        13
+    ),
+    (
+        13,
+        30,
+        'Ingeniero',
+        'Bancamiga',
+        '2025-11-11 22:52:57',
+        NULL,
+        1,
+        10
+    ),
+    (
+        14,
+        34,
+        'K',
+        'K',
+        '2025-11-20 03:45:22',
+        '2025-11-20 00:15:06',
+        1,
+        12
+    ),
+    (
+        15,
+        37,
+        'mecanico',
+        'Mercedes',
+        '2025-11-20 04:38:27',
+        NULL,
+        1,
+        28
+    ),
+    (
+        16,
+        40,
+        'F',
+        'F',
+        '2025-11-20 20:09:12',
+        NULL,
+        1,
         1
     );
 
@@ -2203,6 +3693,13 @@ VALUES (
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
+    ),
+    (
+        2,
+        'Docente',
+        '2025-11-17 02:52:59',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -2219,6 +3716,15 @@ CREATE TABLE `roles_permisos` (
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+
+CREATE TABLE `globales` (
+    `id_globales` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `edad_min` int(11) NOT NULL,
+    `edad_max` int(11) NOT NULL,
+    `nom_instituto` varchar(50) NOT NULL,
+    `id_periodo` int(11) NOT NULL,
+    FOREIGN KEY (`id_periodo`) REFERENCES `periodos` (`id_periodo`)
+);
 
 -- --------------------------------------------------------
 
@@ -2281,43 +3787,6 @@ CREATE TABLE `usuarios` (
 --
 -- Volcado de datos para la tabla `usuarios`
 --
-CREATE TABLE `profesiones` (
-    `id_profesion` int(11) PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    `profesion` varchar(25) not null UNIQUE,
-    `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
-    `actualizacion` varchar(255) DEFAULT NULL,
-    `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
-
-INSERT INTO
-    profesiones (profesion)
-VALUES ('Abogado'),
-    ('Arquitecto'),
-    ('Artista'),
-    ('Biólogo'),
-    ('Chef o cocinero'),
-    ('Dentista'),
-    ('Diseñador gráfico'),
-    ('Doctor o médico'),
-    ('Enfermero'),
-    ('Ingeniero'),
-    ('Juez'),
-    ('Maestro o profesor'),
-    ('Mecánico'),
-    ('Periodista'),
-    ('Psicólogo'),
-    ('Veterinario'),
-    ('Albañil'),
-    ('Carnicero'),
-    ('Carpintero'),
-    ('Cerrajero'),
-    ('Chofer o conductor'),
-    ('Electricista'),
-    ('Peluquero'),
-    ('Pescador'),
-    ('Plomero'),
-    ('Sastre'),
-    ('Ama de casa');
 
 INSERT INTO
     `usuarios` (
@@ -2339,6 +3808,26 @@ VALUES (
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
+    ),
+    (
+        2,
+        33,
+        2,
+        'cmoreno',
+        '7f42dcd0205e6f5d9fdb76a77098eda3b6a637e69f278c0715ea93b48726dab6',
+        '2025-11-17 04:30:35',
+        NULL,
+        1
+    ),
+    (
+        3,
+        34,
+        2,
+        'rdela',
+        '29aa5d0911f4fb6c3cb3b5f79b6e22f4555e9e71a4d63541ca8a5142c2521ac1',
+        '2025-11-17 04:41:45',
+        NULL,
+        1
     );
 
 --
@@ -2357,7 +3846,8 @@ ADD KEY `id_parroquia` (`id_parroquia`);
 --
 ALTER TABLE `docentes`
 ADD PRIMARY KEY (`id_docente`),
-ADD UNIQUE KEY `id_persona` (`id_persona`);
+ADD UNIQUE KEY `id_persona` (`id_persona`),
+ADD KEY `fk_docentes_profesiones` (`id_profesion`);
 
 --
 -- Indices de la tabla `docentes_especialidades`
@@ -2407,7 +3897,8 @@ ADD UNIQUE KEY `uk_estudiante_representante` (
     `id_estudiante`,
     `id_representante`
 ),
-ADD KEY `id_representante` (`id_representante`);
+ADD KEY `id_representante` (`id_representante`),
+ADD KEY `fk_est_rep_parentesco` (`id_parentesco`);
 
 --
 -- Indices de la tabla `inscripciones`
@@ -2440,6 +3931,13 @@ ADD KEY `id_nivel` (`id_nivel`),
 ADD KEY `id_seccion` (`id_seccion`);
 
 --
+-- Indices de la tabla `parentesco`
+--
+ALTER TABLE `parentesco`
+ADD PRIMARY KEY (`id_parentesco`),
+ADD UNIQUE KEY `parentesco` (`parentesco`);
+
+--
 -- Indices de la tabla `parroquias`
 --
 ALTER TABLE `parroquias`
@@ -2470,11 +3968,19 @@ ADD UNIQUE KEY `cedula` (`cedula`),
 ADD KEY `id_direccion` (`id_direccion`);
 
 --
+-- Indices de la tabla `profesiones`
+--
+ALTER TABLE `profesiones`
+ADD PRIMARY KEY (`id_profesion`),
+ADD UNIQUE KEY `profesion` (`profesion`);
+
+--
 -- Indices de la tabla `representantes`
 --
 ALTER TABLE `representantes`
 ADD PRIMARY KEY (`id_representante`),
-ADD UNIQUE KEY `id_persona` (`id_persona`);
+ADD UNIQUE KEY `id_persona` (`id_persona`),
+ADD KEY `fk_representantes_profesiones` (`id_profesion`);
 
 --
 -- Indices de la tabla `roles`
@@ -2514,13 +4020,14 @@ ADD KEY `id_rol` (`id_rol`);
 --
 ALTER TABLE `direcciones`
 MODIFY `id_direccion` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 13;
+AUTO_INCREMENT = 34;
 
 --
 -- AUTO_INCREMENT de la tabla `docentes`
 --
 ALTER TABLE `docentes`
-MODIFY `id_docente` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `id_docente` int(11) NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 4;
 
 --
 -- AUTO_INCREMENT de la tabla `docentes_especialidades`
@@ -2546,28 +4053,28 @@ AUTO_INCREMENT = 4;
 --
 ALTER TABLE `estudiantes`
 MODIFY `id_estudiante` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 11;
+AUTO_INCREMENT = 27;
 
 --
 -- AUTO_INCREMENT de la tabla `estudiantes_patologias`
 --
 ALTER TABLE `estudiantes_patologias`
 MODIFY `id_estudiante_patologia` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 5;
+AUTO_INCREMENT = 10;
 
 --
 -- AUTO_INCREMENT de la tabla `estudiantes_representantes`
 --
 ALTER TABLE `estudiantes_representantes`
 MODIFY `id_estudiante_representante` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 8;
+AUTO_INCREMENT = 23;
 
 --
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
 MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 8;
+AUTO_INCREMENT = 27;
 
 --
 -- AUTO_INCREMENT de la tabla `municipios`
@@ -2591,6 +4098,13 @@ MODIFY `id_nivel_seccion` int(11) NOT NULL AUTO_INCREMENT,
 AUTO_INCREMENT = 4;
 
 --
+-- AUTO_INCREMENT de la tabla `parentesco`
+--
+ALTER TABLE `parentesco`
+MODIFY `id_parentesco` int(11) NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 7;
+
+--
 -- AUTO_INCREMENT de la tabla `parroquias`
 --
 ALTER TABLE `parroquias`
@@ -2609,7 +4123,7 @@ AUTO_INCREMENT = 5;
 --
 ALTER TABLE `periodos`
 MODIFY `id_periodo` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 2;
+AUTO_INCREMENT = 3;
 
 --
 -- AUTO_INCREMENT de la tabla `permisos`
@@ -2622,21 +4136,28 @@ MODIFY `id_permiso` int(11) NOT NULL AUTO_INCREMENT;
 --
 ALTER TABLE `personas`
 MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 24;
+AUTO_INCREMENT = 47;
+
+--
+-- AUTO_INCREMENT de la tabla `profesiones`
+--
+ALTER TABLE `profesiones`
+MODIFY `id_profesion` int(11) NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 31;
 
 --
 -- AUTO_INCREMENT de la tabla `representantes`
 --
 ALTER TABLE `representantes`
 MODIFY `id_representante` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 11;
+AUTO_INCREMENT = 17;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
 MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 2;
+AUTO_INCREMENT = 3;
 
 --
 -- AUTO_INCREMENT de la tabla `roles_permisos`
@@ -2656,7 +4177,7 @@ AUTO_INCREMENT = 3;
 --
 ALTER TABLE `usuarios`
 MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 2;
+AUTO_INCREMENT = 4;
 
 --
 -- Restricciones para tablas volcadas
@@ -2672,7 +4193,8 @@ ADD CONSTRAINT `fk_direcciones_parroquias` FOREIGN KEY (`id_parroquia`) REFERENC
 -- Filtros para la tabla `docentes`
 --
 ALTER TABLE `docentes`
-ADD CONSTRAINT `fk_docentes_personas` FOREIGN KEY (`id_persona`) REFERENCES `personas` (`id_persona`);
+ADD CONSTRAINT `fk_docentes_personas` FOREIGN KEY (`id_persona`) REFERENCES `personas` (`id_persona`),
+ADD CONSTRAINT `fk_docentes_profesiones` FOREIGN KEY (`id_profesion`) REFERENCES `profesiones` (`id_profesion`);
 
 --
 -- Filtros para la tabla `docentes_especialidades`
@@ -2698,6 +4220,7 @@ ADD CONSTRAINT `fk_estudiantes_patologias_patologias` FOREIGN KEY (`id_patologia
 -- Filtros para la tabla `estudiantes_representantes`
 --
 ALTER TABLE `estudiantes_representantes`
+ADD CONSTRAINT `fk_est_rep_parentesco` FOREIGN KEY (`id_parentesco`) REFERENCES `parentesco` (`id_parentesco`) ON UPDATE CASCADE,
 ADD CONSTRAINT `fk_estudiantes_representantes_estudiantes` FOREIGN KEY (`id_estudiante`) REFERENCES `estudiantes` (`id_estudiante`),
 ADD CONSTRAINT `fk_estudiantes_representantes_representantes` FOREIGN KEY (`id_representante`) REFERENCES `representantes` (`id_representante`);
 
@@ -2739,7 +4262,8 @@ ADD CONSTRAINT `fk_personas_direcciones` FOREIGN KEY (`id_direccion`) REFERENCES
 -- Filtros para la tabla `representantes`
 --
 ALTER TABLE `representantes`
-ADD CONSTRAINT `fk_representantes_personas` FOREIGN KEY (`id_persona`) REFERENCES `personas` (`id_persona`);
+ADD CONSTRAINT `fk_representantes_personas` FOREIGN KEY (`id_persona`) REFERENCES `personas` (`id_persona`),
+ADD CONSTRAINT `fk_representantes_profesiones` FOREIGN KEY (`id_profesion`) REFERENCES `profesiones` (`id_profesion`);
 
 --
 -- Filtros para la tabla `roles_permisos`
