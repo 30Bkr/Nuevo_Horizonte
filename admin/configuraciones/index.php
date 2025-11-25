@@ -65,7 +65,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
               </h3>
             </div>
             <div class="card-body">
-              <p class="card-text">Define los rangos de edad mínima y máxima permitidos para la inscripción de estudiantes.</p>
+              <p class="card-text">Define los rangos de edad mínima y máxima para la inscripción de estudiantes.</p>
               <div class="d-flex justify-content-between align-items-center">
                 <small class="text-muted">Rangos de edad</small>
                 <a href="configuracion/edades.php" class="btn btn-info btn-sm">
@@ -113,7 +113,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
               <p class="card-text">Administra los niveles educativos, grados y secciones disponibles.</p>
               <div class="d-flex justify-content-between align-items-center">
                 <small class="text-muted">Grados y secciones</small>
-                <a href="configuracion/niveles.php" class="btn btn-danger btn-sm">
+                <a href="../../views/grados/grados_list.php" class="btn btn-danger btn-sm">
                   <i class="fas fa-cog mr-1"></i> Configurar
                 </a>
               </div>
@@ -152,11 +152,11 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
               </h3>
             </div>
             <div class="card-body">
-              <p class="card-text">Administra estados, municipios y parroquias para el sistema de direcciones.</p>
+              <p class="card-text">Administra estados, municipios y parroquias.</p>
               <div class="d-flex justify-content-between align-items-center">
                 <small class="text-muted">Datos geográficos</small>
-                <a href="configuracion/ubicacion.php" class="btn btn-purple btn-sm">
-                  <i class="fas fa-cog mr-1"></i> Configurar
+                <a href="configuracion/ubicacion.php" class="btn btn-purple btn-sm" id="purple">
+                  <i class="fas fa-cog mr-1" id="white"></i> Configurar
                 </a>
               </div>
             </div>
@@ -173,11 +173,11 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
               </h3>
             </div>
             <div class="card-body">
-              <p class="card-text">Gestiona el catálogo de patologías y condiciones médicas de los estudiantes.</p>
+              <p class="card-text">Gestión de patologías y condiciones médicas de los estudiantes.</p>
               <div class="d-flex justify-content-between align-items-center">
                 <small class="text-muted">Salud estudiantil</small>
-                <a href="configuracion/patologias.php" class="btn btn-teal btn-sm">
-                  <i class="fas fa-cog mr-1"></i> Configurar
+                <a href="configuracion/patologias.php" class="btn btn-teal btn-sm" id="meal">
+                  <i class="fas fa-cog mr-1" id="white"></i> Configurar
                 </a>
               </div>
             </div>
@@ -189,42 +189,26 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 </div>
 
 <style>
-  .card-purple {
-    background-color: #6f42c1 !important;
+  #white {
+    color: white;
   }
 
-  .card-purple .card-header {
+  #purple {
+    color: white;
     background-color: #6f42c1;
-    border-bottom: 1px solid #5a32a3;
   }
 
-  .card-teal {
-    background-color: #20c997 !important;
+  #purple:hover {
+    background-color: #5f38a8ff;
   }
 
-  .card-teal .card-header {
+  #meal {
+    color: white;
     background-color: #20c997;
-    border-bottom: 1px solid #1aa27d;
   }
 
-  .btn-purple {
-    background-color: #6f42c1;
-    border-color: #6f42c1;
-  }
-
-  .btn-purple:hover {
-    background-color: #5a32a3;
-    border-color: #5a32a3;
-  }
-
-  .btn-teal {
-    background-color: #20c997;
-    border-color: #20c997;
-  }
-
-  .btn-teal:hover {
-    background-color: #1aa27d;
-    border-color: #1aa27d;
+  #meal:hover {
+    background-color: #1a9d76ff;
   }
 
   .card {

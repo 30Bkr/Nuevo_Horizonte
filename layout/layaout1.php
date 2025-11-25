@@ -115,7 +115,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
                 <i class="nav-icon fas bi bi-person-lines-fill">
-                  <img src="<?= URL; ?>/public/images/roles.svg" alt="Inscripcion">
+                  <!-- <img src="<?= URL; ?>/public/images/roles.svg" alt="Inscripcion"> -->
+                  <i class="fas fa-cog mr-1"></i>
+
                 </i>
                 <p>
                   Configuraciones

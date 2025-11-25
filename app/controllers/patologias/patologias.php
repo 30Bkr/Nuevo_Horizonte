@@ -49,4 +49,48 @@ class PatologiaController
       throw new Exception("Error al crear patología: " . $e->getMessage());
     }
   }
+
+  public function obtenerPatologias()
+  {
+    try {
+      $stmt = $this->pdo->prepare("SELECT * FROM patologias ORDER BY creacion DESC");
+      $stmt->execute();
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener patologías: " . $e->getMessage());
+    }
+  }
+
+  public function agregarPatologia($nombre)
+  {
+    try {
+      $stmt = $this->pdo->prepare("INSERT INTO patologias (nom_patologia) VALUES (?)");
+      $stmt->execute([trim($nombre)]);
+      return ['success' => true, 'message' => 'Patología agregada correctamente'];
+    } catch (PDOException $e) {
+      return ['success' => false, 'message' => 'Error al agregar patología: ' . $e->getMessage()];
+    }
+  }
+
+  public function actualizarPatologia($id, $nombre, $estatus)
+  {
+    try {
+      $stmt = $this->pdo->prepare("UPDATE patologias SET nom_patologia = ?, estatus = ?, actualizacion = NOW() WHERE id_patologia = ?");
+      $stmt->execute([trim($nombre), $estatus, $id]);
+      return ['success' => true, 'message' => 'Patología actualizada correctamente'];
+    } catch (PDOException $e) {
+      return ['success' => false, 'message' => 'Error al actualizar patología: ' . $e->getMessage()];
+    }
+  }
+
+  public function contarAsignacionesEstudiantes()
+  {
+    try {
+      $stmt = $this->pdo->prepare("SELECT COUNT(*) as total FROM estudiantes_patologias");
+      $stmt->execute();
+      return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    } catch (PDOException $e) {
+      return 0;
+    }
+  }
 }
