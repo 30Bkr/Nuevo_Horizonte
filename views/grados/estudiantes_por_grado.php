@@ -27,7 +27,7 @@ if (!$info_grado) {
     exit();
 }
 
-// Obtener estudiantes del grado/sección
+// Obtener estudiantes del grado/sección (SOLO del período activo)
 $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
 ?>
 
