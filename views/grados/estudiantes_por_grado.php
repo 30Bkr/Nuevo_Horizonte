@@ -31,8 +31,6 @@ if (!$info_grado) {
 $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
 ?>
 
-
-
 <!-- Content Wrapper -->
 <div class="content-wrapper">
     <section class="content-header">
@@ -127,6 +125,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                 <th>Edad</th>
                                 <th>Fecha Inscripción</th>
                                 <th>Representante</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -135,40 +134,49 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                 $contador = 1;
                                 while ($estudiante = $estudiantes->fetch(PDO::FETCH_ASSOC)):
                                     $edad = $estudiante['fecha_nac'] ? floor((time() - strtotime($estudiante['fecha_nac'])) / 31556926) : 'N/A';
+                                    $nombre_completo_estudiante = htmlspecialchars(
+                                        $estudiante['primer_nombre'] . ' ' .
+                                            ($estudiante['segundo_nombre'] ? $estudiante['segundo_nombre'] . ' ' : '') .
+                                            $estudiante['primer_apellido'] . ' ' .
+                                            ($estudiante['segundo_apellido'] ? $estudiante['segundo_apellido'] : '')
+                                    );
+                                    $nombre_completo_representante = $estudiante['representante_nombre'] ? 
+                                        htmlspecialchars($estudiante['representante_nombre']) . 
+                                        ($estudiante['parentesco'] ? ' (' . htmlspecialchars($estudiante['parentesco']) . ')' : '') : 
+                                        'No asignado';
                             ?>
                                     <tr>
                                         <td><?php echo $contador++; ?></td>
                                         <td><?php echo htmlspecialchars($estudiante['cedula']); ?></td>
-                                        <td>
-                                            <?php
-                                            echo htmlspecialchars(
-                                                $estudiante['primer_nombre'] . ' ' .
-                                                    ($estudiante['segundo_nombre'] ? $estudiante['segundo_nombre'] . ' ' : '') .
-                                                    $estudiante['primer_apellido'] . ' ' .
-                                                    ($estudiante['segundo_apellido'] ? $estudiante['segundo_apellido'] : '')
-                                            );
-                                            ?>
-                                        </td>
+                                        <td><?php echo $nombre_completo_estudiante; ?></td>
                                         <td><?php echo htmlspecialchars($estudiante['sexo']); ?></td>
                                         <td><?php echo $edad; ?> años</td>
                                         <td><?php echo date('d/m/Y', strtotime($estudiante['fecha_inscripcion'])); ?></td>
+                                        <td><?php echo $nombre_completo_representante; ?></td>
                                         <td>
-                                            <?php
-                                            if ($estudiante['representante_nombre']) {
-                                                echo htmlspecialchars($estudiante['representante_nombre']);
-                                                if ($estudiante['parentesco']) {
-                                                    echo ' (' . htmlspecialchars($estudiante['parentesco']) . ')';
-                                                }
-                                            } else {
-                                                echo 'No asignado';
-                                            }
-                                            ?>
+                                            <div class="btn-group">
+                                                <!-- Botón para ver ficha del estudiante -->
+                                                <button type="button" class="btn btn-info btn-sm" 
+                                                        onclick="verFichaEstudiante('<?php echo $estudiante['cedula']; ?>')"
+                                                        title="Ver Ficha del Estudiante">
+                                                    <i class="fas fa-user"></i> Estudiante
+                                                </button>
+                                                
+                                                <!-- Botón para ver ficha del representante -->
+                                                <?php if ($estudiante['representante_nombre']): ?>
+                                                <button type="button" class="btn btn-warning btn-sm" 
+                                                        onclick="verFichaRepresentante('<?php echo $estudiante['cedula']; ?>')"
+                                                        title="Ver Ficha del Representante">
+                                                    <i class="fas fa-user-tie"></i> Representante
+                                                </button>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="7" class="text-center">No hay estudiantes inscritos en este grado/sección</td>
+                                    <td colspan="8" class="text-center">No hay estudiantes inscritos en este grado/sección</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -186,12 +194,45 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
 </footer>
 </div>
 
-<!-- Scripts -->
-<!-- <script src="/final/public/plugins/jquery/jquery.min.js"></script> -->
-<!-- <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script> -->
-<!-- <script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script> -->
-<!-- <script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script> -->
-<!-- <script src="/final/public/dist/js/adminlte.min.js"></script> -->
+<!-- Modal para Ficha del Estudiante -->
+<div class="modal fade" id="modalFichaEstudiante" tabindex="-1" role="dialog" aria-labelledby="modalFichaEstudianteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFichaEstudianteLabel">Ficha del Estudiante</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="contenidoFichaEstudiante">
+                <!-- Contenido cargado por AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Ficha del Representante -->
+<div class="modal fade" id="modalFichaRepresentante" tabindex="-1" role="dialog" aria-labelledby="modalFichaRepresentanteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFichaRepresentanteLabel">Ficha del Representante</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="contenidoFichaRepresentante">
+                <!-- Contenido cargado por AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     $(document).ready(function() {
@@ -234,11 +275,45 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
             "dom": '<"top"lf>rt<"bottom"ip><"clear">'
         });
     });
-</script>
+
+    // Función para ver ficha del estudiante
+    function verFichaEstudiante(cedula) {
+        $('#contenidoFichaEstudiante').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Cargando información...</div>');
+        $('#modalFichaEstudiante').modal('show');
+        
+        $.ajax({
+            url: 'ficha_estudiante.php',
+            type: 'GET',
+            data: { cedula: cedula },
+            success: function(response) {
+                $('#contenidoFichaEstudiante').html(response);
+            },
+            error: function() {
+                $('#contenidoFichaEstudiante').html('<div class="alert alert-danger">Error al cargar la información del estudiante.</div>');
+            }
+        });
+    }
+
+    // Función para ver ficha del representante
+    function verFichaRepresentante(cedulaEstudiante) {
+        $('#contenidoFichaRepresentante').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Cargando información...</div>');
+        $('#modalFichaRepresentante').modal('show');
+        
+        $.ajax({
+            url: 'ficha_representante.php',
+            type: 'GET',
+            data: { cedula_estudiante: cedulaEstudiante },
+            success: function(response) {
+                $('#contenidoFichaRepresentante').html(response);
+            },
+            error: function() {
+                $('#contenidoFichaRepresentante').html('<div class="alert alert-danger">Error al cargar la información del representante.</div>');
+            }
+        });
+    }
 </script>
 
 <?php
-
 include_once("/xampp/htdocs/final/layout/layaout2.php");
 include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>
