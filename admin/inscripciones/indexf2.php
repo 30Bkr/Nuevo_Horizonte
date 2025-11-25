@@ -834,8 +834,6 @@ try {
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
 
-
-
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_nac_e');
@@ -847,11 +845,93 @@ try {
 
     const hoy = new Date();
     const añoActual = hoy.getFullYear();
-    const añoMinimo = añoActual - 19;
-    const añoMaximo = añoActual - 5;
+    let añoMinimo = añoActual - 19;
+    let añoMaximo = añoActual - 5;
+    async function obtenerEdadesGlobales() {
+      try {
+        console.log('📊 Solicitando edades globales desde la base de datos...');
 
-    fechaInput.min = `${añoMinimo}-01-01`;
-    fechaInput.max = `${añoMaximo}-12-31`;
+        const response = await fetch('/final/app/controllers/globales/obtenerEdades.php', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const responseText = await response.text();
+        console.log('📨 Respuesta del servidor (edades):', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Error al parsear JSON:', parseError.message);
+          // Usar valores por defecto en caso de error
+          return {
+            success: false
+          };
+        }
+
+        if (data.success) {
+          console.log('✅ Edades obtenidas:', {
+            edad_min: data.edad_min,
+            edad_max: data.edad_max
+          });
+          return data;
+        } else {
+          console.error('❌ Error al obtener edades:', data.error);
+          return {
+            success: false
+          };
+        }
+
+      } catch (error) {
+        console.error('❌ Error en obtenerEdadesGlobales:', error);
+        return {
+          success: false
+        };
+      }
+    }
+
+    // Función para inicializar los límites de fecha
+    // Función para inicializar los límites de fecha
+    // Función para inicializar los límites de fecha
+    async function inicializarFechas() {
+      const edades = await obtenerEdadesGlobales();
+
+      if (edades.success) {
+        // ✅ CORRECCIÓN: Invertir el cálculo
+        añoMinimo = añoActual - edades.edad_max; // Para edad MÁXIMA
+        añoMaximo = añoActual - edades.edad_min; // Para edad MÍNIMA
+
+        console.log('🎯 Límites calculados:', {
+          añoMinimo: añoMinimo,
+          añoMaximo: añoMaximo,
+          edad_min: edades.edad_min,
+          edad_max: edades.edad_max,
+          explicación: `Estudiantes entre ${edades.edad_min} y ${edades.edad_max} años`
+        });
+      } else {
+        console.warn('⚠️ Usando valores por defecto para las edades');
+        // También corregir los valores por defecto
+        añoMinimo = añoActual - 19; // edad máxima por defecto
+        añoMaximo = añoActual - 5; // edad mínima por defecto
+      }
+
+      // Establecer los límites en el input de fecha
+      fechaInput.min = `${añoMinimo}-01-01`;
+      fechaInput.max = `${añoMaximo}-12-31`;
+
+      console.log('📅 Límites de fecha establecidos:', {
+        min: fechaInput.min,
+        max: fechaInput.max,
+        rango_edades: `Nacidos entre ${añoMinimo} y ${añoMaximo}`
+      });
+    }
+
+    // Inicializar los límites de fecha al cargar la página
+    inicializarFechas();
+
 
     // Función para validar y generar cédula
     async function validarRegistro() {

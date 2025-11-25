@@ -3717,6 +3717,15 @@ CREATE TABLE `roles_permisos` (
     `estatus` tinyint(4) DEFAULT 1
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
 
+CREATE TABLE `globales` (
+    `id_globales` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    `edad_min` int(11) NOT NULL,
+    `edad_max` int(11) NOT NULL,
+    `nom_instituto` varchar(50) NOT NULL,
+    `id_periodo` int(11) NOT NULL,
+    FOREIGN KEY (`id_periodo`) REFERENCES `periodos` (`id_periodo`)
+);
+
 -- --------------------------------------------------------
 
 --
