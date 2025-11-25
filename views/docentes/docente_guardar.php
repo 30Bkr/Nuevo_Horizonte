@@ -21,27 +21,26 @@ if ($_POST) {
         $docente->telefono_hab = $_POST['telefono_hab'];
         $docente->correo = $_POST['correo'];
         $docente->id_profesion = $_POST['id_profesion'];
-        $docente->usuario = $_POST['usuario'];
+        
+        // Campos de dirección
+        $docente->id_parroquia = $_POST['id_parroquia'];
+        $docente->direccion = $_POST['direccion'];
+        $docente->calle = $_POST['calle'];
+        $docente->casa = $_POST['casa'];
+        
+        // Campos adicionales
+        $docente->lugar_nac = $_POST['lugar_nac'];
+        $docente->fecha_nac = $_POST['fecha_nac'];
+        $docente->sexo = $_POST['sexo'];
+        $docente->nacionalidad = $_POST['nacionalidad'];
 
-        // Valores por defecto
-        $docente->id_parroquia = 1;
-        $docente->direccion = "Por definir";
-        $docente->lugar_nac = "Caracas";
-        $docente->fecha_nac = "1990-01-01";
-        $docente->sexo = "Masculino";
-        $docente->nacionalidad = "Venezolana";
+        // El usuario se genera automáticamente con la cédula
+        $docente->usuario = $docente->cedula;
 
         try {
             // Verificar si la cédula ya existe
             if ($docente->cedulaExiste($docente->cedula)) {
                 $_SESSION['error'] = "La cédula {$docente->cedula} ya está registrada en el sistema.";
-                header("Location: docente_nuevo.php");
-                exit();
-            }
-
-            // Verificar si el usuario ya existe
-            if ($docente->usuarioExiste($docente->usuario)) {
-                $_SESSION['error'] = "El nombre de usuario {$docente->usuario} ya está en uso.";
                 header("Location: docente_nuevo.php");
                 exit();
             }
