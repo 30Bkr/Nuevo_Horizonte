@@ -1,7 +1,7 @@
 <?php
 session_start();
-include_once("../../conexion.php"); // Ruta corregida
-include_once("patologias.php"); // Incluye el controlador
+include_once("../../conexion.php");
+include_once("profesiones.php");
 
 header('Content-Type: application/json');
 
@@ -11,16 +11,16 @@ try {
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
 
-  $patologiaController = new PatologiaController($pdo);
+  $profesionController = new ProfesionController($pdo);
   $action = $_POST['action'] ?? '';
 
   switch ($action) {
     case 'agregar':
       $nombre = $_POST['nombre'] ?? '';
       if (empty($nombre)) {
-        $response = ['success' => false, 'message' => 'El nombre de la patología es requerido'];
+        $response = ['success' => false, 'message' => 'El nombre de la profesión es requerido'];
       } else {
-        $response = $patologiaController->agregarPatologia($nombre);
+        $response = $profesionController->agregarProfesion($nombre);
       }
       break;
 
@@ -32,13 +32,13 @@ try {
       if (empty($id) || empty($nombre)) {
         $response = ['success' => false, 'message' => 'Datos incompletos'];
       } else {
-        $response = $patologiaController->actualizarPatologia($id, $nombre, $estatus);
+        $response = $profesionController->actualizarProfesion($id, $nombre, $estatus);
       }
       break;
 
     case 'obtener_todas':
-      $patologias = $patologiaController->obtenerPatologias();
-      $response = ['success' => true, 'data' => $patologias];
+      $profesiones = $profesionController->obtenerProfesiones();
+      $response = ['success' => true, 'data' => $profesiones];
       break;
 
     default:

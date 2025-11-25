@@ -3,9 +3,11 @@ header('Content-Type: application/json');
 
 // Incluir la conexión y la clase
 require_once('../../conexion.php'); // Ajusta la ruta según tu estructura
-require_once('GlobalesController.php');
+require_once('globales.php');
 
 try {
+  $conexion = new Conexion();
+  $pdo = $conexion->conectar();
   // Crear instancia del controlador
   $globalesController = new GlobalesController($pdo);
 

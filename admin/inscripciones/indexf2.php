@@ -523,69 +523,6 @@ try {
                   </div>
 
                   <!-- PATOLOGÍAS -->
-                  <!-- <div class="row">
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <label>Patologías/Alergias (Seleccione las que apliquen)</label>
-                        <div class="row">
-                          <?php
-                          $patologias = [
-                            1 => 'Asma',
-                            2 => 'Alergia a lácteos',
-                            3 => 'Alergia al polen',
-                            4 => 'Rinitis alérgica'
-                          ];
-                          foreach ($patologias as $id => $patologia) {
-                            echo "
-                            <div class='col-md-3'>
-                              <div class='form-check'>
-                                <input type='checkbox' name='patologias[]' value='$id' class='form-check-input' id='patologia_$id'>
-                                <label class='form-check-label' for='patologia_$id'>$patologia</label>
-                              </div>
-                            </div>";
-                          }
-                          ?>
-                        </div>
-                      </div>
-                    </div>
-                  </div> -->
-
-                  <!-- <div class="row">
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <label>Patologías/Alergias</label>
-
-                        Contenedor para los selects dinámicos
-                        <div id="contenedor-patologias">
-                          Select Principal
-                          <div class="mb-2 patologia-item">
-                            <select name="patologias[]" class="form-control select-patologia">
-                              <option value="">Seleccione una patología...</option>
-                              <option value="0">Ninguna</option>
-                              <?php
-                              $patologias = [
-                                1 => 'Asma',
-                                2 => 'Alergia a lácteos',
-                                3 => 'Alergia al polen',
-                                4 => 'Rinitis alérgica'
-                              ];
-                              foreach ($patologias as $id => $patologia) {
-                                echo "<option value='$id'>$patologia</option>";
-                              }
-                              ?>
-                            </select>
-                          </div>
-                        </div>
-
-                        Botón para agregar más patologías
-                        <div class="mt-2">
-                          <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
-                            <i class="fas fa-plus"></i> Agregar otra patología
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div> -->
 
                   <!-- PATOLOGÍAS DEL SISTEMA - CARGADAS DESDE BASE DE DATOS -->
                   <div class="row">
