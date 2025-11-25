@@ -221,7 +221,7 @@ try {
                         <label for="nacionalidad_r">Nacionalidad</label>
                         <select name="nacionalidad_r" id="nacionalidad_r" class="form-control" required>
                           <option value="">Seleccionar</option>
-                          <option value="Venezolana">Venezolano</option>
+                          <option value="Venezolano">Venezolano</option>
                           <option value="Extranjero">Extranjero</option>
                         </select>
                       </div>
@@ -463,7 +463,7 @@ try {
                         <label for="nacionalidad_e">Nacionalidad</label>
                         <select name="nacionalidad_e" class="form-control" required>
                           <option value="">Seleccionar</option>
-                          <option value="Venezolana">Venezolano</option>
+                          <option value="Venezolano">Venezolano</option>
                           <option value="Extranjero">Extranjero</option>
                         </select>
                       </div>
