@@ -11,7 +11,7 @@ if ($_POST) {
     if ($db) {
         $docente = new Docente($db);
 
-        // Asignar valores
+        // Asignar valores (EXCLUYENDO LA CÉDULA)
         $docente->id_docente = $_POST['id_docente'];
         $docente->id_persona = $_POST['id_persona'];
         $docente->id_direccion = $_POST['id_direccion'];
@@ -19,7 +19,7 @@ if ($_POST) {
         $docente->segundo_nombre = $_POST['segundo_nombre'];
         $docente->primer_apellido = $_POST['primer_apellido'];
         $docente->segundo_apellido = $_POST['segundo_apellido'];
-        $docente->cedula = $_POST['cedula'];
+        // $docente->cedula = $_POST['cedula']; // NO se asigna, no se puede editar
         $docente->telefono = $_POST['telefono'];
         $docente->telefono_hab = $_POST['telefono_hab'];
         $docente->correo = $_POST['correo'];
@@ -31,13 +31,6 @@ if ($_POST) {
         $docente->usuario = $_POST['usuario'];
 
         try {
-            // Verificar si la cédula ya existe (excluyendo el actual)
-            if ($docente->cedulaExiste($docente->cedula, $docente->id_persona)) {
-                $_SESSION['error'] = "La cédula {$docente->cedula} ya está registrada en el sistema.";
-                header("Location: docente_editar.php?id=" . $docente->id_docente);
-                exit();
-            }
-
             // Verificar si el usuario ya existe (excluyendo el actual)
             if ($docente->usuarioExiste($docente->usuario, $docente->id_persona)) {
                 $_SESSION['error'] = "El nombre de usuario {$docente->usuario} ya está en uso.";

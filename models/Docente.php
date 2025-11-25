@@ -203,63 +203,62 @@ class Docente {
 
     // Actualizar docente
     public function actualizar() {
-        try {
-            $this->conn->beginTransaction();
+    try {
+        $this->conn->beginTransaction();
 
-            // 1. Actualizar dirección
-            $queryDireccion = "UPDATE direcciones 
-                              SET id_parroquia = ?, direccion = ?, calle = ?, casa = ?, actualizacion = NOW() 
-                              WHERE id_direccion = ?";
-            
-            $stmtDireccion = $this->conn->prepare($queryDireccion);
-            $stmtDireccion->bindParam(1, $this->id_parroquia);
-            $stmtDireccion->bindParam(2, $this->direccion);
-            $stmtDireccion->bindParam(3, $this->calle);
-            $stmtDireccion->bindParam(4, $this->casa);
-            $stmtDireccion->bindParam(5, $this->id_direccion);
-            $stmtDireccion->execute();
+        // 1. Actualizar dirección
+        $queryDireccion = "UPDATE direcciones 
+                          SET id_parroquia = ?, direccion = ?, calle = ?, casa = ?, actualizacion = NOW() 
+                          WHERE id_direccion = ?";
+        
+        $stmtDireccion = $this->conn->prepare($queryDireccion);
+        $stmtDireccion->bindParam(1, $this->id_parroquia);
+        $stmtDireccion->bindParam(2, $this->direccion);
+        $stmtDireccion->bindParam(3, $this->calle);
+        $stmtDireccion->bindParam(4, $this->casa);
+        $stmtDireccion->bindParam(5, $this->id_direccion);
+        $stmtDireccion->execute();
 
-            // 2. Actualizar persona
-            $queryPersona = "UPDATE personas 
-                            SET primer_nombre = ?, segundo_nombre = ?, primer_apellido = ?, segundo_apellido = ?,
-                                cedula = ?, telefono = ?, telefono_hab = ?, correo = ?, lugar_nac = ?, 
-                                fecha_nac = ?, sexo = ?, nacionalidad = ?, actualizacion = NOW()
-                            WHERE id_persona = ?";
-            
-            $stmtPersona = $this->conn->prepare($queryPersona);
-            $stmtPersona->bindParam(1, $this->primer_nombre);
-            $stmtPersona->bindParam(2, $this->segundo_nombre);
-            $stmtPersona->bindParam(3, $this->primer_apellido);
-            $stmtPersona->bindParam(4, $this->segundo_apellido);
-            $stmtPersona->bindParam(5, $this->cedula);
-            $stmtPersona->bindParam(6, $this->telefono);
-            $stmtPersona->bindParam(7, $this->telefono_hab);
-            $stmtPersona->bindParam(8, $this->correo);
-            $stmtPersona->bindParam(9, $this->lugar_nac);
-            $stmtPersona->bindParam(10, $this->fecha_nac);
-            $stmtPersona->bindParam(11, $this->sexo);
-            $stmtPersona->bindParam(12, $this->nacionalidad);
-            $stmtPersona->bindParam(13, $this->id_persona);
-            $stmtPersona->execute();
+        // 2. Actualizar persona (EXCLUYENDO LA CÉDULA)
+        $queryPersona = "UPDATE personas 
+                        SET primer_nombre = ?, segundo_nombre = ?, primer_apellido = ?, segundo_apellido = ?,
+                            telefono = ?, telefono_hab = ?, correo = ?, lugar_nac = ?, 
+                            fecha_nac = ?, sexo = ?, nacionalidad = ?, actualizacion = NOW()
+                        WHERE id_persona = ?";
+        
+        $stmtPersona = $this->conn->prepare($queryPersona);
+        $stmtPersona->bindParam(1, $this->primer_nombre);
+        $stmtPersona->bindParam(2, $this->segundo_nombre);
+        $stmtPersona->bindParam(3, $this->primer_apellido);
+        $stmtPersona->bindParam(4, $this->segundo_apellido);
+        $stmtPersona->bindParam(5, $this->telefono);
+        $stmtPersona->bindParam(6, $this->telefono_hab);
+        $stmtPersona->bindParam(7, $this->correo);
+        $stmtPersona->bindParam(8, $this->lugar_nac);
+        $stmtPersona->bindParam(9, $this->fecha_nac);
+        $stmtPersona->bindParam(10, $this->sexo);
+        $stmtPersona->bindParam(11, $this->nacionalidad);
+        $stmtPersona->bindParam(12, $this->id_persona);
+        $stmtPersona->execute();
 
-            // 3. Actualizar docente
-            $queryDocente = "UPDATE docentes 
-                            SET id_profesion = ?, actualizacion = NOW() 
-                            WHERE id_docente = ?";
-            
-            $stmtDocente = $this->conn->prepare($queryDocente);
-            $stmtDocente->bindParam(1, $this->id_profesion);
-            $stmtDocente->bindParam(2, $this->id_docente);
-            $stmtDocente->execute();
+        // 3. Actualizar docente
+        $queryDocente = "UPDATE docentes 
+                        SET id_profesion = ?, actualizacion = NOW() 
+                        WHERE id_docente = ?";
+        
+        $stmtDocente = $this->conn->prepare($queryDocente);
+        $stmtDocente->bindParam(1, $this->id_profesion);
+        $stmtDocente->bindParam(2, $this->id_docente);
+        $stmtDocente->execute();
 
-            $this->conn->commit();
-            return true;
+        $this->conn->commit();
+        return true;
 
-        } catch (Exception $e) {
-            $this->conn->rollBack();
-            throw $e;
-        }
+    } catch (Exception $e) {
+        $this->conn->rollBack();
+        throw $e;
     }
+}
 
     // Cambiar estado del docente (habilitar/inhabilitar)
     public function cambiarEstado($id, $estado) {

@@ -153,9 +153,28 @@ if (!$docente_encontrado) {
                                             </div>
 
                                             <div class="form-group">
+                                                <label for="sexo">Sexo</label>
+                                                <select class="form-control" id="sexo" name="sexo">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="Masculino" <?php echo ($docente->sexo == 'Masculino') ? 'selected' : ''; ?>>Masculino</option>
+                                                    <option value="Femenino" <?php echo ($docente->sexo == 'Femenino') ? 'selected' : ''; ?>>Femenino</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="nacionalidad">Nacionalidad</label>
+                                                <select class="form-control" id="nacionalidad" name="nacionalidad">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="Venezolano" <?php echo ($docente->nacionalidad == 'Venezolano') ? 'selected' : ''; ?>>Venezolano</option>
+                                                    <option value="Extranjero" <?php echo ($docente->nacionalidad == 'Extranjero') ? 'selected' : ''; ?>>Extranjero</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
                                                 <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="cedula" name="cedula" 
-                                                       value="<?php echo htmlspecialchars($docente->cedula); ?>" required>
+                                                       value="<?php echo htmlspecialchars($docente->cedula); ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">La cédula no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
@@ -175,21 +194,6 @@ if (!$docente_encontrado) {
                                             <h5>Información de Contacto</h5>
 
                                             <div class="form-group">
-                                                <label for="sexo">Sexo</label>
-                                                <select class="form-control" id="sexo" name="sexo">
-                                                    <option value="">Seleccionar...</option>
-                                                    <option value="Masculino" <?php echo ($docente->sexo == 'Masculino') ? 'selected' : ''; ?>>Masculino</option>
-                                                    <option value="Femenino" <?php echo ($docente->sexo == 'Femenino') ? 'selected' : ''; ?>>Femenino</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="nacionalidad">Nacionalidad</label>
-                                                <input type="text" class="form-control" id="nacionalidad" name="nacionalidad" 
-                                                       value="<?php echo htmlspecialchars($docente->nacionalidad); ?>">
-                                            </div>
-
-                                            <div class="form-group">
                                                 <label for="telefono">Teléfono Móvil</label>
                                                 <input type="text" class="form-control" id="telefono" name="telefono" 
                                                        value="<?php echo htmlspecialchars($docente->telefono); ?>">
@@ -207,9 +211,11 @@ if (!$docente_encontrado) {
                                                        value="<?php echo htmlspecialchars($docente->correo); ?>">
                                             </div>
 
+                                            <h5 class="mt-4">Información Profesional</h5>
+
                                             <div class="form-group">
-                                                <label for="id_profesion">Profesión</label>
-                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;">
+                                                <label for="id_profesion">Profesión <span class="text-danger">* (Obligatorio)</span></label>
+                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;" required>
                                                     <option value="">Seleccionar profesión...</option>
                                                     <?php
                                                     $profesiones = $docente->obtenerProfesiones();
@@ -315,12 +321,12 @@ $(function () {
 
     // Validación del formulario
     $('#formEditar').on('submit', function(e) {
-        let cedula = $('#cedula').val();
+        // Validación de campos obligatorios
+        let profesion = $('#id_profesion').val();
         let isValid = true;
 
-        // Validar cédula (solo números)
-        if (cedula && !/^\d+$/.test(cedula)) {
-            alert('La cédula debe contener solo números');
+        if (!profesion) {
+            alert('La profesión es obligatoria');
             isValid = false;
         }
 

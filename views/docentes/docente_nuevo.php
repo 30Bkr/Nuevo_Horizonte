@@ -6,7 +6,7 @@ session_start();
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Nuevo Docente - Nuevo Horizonte</title>
+    <title>Registrar Nuevo Docente - Nuevo Horizonte</title>
     
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -94,6 +94,24 @@ session_start();
                                             </div>
 
                                             <div class="form-group">
+                                                <label for="sexo">Sexo</label>
+                                                <select class="form-control" id="sexo" name="sexo">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="Masculino">Masculino</option>
+                                                    <option value="Femenino">Femenino</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="nacionalidad">Nacionalidad</label>
+                                                <select class="form-control" id="nacionalidad" name="nacionalidad">
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="Venezolano">Venezolano</option>
+                                                    <option value="Extranjero">Extranjero</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
                                                 <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="cedula" name="cedula" required>
                                             </div>
@@ -105,26 +123,12 @@ session_start();
 
                                             <div class="form-group">
                                                 <label for="lugar_nac">Lugar de Nacimiento</label>
-                                                <input type="text" class="form-control" id="lugar_nac" name="lugar_nac" value="Caracas">
+                                                <input type="text" class="form-control" id="lugar_nac" name="lugar_nac">
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <h5>Información de Contacto</h5>
-
-                                            <div class="form-group">
-                                                <label for="sexo">Sexo</label>
-                                                <select class="form-control" id="sexo" name="sexo">
-                                                    <option value="">Seleccionar...</option>
-                                                    <option value="Masculino">Masculino</option>
-                                                    <option value="Femenino">Femenino</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="nacionalidad">Nacionalidad</label>
-                                                <input type="text" class="form-control" id="nacionalidad" name="nacionalidad" value="Venezolana">
-                                            </div>
 
                                             <div class="form-group">
                                                 <label for="telefono">Teléfono Móvil</label>
@@ -141,9 +145,11 @@ session_start();
                                                 <input type="email" class="form-control" id="correo" name="correo">
                                             </div>
 
+                                            <h5 class="mt-4">Información Profesional</h5>
+
                                             <div class="form-group">
-                                                <label for="id_profesion">Profesión</label>
-                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;">
+                                                <label for="id_profesion">Profesión <span class="text-danger">* (Obligatorio)</span></label>
+                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;" required>
                                                     <option value="">Seleccionar profesión...</option>
                                                     <?php
                                                     include_once __DIR__ . '/../../app/conexion.php';
@@ -188,7 +194,7 @@ session_start();
 
                                             <div class="form-group">
                                                 <label for="direccion">Dirección</label>
-                                                <input type="text" class="form-control" id="direccion" name="direccion" value="Por definir">
+                                                <input type="text" class="form-control" id="direccion" name="direccion">
                                             </div>
 
                                             <div class="form-group">
@@ -255,11 +261,18 @@ $(function () {
     // Validación del formulario
     $('#formDocente').on('submit', function(e) {
         let cedula = $('#cedula').val();
+        let profesion = $('#id_profesion').val();
         let isValid = true;
 
         // Validar cédula (solo números)
         if (cedula && !/^\d+$/.test(cedula)) {
             alert('La cédula debe contener solo números');
+            isValid = false;
+        }
+
+        // Validar profesión obligatoria
+        if (!profesion) {
+            alert('La profesión es obligatoria');
             isValid = false;
         }
 
