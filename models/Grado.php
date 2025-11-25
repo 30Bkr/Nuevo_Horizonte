@@ -37,29 +37,66 @@ class Grado {
         return false;
     }
 
-    // Listar todos los grados con conteo de alumnos (incluye inactivos)
-    public function listarGradosConAlumnos() {
-        $query = "SELECT 
-                    ns.id_nivel_seccion,
-                    n.nom_nivel as nombre_grado,
-                    s.nom_seccion as seccion,
-                    ns.capacidad,
-                    ns.estatus,
-                    COUNT(i.id_inscripcion) as total_alumnos
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
-                    AND i.estatus = 1
-                  WHERE n.estatus = 1 AND s.estatus = 1  -- Solo niveles y secciones activos
-                  GROUP BY ns.id_nivel_seccion
-                  ORDER BY n.num_nivel, s.nom_seccion";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        
-        return $stmt;
-    }
+    /**
+ * Listar todos los grados con conteo de alumnos SOLO del período activo
+ * @return PDOStatement Lista de grados con información de alumnos
+ */
+public function listarGradosConAlumnos() {
+    $query = "SELECT 
+                ns.id_nivel_seccion,
+                n.nom_nivel as nombre_grado,
+                s.nom_seccion as seccion,
+                ns.capacidad,
+                ns.estatus,
+                COUNT(i.id_inscripcion) as total_alumnos
+              FROM " . $this->table_name . " ns
+              INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+              INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+              LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+                AND i.estatus = 1
+                AND i.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
+              WHERE n.estatus = 1 AND s.estatus = 1  -- Solo niveles y secciones activos
+              GROUP BY ns.id_nivel_seccion
+              ORDER BY n.num_nivel, s.nom_seccion";
+    
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+    
+    return $stmt;
+}
+
+    /**
+ * Listar grados que tienen inscripciones en el período activo
+ * @return PDOStatement Lista de grados activos en el período actual
+ */
+public function listarGradosPeriodoActivo() {
+    $query = "SELECT DISTINCT
+                ns.id_nivel_seccion,
+                n.nom_nivel as nombre_grado,
+                s.nom_seccion as seccion,
+                ns.capacidad,
+                ns.estatus,
+                COUNT(i.id_inscripcion) as total_alumnos,
+                per.descripcion_periodo
+              FROM " . $this->table_name . " ns
+              INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+              INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+              INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+              INNER JOIN periodos per ON i.id_periodo = per.id_periodo
+              WHERE n.estatus = 1 
+                AND s.estatus = 1
+                AND ns.estatus = 1
+                AND i.estatus = 1
+                AND per.estatus = 1  -- Solo períodos activos
+                AND per.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
+              GROUP BY ns.id_nivel_seccion
+              ORDER BY n.num_nivel, s.nom_seccion";
+    
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+    
+    return $stmt;
+}
 
     // Obtener todas las secciones disponibles
     public function obtenerSecciones() {
@@ -120,7 +157,8 @@ class Grado {
         // Validar que la capacidad no sea menor a los estudiantes registrados
         $query_check = "SELECT COUNT(*) as total_estudiantes 
                        FROM inscripciones 
-                       WHERE id_nivel_seccion = ? AND estatus = 1";
+                       WHERE id_nivel_seccion = ? AND estatus = 1
+                       AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
         $stmt_check = $this->conn->prepare($query_check);
         $stmt_check->bindParam(1, $this->id_nivel_seccion);
         $stmt_check->execute();
@@ -154,7 +192,8 @@ class Grado {
     public function eliminar() {
         // Verificar si hay estudiantes inscritos
         $query_check = "SELECT COUNT(*) as total FROM inscripciones 
-                       WHERE id_nivel_seccion = ? AND estatus = 1";
+                       WHERE id_nivel_seccion = ? AND estatus = 1
+                       AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
         $stmt_check = $this->conn->prepare($query_check);
         $stmt_check->bindParam(1, $this->id_nivel_seccion);
         $stmt_check->execute();
@@ -201,45 +240,49 @@ class Grado {
     }
 
     /**
-     * Obtener lista de estudiantes inscritos en un grado/sección específico
+     * Obtener lista de estudiantes inscritos en un grado/sección específico del período activo
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return PDOStatement Lista de estudiantes
      */
-  public function obtenerEstudiantesPorGrado($id_nivel_seccion) {
-    $query = "SELECT 
-                p.cedula,
-                p.primer_nombre,
-                p.segundo_nombre,
-                p.primer_apellido,
-                p.segundo_apellido,
-                p.sexo,
-                p.fecha_nac,
-                i.fecha_inscripcion,
-                rp.primer_nombre as rep_primer_nombre,
-                rp.segundo_nombre as rep_segundo_nombre,
-                rp.primer_apellido as rep_primer_apellido,
-                rp.segundo_apellido as rep_segundo_apellido,
-                par.parentesco, 
-                CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre,
-                rp.cedula as rep_cedula
-              FROM inscripciones i
-              INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
-              INNER JOIN personas p ON e.id_persona = p.id_persona
-              LEFT JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
-              LEFT JOIN representantes r ON er.id_representante = r.id_representante
-              LEFT JOIN personas rp ON r.id_persona = rp.id_persona
-              LEFT JOIN parentesco par ON er.id_parentesco = par.id_parentesco 
-              WHERE i.id_nivel_seccion = :id_nivel_seccion 
-              AND i.estatus = 1 
-              AND e.estatus = 1
-              ORDER BY p.primer_apellido, p.primer_nombre";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
-    $stmt->execute();
-    
-    return $stmt;
-}
+    public function obtenerEstudiantesPorGrado($id_nivel_seccion) {
+        $query = "SELECT 
+                    p.cedula,
+                    p.primer_nombre,
+                    p.segundo_nombre,
+                    p.primer_apellido,
+                    p.segundo_apellido,
+                    p.sexo,
+                    p.fecha_nac,
+                    i.fecha_inscripcion,
+                    rp.primer_nombre as rep_primer_nombre,
+                    rp.segundo_nombre as rep_segundo_nombre,
+                    rp.primer_apellido as rep_primer_apellido,
+                    rp.segundo_apellido as rep_segundo_apellido,
+                    par.parentesco, 
+                    CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre,
+                    rp.cedula as rep_cedula,
+                    per.descripcion_periodo
+                  FROM inscripciones i
+                  INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
+                  INNER JOIN personas p ON e.id_persona = p.id_persona
+                  INNER JOIN periodos per ON i.id_periodo = per.id_periodo
+                  LEFT JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
+                  LEFT JOIN representantes r ON er.id_representante = r.id_representante
+                  LEFT JOIN personas rp ON r.id_persona = rp.id_persona
+                  LEFT JOIN parentesco par ON er.id_parentesco = par.id_parentesco 
+                  WHERE i.id_nivel_seccion = :id_nivel_seccion 
+                    AND i.estatus = 1 
+                    AND e.estatus = 1
+                    AND per.estatus = 1
+                    AND per.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
+                  ORDER BY p.primer_apellido, p.primer_nombre";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
+        $stmt->execute();
+        
+        return $stmt;
+    }
 
     /**
      * Obtener estadísticas detalladas de un grado/sección
@@ -255,7 +298,9 @@ class Grado {
                     COUNT(CASE WHEN p.sexo = 'Masculino' THEN 1 END) as estudiantes_masculinos,
                     COUNT(CASE WHEN p.sexo = 'Femenino' THEN 1 END) as estudiantes_femeninos
                   FROM " . $this->table_name . " ns
-                  LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion AND i.estatus = 1
+                  LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+                    AND i.estatus = 1
+                    AND i.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
                   LEFT JOIN estudiantes e ON i.id_estudiante = e.id_estudiante AND e.estatus = 1
                   LEFT JOIN personas p ON e.id_persona = p.id_persona
                   WHERE ns.id_nivel_seccion = :id_nivel_seccion 
@@ -278,7 +323,8 @@ class Grado {
         $query = "SELECT COUNT(*) as total 
                   FROM inscripciones 
                   WHERE id_nivel_seccion = :id_nivel_seccion 
-                  AND estatus = 1";
+                  AND estatus = 1
+                  AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
@@ -289,16 +335,23 @@ class Grado {
     }
 
     /**
-     * Obtener todos los grados disponibles para listas desplegables
+     * Obtener todos los grados disponibles para listas desplegables (solo período activo)
      * @return PDOStatement Lista de grados
      */
     public function obtenerGradosParaSelect() {
-        $query = "SELECT ns.id_nivel_seccion, 
-                         CONCAT(n.nom_nivel, ' - ', s.nom_seccion) as nombre_completo
+        $query = "SELECT DISTINCT ns.id_nivel_seccion, 
+                     CONCAT(n.nom_nivel, ' - ', s.nom_seccion) as nombre_completo
                   FROM " . $this->table_name . " ns
                   INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
                   INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                  INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion
+                  INNER JOIN periodos p ON i.id_periodo = p.id_periodo
                   WHERE ns.estatus = 1
+                    AND n.estatus = 1
+                    AND s.estatus = 1
+                    AND i.estatus = 1
+                    AND p.estatus = 1
+                    AND p.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
                   ORDER BY n.num_nivel, s.nom_seccion";
         
         $stmt = $this->conn->prepare($query);
@@ -351,7 +404,8 @@ class Grado {
     public function inhabilitar() {
         // Verificar si hay estudiantes inscritos activos
         $query_check = "SELECT COUNT(*) as total FROM inscripciones 
-                       WHERE id_nivel_seccion = ? AND estatus = 1";
+                       WHERE id_nivel_seccion = ? AND estatus = 1
+                       AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
         $stmt_check = $this->conn->prepare($query_check);
         $stmt_check->bindParam(1, $this->id_nivel_seccion);
         $stmt_check->execute();
