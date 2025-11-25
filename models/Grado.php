@@ -205,7 +205,7 @@ class Grado {
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return PDOStatement Lista de estudiantes
      */
-   public function obtenerEstudiantesPorGrado($id_nivel_seccion) {
+  public function obtenerEstudiantesPorGrado($id_nivel_seccion) {
     $query = "SELECT 
                 p.cedula,
                 p.primer_nombre,
@@ -220,7 +220,8 @@ class Grado {
                 rp.primer_apellido as rep_primer_apellido,
                 rp.segundo_apellido as rep_segundo_apellido,
                 par.parentesco, 
-                CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre
+                CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre,
+                rp.cedula as rep_cedula
               FROM inscripciones i
               INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
               INNER JOIN personas p ON e.id_persona = p.id_persona
