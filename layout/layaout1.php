@@ -116,6 +116,34 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
                 <i class="nav-icon fas bi bi-person-lines-fill">
                   <img src="<?= URL; ?>/public/images/roles.svg" alt="Inscripcion">
+                </i>
+                <p>
+                  Configuraciones
+                  <i class="right fas fa-angle-left"></i>
+
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/configuraciones/index.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Configuraciones</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+          <?php
+          }
+          ?>
+
+          <?php
+          if (true) { ?>
+            <li class="nav-item">
+              <a href="#" class="nav-link">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-person-lines-fill">
+                  <img src="<?= URL; ?>/public/images/roles.svg" alt="Inscripcion">
 
                 </i>
                 <p>

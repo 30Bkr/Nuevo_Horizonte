@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 24-11-2025 a las 01:29:48
+-- Tiempo de generación: 25-11-2025 a las 06:10:51
 -- Versión del servidor: 11.7.2-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -65,7 +65,7 @@ VALUES (
         'Av Principal',
         'Casa 123',
         '2025-11-10 06:17:16',
-        '2025-11-23 20:27:06',
+        '2025-11-24 11:34:01',
         1
     ),
     (
@@ -275,6 +275,36 @@ VALUES (
         'Nueva Granada',
         'Torre B',
         '2025-11-20 22:01:18',
+        NULL,
+        1
+    ),
+    (
+        34,
+        1,
+        'Quinta Crespo',
+        'av sur 4. oeste 16',
+        'casa 16',
+        '2025-11-24 03:22:17',
+        NULL,
+        1
+    ),
+    (
+        35,
+        58,
+        'Quinta Crespo',
+        'avenida 4',
+        'casa 16',
+        '2025-11-24 03:28:17',
+        NULL,
+        1
+    ),
+    (
+        36,
+        57,
+        'Quinta Crespo',
+        'Nueva Granada',
+        'Torre B',
+        '2025-11-24 03:28:17',
         NULL,
         1
     );
@@ -588,6 +618,69 @@ VALUES (
         '2025-11-24 00:27:06',
         NULL,
         1
+    ),
+    (
+        27,
+        47,
+        '2025-11-24 03:19:58',
+        NULL,
+        1
+    ),
+    (
+        28,
+        48,
+        '2025-11-24 03:22:17',
+        NULL,
+        1
+    ),
+    (
+        29,
+        50,
+        '2025-11-24 03:28:17',
+        NULL,
+        1
+    ),
+    (
+        30,
+        51,
+        '2025-11-24 05:45:14',
+        NULL,
+        1
+    ),
+    (
+        31,
+        52,
+        '2025-11-24 05:56:39',
+        NULL,
+        1
+    ),
+    (
+        32,
+        53,
+        '2025-11-24 05:58:00',
+        NULL,
+        1
+    ),
+    (
+        33,
+        54,
+        '2025-11-24 05:59:02',
+        NULL,
+        1
+    ),
+    (
+        36,
+        57,
+        '2025-11-24 15:32:51',
+        NULL,
+        1
+    ),
+    (
+        37,
+        58,
+        '2025-11-24 15:34:01',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -687,6 +780,86 @@ VALUES (
         15,
         2,
         '2025-11-11 22:52:57',
+        NULL,
+        1
+    ),
+    (
+        10,
+        28,
+        3,
+        '2025-11-24 03:22:17',
+        NULL,
+        1
+    ),
+    (
+        11,
+        29,
+        2,
+        '2025-11-24 03:28:17',
+        NULL,
+        1
+    ),
+    (
+        12,
+        30,
+        2,
+        '2025-11-24 05:45:14',
+        NULL,
+        1
+    ),
+    (
+        13,
+        30,
+        1,
+        '2025-11-24 05:45:14',
+        NULL,
+        1
+    ),
+    (
+        14,
+        31,
+        3,
+        '2025-11-24 05:56:39',
+        NULL,
+        1
+    ),
+    (
+        15,
+        31,
+        2,
+        '2025-11-24 05:56:39',
+        NULL,
+        1
+    ),
+    (
+        16,
+        31,
+        1,
+        '2025-11-24 05:56:39',
+        NULL,
+        1
+    ),
+    (
+        17,
+        32,
+        4,
+        '2025-11-24 05:58:00',
+        NULL,
+        1
+    ),
+    (
+        18,
+        32,
+        2,
+        '2025-11-24 05:58:00',
+        NULL,
+        1
+    ),
+    (
+        21,
+        37,
+        2,
+        '2025-11-24 15:34:01',
         NULL,
         1
     );
@@ -917,6 +1090,121 @@ VALUES (
         6,
         '2025-11-24 00:27:06',
         NULL,
+        1
+    ),
+    (
+        23,
+        27,
+        1,
+        4,
+        '2025-11-24 03:19:58',
+        NULL,
+        1
+    ),
+    (
+        24,
+        28,
+        17,
+        5,
+        '2025-11-24 03:22:17',
+        NULL,
+        1
+    ),
+    (
+        25,
+        29,
+        18,
+        1,
+        '2025-11-24 03:28:17',
+        NULL,
+        1
+    ),
+    (
+        26,
+        30,
+        1,
+        1,
+        '2025-11-24 05:45:14',
+        NULL,
+        1
+    ),
+    (
+        27,
+        31,
+        1,
+        3,
+        '2025-11-24 05:56:39',
+        NULL,
+        1
+    ),
+    (
+        28,
+        32,
+        1,
+        6,
+        '2025-11-24 05:58:00',
+        NULL,
+        1
+    ),
+    (
+        29,
+        33,
+        1,
+        4,
+        '2025-11-24 05:59:02',
+        NULL,
+        1
+    ),
+    (
+        32,
+        36,
+        1,
+        3,
+        '2025-11-24 15:32:51',
+        NULL,
+        1
+    ),
+    (
+        33,
+        37,
+        1,
+        2,
+        '2025-11-24 15:34:01',
+        NULL,
+        1
+    );
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `globales`
+--
+
+CREATE TABLE `globales` (
+    `id_globales` int(11) NOT NULL,
+    `edad_min` int(11) NOT NULL,
+    `edad_max` int(11) NOT NULL,
+    `nom_instituto` varchar(50) NOT NULL,
+    `id_periodo` int(11) NOT NULL
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+
+--
+-- Volcado de datos para la tabla `globales`
+--
+
+INSERT INTO
+    `globales` (
+        `id_globales`,
+        `edad_min`,
+        `edad_max`,
+        `nom_instituto`,
+        `id_periodo`
+    )
+VALUES (
+        1,
+        5,
+        19,
+        'Nuevo Horizonte',
         1
     );
 
@@ -1267,6 +1555,126 @@ VALUES (
         '2025-11-24 00:27:06',
         NULL,
         1
+    ),
+    (
+        27,
+        27,
+        1,
+        1,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 03:19:58',
+        NULL,
+        1
+    ),
+    (
+        28,
+        28,
+        1,
+        2,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 03:22:17',
+        NULL,
+        1
+    ),
+    (
+        29,
+        29,
+        1,
+        1,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 03:28:17',
+        NULL,
+        1
+    ),
+    (
+        30,
+        30,
+        1,
+        2,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 05:45:14',
+        NULL,
+        1
+    ),
+    (
+        31,
+        31,
+        1,
+        2,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 05:56:39',
+        NULL,
+        1
+    ),
+    (
+        32,
+        32,
+        2,
+        2,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 05:58:00',
+        NULL,
+        1
+    ),
+    (
+        33,
+        33,
+        1,
+        2,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 05:59:02',
+        NULL,
+        1
+    ),
+    (
+        34,
+        36,
+        1,
+        1,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 15:32:51',
+        NULL,
+        1
+    ),
+    (
+        35,
+        37,
+        1,
+        1,
+        1,
+        '2025-11-24',
+        '',
+        '2025-11-24 15:34:01',
+        NULL,
+        1
+    ),
+    (
+        36,
+        32,
+        1,
+        3,
+        1,
+        '2025-11-25',
+        '',
+        '2025-11-25 04:20:30',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -1561,7 +1969,7 @@ VALUES (
         1,
         1,
         1,
-        11,
+        18,
         '2025-11-10 06:17:16',
         '2025-11-10 02:17:16',
         1
@@ -2488,7 +2896,7 @@ VALUES (
         '2024-07-15',
         '2025-11-20 05:11:53',
         NULL,
-        1
+        0
     );
 
 -- --------------------------------------------------------
@@ -2706,7 +3114,7 @@ VALUES (
         'Femenino',
         'Venezolana',
         '2025-11-10 06:17:16',
-        '2025-11-23 20:27:06',
+        '2025-11-24 11:34:01',
         1
     ),
     (
@@ -3015,21 +3423,21 @@ VALUES (
     ),
     (
         33,
-        21,
+        34,
         'Carlos',
         'Enrique',
         'Moreno',
         'Salazar',
         '27654322',
         '0416789542',
-        '',
+        '04149105229',
         'cmoreno@gmail.com',
         'Caracas',
         '1990-01-01',
         'Masculino',
         'Venezolana',
         '2025-11-17 04:30:35',
-        NULL,
+        '2025-11-23 23:22:17',
         1
     ),
     (
@@ -3257,6 +3665,196 @@ VALUES (
         'Masculino',
         'Venezolano',
         '2025-11-24 00:27:06',
+        NULL,
+        1
+    ),
+    (
+        47,
+        1,
+        'He',
+        'Hi',
+        'Ho',
+        'Hu',
+        '20815678901',
+        '04149015229',
+        '02127788992',
+        'he@gmail.com',
+        'El paraiso',
+        '2020-12-14',
+        'Masculino',
+        'Venezolano',
+        '2025-11-24 03:19:58',
+        NULL,
+        1
+    ),
+    (
+        48,
+        34,
+        'Eje',
+        'eji',
+        'ojo',
+        'uju',
+        '20127654322',
+        '04149015229',
+        '04149105229',
+        'eje@gmail.com',
+        'El paraisoe',
+        '2020-12-17',
+        'Femenino',
+        'Venezolano',
+        '2025-11-24 03:22:17',
+        NULL,
+        1
+    ),
+    (
+        49,
+        35,
+        'ti',
+        'to',
+        'tu',
+        'te',
+        '1234',
+        '04149105229',
+        '04125079067',
+        'ti@gmail.com',
+        'Caracas',
+        '1993-12-30',
+        'Masculino',
+        'Venezolana',
+        '2025-11-24 03:28:17',
+        NULL,
+        1
+    ),
+    (
+        50,
+        36,
+        'ak',
+        'ek',
+        'ik',
+        'ok',
+        '1911234',
+        '04149015229',
+        '04125079067',
+        'ak@gmail.com',
+        'el',
+        '2019-11-30',
+        'Masculino',
+        'Extranjero',
+        '2025-11-24 03:28:17',
+        NULL,
+        1
+    ),
+    (
+        51,
+        1,
+        'jey',
+        'joy',
+        'kim',
+        'ba',
+        '09915678901',
+        '04149015229',
+        '02127788992',
+        'jey@gmail.com',
+        'El paraisoe',
+        '2009-12-31',
+        'Masculino',
+        'Venezolana',
+        '2025-11-24 05:45:14',
+        NULL,
+        1
+    ),
+    (
+        52,
+        1,
+        'Mo',
+        'Ma',
+        'Me',
+        'Mi',
+        '141015678901',
+        '04149015229',
+        '02127788992',
+        'mo@gmail.com',
+        'El paraisoe',
+        '2014-11-30',
+        'Masculino',
+        'Venezolana',
+        '2025-11-24 05:56:39',
+        NULL,
+        1
+    ),
+    (
+        53,
+        1,
+        'La',
+        'Le',
+        'Li',
+        'Lo',
+        '201115678901',
+        '04149105229',
+        '02127788992',
+        'briant@gmail.com',
+        'El paraiso',
+        '2020-12-07',
+        'Masculino',
+        'Venezolana',
+        '2025-11-24 05:58:00',
+        NULL,
+        1
+    ),
+    (
+        54,
+        1,
+        'Yu',
+        'Ye',
+        'Yi',
+        'Yo',
+        '071215678901',
+        '04149105229',
+        '02127788992',
+        'yu@gmail.com',
+        'El paraisoe',
+        '2007-12-31',
+        'Masculino',
+        'Extranjero',
+        '2025-11-24 05:59:02',
+        NULL,
+        1
+    ),
+    (
+        57,
+        1,
+        'IO',
+        'IO',
+        'Io',
+        'Io',
+        '201315678901',
+        '04149105229',
+        '02127788992',
+        'io@gmail.com',
+        'El paraiso',
+        '2020-12-30',
+        'Masculino',
+        'Venezolana',
+        '2025-11-24 15:32:51',
+        NULL,
+        1
+    ),
+    (
+        58,
+        1,
+        'Uo',
+        'uo',
+        'uo',
+        'uo',
+        '181415678901',
+        '04149015229',
+        '02127788992',
+        'uo@gmail.com',
+        'El paraisoe',
+        '2018-11-30',
+        'Masculino',
+        'Extranjero',
+        '2025-11-24 15:34:01',
         NULL,
         1
     );
@@ -3536,7 +4134,7 @@ VALUES (
         'Ingeniero Civil',
         'Constructora Nacional',
         '2025-11-10 06:17:16',
-        '2025-11-23 20:27:06',
+        '2025-11-24 11:34:01',
         1,
         10
     ),
@@ -3659,6 +4257,26 @@ VALUES (
         NULL,
         1,
         1
+    ),
+    (
+        17,
+        33,
+        'Maestro',
+        'Nuevo Horizonte',
+        '2025-11-24 03:22:17',
+        NULL,
+        1,
+        12
+    ),
+    (
+        18,
+        49,
+        'mecanico',
+        'Mercedes',
+        '2025-11-24 03:28:17',
+        NULL,
+        1,
+        17
     );
 
 -- --------------------------------------------------------
@@ -3716,15 +4334,6 @@ CREATE TABLE `roles_permisos` (
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
-
-CREATE TABLE `globales` (
-    `id_globales` int(11) NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `edad_min` int(11) NOT NULL,
-    `edad_max` int(11) NOT NULL,
-    `nom_instituto` varchar(50) NOT NULL,
-    `id_periodo` int(11) NOT NULL,
-    FOREIGN KEY (`id_periodo`) REFERENCES `periodos` (`id_periodo`)
-);
 
 -- --------------------------------------------------------
 
@@ -3901,6 +4510,13 @@ ADD KEY `id_representante` (`id_representante`),
 ADD KEY `fk_est_rep_parentesco` (`id_parentesco`);
 
 --
+-- Indices de la tabla `globales`
+--
+ALTER TABLE `globales`
+ADD PRIMARY KEY (`id_globales`),
+ADD KEY `id_periodo` (`id_periodo`);
+
+--
 -- Indices de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
@@ -4020,7 +4636,7 @@ ADD KEY `id_rol` (`id_rol`);
 --
 ALTER TABLE `direcciones`
 MODIFY `id_direccion` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 34;
+AUTO_INCREMENT = 37;
 
 --
 -- AUTO_INCREMENT de la tabla `docentes`
@@ -4053,28 +4669,35 @@ AUTO_INCREMENT = 4;
 --
 ALTER TABLE `estudiantes`
 MODIFY `id_estudiante` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 27;
+AUTO_INCREMENT = 38;
 
 --
 -- AUTO_INCREMENT de la tabla `estudiantes_patologias`
 --
 ALTER TABLE `estudiantes_patologias`
 MODIFY `id_estudiante_patologia` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 10;
+AUTO_INCREMENT = 22;
 
 --
 -- AUTO_INCREMENT de la tabla `estudiantes_representantes`
 --
 ALTER TABLE `estudiantes_representantes`
 MODIFY `id_estudiante_representante` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 23;
+AUTO_INCREMENT = 34;
+
+--
+-- AUTO_INCREMENT de la tabla `globales`
+--
+ALTER TABLE `globales`
+MODIFY `id_globales` int(11) NOT NULL AUTO_INCREMENT,
+AUTO_INCREMENT = 2;
 
 --
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
 MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 27;
+AUTO_INCREMENT = 37;
 
 --
 -- AUTO_INCREMENT de la tabla `municipios`
@@ -4136,7 +4759,7 @@ MODIFY `id_permiso` int(11) NOT NULL AUTO_INCREMENT;
 --
 ALTER TABLE `personas`
 MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 47;
+AUTO_INCREMENT = 59;
 
 --
 -- AUTO_INCREMENT de la tabla `profesiones`
@@ -4150,7 +4773,7 @@ AUTO_INCREMENT = 31;
 --
 ALTER TABLE `representantes`
 MODIFY `id_representante` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 17;
+AUTO_INCREMENT = 19;
 
 --
 -- AUTO_INCREMENT de la tabla `roles`
@@ -4223,6 +4846,12 @@ ALTER TABLE `estudiantes_representantes`
 ADD CONSTRAINT `fk_est_rep_parentesco` FOREIGN KEY (`id_parentesco`) REFERENCES `parentesco` (`id_parentesco`) ON UPDATE CASCADE,
 ADD CONSTRAINT `fk_estudiantes_representantes_estudiantes` FOREIGN KEY (`id_estudiante`) REFERENCES `estudiantes` (`id_estudiante`),
 ADD CONSTRAINT `fk_estudiantes_representantes_representantes` FOREIGN KEY (`id_representante`) REFERENCES `representantes` (`id_representante`);
+
+--
+-- Filtros para la tabla `globales`
+--
+ALTER TABLE `globales`
+ADD CONSTRAINT `globales_ibfk_1` FOREIGN KEY (`id_periodo`) REFERENCES `periodos` (`id_periodo`);
 
 --
 -- Filtros para la tabla `inscripciones`
