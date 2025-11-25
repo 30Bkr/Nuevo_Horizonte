@@ -26,6 +26,61 @@ try {
 }
 ?>
 <style>
+  .estudiante-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .estudiante-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .estudiante-card.selected {
+    border: 3px solid #007bff !important;
+    background-color: #f8f9fa !important;
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-seleccionar-estudiante {
+    transition: all 0.3s ease;
+  }
+
+  .btn-seleccionar-estudiante:hover {
+    transform: scale(1.05);
+  }
+</style>
+
+<style>
+  .alert-success {
+    border-left: 4px solid #28a745;
+  }
+
+  .alert-danger {
+    border-left: 4px solid #dc3545;
+  }
+
+  .alert-info {
+    border-left: 4px solid #17a2b8;
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* Animación para las cards de estudiantes */
+  .estudiante-card {
+    transition: all 0.3s ease;
+  }
+
+  .estudiante-card.selected {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+</style>
+<style>
   .step {
     display: none;
   }
@@ -287,9 +342,9 @@ try {
                       <button type="submit" class="btn btn-success btn-step" id="btn-submit">
                         <i class="fas fa-save"></i> Registrar Reinscripción
                       </button>
-                      <a href="http://localhost/final/app/controllers/estudiantes" class="btn btn-danger btn-step">
+                      <button type="button" class="btn btn-danger btn-step" id="btn-cancelar">
                         <i class="fas fa-times"></i> Cancelar
-                      </a>
+                      </button>
                     </div>
                   </div>
 
@@ -313,94 +368,7 @@ try {
   </div>
 </div>
 
-<!-- <script>
-  // Reemplaza el event listener del botón submit por esto:
-
-  // Event listener para el envío del formulario
-  document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevenir envío tradicional
-
-    // Mostrar loading en el botón
-    const submitBtn = document.getElementById('btn-submit');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-    submitBtn.disabled = true;
-
-    // Obtener datos del formulario
-    const formData = new FormData(this);
-
-    // Enviar con Fetch
-    fetch('/final/app/controllers/inscripciones/reinscripciong2.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        // Restaurar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-
-        const mensajeDiv = document.getElementById('mensaje-resultado');
-
-        if (data.success) {
-          // Éxito
-          mensajeDiv.innerHTML = `
-                <div class="alert alert-success alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
-                    ${data.message}
-                </div>
-            `;
-          mensajeDiv.style.display = 'block';
-
-          // Opcional: Redirigir después de éxito
-          setTimeout(() => {
-            window.location.href = 'http://localhost/final/app/controllers/estudiantes';
-          }, 2000);
-
-        } else {
-          // Error
-          mensajeDiv.innerHTML = `
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-ban"></i> Error</h5>
-                    ${data.message}
-                </div>
-            `;
-          mensajeDiv.style.display = 'block';
-        }
-
-        // Hacer scroll al mensaje
-        mensajeDiv.scrollIntoView({
-          behavior: 'smooth'
-        });
-      })
-      .catch(error => {
-        // Restaurar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-
-        // Error de conexión
-        const mensajeDiv = document.getElementById('mensaje-resultado');
-        mensajeDiv.innerHTML = `
-            <div class="alert alert-danger alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <h5><i class="icon fas fa-ban"></i> Error de conexión</h5>
-                No se pudo conectar con el servidor. Intente nuevamente.
-            </div>
-        `;
-        mensajeDiv.style.display = 'block';
-        mensajeDiv.scrollIntoView({
-          behavior: 'smooth'
-        });
-
-        console.error('Error:', error);
-      });
-  });
-</script> -->
 <script>
-  // Agrega esto al final del event listener DOMContentLoaded, antes del cierre
-
   // Event listener para el envío del formulario con Fetch
   document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
     e.preventDefault(); // Prevenir envío tradicional
@@ -418,6 +386,13 @@ try {
       }
     });
 
+    // Validar que se haya seleccionado un estudiante
+    const idEstudiante = document.getElementById('id_estudiante_existente').value;
+    if (!idEstudiante) {
+      alert('Por favor seleccione un estudiante');
+      valid = false;
+    }
+
     if (!valid) {
       alert('Por favor complete todos los campos requeridos');
       return;
@@ -431,6 +406,11 @@ try {
 
     // Obtener datos del formulario
     const formData = new FormData(this);
+
+    // Agregar datos adicionales necesarios
+    formData.append('id_estudiante_existente', document.getElementById('id_estudiante_existente').value);
+    formData.append('representante_existente', '1');
+    formData.append('estudiante_existente', '1');
 
     // Enviar con Fetch
     fetch('/final/app/controllers/inscripciones/reinscripciong2.php', {
@@ -456,15 +436,17 @@ try {
                 <div class="alert alert-success alert-dismissible">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                     <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
-                    ${data.message}
+                    ${data.message}<br>
+                    <strong>Estudiante:</strong> ${data.estudiante_nombre || ''}<br>
+                    <strong>ID de Reinscripción:</strong> ${data.id_inscripcion}
                 </div>
             `;
           mensajeDiv.style.display = 'block';
 
-          // Redirigir después de 2 segundos
+          // Redirigir después de 3 segundos
           setTimeout(() => {
             window.location.href = 'http://localhost/final/admin/index.php';
-          }, 2000);
+          }, 3000);
 
         } else {
           // Error
@@ -506,11 +488,139 @@ try {
       });
   });
 </script>
+
 <script>
+  // Event listener para el envío del formulario con Fetch
+  document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevenir envío tradicional
+
+    // Validar que todos los campos requeridos estén llenos
+    const requiredFields = this.querySelectorAll('[required]');
+    let valid = true;
+
+    requiredFields.forEach(field => {
+      if (!field.value.trim()) {
+        valid = false;
+        field.classList.add('is-invalid');
+      } else {
+        field.classList.remove('is-invalid');
+      }
+    });
+
+    // Validar que se haya seleccionado un estudiante
+    const idEstudiante = document.getElementById('id_estudiante_existente').value;
+    if (!idEstudiante) {
+      alert('Por favor seleccione un estudiante');
+      valid = false;
+    }
+
+    if (!valid) {
+      alert('Por favor complete todos los campos requeridos');
+      return;
+    }
+
+    // Mostrar loading en el botón
+    const submitBtn = document.getElementById('btn-submit');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+    submitBtn.disabled = true;
+
+    // Obtener datos del formulario
+    const formData = new FormData(this);
+
+    // Agregar datos adicionales necesarios
+    formData.append('id_estudiante_existente', document.getElementById('id_estudiante_existente').value);
+    formData.append('representante_existente', '1');
+    formData.append('estudiante_existente', '1');
+
+    // Enviar con Fetch
+    fetch('/final/app/controllers/inscripciones/reinscripciong2.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error en la respuesta del servidor');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Restaurar botón
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+
+        const mensajeDiv = document.getElementById('mensaje-resultado');
+
+        if (data.success) {
+          // Éxito
+          mensajeDiv.innerHTML = `
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
+                    ${data.message}<br>
+                    <strong>Estudiante:</strong> ${data.estudiante_nombre || ''}<br>
+                    <strong>ID de Reinscripción:</strong> ${data.id_inscripcion}
+                </div>
+            `;
+          mensajeDiv.style.display = 'block';
+
+          // Redirigir después de 3 segundos
+          setTimeout(() => {
+            window.location.href = 'http://localhost/final/admin/index.php';
+          }, 3000);
+
+        } else {
+          // Error
+          mensajeDiv.innerHTML = `
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h5><i class="icon fas fa-ban"></i> Error</h5>
+                    ${data.message}
+                </div>
+            `;
+          mensajeDiv.style.display = 'block';
+        }
+
+        // Hacer scroll al mensaje
+        mensajeDiv.scrollIntoView({
+          behavior: 'smooth'
+        });
+      })
+      .catch(error => {
+        // Restaurar botón
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+
+        // Error de conexión
+        const mensajeDiv = document.getElementById('mensaje-resultado');
+        mensajeDiv.innerHTML = `
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-ban"></i> Error de conexión</h5>
+                No se pudo conectar con el servidor. Intente nuevamente.
+            </div>
+        `;
+        mensajeDiv.style.display = 'block';
+        mensajeDiv.scrollIntoView({
+          behavior: 'smooth'
+        });
+
+        console.error('Error:', error);
+      });
+  });
+
+  // El resto del código JavaScript que ya tienes
   document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 1;
     const totalSteps = 3;
     let estudiantesData = [];
+
+    // Función para limpiar mensajes de resultado
+    function limpiarMensajes() {
+      const mensajeDiv = document.getElementById('mensaje-resultado');
+      mensajeDiv.style.display = 'none';
+      mensajeDiv.innerHTML = '';
+    }
 
     // Funciones para navegación entre pasos
     function showStep(step) {
@@ -534,19 +644,341 @@ try {
 
     // Event listeners para botones de navegación
     document.getElementById('btn-next-to-step2').addEventListener('click', function() {
+      limpiarMensajes();
       showStep(2);
     });
 
     document.getElementById('btn-next-to-step3').addEventListener('click', function() {
+      limpiarMensajes();
       showStep(3);
     });
 
     document.getElementById('btn-back-to-step1').addEventListener('click', function() {
+      limpiarMensajes();
       showStep(1);
     });
 
     document.getElementById('btn-back-to-step2').addEventListener('click', function() {
+      limpiarMensajes();
       showStep(2);
+    });
+
+    // Event listener para el botón cancelar
+    document.getElementById('btn-cancelar').addEventListener('click', function() {
+      limpiarMensajes();
+
+      // Opcional: Mostrar confirmación antes de cancelar
+      if (confirm('¿Está seguro de que desea cancelar la reinscripción? Los datos no guardados se perderán.')) {
+        window.location.href = 'http://localhost/final/admin/index.php';
+      }
+    });
+
+    // Validar representante
+    document.getElementById('btn-validar-representante').addEventListener('click', function() {
+      const cedula = document.getElementById('cedula_representante').value;
+      if (!cedula) {
+        alert('Por favor ingrese la cédula del representante');
+        return;
+      }
+      validarRepresentante(cedula);
+    });
+
+    function validarRepresentante(cedula) {
+      const formData = new FormData();
+      formData.append('cedula', cedula);
+
+      fetch('/final/app/controllers/representantes/validar2.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          const resultado = document.getElementById('resultado-validacion');
+          const nextButton = document.getElementById('btn-next-to-step2');
+
+          if (data.existe) {
+            resultado.innerHTML = `
+                <div class="alert alert-success">
+                    <strong>Representante encontrado:</strong> ${data.nombre_completo}
+                    <br>Se encontraron ${data.total_estudiantes || 0} estudiante(s) asociado(s).
+                </div>
+                `;
+
+            // Guardar datos del representante
+            document.getElementById('representante_existente').value = '1';
+            document.getElementById('id_direccion_repre').value = data.id_direccion;
+            document.getElementById('id_representante_existente').value = data.id_representante;
+
+            // Mostrar información del representante en el paso 2
+            document.getElementById('datos-representante').innerHTML = `
+                <strong>Nombre:</strong> ${data.nombre_completo}<br>
+                <strong>Cédula:</strong> ${data.cedula}<br>
+                <strong>Teléfono:</strong> ${data.telefono || 'No registrado'}
+                `;
+            document.getElementById('info-representante').style.display = 'block';
+
+            // Cargar estudiantes del representante
+            cargarEstudiantesRepresentante(data.id_representante);
+
+            nextButton.style.display = 'inline-block';
+
+          } else {
+            resultado.innerHTML = `
+                <div class="alert alert-info">
+                    <strong>Representante no encontrado.</strong> Por favor introduzca cédula de identidad válida.
+                </div>
+                `;
+            document.getElementById('representante_existente').value = '0';
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('resultado-validacion').innerHTML = `
+            <div class="alert alert-danger">
+                Error al validar el representante. Intente nuevamente.
+            </div>
+            `;
+        });
+    }
+
+    function cargarEstudiantesRepresentante(idRepresentante) {
+      const formData = new FormData();
+      formData.append('id_representante', idRepresentante);
+
+      fetch('/final/app/controllers/estudiantes/estudiantes_por_representante.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          estudiantesData = data.estudiantes || [];
+          mostrarEstudiantes(estudiantesData);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('lista-estudiantes').innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger">
+                Error al cargar los estudiantes. Intente nuevamente.
+                </div>
+            </div>
+            `;
+        });
+    }
+
+    function mostrarEstudiantes(estudiantes) {
+      const container = document.getElementById('lista-estudiantes');
+
+      if (estudiantes.length === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    No se encontraron estudiantes asociados a este representante.
+                </div>
+            </div>
+            `;
+        return;
+      }
+
+      console.log("Estudiantes para reinscripción:", estudiantes);
+
+      let html = '';
+      estudiantes.forEach(estudiante => {
+        // Manejar datos que pueden ser null/undefined
+        const nivel = estudiante.nombre_nivel || 'No asignado';
+        const seccion = estudiante.nom_seccion || '';
+        const nivelSeccion = seccion ? ` - ${seccion}` : '';
+        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
+
+        // Estado basado en inscripción en período ACTIVO
+        const estado = estudiante.estado_inscripcion || 'No inscrito';
+        const badgeClass = (estado === 'Inscrito') ? 'badge-success' : 'badge-warning';
+
+        html += `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card estudiante-card" data-id="${estudiante.id_estudiante}" 
+                    style="cursor: pointer; border: 1px solid #dee2e6; transition: all 0.3s ease;">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">${estudiante.primer_nombre} ${estudiante.primer_apellido}</h5>
+                    </div>
+                    <div class="card-body estudiante-info">
+                        <p class="mb-1"><strong>Cédula:</strong> ${estudiante.cedula}</p>
+                        <p class="mb-1"><strong>Último Nivel:</strong> ${nivel}${nivelSeccion}</p>
+                        <p class="mb-1"><strong>Período Anterior:</strong> ${periodoAnterior}</p>
+                        <p class="mb-1"><strong>Parentesco:</strong> ${estudiante.parentesco}</p>
+                        <p class="mb-0"><strong>Estado Actual:</strong> 
+                            <span class="badge ${badgeClass}">
+                                ${estado}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
+                                data-id="${estudiante.id_estudiante}">
+                            <i class="fas fa-sync-alt"></i> Reinscribir
+                        </button>
+                    </div>
+                </div>
+            </div>
+            `;
+      });
+
+      container.innerHTML = html;
+
+      // Agregar event listeners a los botones de selección
+      document.querySelectorAll('.btn-seleccionar-estudiante').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const idEstudiante = this.getAttribute('data-id');
+          console.log("Botón clickeado, ID estudiante:", idEstudiante);
+          seleccionarEstudiante(idEstudiante);
+        });
+      });
+
+      // También permitir selección haciendo click en toda la card
+      document.querySelectorAll('.estudiante-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+          if (!e.target.closest('.btn-seleccionar-estudiante')) {
+            const idEstudiante = this.getAttribute('data-id');
+            console.log("Card clickeada, ID estudiante:", idEstudiante);
+            seleccionarEstudiante(idEstudiante);
+          }
+        });
+      });
+
+      console.log("Event listeners agregados a", document.querySelectorAll('.estudiante-card').length, "cards");
+    }
+
+    function seleccionarEstudiante(idEstudiante) {
+      console.log("Intentando seleccionar estudiante ID:", idEstudiante);
+      console.log("Datos disponibles:", estudiantesData);
+
+      const estudiante = estudiantesData.find(e => e.id_estudiante == idEstudiante);
+
+      if (estudiante) {
+        console.log("Estudiante encontrado:", estudiante);
+
+        // Remover selección anterior
+        document.querySelectorAll('.estudiante-card').forEach(card => {
+          card.classList.remove('selected');
+          card.style.border = '1px solid #dee2e6';
+        });
+
+        // Marcar como seleccionado
+        const cardSeleccionada = document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`);
+        if (cardSeleccionada) {
+          cardSeleccionada.classList.add('selected');
+          cardSeleccionada.style.border = '3px solid #007bff';
+          cardSeleccionada.style.backgroundColor = '#f8f9fa';
+        }
+
+        // Actualizar datos del formulario
+        document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
+        document.getElementById('id_direccion_est').value = estudiante.id_direccion || '';
+        document.getElementById('parentesco').value = estudiante.parentesco;
+
+        // Mostrar información del estudiante seleccionado
+        const nivelAnterior = estudiante.nombre_nivel || 'No asignado';
+        const numNivelAnterior = estudiante.num_nivel;
+        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
+
+        document.getElementById('datos-estudiante-seleccionado').innerHTML = `
+                <strong>Nombre completo:</strong> ${estudiante.primer_nombre} ${estudiante.segundo_nombre || ''} ${estudiante.primer_apellido} ${estudiante.segundo_apellido || ''}<br>
+                <strong>Cédula:</strong> ${estudiante.cedula}<br>
+                <strong>Fecha de nacimiento:</strong> ${estudiante.fecha_nac || 'No registrada'}<br>
+                <strong>Parentesco:</strong> ${estudiante.parentesco}<br>
+                <strong>Último nivel cursado:</strong> ${nivelAnterior} (${periodoAnterior})
+            `;
+
+        // Pre-seleccionar nivel siguiente si existe nivel anterior
+        if (numNivelAnterior) {
+          const siguienteNivel = parseInt(numNivelAnterior) + 1;
+          document.getElementById('id_nivel').value = siguienteNivel;
+          console.log("Nivel siguiente seleccionado:", siguienteNivel);
+        } else {
+          document.getElementById('id_nivel').value = 1;
+          console.log("Nivel por defecto seleccionado: 1");
+        }
+
+        // Mostrar botón para continuar
+        document.getElementById('btn-next-to-step3').style.display = 'inline-block';
+        console.log("Botón siguiente mostrado");
+
+        document.getElementById('btn-next-to-step3').scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+
+      } else {
+        console.error("Estudiante no encontrado en los datos. ID:", idEstudiante);
+        alert('Error: No se pudo encontrar la información del estudiante seleccionado.');
+      }
+    }
+  });
+</script>
+
+<!-- <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 3;
+    let estudiantesData = [];
+
+    // Función para limpiar mensajes de resultado
+    function limpiarMensajes() {
+      const mensajeDiv = document.getElementById('mensaje-resultado');
+      mensajeDiv.style.display = 'none';
+      mensajeDiv.innerHTML = '';
+    }
+
+    // Funciones para navegación entre pasos
+    function showStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step${step}`).classList.add('active');
+
+      document.querySelectorAll('#stepIndicator .nav-link').forEach((link, index) => {
+        if (index + 1 === step) {
+          link.classList.add('active');
+        } else if (index + 1 < step) {
+          link.classList.remove('active', 'disabled');
+          link.classList.add('completed');
+        } else {
+          link.classList.remove('active', 'completed');
+          link.classList.add('disabled');
+        }
+      });
+
+      currentStep = step;
+    }
+
+    // Event listeners para botones de navegación
+    document.getElementById('btn-next-to-step2').addEventListener('click', function() {
+      limpiarMensajes();
+      showStep(2);
+    });
+
+    document.getElementById('btn-next-to-step3').addEventListener('click', function() {
+      limpiarMensajes();
+      showStep(3);
+    });
+
+    document.getElementById('btn-back-to-step1').addEventListener('click', function() {
+      limpiarMensajes();
+      showStep(1);
+    });
+
+    document.getElementById('btn-back-to-step2').addEventListener('click', function() {
+      limpiarMensajes();
+      showStep(2);
+    });
+
+    // Event listener para el botón cancelar
+    document.getElementById('btn-cancelar').addEventListener('click', function() {
+      limpiarMensajes();
+
+      // Opcional: Mostrar confirmación antes de cancelar
+      if (confirm('¿Está seguro de que desea cancelar la reinscripción? Los datos no guardados se perderán.')) {
+        window.location.href = 'http://localhost/final/admin/index.php';
+      }
     });
 
     // Validar representante
@@ -647,42 +1079,55 @@ try {
 
       if (estudiantes.length === 0) {
         container.innerHTML = `
-          <div class="col-12">
-            <div class="alert alert-warning">
-              No se encontraron estudiantes asociados a este representante.
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    No se encontraron estudiantes asociados a este representante.
+                </div>
             </div>
-          </div>
         `;
         return;
       }
 
+      console.log("Estudiantes para reinscripción:", estudiantes);
+
       let html = '';
       estudiantes.forEach(estudiante => {
-        const nivelSeccion = estudiante.nivel_seccion ? ` - ${estudiante.nivel_seccion}` : '';
+        // Manejar datos que pueden ser null/undefined
+        const nivel = estudiante.nombre_nivel || 'No asignado';
+        const seccion = estudiante.nom_seccion || '';
+        const nivelSeccion = seccion ? ` - ${seccion}` : '';
+        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
+
+        // Estado basado en inscripción en período ACTIVO
+        const estado = estudiante.estado_inscripcion || 'No inscrito';
+        const badgeClass = (estado === 'Inscrito') ? 'badge-success' : 'badge-warning';
+
         html += `
-          <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card estudiante-card" data-id="${estudiante.id_estudiante}">
-              <div class="card-header">
-                <h5 class="card-title mb-0">${estudiante.primer_nombre} ${estudiante.primer_apellido}</h5>
-              </div>
-              <div class="card-body estudiante-info">
-                <p class="mb-1"><strong>Cédula:</strong> ${estudiante.cedula}</p>
-                <p class="mb-1"><strong>Nivel:</strong> ${estudiante.nombre_nivel || 'No asignado'}${nivelSeccion}</p>
-                <p class="mb-1"><strong>Parentesco:</strong> ${estudiante.parentesco}</p>
-                <p class="mb-0"><strong>Estado:</strong> 
-                  <span class="badge ${estudiante.estatus_inscripcion === '1' ? 'badge-success' : 'badge-secondary'}">
-                    ${estudiante.estatus_inscripcion === '1' ? 'Inscrito' : 'No inscrito'}
-                  </span>
-                </p>
-              </div>
-              <div class="card-footer text-center">
-                <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
-                        data-id="${estudiante.id_estudiante}">
-                  <i class="fas fa-check"></i> Seleccionar
-                </button>
-              </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card estudiante-card" data-id="${estudiante.id_estudiante}" 
+                     style="cursor: pointer; border: 1px solid #dee2e6; transition: all 0.3s ease;">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">${estudiante.primer_nombre} ${estudiante.primer_apellido}</h5>
+                    </div>
+                    <div class="card-body estudiante-info">
+                        <p class="mb-1"><strong>Cédula:</strong> ${estudiante.cedula}</p>
+                        <p class="mb-1"><strong>Último Nivel:</strong> ${nivel}${nivelSeccion}</p>
+                        <p class="mb-1"><strong>Período Anterior:</strong> ${periodoAnterior}</p>
+                        <p class="mb-1"><strong>Parentesco:</strong> ${estudiante.parentesco}</p>
+                        <p class="mb-0"><strong>Estado Actual:</strong> 
+                            <span class="badge ${badgeClass}">
+                                ${estado}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
+                                data-id="${estudiante.id_estudiante}">
+                            <i class="fas fa-sync-alt"></i> Reinscribir
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
         `;
       });
 
@@ -690,87 +1135,95 @@ try {
 
       // Agregar event listeners a los botones de selección
       document.querySelectorAll('.btn-seleccionar-estudiante').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+          e.stopPropagation();
           const idEstudiante = this.getAttribute('data-id');
+          console.log("Botón clickeado, ID estudiante:", idEstudiante);
           seleccionarEstudiante(idEstudiante);
         });
       });
+
+      // También permitir selección haciendo click en toda la card
+      document.querySelectorAll('.estudiante-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+          if (!e.target.closest('.btn-seleccionar-estudiante')) {
+            const idEstudiante = this.getAttribute('data-id');
+            console.log("Card clickeada, ID estudiante:", idEstudiante);
+            seleccionarEstudiante(idEstudiante);
+          }
+        });
+      });
+
+      console.log("Event listeners agregados a", document.querySelectorAll('.estudiante-card').length, "cards");
     }
 
-    // function seleccionarEstudiante(idEstudiante) {
-    //   const estudiante = estudiantesData.find(e => e.id_estudiante == idEstudiante);
-
-    //   if (estudiante) {
-    //     // Remover selección anterior
-    //     document.querySelectorAll('.estudiante-card').forEach(card => {
-    //       card.classList.remove('selected');
-    //     });
-
-    //     // Marcar como seleccionado
-    //     document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`).classList.add('selected');
-
-    //     // Actualizar datos del formulario
-    //     document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
-    //     document.getElementById('id_direccion_est').value = estudiante.id_direccion;
-
-    //     // Mostrar información del estudiante seleccionado
-    //     document.getElementById('datos-estudiante-seleccionado').innerHTML = `
-    //       <strong>Nombre completo:</strong> ${estudiante.primer_nombre} ${estudiante.segundo_nombre || ''} ${estudiante.primer_apellido} ${estudiante.segundo_apellido || ''}<br>
-    //       <strong>Cédula:</strong> ${estudiante.cedula}<br>
-    //       <strong>Fecha de nacimiento:</strong> ${estudiante.fecha_nac || 'No registrada'}<br>
-    //       <strong>Sexo:</strong> ${estudiante.sexo || 'No registrado'}<br>
-    //       <strong>Nivel anterior:</strong> ${estudiante.nombre_nivel || 'No asignado'}
-    //     `;
-
-    //     // Pre-seleccionar nivel siguiente si existe
-    //     if (estudiante.num_nivel) {
-    //       const siguienteNivel = parseInt(estudiante.num_nivel) + 1;
-    //       document.getElementById('id_nivel').value = siguienteNivel;
-    //     }
-
-    //     // Mostrar botón para continuar
-    //     document.getElementById('btn-next-to-step3').style.display = 'inline-block';
-    //   }
-    // }
     function seleccionarEstudiante(idEstudiante) {
+      console.log("Intentando seleccionar estudiante ID:", idEstudiante);
+      console.log("Datos disponibles:", estudiantesData);
+
       const estudiante = estudiantesData.find(e => e.id_estudiante == idEstudiante);
 
       if (estudiante) {
+        console.log("Estudiante encontrado:", estudiante);
+
         // Remover selección anterior
         document.querySelectorAll('.estudiante-card').forEach(card => {
           card.classList.remove('selected');
+          card.style.border = '1px solid #dee2e6';
         });
 
         // Marcar como seleccionado
-        document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`).classList.add('selected');
+        const cardSeleccionada = document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`);
+        if (cardSeleccionada) {
+          cardSeleccionada.classList.add('selected');
+          cardSeleccionada.style.border = '3px solid #007bff';
+          cardSeleccionada.style.backgroundColor = '#f8f9fa';
+        }
 
         // Actualizar datos del formulario
         document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
-        document.getElementById('id_direccion_est').value = estudiante.id_direccion;
-        document.getElementById('parentesco').value = estudiante.parentesco; // ← AGREGAR ESTA LÍNEA
+        document.getElementById('id_direccion_est').value = estudiante.id_direccion || '';
+        document.getElementById('parentesco').value = estudiante.parentesco;
 
         // Mostrar información del estudiante seleccionado
+        const nivelAnterior = estudiante.nombre_nivel || 'No asignado';
+        const numNivelAnterior = estudiante.num_nivel;
+        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
+
         document.getElementById('datos-estudiante-seleccionado').innerHTML = `
             <strong>Nombre completo:</strong> ${estudiante.primer_nombre} ${estudiante.segundo_nombre || ''} ${estudiante.primer_apellido} ${estudiante.segundo_apellido || ''}<br>
             <strong>Cédula:</strong> ${estudiante.cedula}<br>
             <strong>Fecha de nacimiento:</strong> ${estudiante.fecha_nac || 'No registrada'}<br>
-            <strong>Sexo:</strong> ${estudiante.sexo || 'No registrado'}<br>
-            <strong>Parentesco:</strong> ${estudiante.parentesco}<br> <!-- ← AGREGAR ESTA LÍNEA -->
-            <strong>Nivel anterior:</strong> ${estudiante.nombre_nivel || 'No asignado'}
+            <strong>Parentesco:</strong> ${estudiante.parentesco}<br>
+            <strong>Último nivel cursado:</strong> ${nivelAnterior} (${periodoAnterior})
         `;
 
-        // Pre-seleccionar nivel siguiente si existe
-        if (estudiante.num_nivel) {
-          const siguienteNivel = parseInt(estudiante.num_nivel) + 1;
+        // Pre-seleccionar nivel siguiente si existe nivel anterior
+        if (numNivelAnterior) {
+          const siguienteNivel = parseInt(numNivelAnterior) + 1;
           document.getElementById('id_nivel').value = siguienteNivel;
+          console.log("Nivel siguiente seleccionado:", siguienteNivel);
+        } else {
+          document.getElementById('id_nivel').value = 1;
+          console.log("Nivel por defecto seleccionado: 1");
         }
 
         // Mostrar botón para continuar
         document.getElementById('btn-next-to-step3').style.display = 'inline-block';
+        console.log("Botón siguiente mostrado");
+
+        document.getElementById('btn-next-to-step3').scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+
+      } else {
+        console.error("Estudiante no encontrado en los datos. ID:", idEstudiante);
+        alert('Error: No se pudo encontrar la información del estudiante seleccionado.');
       }
     }
   });
-</script>
+</script> -->
 
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
