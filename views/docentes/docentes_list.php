@@ -155,8 +155,9 @@ include_once __DIR__ . '/../../models/Docente.php';
                                                         '<span class="badge badge-success">Activo</span>' : 
                                                         '<span class="badge badge-danger">Inactivo</span>';
                                                     
+                                                    // Botones con los nuevos colores solicitados
                                                     $boton_estado = $row['estatus'] == 1 ? 
-                                                        '<button type="button" class="btn btn-warning btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_docente'] . ', 0)">
+                                                        '<button type="button" class="btn btn-danger btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_docente'] . ', 0)">
                                                             <i class="fas fa-ban"></i>
                                                         </button>' : 
                                                         '<button type="button" class="btn btn-success btn-sm" title="Habilitar" onclick="cambiarEstado(' . $row['id_docente'] . ', 1)">
@@ -174,10 +175,10 @@ include_once __DIR__ . '/../../models/Docente.php';
                                                     echo "<td>{$estado_badge}</td>";
                                                     echo "<td>
                                                             <div class='btn-group'>
-                                                                <a href='docente_editar.php?id={$row['id_docente']}' class='btn btn-info btn-sm' title='Editar'>
+                                                                <a href='docente_editar.php?id={$row['id_docente']}' class='btn btn-warning btn-sm' title='Editar'>
                                                                     <i class='fas fa-edit'></i>
                                                                 </a>
-                                                                <a href='docente_ver.php?id={$row['id_docente']}' class='btn btn-secondary btn-sm' title='Ver'>
+                                                                <a href='docente_ver.php?id={$row['id_docente']}' class='btn btn-primary btn-sm' title='Ver'>
                                                                     <i class='fas fa-eye'></i>
                                                                 </a>
                                                                 {$boton_estado}
