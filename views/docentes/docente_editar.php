@@ -131,43 +131,51 @@ if (!$docente_encontrado) {
                                             <div class="form-group">
                                                 <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" 
-                                                       value="<?php echo htmlspecialchars($docente->primer_nombre); ?>" required>
+                                                       value="<?php echo htmlspecialchars($docente->primer_nombre); ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">El primer nombre no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="segundo_nombre">Segundo Nombre</label>
                                                 <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre" 
-                                                       value="<?php echo htmlspecialchars($docente->segundo_nombre); ?>">
+                                                       value="<?php echo htmlspecialchars($docente->segundo_nombre); ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">El segundo nombre no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="primer_apellido">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="primer_apellido" name="primer_apellido" 
-                                                       value="<?php echo htmlspecialchars($docente->primer_apellido); ?>" required>
+                                                       value="<?php echo htmlspecialchars($docente->primer_apellido); ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">El primer apellido no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="segundo_apellido">Segundo Apellido</label>
                                                 <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido" 
-                                                       value="<?php echo htmlspecialchars($docente->segundo_apellido); ?>">
+                                                       value="<?php echo htmlspecialchars($docente->segundo_apellido); ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">El segundo apellido no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="sexo">Sexo</label>
-                                                <select class="form-control" id="sexo" name="sexo">
+                                                <select class="form-control" id="sexo" name="sexo" disabled style="background-color: #e9ecef;">
                                                     <option value="">Seleccionar...</option>
                                                     <option value="Masculino" <?php echo ($docente->sexo == 'Masculino') ? 'selected' : ''; ?>>Masculino</option>
                                                     <option value="Femenino" <?php echo ($docente->sexo == 'Femenino') ? 'selected' : ''; ?>>Femenino</option>
                                                 </select>
+                                                <input type="hidden" name="sexo" value="<?php echo htmlspecialchars($docente->sexo); ?>">
+                                                <small class="form-text text-muted">El sexo no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="nacionalidad">Nacionalidad</label>
-                                                <select class="form-control" id="nacionalidad" name="nacionalidad">
+                                                <select class="form-control" id="nacionalidad" name="nacionalidad" disabled style="background-color: #e9ecef;">
                                                     <option value="">Seleccionar...</option>
                                                     <option value="Venezolano" <?php echo ($docente->nacionalidad == 'Venezolano') ? 'selected' : ''; ?>>Venezolano</option>
                                                     <option value="Extranjero" <?php echo ($docente->nacionalidad == 'Extranjero') ? 'selected' : ''; ?>>Extranjero</option>
                                                 </select>
+                                                <input type="hidden" name="nacionalidad" value="<?php echo htmlspecialchars($docente->nacionalidad); ?>">
+                                                <small class="form-text text-muted">La nacionalidad no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
@@ -180,13 +188,15 @@ if (!$docente_encontrado) {
                                             <div class="form-group">
                                                 <label for="fecha_nac">Fecha de Nacimiento</label>
                                                 <input type="date" class="form-control" id="fecha_nac" name="fecha_nac" 
-                                                       value="<?php echo $docente->fecha_nac; ?>">
+                                                       value="<?php echo $docente->fecha_nac; ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">La fecha de nacimiento no se puede editar después del registro</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="lugar_nac">Lugar de Nacimiento</label>
                                                 <input type="text" class="form-control" id="lugar_nac" name="lugar_nac" 
-                                                       value="<?php echo htmlspecialchars($docente->lugar_nac); ?>">
+                                                       value="<?php echo htmlspecialchars($docente->lugar_nac); ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">El lugar de nacimiento no se puede editar después del registro</small>
                                             </div>
                                         </div>
 
@@ -215,7 +225,7 @@ if (!$docente_encontrado) {
 
                                             <div class="form-group">
                                                 <label for="id_profesion">Profesión <span class="text-danger">* (Obligatorio)</span></label>
-                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;" required>
+                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;" disabled style="background-color: #e9ecef;">
                                                     <option value="">Seleccionar profesión...</option>
                                                     <?php
                                                     $profesiones = $docente->obtenerProfesiones();
@@ -225,6 +235,8 @@ if (!$docente_encontrado) {
                                                     }
                                                     ?>
                                                 </select>
+                                                <input type="hidden" name="id_profesion" value="<?php echo $docente->id_profesion; ?>">
+                                                <small class="form-text text-muted">La profesión no se puede editar después del registro</small>
                                             </div>
                                         </div>
                                     </div>
@@ -279,7 +291,7 @@ if (!$docente_encontrado) {
 
                                             <div class="alert alert-info">
                                                 <h6><i class="icon fas fa-info"></i> Información</h6>
-                                                El nombre de usuario se genera automáticamente con la cédula del docente y no puede ser modificado.
+                                                Los siguientes datos no se pueden editar después del registro: nombres, apellidos, cédula, sexo, nacionalidad, fecha de nacimiento, lugar de nacimiento y profesión.
                                             </div>
                                         </div>
                                     </div>
