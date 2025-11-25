@@ -119,56 +119,56 @@ class PeriodoController
     }
   }
 
-  public function generarPeriodosAutomaticos($fechaInicio, $aniosFuturos)
-  {
-    try {
-      $periodosCreados = [];
-      $fechaActual = new DateTime($fechaInicio);
+  // public function generarPeriodosAutomaticos($fechaInicio, $aniosFuturos)
+  // {
+  //   try {
+  //     $periodosCreados = [];
+  //     $fechaActual = new DateTime($fechaInicio);
 
-      // Obtener el último periodo para empezar desde ahí
-      $stmtUltimo = $this->conn->prepare("SELECT fecha_fin FROM periodos ORDER BY fecha_fin DESC LIMIT 1");
-      $stmtUltimo->execute();
-      $ultimoPeriodo = $stmtUltimo->fetch(PDO::FETCH_ASSOC);
+  //     // Obtener el último periodo para empezar desde ahí
+  //     $stmtUltimo = $this->conn->prepare("SELECT fecha_fin FROM periodos ORDER BY fecha_fin DESC LIMIT 1");
+  //     $stmtUltimo->execute();
+  //     $ultimoPeriodo = $stmtUltimo->fetch(PDO::FETCH_ASSOC);
 
-      if ($ultimoPeriodo) {
-        $fechaActual = new DateTime($ultimoPeriodo['fecha_fin']);
-        $fechaActual->modify('+1 day'); // Empezar al día siguiente del último periodo
-      }
+  //     if ($ultimoPeriodo) {
+  //       $fechaActual = new DateTime($ultimoPeriodo['fecha_fin']);
+  //       $fechaActual->modify('+1 day'); // Empezar al día siguiente del último periodo
+  //     }
 
-      for ($i = 1; $i <= $aniosFuturos; $i++) {
-        $fechaIniPeriodo = clone $fechaActual;
-        $fechaFinPeriodo = clone $fechaActual;
-        $fechaFinPeriodo->modify('+10 months'); // Aproximadamente un año escolar
+  //     for ($i = 1; $i <= $aniosFuturos; $i++) {
+  //       $fechaIniPeriodo = clone $fechaActual;
+  //       $fechaFinPeriodo = clone $fechaActual;
+  //       $fechaFinPeriodo->modify('+10 months'); // Aproximadamente un año escolar
 
-        $descripcion = 'Año Escolar ' . $fechaIniPeriodo->format('Y') . '-' . $fechaFinPeriodo->format('Y');
+  //       $descripcion = 'Año Escolar ' . $fechaIniPeriodo->format('Y') . '-' . $fechaFinPeriodo->format('Y');
 
-        $resultado = $this->crearPeriodo(
-          $descripcion,
-          $fechaIniPeriodo->format('Y-m-d'),
-          $fechaFinPeriodo->format('Y-m-d')
-        );
+  //       $resultado = $this->crearPeriodo(
+  //         $descripcion,
+  //         $fechaIniPeriodo->format('Y-m-d'),
+  //         $fechaFinPeriodo->format('Y-m-d')
+  //       );
 
-        if ($resultado['success']) {
-          $periodosCreados[] = $descripcion;
-        }
+  //       if ($resultado['success']) {
+  //         $periodosCreados[] = $descripcion;
+  //       }
 
-        // Preparar siguiente periodo (empezar después del fin del actual)
-        $fechaActual = clone $fechaFinPeriodo;
-        $fechaActual->modify('+2 months'); // Vacaciones entre periodos
-      }
+  //       // Preparar siguiente periodo (empezar después del fin del actual)
+  //       $fechaActual = clone $fechaFinPeriodo;
+  //       $fechaActual->modify('+2 months'); // Vacaciones entre periodos
+  //     }
 
-      return [
-        'success' => true,
-        'message' => 'Se crearon ' . count($periodosCreados) . ' periodos automáticamente',
-        'periodos_creados' => $periodosCreados
-      ];
-    } catch (Exception $e) {
-      return [
-        'success' => false,
-        'message' => 'Error al generar periodos automáticos: ' . $e->getMessage()
-      ];
-    }
-  }
+  //     return [
+  //       'success' => true,
+  //       'message' => 'Se crearon ' . count($periodosCreados) . ' periodos automáticamente',
+  //       'periodos_creados' => $periodosCreados
+  //     ];
+  //   } catch (Exception $e) {
+  //     return [
+  //       'success' => false,
+  //       'message' => 'Error al generar periodos automáticos: ' . $e->getMessage()
+  //     ];
+  //   }
+  // }
 
   public function obtenerEstadisticasPeriodos()
   {

@@ -51,17 +51,6 @@ try {
       }
       break;
 
-    case 'generar_automaticos':
-      $fechaInicio = $_POST['fecha_inicio'] ?? '';
-      $aniosFuturos = intval($_POST['anios_futuros'] ?? 0);
-
-      if (empty($fechaInicio) || $aniosFuturos <= 0) {
-        $response = ['success' => false, 'message' => 'Fecha de inicio y años futuros son requeridos'];
-      } else {
-        $response = $periodoController->generarPeriodosAutomaticos($fechaInicio, $aniosFuturos);
-      }
-      break;
-
     default:
       $response = ['success' => false, 'message' => 'Acción no reconocida'];
       break;

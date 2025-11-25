@@ -43,9 +43,6 @@ try {
               <button class="btn btn-primary mr-2" onclick="abrirModalCrear()">
                 <i class="fas fa-plus mr-1"></i> Crear Periodo
               </button>
-              <button class="btn btn-success" onclick="abrirModalGenerarAutomaticos()">
-                <i class="fas fa-magic mr-1"></i> Generar Automáticamente
-              </button>
             </div>
           </div>
         </div>
@@ -245,6 +242,71 @@ try {
               <div class="form-group">
                 <label for="descripcion_periodo">Descripción del Periodo:</label>
                 <input type="text" class="form-control" id="descripcion_periodo" name="descripcion"
+                  placeholder="La descripción se generará automáticamente" readonly required>
+                <small class="form-text text-muted">
+                  La descripción se genera automáticamente basada en las fechas seleccionadas
+                </small>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="fecha_ini">Fecha de Inicio:</label>
+                <input type="date" class="form-control" id="fecha_ini" name="fecha_ini" required
+                  onchange="actualizarDescripcion()">
+                <small class="form-text text-muted">
+                  Fecha en que inicia el periodo académico
+                </small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="fecha_fin">Fecha de Fin:</label>
+                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required
+                  onchange="actualizarDescripcion()">
+                <small class="form-text text-muted">
+                  Fecha en que finaliza el periodo académico
+                </small>
+              </div>
+            </div>
+          </div>
+          <div class="alert alert-info" id="infoUltimoPeriodo">
+            <i class="fas fa-info-circle mr-2"></i>
+            <span id="textoInfoUltimoPeriodo">Cargando información del último periodo...</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times mr-1"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save mr-1"></i> Crear Periodo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- <div class="modal fade" id="modalCrear" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-plus-circle mr-2"></i>
+          Crear Nuevo Periodo Académico
+        </h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form id="formCrear" onsubmit="crearPeriodo(event)">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="descripcion_periodo">Descripción del Periodo:</label>
+                <input type="text" class="form-control" id="descripcion_periodo" name="descripcion"
                   placeholder="Ej: Año Escolar 2024-2025, Semestre 2024-B..." required>
                 <small class="form-text text-muted">
                   Ingresa una descripción clara del periodo académico
@@ -288,7 +350,7 @@ try {
       </form>
     </div>
   </div>
-</div>
+</div> -->
 
 <!-- Modal Generar Periodos Automáticos -->
 <div class="modal fade" id="modalGenerarAutomaticos" tabindex="-1" role="dialog">
@@ -415,17 +477,86 @@ try {
   function abrirModalCrear() {
     // Cargar información del último periodo
     cargarInfoUltimoPeriodo();
+    // Establecer límites de fecha
+    establecerLimitesFechas();
+
     $('#modalCrear').modal('show');
   }
 
-  function abrirModalGenerarAutomaticos() {
-    // Establecer fecha mínima como hoy
-    const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('fecha_inicio').min = hoy;
-    document.getElementById('fecha_inicio').value = hoy;
+  function establecerLimitesFechas() {
+    const hoy = new Date();
+    const anioActual = hoy.getFullYear();
+    const anioSiguiente = anioActual + 1;
 
-    $('#modalGenerarAutomaticos').modal('show');
+    // Establecer fecha mínima como 1ero de septiembre del año actual
+    const fechaMinima = new Date(anioActual, 8, 1); // Septiembre es mes 8 (0-indexed)
+    // Establecer fecha máxima como 31 de julio del año siguiente
+    const fechaMaxima = new Date(anioSiguiente, 6, 31); // Julio es mes 6 (0-indexed)
+
+    const fechaIniInput = document.getElementById('fecha_ini');
+    const fechaFinInput = document.getElementById('fecha_fin');
+
+    // Formatear fechas para input type="date" (YYYY-MM-DD)
+    fechaIniInput.min = fechaMinima.toISOString().split('T')[0];
+    fechaIniInput.max = fechaMaxima.toISOString().split('T')[0];
+    fechaFinInput.min = fechaMinima.toISOString().split('T')[0];
+    fechaFinInput.max = fechaMaxima.toISOString().split('T')[0];
+
+    // Establecer valores por defecto (periodo escolar típico)
+    const fechaIniDefault = new Date(anioActual, 8, 15); // 15 de Septiembre
+    const fechaFinDefault = new Date(anioSiguiente, 6, 15); // 15 de Julio
+
+    fechaIniInput.value = fechaIniDefault.toISOString().split('T')[0];
+    fechaFinInput.value = fechaFinDefault.toISOString().split('T')[0];
+
+    // Generar descripción inicial
+    actualizarDescripcion();
   }
+
+  function actualizarDescripcion() {
+    const fechaIni = document.getElementById('fecha_ini').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    const descripcionInput = document.getElementById('descripcion_periodo');
+
+    if (fechaIni && fechaFin) {
+      const anioIni = new Date(fechaIni).getFullYear();
+      const anioFin = new Date(fechaFin).getFullYear();
+
+      // Formato: "Año Escolar 2024-2025"
+      descripcionInput.value = `Año Escolar ${anioIni}-${anioFin}`;
+    }
+  }
+
+  async function cargarInfoUltimoPeriodo() {
+    try {
+      const response = await fetch('../../../app/controllers/periodos/accionesPeriodos.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=obtener_todos'
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data.periodos.length > 0) {
+        const ultimoPeriodo = result.data.periodos[0];
+        const fechaFinUltimo = new Date(ultimoPeriodo.fecha_fin);
+
+        // Actualizar texto informativo
+        document.getElementById('textoInfoUltimoPeriodo').innerHTML =
+          `El último periodo registrado: <strong>"${ultimoPeriodo.descripcion_periodo}"</strong><br>
+                 Finaliza el: <strong>${fechaFinUltimo.toLocaleDateString('es-ES')}</strong>`;
+      } else {
+        document.getElementById('textoInfoUltimoPeriodo').textContent =
+          'No hay periodos anteriores registrados.';
+      }
+    } catch (error) {
+      document.getElementById('textoInfoUltimoPeriodo').textContent =
+        'Error al cargar información del último periodo.';
+    }
+  }
+
 
   function activarPeriodo(id, descripcion) {
     periodoSeleccionado = {

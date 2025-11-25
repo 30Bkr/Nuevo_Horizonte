@@ -333,6 +333,15 @@ try {
                     </div>
                   </div>
 
+                  <!-- Información del parentesco -->
+                  <div class="row mt-3">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="parentesco">Parentesco con el Estudiante</label>
+                        <input type="text" name="parentesco" id="parentesco" class="form-control" required readonly>
+                      </div>
+                    </div>
+                  </div>
                   <!-- Botones de navegación y envío -->
                   <div class="row mt-4">
                     <div class="col-md-12 text-right">
@@ -348,15 +357,7 @@ try {
                     </div>
                   </div>
 
-                  <!-- Información del parentesco -->
-                  <div class="row mt-3">
-                    <div class="col-md-6">
-                      <div class="form-group">
-                        <label for="parentesco">Parentesco con el Estudiante</label>
-                        <input type="text" name="parentesco" id="parentesco" class="form-control" required readonly>
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </div>
