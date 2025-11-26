@@ -413,8 +413,8 @@ try {
 
                     <div class="col-md-6">
                       <div class="form-group">
-                        <label for="ci_si">¿El alumno cuenta con cédula de identidad?</label>
-                        <select name="ci_si" id="ci_si" class="form-control">
+                        <label for="ci_si">¿El alumno cuenta con cédula de identidad? <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                        <select name="ci_si" id="ci_si" class="form-control" required>
                           <option value="">Seleccionar...</option>
                           <option value="si">Sí</option>
                           <option value="no">No</option>
@@ -432,7 +432,7 @@ try {
                   <div class="row">
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="primer_nombre_e">Primer Nombre</label>
+                        <label for="primer_nombre_e">Primer Nombre <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="primer_nombre_e" class="form-control" required>
                       </div>
                     </div>
@@ -444,7 +444,7 @@ try {
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="primer_apellido_e">Primer Apellido</label>
+                        <label for="primer_apellido_e">Primer Apellido <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="primer_apellido_e" class="form-control" required>
                       </div>
                     </div>
@@ -460,7 +460,7 @@ try {
 
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="nacionalidad_e">Nacionalidad</label>
+                        <label for="nacionalidad_e">Nacionalidad <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <select name="nacionalidad_e" class="form-control" required>
                           <option value="">Seleccionar</option>
                           <option value="Venezolano">Venezolano</option>
@@ -470,7 +470,7 @@ try {
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="fecha_nac_e">Fecha de Nacimiento</label>
+                        <label for="fecha_nac_e">Fecha de Nacimiento </label>
                         <input type="date" name="fecha_nac_e" id="fecha_nac_e" class="form-control" required>
                       </div>
                     </div>
@@ -490,7 +490,7 @@ try {
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="sexo_e">Sexo</label>
+                        <label for="sexo_e">Sexo <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <select name="sexo_e" class="form-control" required>
                           <option value="">Seleccionar</option>
                           <option value="Femenino">Femenino</option>
@@ -503,7 +503,7 @@ try {
                   <div class="row">
                     <div class="col-md-4">
                       <div class="form-group">
-                        <label for="lugar_nac_e">Lugar de Nacimiento</label>
+                        <label for="lugar_nac_e">Lugar de Nacimiento <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="lugar_nac_e" class="form-control" required>
                       </div>
                     </div>
@@ -643,7 +643,7 @@ try {
                       <div class="row">
                         <div class="col-md-4">
                           <div class="form-group">
-                            <label for="id_periodo">Período Académico</label>
+                            <label for="id_periodo">Período Académico <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                             <select name="id_periodo" class="form-control" required>
                               <option value="">Seleccionar Período</option>
                               <?php
@@ -661,7 +661,7 @@ try {
                         </div>
                         <div class="col-md-4">
                           <div class="form-group">
-                            <label for="id_nivel">Nivel/Grado</label>
+                            <label for="id_nivel">Nivel/Grado <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                             <select name="id_nivel" id="id_nivel" class="form-control" required>
                               <option value="">Seleccionar Nivel</option>
                               <?php
@@ -675,7 +675,7 @@ try {
                         </div>
                         <div class="col-md-4">
                           <div class="form-group">
-                            <label for="id_seccion">Sección</label>
+                            <label for="id_seccion">Sección <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                             <select name="id_seccion" class="form-control" required>
                               <option value="">Seleccionar Sección</option>
                               <?php

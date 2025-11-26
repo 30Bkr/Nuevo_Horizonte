@@ -515,12 +515,12 @@ try {
     error_log("Transacción revertida debido a error: " . $e->getMessage());
   }
 
-  error_log("Error en REinscripción: " . $e->getMessage());
+  error_log("Error en inscripción: " . $e->getMessage());
 
   http_response_code(400);
   echo json_encode([
     'success' => false,
-    'message' => 'Error en la REinscripción: ' . $e->getMessage()
+    'message' => 'Error en la inscripción: ' . $e->getMessage()
   ]);
 } finally {
   // Cerrar conexión si existe
