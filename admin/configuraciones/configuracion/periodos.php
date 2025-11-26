@@ -622,54 +622,6 @@ try {
     }
   }
 
-  async function generarPeriodosAutomaticos(event) {
-    event.preventDefault();
-
-    const formData = new FormData(event.target);
-    const fechaInicio = formData.get('fecha_inicio');
-    const aniosFuturos = formData.get('anios_futuros');
-
-    if (!fechaInicio || !aniosFuturos) {
-      mostrarMensaje('Todos los campos son requeridos', 'error');
-      return;
-    }
-
-    const boton = event.target.querySelector('button[type="submit"]');
-    boton.disabled = true;
-    boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Generando...';
-
-    try {
-      const response = await fetch('../../../app/controllers/periodos/accionesPeriodos.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `action=generar_automaticos&fecha_inicio=${fechaInicio}&anios_futuros=${aniosFuturos}`
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        let mensaje = result.message;
-        if (result.periodos_creados && result.periodos_creados.length > 0) {
-          mensaje += '<br><strong>Periodos creados:</strong><br>' + result.periodos_creados.join('<br>');
-        }
-
-        mostrarMensaje(mensaje, 'success');
-        $('#modalGenerarAutomaticos').modal('hide');
-        event.target.reset();
-        recargarPeriodos();
-      } else {
-        mostrarMensaje(result.message, 'error');
-      }
-    } catch (error) {
-      mostrarMensaje('Error de conexión: ' + error.message, 'error');
-    } finally {
-      boton.disabled = false;
-      boton.innerHTML = '<i class="fas fa-bolt mr-1"></i> Generar Periodos';
-    }
-  }
-
   async function confirmarActivacion() {
     if (!periodoSeleccionado) return;
 
