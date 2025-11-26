@@ -235,7 +235,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </a>
               <ul class="nav nav-treeview">
                 <li class="nav-item">
-                  <a href="<?= URL; ?>/views/grados/grados_list.php" class="nav-link">
+                  <a href="<?= URL; ?>/views/grados/grados_list_solo_lectura.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Listado</p>
                   </a>
