@@ -429,32 +429,6 @@ try {
                   <h3 class="card-title"><b>Paso 3: Datos del Estudiante</b></h3>
                 </div>
                 <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="primer_nombre_e">Primer Nombre <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
-                        <input type="text" name="primer_nombre_e" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="segundo_nombre_e">Segundo Nombre</label>
-                        <input type="text" name="segundo_nombre_e" class="form-control">
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="primer_apellido_e">Primer Apellido <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
-                        <input type="text" name="primer_apellido_e" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="segundo_apellido_e">Segundo Apellido</label>
-                        <input type="text" name="segundo_apellido_e" class="form-control">
-                      </div>
-                    </div>
-                  </div>
 
                   <div class="row">
 
@@ -483,10 +457,6 @@ try {
                           Si el estudiante no tiene cédula, seleccione "No" y se generará una cédula escolar automáticamente
                         </small>
                       </div>
-                      <!-- <div class="form-group">
-                        <label for="cedula_e">Cédula de Identidad</label>
-                        <input type="text" name="cedula_e" id="cedula_e" class="form-control" required>
-                      </div> -->
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
@@ -499,6 +469,34 @@ try {
                       </div>
                     </div>
                   </div>
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="primer_nombre_e">Primer Nombre <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                        <input type="text" name="primer_nombre_e" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="segundo_nombre_e">Segundo Nombre</label>
+                        <input type="text" name="segundo_nombre_e" class="form-control">
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="primer_apellido_e">Primer Apellido <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                        <input type="text" name="primer_apellido_e" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="segundo_apellido_e">Segundo Apellido</label>
+                        <input type="text" name="segundo_apellido_e" class="form-control">
+                      </div>
+                    </div>
+                  </div>
+
+
 
                   <div class="row">
                     <div class="col-md-4">
@@ -709,7 +707,7 @@ try {
                         </div>
                         <div class="col-md-4">
                           <div class="form-group">
-                            <label for="id_nivel">Nivel/Grado <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                            <label for="id_nivel">Grado/Año<span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                             <select name="id_nivel" id="id_nivel" class="form-control" required>
                               <option value="">Seleccionar Nivel</option>
                               <?php
