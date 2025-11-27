@@ -61,7 +61,9 @@ include_once('./layout/layaout2.php')
 <!-- Terminar de agregar todos los campos del formulario y quitar la edicion del usuario.  -->
 <!-- cambiar el boton de borrar a tipo switch una vaina asi (habilitar e inhabilitar) -->
 
+<!-- Periodos -->
 
+<!-- Funcionalidad en donde no permita registrar un nuevo periodo si no ha iniciado el anterior  -->
 
 
 

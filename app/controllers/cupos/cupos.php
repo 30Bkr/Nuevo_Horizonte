@@ -178,4 +178,38 @@ class CuposController
       ];
     }
   }
+  public function obtenerSeccionesPorNivel($id_nivel)
+  {
+    try {
+      $sql = "
+            SELECT 
+                ns.id_nivel_seccion,
+                s.id_seccion,
+                s.nom_seccion,
+                ns.capacidad,
+                n.nom_nivel
+            FROM niveles_secciones ns
+            INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+            INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+            WHERE ns.id_nivel = ? AND ns.estatus = 1 AND s.estatus = 1
+            ORDER BY s.nom_seccion
+        ";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_nivel]);
+      $secciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+      return [
+        'success' => true,
+        'secciones' => $secciones
+      ];
+    } catch (PDOException $e) {
+      error_log("Error en obtenerSeccionesPorNivel: " . $e->getMessage());
+      return [
+        'success' => false,
+        'message' => 'Error al obtener secciones por nivel',
+        'secciones' => []
+      ];
+    }
+  }
 }
