@@ -185,13 +185,6 @@ try {
                   <input type="hidden" name="id_representante_existente_esc" id="id_representante_existente_esc" value="">
 
                   <div class="row">
-
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="fecha_nac_r">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nac_r" id="fecha_nac_r" class="form-control" required>
-                      </div>
-                    </div>
                     <div class="col-md-3">
                       <div class="form-group">
                         <label for="nacionalidad_r">Nacionalidad</label>
@@ -216,6 +209,12 @@ try {
                           <option value="Masculino">Masculino</option>
                           <option value="Femenino">Femenino</option>
                         </select>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="fecha_nac_r">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nac_r" id="fecha_nac_r" class="form-control" required>
                       </div>
                     </div>
                   </div>
@@ -520,7 +519,7 @@ try {
                     <div class="col-md-4">
                       <div class="form-group">
                         <label for="correo_e">Correo Electrónico</label>
-                        <input type="email" name="correo_e" class="form-control">
+                        <input type="email" name="correo_e" class="form-control" required>
                       </div>
                     </div>
                   </div>
