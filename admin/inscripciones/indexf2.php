@@ -185,33 +185,6 @@ try {
                   <input type="hidden" name="id_representante_existente_esc" id="id_representante_existente_esc" value="">
 
                   <div class="row">
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="primer_nombre_r">Primer Nombre</label>
-                        <input type="text" name="primer_nombre_r" id="primer_nombre_r" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="segundo_nombre_r">Segundo Nombre</label>
-                        <input type="text" name="segundo_nombre_r" id="segundo_nombre_r" class="form-control">
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="primer_apellido_r">Primer Apellido</label>
-                        <input type="text" name="primer_apellido_r" id="primer_apellido_r" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="segundo_apellido_r">Segundo Apellido</label>
-                        <input type="text" name="segundo_apellido_r" id="segundo_apellido_r" class="form-control">
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row">
 
                     <div class="col-md-3">
                       <div class="form-group">
@@ -246,6 +219,35 @@ try {
                       </div>
                     </div>
                   </div>
+
+
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="primer_nombre_r">Primer Nombre</label>
+                        <input type="text" name="primer_nombre_r" id="primer_nombre_r" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="segundo_nombre_r">Segundo Nombre</label>
+                        <input type="text" name="segundo_nombre_r" id="segundo_nombre_r" class="form-control">
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="primer_apellido_r">Primer Apellido</label>
+                        <input type="text" name="primer_apellido_r" id="primer_apellido_r" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="segundo_apellido_r">Segundo Apellido</label>
+                        <input type="text" name="segundo_apellido_r" id="segundo_apellido_r" class="form-control">
+                      </div>
+                    </div>
+                  </div>
+
 
                   <div class="row">
                     <div class="col-md-3">
