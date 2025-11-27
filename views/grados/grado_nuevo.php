@@ -17,14 +17,14 @@ if ($_POST && isset($_POST['guardar_grado'])) {
         
         // Verificar si ya existe la combinación
         if ($grado->existeCombinacion($grado->id_nivel, $grado->id_seccion)) {
-            $_SESSION['error'] = "Ya existe un grado con esta combinación de nivel y sección.";
+            $_SESSION['error'] = "Ya existe un grado/año con esta combinación de nivel y sección.";
         } else {
             if ($grado->crear()) {
-                $_SESSION['success'] = "Grado/sección creado exitosamente.";
+                $_SESSION['success'] = "Grado/año/sección creado exitosamente.";
                 header("Location: grados_list.php");
                 exit();
             } else {
-                $_SESSION['error'] = "No se pudo crear el grado/sección.";
+                $_SESSION['error'] = "No se pudo crear el grado/año/sección.";
             }
         }
     } catch (Exception $e) {
@@ -113,7 +113,7 @@ try {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Nuevo Grado - Nuevo Horizonte</title>
+    <title>Nuevo Grado/Año - Nuevo Horizonte</title>
     
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -137,10 +137,10 @@ try {
                 <a href="/final/index.php" class="nav-link">Inicio</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="grados_list.php" class="nav-link">Grados</a>
+                <a href="grados_list.php" class="nav-link">Grados/Años</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="#" class="nav-link active">Nuevo Grado</a>
+                <a href="#" class="nav-link active">Nuevo Grado/Año</a>
             </li>
         </ul>
     </nav>
@@ -168,7 +168,7 @@ try {
                     <li class="nav-item">
                         <a href="grados_list.php" class="nav-link active">
                             <i class="nav-icon fas fa-graduation-cap"></i>
-                            <p>Grados</p>
+                            <p>Grados/Años</p>
                         </a>
                     </li>
                 </ul>
@@ -182,12 +182,12 @@ try {
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Nuevo Grado/Sección</h1>
+                        <h1>Nuevo Grado/Año/Sección</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                            <li class="breadcrumb-item"><a href="grados_list.php">Grados</a></li>
+                            <li class="breadcrumb-item"><a href="grados_list.php">Grados/Años</a></li>
                             <li class="breadcrumb-item active">Nuevo</li>
                         </ol>
                     </div>
@@ -220,15 +220,15 @@ try {
                         <!-- Formulario Principal para Crear Grado/Sección -->
                         <div class="card card-primary">
                             <div class="card-header">
-                                <h3 class="card-title">Registrar Nuevo Grado/Sección</h3>
+                                <h3 class="card-title">Registrar Nuevo Grado/Año/Sección</h3>
                             </div>
                             <form method="post" action="grado_nuevo.php" id="formGrado">
                                 <div class="card-body">
                                     <div class="form-group">
-                                        <label for="id_nivel">Grado/Nivel:</label>
+                                        <label for="id_nivel">Grado/Año:</label>
                                         <div class="input-group">
                                             <select class="form-control" id="id_nivel" name="id_nivel" required onchange="validarCombinacion()">
-                                                <option value="">Seleccione un grado</option>
+                                                <option value="">Seleccione un grado/año</option>
                                                 <?php 
                                                 if (isset($niveles)) {
                                                     while ($nivel = $niveles->fetch(PDO::FETCH_ASSOC)): 
@@ -288,7 +288,7 @@ try {
                                 </div>
                                 <div class="card-footer">
                                     <button type="submit" name="guardar_grado" class="btn btn-primary" id="btnGuardar">
-                                        <i class="fas fa-save"></i> Guardar Grado/Sección
+                                        <i class="fas fa-save"></i> Guardar Grado/Año/Sección
                                     </button>
                                     <a href="grados_list.php" class="btn btn-default">
                                         <i class="fas fa-arrow-left"></i> Cancelar
@@ -304,14 +304,14 @@ try {
                                 <h3 class="card-title">Información</h3>
                             </div>
                             <div class="card-body">
-                                <p><strong>Grado/Nivel:</strong> Corresponde al año académico (1er Grado, 2do Grado, etc.)</p>
+                                <p><strong>Grado/Año:</strong> Corresponde al año académico (1er Grado, 2do Grado, etc.)</p>
                                 <p><strong>Sección:</strong> Letra que identifica el grupo (A, B, C, etc.)</p>
                                 <p><strong>Capacidad:</strong> Número máximo de estudiantes que puede tener la sección</p>
                                 <div class="alert alert-warning">
-                                    <small><i class="icon fas fa-exclamation-triangle"></i> No se puede crear una combinación de grado y sección que ya existe.</small>
+                                    <small><i class="icon fas fa-exclamation-triangle"></i> No se puede crear una combinación de grado/año y sección que ya existe.</small>
                                 </div>
                                 <div class="alert alert-info">
-                                    <small><i class="icon fas fa-info-circle"></i> Solo se muestran grados y secciones activos en las listas.</small>
+                                    <small><i class="icon fas fa-info-circle"></i> Solo se muestran grados/años y secciones activos en las listas.</small>
                                 </div>
                             </div>
                         </div>
@@ -333,7 +333,7 @@ try {
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalNuevoNivelLabel">Crear Nuevo Grado/Nivel</h5>
+                <h5 class="modal-title" id="modalNuevoNivelLabel">Crear Nuevo Grado/Año</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -341,22 +341,22 @@ try {
             <form method="post" action="grado_nuevo.php">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="nuevo_num_nivel">Número de Grado:</label>
+                        <label for="nuevo_num_nivel">Número de Grado/Año:</label>
                         <input type="number" class="form-control" id="nuevo_num_nivel" name="nuevo_num_nivel" 
                                min="1" max="12" required placeholder="Ej: 3">
-                        <small class="form-text text-muted">Número ordinal del grado (1, 2, 3, etc.)</small>
+                        <small class="form-text text-muted">Número ordinal del grado/año (1, 2, 3, etc.)</small>
                     </div>
                     <div class="form-group">
-                        <label for="nuevo_nom_nivel">Nombre del Grado:</label>
+                        <label for="nuevo_nom_nivel">Nombre del Grado/Año:</label>
                         <input type="text" class="form-control" id="nuevo_nom_nivel" name="nuevo_nom_nivel" 
                                required placeholder="Ej: Tercer Grado">
-                        <small class="form-text text-muted">Nombre completo del grado</small>
+                        <small class="form-text text-muted">Nombre completo del grado/año</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" name="crear_nivel" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Crear Grado
+                        <i class="fas fa-save"></i> Crear Grado/Año
                     </button>
                 </div>
             </form>
@@ -458,7 +458,7 @@ document.getElementById('formGrado').addEventListener('submit', function(e) {
     
     if (!idNivel || !idSeccion) {
         e.preventDefault();
-        alert('Por favor, seleccione tanto el grado como la sección.');
+        alert('Por favor, seleccione tanto el grado/año como la sección.');
         return false;
     }
 });

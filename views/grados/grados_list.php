@@ -20,12 +20,12 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Gestión de Grados y Secciones</h1>
+                    <h1>Gestión de Grados, Años y Secciones</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                        <li class="breadcrumb-item active">Grados</li>
+                        <li class="breadcrumb-item active">Grados/Años</li>
                     </ol>
                 </div>
             </div>
@@ -58,10 +58,10 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Listado de Grados y Secciones</h3>
+                            <h3 class="card-title">Listado de Grados, Años y Secciones</h3>
                             <div class="card-tools">
                                 <a href="grado_nuevo.php" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Nuevo Grado/Sección
+                                    <i class="fas fa-plus"></i> Nuevo Grado/Año/Sección
                                 </a>
                                 <a href="grados_pdf.php" class="btn btn-success btn-sm" target="_blank">
                                     <i class="fas fa-print"></i> Imprimir PDF General
@@ -76,7 +76,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                 <thead>
                                                     <tr>
                                                         <th>ID</th>
-                                                        <th>Grado</th>
+                                                        <th>Grado/Año</th>
                                                         <th>Sección</th>
                                                         <th>Capacidad</th>
                                                         <th>Alumnos Registrados</th>

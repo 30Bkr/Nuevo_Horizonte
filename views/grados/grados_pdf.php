@@ -40,7 +40,7 @@ try {
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>Reporte de Grados y Secciones</title>
+        <title>Reporte de Grados, Años y Secciones</title>
         <style>
             body { 
                 font-family: DejaVu Sans, Arial, sans-serif; 
@@ -141,7 +141,7 @@ try {
         
         <!-- TÍTULO DEL REPORTE -->
         <div class="report-title">
-            REPORTE DE GRADOS Y SECCIONES
+            REPORTE DE GRADOS, AÑOS Y SECCIONES
         </div>
         
         <!-- INFORMACIÓN -->
@@ -157,7 +157,7 @@ try {
             <thead>
                 <tr>
                     <th width="8%">ID</th>
-                    <th width="25%">Grado</th>
+                    <th width="25%">Grado/Año</th>
                     <th width="12%">Sección</th>
                     <th width="12%">Capacidad</th>
                     <th width="12%">Alumnos</th>
