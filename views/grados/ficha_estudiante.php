@@ -24,7 +24,8 @@ try {
                 par.nom_parroquia,
                 mun.nom_municipio,
                 est.nom_estado,
-                GROUP_CONCAT(DISTINCT pat.nom_patologia SEPARATOR ', ') as patologias
+                GROUP_CONCAT(DISTINCT pat.nom_patologia SEPARATOR ', ') as patologias,
+                GROUP_CONCAT(DISTINCT disc.nom_discapacidad SEPARATOR ', ') as discapacidades
               FROM personas p
               INNER JOIN estudiantes e ON p.id_persona = e.id_persona
               INNER JOIN direcciones d ON p.id_direccion = d.id_direccion
@@ -33,6 +34,8 @@ try {
               INNER JOIN estados est ON mun.id_estado = est.id_estado
               LEFT JOIN estudiantes_patologias ep ON e.id_estudiante = ep.id_estudiante
               LEFT JOIN patologias pat ON ep.id_patologia = pat.id_patologia
+              LEFT JOIN estudiantes_discapacidades ed ON e.id_estudiante = ed.id_estudiante
+              LEFT JOIN discapacidades disc ON ed.id_discapacidad = disc.id_discapacidad
               WHERE p.cedula = :cedula
               GROUP BY p.id_persona";
     
@@ -151,6 +154,10 @@ try {
                                     <tr>
                                         <th width="20%">Patologías/Enfermedades:</th>
                                         <td>' . ($estudiante['patologias'] ? htmlspecialchars($estudiante['patologias']) : 'Ninguna registrada') . '</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Discapacidades:</th>
+                                        <td>' . ($estudiante['discapacidades'] ? htmlspecialchars($estudiante['discapacidades']) : 'Ninguna registrada') . '</td>
                                     </tr>
                                 </table>
                             </div>
