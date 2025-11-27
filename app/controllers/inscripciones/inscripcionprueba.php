@@ -9,7 +9,6 @@ include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
 include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
-include_once("/xampp/htdocs/final/app/controllers/discapacidades/discapacidades.php"); // NUEVO INCLUDE
 include_once("/xampp/htdocs/final/app/controllers/cupos/cupos.php");
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -365,25 +364,6 @@ try {
         }
       }
     }
-
-    // ========== ACTUALIZAR DISCAPACIDADES DEL ESTUDIANTE ==========
-    error_log("Actualizando discapacidades del estudiante");
-
-    // Primero eliminar discapacidades existentes
-    $sql_delete_discapacidades = "DELETE FROM estudiantes_discapacidades WHERE id_estudiante = ?";
-    $stmt_delete_disc = $pdo->prepare($sql_delete_discapacidades);
-    $stmt_delete_disc->execute([$id_estudiante]);
-
-    // Luego agregar las nuevas discapacidades seleccionadas
-    if (isset($_POST['discapacidades']) && is_array($_POST['discapacidades'])) {
-      error_log("Agregando " . count($_POST['discapacidades']) . " discapacidades");
-      foreach ($_POST['discapacidades'] as $id_discapacidad) {
-        // Solo procesar valores válidos (no vacíos y diferentes de "0")
-        if (!empty($id_discapacidad) && $id_discapacidad != '0') {
-          $estudianteController->agregarDiscapacidad($id_estudiante, $id_discapacidad);
-        }
-      }
-    }
   } else {
     // Estudiante no existe - crear nuevo
     error_log("Creando nuevo estudiante");
@@ -438,17 +418,6 @@ try {
         // Solo procesar valores válidos (no vacíos y diferentes de "0")
         if (!empty($id_patologia) && $id_patologia != '0') {
           $estudianteController->agregarPatologia($id_estudiante, $id_patologia);
-        }
-      }
-    }
-
-    // ========== AGREGAR DISCAPACIDADES AL ESTUDIANTE ==========
-    if (isset($_POST['discapacidades']) && is_array($_POST['discapacidades'])) {
-      error_log("Agregando discapacidades: " . count($_POST['discapacidades']));
-      foreach ($_POST['discapacidades'] as $id_discapacidad) {
-        // Solo procesar valores válidos (no vacíos y diferentes de "0")
-        if (!empty($id_discapacidad) && $id_discapacidad != '0') {
-          $estudianteController->agregarDiscapacidad($id_estudiante, $id_discapacidad);
         }
       }
     }

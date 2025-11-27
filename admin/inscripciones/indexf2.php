@@ -11,6 +11,7 @@ include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
 include_once("/xampp/htdocs/final/app/controllers/parentesco/parentesco.php");
 include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
+include_once("/xampp/htdocs/final/app/controllers/discapacidades/discapacidades.php");
 
 // include_once("/xampp/htdocs/final/app/controllers/representantes/profesiones.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
@@ -26,6 +27,8 @@ try {
   $parentesco = new ParentescoController($pdo);
   $parentescos = $parentesco->mostrarParentescos();
   $patologiaController = new PatologiaController($pdo);
+
+  $discapacidadController = new DiscapacidadController($pdo);
 
   $estados = $ubicacionController->obtenerEstados();
 } catch (PDOException $e) {
@@ -429,32 +432,6 @@ try {
                   <h3 class="card-title"><b>Paso 3: Datos del Estudiante</b></h3>
                 </div>
                 <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="primer_nombre_e">Primer Nombre <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
-                        <input type="text" name="primer_nombre_e" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="segundo_nombre_e">Segundo Nombre</label>
-                        <input type="text" name="segundo_nombre_e" class="form-control">
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="primer_apellido_e">Primer Apellido <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
-                        <input type="text" name="primer_apellido_e" class="form-control" required>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label for="segundo_apellido_e">Segundo Apellido</label>
-                        <input type="text" name="segundo_apellido_e" class="form-control">
-                      </div>
-                    </div>
-                  </div>
 
                   <div class="row">
 
@@ -483,10 +460,6 @@ try {
                           Si el estudiante no tiene cédula, seleccione "No" y se generará una cédula escolar automáticamente
                         </small>
                       </div>
-                      <!-- <div class="form-group">
-                        <label for="cedula_e">Cédula de Identidad</label>
-                        <input type="text" name="cedula_e" id="cedula_e" class="form-control" required>
-                      </div> -->
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
@@ -499,6 +472,34 @@ try {
                       </div>
                     </div>
                   </div>
+                  <div class="row">
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="primer_nombre_e">Primer Nombre <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                        <input type="text" name="primer_nombre_e" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="segundo_nombre_e">Segundo Nombre</label>
+                        <input type="text" name="segundo_nombre_e" class="form-control">
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="primer_apellido_e">Primer Apellido <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                        <input type="text" name="primer_apellido_e" class="form-control" required>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="segundo_apellido_e">Segundo Apellido</label>
+                        <input type="text" name="segundo_apellido_e" class="form-control">
+                      </div>
+                    </div>
+                  </div>
+
+
 
                   <div class="row">
                     <div class="col-md-4">
@@ -558,6 +559,46 @@ try {
                         <div class="mt-2">
                           <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
                             <i class="fas fa-plus"></i> Agregar otra patología
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- DISCAPACIDADES -->
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label>Discapacidades</label>
+
+                        <!-- Contenedor para los selects dinámicos -->
+                        <div id="contenedor-discapacidades">
+                          <!-- Select Principal -->
+                          <div class="mb-2 discapacidad-item">
+                            <select name="discapacidades[]" class="form-control select-discapacidad">
+                              <option value="">Seleccione una discapacidad...</option>
+                              <option value="0">Ninguna</option>
+                              <?php
+                              // Cargar discapacidades desde la base de datos
+                              $discapacidadController = new DiscapacidadController($pdo);
+                              $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas();
+
+                              if (!empty($discapacidades)) {
+                                foreach ($discapacidades as $discapacidad) {
+                                  echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
+                                }
+                              } else {
+                                echo "<option value=''>No hay discapacidades registradas</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- Botón para agregar más discapacidades -->
+                        <div class="mt-2">
+                          <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-discapacidad">
+                            <i class="fas fa-plus"></i> Agregar otra discapacidad
                           </button>
                         </div>
                       </div>
@@ -709,7 +750,7 @@ try {
                         </div>
                         <div class="col-md-4">
                           <div class="form-group">
-                            <label for="id_nivel">Nivel/Grado <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                            <label for="id_nivel">Grado/Año<span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                             <select name="id_nivel" id="id_nivel" class="form-control" required>
                               <option value="">Seleccionar Nivel</option>
                               <?php
@@ -1801,6 +1842,74 @@ try {
         const btn = e.target.classList.contains('btn-eliminar-patologia') ?
           e.target : e.target.closest('.btn-eliminar-patologia');
         btn.closest('.patologia-item').remove();
+      }
+    });
+  });
+</script>
+
+<!-- Manejo de discapacidades con select adicionales  -->
+<!-- Manejo de discapacidades con select adicionales  -->
+<!-- Manejo de discapacidades con select adicionales  -->
+<!-- Manejo de discapacidades con select adicionales  -->
+
+<script>
+  // ========== MANEJO DE DISCAPACIDADES DINÁMICAS ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    const contenedorDiscapacidades = document.getElementById('contenedor-discapacidades');
+    const btnAgregarDiscapacidad = document.getElementById('btn-agregar-discapacidad');
+
+    // Obtener las opciones de discapacidades desde el primer select
+    function obtenerOpcionesDiscapacidades() {
+      const primerSelect = document.querySelector('.select-discapacidad');
+      if (!primerSelect) return '';
+
+      const opciones = Array.from(primerSelect.options)
+        .filter(option => option.value !== '')
+        .map(option => `<option value="${option.value}">${option.text}</option>`)
+        .join('');
+
+      return opciones;
+    }
+
+    // Función para crear un nuevo select de discapacidad
+    function crearSelectDiscapacidad() {
+      const opciones = obtenerOpcionesDiscapacidades();
+
+      const div = document.createElement('div');
+      div.className = 'mb-2 discapacidad-item d-flex align-items-center';
+
+      div.innerHTML = `
+            <select name="discapacidades[]" class="form-control select-discapacidad me-2">
+                <option value="">Seleccione una discapacidad...</option>
+                ${opciones}
+            </select>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-discapacidad">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+      return div;
+    }
+
+    // Agregar nuevo select
+    btnAgregarDiscapacidad.addEventListener('click', function() {
+      const nuevoSelect = crearSelectDiscapacidad();
+      contenedorDiscapacidades.appendChild(nuevoSelect);
+
+      // Agregar evento al botón eliminar
+      const btnEliminar = nuevoSelect.querySelector('.btn-eliminar-discapacidad');
+      btnEliminar.addEventListener('click', function() {
+        nuevoSelect.remove();
+      });
+    });
+
+    // Eliminar select (evento delegado)
+    contenedorDiscapacidades.addEventListener('click', function(e) {
+      if (e.target.classList.contains('btn-eliminar-discapacidad') ||
+        e.target.closest('.btn-eliminar-discapacidad')) {
+        const btn = e.target.classList.contains('btn-eliminar-discapacidad') ?
+          e.target : e.target.closest('.btn-eliminar-discapacidad');
+        btn.closest('.discapacidad-item').remove();
       }
     });
   });
