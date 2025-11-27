@@ -2296,7 +2296,7 @@ try {
                 ${data.mensaje}
                 ${data.disponible ? 
                     `<br><small class="text-white">Puede continuar con la inscripción</small>` : 
-                    `<br><small class="text-muted">No se puede realizar la inscripción en esta sección</small>`
+                    `<br><small class="text-white">No se puede realizar la inscripción en esta sección</small>`
                 }
             `;
       } else {

@@ -56,6 +56,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="<?= URL; ?>/public/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="<?= URL; ?>/public/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="<?= URL; ?>/public/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+
 </head>
 
 <body class="hold-transition sidebar-mini">
