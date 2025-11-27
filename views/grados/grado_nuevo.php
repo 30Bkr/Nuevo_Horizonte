@@ -72,22 +72,27 @@ if ($_POST && isset($_POST['crear_seccion'])) {
         
         $nom_seccion = $_POST['nuevo_nom_seccion'];
         
-        // Validar que no exista la sección
-        $query_check = "SELECT id_seccion FROM secciones WHERE nom_seccion = ? AND estatus = 1";
-        $stmt_check = $db->prepare($query_check);
-        $stmt_check->execute([$nom_seccion]);
-        
-        if ($stmt_check->rowCount() > 0) {
-            $_SESSION['error'] = "Ya existe una sección con ese nombre.";
+        // VALIDACIÓN ADICIONAL EN EL SERVIDOR
+        if (!preg_match('/^[A-Z]$/', $nom_seccion)) {
+            $_SESSION['error'] = "La sección debe ser una sola letra mayúscula (A-Z).";
         } else {
-            $query = "INSERT INTO secciones (nom_seccion) VALUES (?)";
-            $stmt = $db->prepare($query);
-            if ($stmt->execute([$nom_seccion])) {
-                $_SESSION['success'] = "Sección creada exitosamente.";
-                header("Location: grado_nuevo.php");
-                exit();
+            // Validar que no exista la sección
+            $query_check = "SELECT id_seccion FROM secciones WHERE nom_seccion = ? AND estatus = 1";
+            $stmt_check = $db->prepare($query_check);
+            $stmt_check->execute([$nom_seccion]);
+            
+            if ($stmt_check->rowCount() > 0) {
+                $_SESSION['error'] = "Ya existe una sección con ese nombre.";
             } else {
-                $_SESSION['error'] = "No se pudo crear la sección.";
+                $query = "INSERT INTO secciones (nom_seccion) VALUES (?)";
+                $stmt = $db->prepare($query);
+                if ($stmt->execute([$nom_seccion])) {
+                    $_SESSION['success'] = "Sección '" . $nom_seccion . "' creada exitosamente.";
+                    header("Location: grado_nuevo.php");
+                    exit();
+                } else {
+                    $_SESSION['error'] = "No se pudo crear la sección.";
+                }
             }
         }
     } catch (Exception $e) {
@@ -328,7 +333,7 @@ try {
     </footer>
 </div>
 
-<!-- Modal para Nuevo Grado/Año (MODIFICADO) -->
+<!-- Modal para Nuevo Grado/Año -->
 <div class="modal fade" id="modalNuevoNivel" tabindex="-1" role="dialog" aria-labelledby="modalNuevoNivelLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -342,7 +347,7 @@ try {
                 <div class="modal-body">
                     <!-- NUEVO FLUJO: Selección de Grado/Año -->
                     <div class="form-group">
-                        <label for="tipo_nivel">Nivel:</label>
+                        <label for="tipo_nivel">Grado/Año:</label>
                         <select class="form-control" id="tipo_nivel" name="tipo_nivel" required onchange="actualizarNombreGradoModal()">
                             <option value="">Seleccione el tipo</option>
                             <option value="grado">Grado</option>
@@ -387,7 +392,7 @@ try {
     </div>
 </div>
 
-<!-- Modal para Nueva Sección -->
+<!-- Modal para Nueva Sección (MODIFICADO) -->
 <div class="modal fade" id="modalNuevaSeccion" tabindex="-1" role="dialog" aria-labelledby="modalNuevaSeccionLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -397,18 +402,25 @@ try {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post" action="grado_nuevo.php">
+            <form method="post" action="grado_nuevo.php" id="formNuevaSeccion">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="nuevo_nom_seccion">Nombre de la Sección:</label>
                         <input type="text" class="form-control" id="nuevo_nom_seccion" name="nuevo_nom_seccion" 
-                               required placeholder="Ej: C" maxlength="5">
-                        <small class="form-text text-muted">Letra que identifica la sección (A, B, C, etc.)</small>
+                               required placeholder="Ej: C" maxlength="1" 
+                               oninput="validarSeccion(this)" onkeypress="return soloLetras(event)">
+                        <small class="form-text text-muted">Ingrese una sola letra (A-Z)</small>
+                        <div id="mensajeErrorSeccion" class="invalid-feedback" style="display: none;">
+                            Por favor, ingrese solo una letra (A-Z)
+                        </div>
+                        <div id="mensajeOkSeccion" class="valid-feedback" style="display: none;">
+                            ✓ Sección válida
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" name="crear_seccion" class="btn btn-primary">
+                    <button type="submit" name="crear_seccion" class="btn btn-primary" id="btnCrearSeccion" disabled>
                         <i class="fas fa-save"></i> Crear Sección
                     </button>
                 </div>
@@ -504,6 +516,69 @@ function actualizarNombreGradoModal() {
     }
 }
 
+// Función para validar que solo se ingresen letras
+function soloLetras(event) {
+    var charCode = event.keyCode || event.which;
+    var charStr = String.fromCharCode(charCode);
+    
+    // Permitir solo letras (A-Z, a-z) y algunas teclas de control
+    if (!/^[A-Za-z]$/.test(charStr) && 
+        charCode !== 8 &&  // Backspace
+        charCode !== 9 &&  // Tab
+        charCode !== 13 && // Enter
+        charCode !== 46) { // Delete
+        event.preventDefault();
+        return false;
+    }
+    return true;
+}
+
+// Función para validar y formatear la sección
+function validarSeccion(input) {
+    var valor = input.value;
+    var mensajeError = document.getElementById('mensajeErrorSeccion');
+    var mensajeOk = document.getElementById('mensajeOkSeccion');
+    var btnCrear = document.getElementById('btnCrearSeccion');
+    
+    // Limpiar el valor - quitar espacios y caracteres no deseados
+    valor = valor.replace(/[^A-Za-z]/g, '');
+    
+    // Tomar solo el primer carácter si se ingresó más de uno
+    if (valor.length > 1) {
+        valor = valor.charAt(0);
+    }
+    
+    // Convertir a mayúsculas
+    valor = valor.toUpperCase();
+    
+    // Actualizar el valor del input
+    input.value = valor;
+    
+    // Validar
+    if (valor.length === 1 && /^[A-Z]$/.test(valor)) {
+        // Sección válida
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        mensajeError.style.display = 'none';
+        mensajeOk.style.display = 'block';
+        btnCrear.disabled = false;
+    } else if (valor.length === 0) {
+        // Campo vacío
+        input.classList.remove('is-invalid');
+        input.classList.remove('is-valid');
+        mensajeError.style.display = 'none';
+        mensajeOk.style.display = 'none';
+        btnCrear.disabled = true;
+    } else {
+        // Sección inválida
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        mensajeError.style.display = 'block';
+        mensajeOk.style.display = 'none';
+        btnCrear.disabled = true;
+    }
+}
+
 // Validar al cargar la página si ya hay selecciones
 document.addEventListener('DOMContentLoaded', function() {
     validarCombinacion();
@@ -521,7 +596,7 @@ document.getElementById('formGrado').addEventListener('submit', function(e) {
     }
 });
 
-// Validar formulario del modal antes de enviar
+// Validar formulario del modal de grado/año antes de enviar
 document.getElementById('formNuevoNivel').addEventListener('submit', function(e) {
     var tipoNivel = document.getElementById('tipo_nivel').value;
     var numNivel = document.getElementById('nuevo_num_nivel').value;
@@ -533,7 +608,20 @@ document.getElementById('formNuevoNivel').addEventListener('submit', function(e)
     }
 });
 
-// Limpiar modal cuando se cierre
+// Validar formulario de sección antes de enviar
+document.getElementById('formNuevaSeccion').addEventListener('submit', function(e) {
+    var seccionInput = document.getElementById('nuevo_nom_seccion');
+    var valor = seccionInput.value;
+    
+    if (!/^[A-Z]$/.test(valor)) {
+        e.preventDefault();
+        alert('Por favor, ingrese una sección válida (una sola letra de A-Z).');
+        seccionInput.focus();
+        return false;
+    }
+});
+
+// Limpiar modal de grado/año cuando se cierre
 $('#modalNuevoNivel').on('hidden.bs.modal', function () {
     document.getElementById('formNuevoNivel').reset();
     document.getElementById('nombre_grado_auto').value = '';
@@ -541,8 +629,17 @@ $('#modalNuevoNivel').on('hidden.bs.modal', function () {
     document.getElementById('btnCrearNivel').disabled = true;
 });
 
-// Recargar la página después de cerrar modales para actualizar los selects
+// Limpiar modal de sección cuando se cierre
 $('#modalNuevaSeccion').on('hidden.bs.modal', function () {
+    document.getElementById('formNuevaSeccion').reset();
+    document.getElementById('nuevo_nom_seccion').classList.remove('is-invalid', 'is-valid');
+    document.getElementById('mensajeErrorSeccion').style.display = 'none';
+    document.getElementById('mensajeOkSeccion').style.display = 'none';
+    document.getElementById('btnCrearSeccion').disabled = true;
+});
+
+// Recargar la página después de cerrar modales para actualizar los selects
+$('#modalNuevoNivel, #modalNuevaSeccion').on('hidden.bs.modal', function () {
     location.reload();
 });
 </script>
