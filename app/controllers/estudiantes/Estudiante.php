@@ -223,6 +223,9 @@ class Estudiante {
     // Actualizar estudiante
     public function actualizar() {
         try {
+            // Validar datos antes de actualizar
+            $this->validarDatosEstudiante();
+
             $this->conn->beginTransaction();
 
             // 1. Actualizar dirección
@@ -240,9 +243,9 @@ class Estudiante {
 
             // 2. Actualizar persona (EXCLUYENDO LA CÉDULA)
             $queryPersona = "UPDATE personas 
-                            SET primer_nombre = ?, segundo_nombre = ?, primer_apellido = ?, segundo_apellido = ?,
-                                telefono = ?, telefono_hab = ?, correo = ?, lugar_nac = ?, 
-                                fecha_nac = ?, sexo = ?, nacionalidad = ?, actualizacion = NOW()
+                            SET primer_nombre = UPPER(?), segundo_nombre = UPPER(?), primer_apellido = UPPER(?), segundo_apellido = UPPER(?),
+                                telefono = ?, telefono_hab = ?, correo = LOWER(?), lugar_nac = UPPER(?), 
+                                fecha_nac = ?, sexo = UPPER(?), nacionalidad = UPPER(?), actualizacion = NOW()
                             WHERE id_persona = ?";
             
             $stmtPersona = $this->conn->prepare($queryPersona);
@@ -288,16 +291,43 @@ class Estudiante {
 
     // Métodos auxiliares privados
     private function validarDatosEstudiante() {
-        if (empty($this->sexo)) {
-            throw new Exception("El sexo es obligatorio");
-        }
+        // VALIDACIONES DEL ESTUDIANTE
         
+        // Validar campos obligatorios del estudiante
         if (empty($this->nacionalidad)) {
             throw new Exception("La nacionalidad es obligatoria");
         }
         
+        if (empty($this->cedula)) {
+            throw new Exception("La cédula es obligatoria");
+        }
+        
         if (empty($this->fecha_nac)) {
             throw new Exception("La fecha de nacimiento es obligatoria");
+        }
+        
+        if (empty($this->primer_nombre)) {
+            throw new Exception("El primer nombre es obligatorio");
+        }
+        
+        if (empty($this->segundo_nombre)) {
+            throw new Exception("El segundo nombre es obligatorio");
+        }
+        
+        if (empty($this->primer_apellido)) {
+            throw new Exception("El primer apellido es obligatorio");
+        }
+        
+        if (empty($this->segundo_apellido)) {
+            throw new Exception("El segundo apellido es obligatorio");
+        }
+        
+        if (empty($this->sexo)) {
+            throw new Exception("El sexo es obligatorio");
+        }
+        
+        if (empty($this->lugar_nac)) {
+            throw new Exception("El lugar de nacimiento es obligatorio");
         }
         
         if (empty($this->telefono)) {
@@ -337,13 +367,101 @@ class Estudiante {
             }
         }
 
-        // Validar datos del representante
-        if (empty($this->primer_nombre_rep) || empty($this->primer_apellido_rep) || empty($this->cedula_rep)) {
-            throw new Exception("Los datos del representante son obligatorios");
+        // Validar que nombres y apellidos solo contengan letras y espacios
+        if (!empty($this->primer_nombre) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->primer_nombre)) {
+            throw new Exception("El primer nombre solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->segundo_nombre) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->segundo_nombre)) {
+            throw new Exception("El segundo nombre solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->primer_apellido) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->primer_apellido)) {
+            throw new Exception("El primer apellido solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->segundo_apellido) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->segundo_apellido)) {
+            throw new Exception("El segundo apellido solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->nacionalidad) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->nacionalidad)) {
+            throw new Exception("La nacionalidad solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->lugar_nac) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->lugar_nac)) {
+            throw new Exception("El lugar de nacimiento solo puede contener letras y espacios");
+        }
+
+        // VALIDACIONES DEL REPRESENTANTE
+        
+        // Validar campos obligatorios del representante
+        if (empty($this->primer_nombre_rep)) {
+            throw new Exception("El primer nombre del representante es obligatorio");
+        }
+        
+        if (empty($this->segundo_nombre_rep)) {
+            throw new Exception("El segundo nombre del representante es obligatorio");
+        }
+        
+        if (empty($this->primer_apellido_rep)) {
+            throw new Exception("El primer apellido del representante es obligatorio");
+        }
+        
+        if (empty($this->segundo_apellido_rep)) {
+            throw new Exception("El segundo apellido del representante es obligatorio");
+        }
+        
+        if (empty($this->cedula_rep)) {
+            throw new Exception("La cédula del representante es obligatoria");
         }
 
         if (empty($this->id_parentesco)) {
             throw new Exception("El parentesco es obligatorio");
+        }
+        
+        if (empty($this->telefono_rep)) {
+            throw new Exception("El teléfono móvil del representante es obligatorio");
+        }
+
+        // Validar formato de correo del representante
+        if (!empty($this->correo_rep) && !filter_var($this->correo_rep, FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("El formato del correo electrónico del representante no es válido");
+        }
+
+        // Validar que la cédula del representante solo contenga números
+        if (!empty($this->cedula_rep) && !preg_match('/^\d+$/', $this->cedula_rep)) {
+            throw new Exception("La cédula del representante debe contener solo números");
+        }
+
+        // Validar longitud mínima de cédula del representante
+        if (!empty($this->cedula_rep) && strlen($this->cedula_rep) < 6) {
+            throw new Exception("La cédula del representante debe tener al menos 6 dígitos");
+        }
+
+        // Validar que los teléfonos del representante solo contengan números
+        if (!empty($this->telefono_rep) && !preg_match('/^\d+$/', $this->telefono_rep)) {
+            throw new Exception("El teléfono móvil del representante debe contener solo números");
+        }
+
+        if (!empty($this->telefono_hab_rep) && !preg_match('/^\d+$/', $this->telefono_hab_rep)) {
+            throw new Exception("El teléfono de habitación del representante debe contener solo números");
+        }
+
+        // Validar que nombres y apellidos del representante solo contengan letras y espacios
+        if (!empty($this->primer_nombre_rep) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->primer_nombre_rep)) {
+            throw new Exception("El primer nombre del representante solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->segundo_nombre_rep) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->segundo_nombre_rep)) {
+            throw new Exception("El segundo nombre del representante solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->primer_apellido_rep) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->primer_apellido_rep)) {
+            throw new Exception("El primer apellido del representante solo puede contener letras y espacios");
+        }
+
+        if (!empty($this->segundo_apellido_rep) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->segundo_apellido_rep)) {
+            throw new Exception("El segundo apellido del representante solo puede contener letras y espacios");
         }
     }
 
@@ -371,7 +489,7 @@ class Estudiante {
             } else {
                 // Crear representante
                 $queryRep = "INSERT INTO representantes (id_persona, id_profesion, ocupacion, lugar_trabajo, creacion, estatus) 
-                            VALUES (?, ?, ?, ?, NOW(), 1)";
+                            VALUES (?, ?, UPPER(?), UPPER(?), NOW(), 1)";
                 $stmtRep = $this->conn->prepare($queryRep);
                 $stmtRep->bindParam(1, $id_persona_rep);
                 $stmtRep->bindParam(2, $this->id_profesion_rep);
@@ -385,7 +503,7 @@ class Estudiante {
             // 1. Insertar dirección del representante (usar misma dirección del estudiante por defecto)
             $queryDireccionRep = "INSERT INTO direcciones 
                                 (id_parroquia, direccion, calle, casa, creacion, estatus) 
-                                VALUES (?, ?, ?, ?, NOW(), 1)";
+                                VALUES (?, UPPER(?), UPPER(?), UPPER(?), NOW(), 1)";
             
             $stmtDireccionRep = $this->conn->prepare($queryDireccionRep);
             $stmtDireccionRep->bindParam(1, $this->id_parroquia);
@@ -420,7 +538,7 @@ class Estudiante {
 
             // 3. Insertar representante
             $queryRep = "INSERT INTO representantes (id_persona, id_profesion, ocupacion, lugar_trabajo, creacion, estatus) 
-                        VALUES (?, ?, ?, ?, NOW(), 1)";
+                        VALUES (?, ?, UPPER(?), UPPER(?), NOW(), 1)";
             $stmtRep = $this->conn->prepare($queryRep);
             $stmtRep->bindParam(1, $id_persona_rep);
             $stmtRep->bindParam(2, $this->id_profesion_rep);
@@ -446,8 +564,8 @@ class Estudiante {
         if ($this->id_representante) {
             // Actualizar persona del representante
             $queryPersonaRep = "UPDATE personas 
-                               SET primer_nombre = ?, segundo_nombre = ?, primer_apellido = ?, segundo_apellido = ?,
-                                   telefono = ?, telefono_hab = ?, correo = ?, actualizacion = NOW()
+                               SET primer_nombre = UPPER(?), segundo_nombre = UPPER(?), primer_apellido = UPPER(?), segundo_apellido = UPPER(?),
+                                   telefono = ?, telefono_hab = ?, correo = LOWER(?), actualizacion = NOW()
                                WHERE id_persona = (SELECT id_persona FROM representantes WHERE id_representante = ?)";
             
             $stmtPersonaRep = $this->conn->prepare($queryPersonaRep);
@@ -463,7 +581,7 @@ class Estudiante {
 
             // Actualizar representante
             $queryRep = "UPDATE representantes 
-                        SET id_profesion = ?, ocupacion = ?, lugar_trabajo = ?, actualizacion = NOW()
+                        SET id_profesion = ?, ocupacion = UPPER(?), lugar_trabajo = UPPER(?), actualizacion = NOW()
                         WHERE id_representante = ?";
             $stmtRep = $this->conn->prepare($queryRep);
             $stmtRep->bindParam(1, $this->id_profesion_rep);

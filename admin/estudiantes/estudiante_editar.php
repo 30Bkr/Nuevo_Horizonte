@@ -58,6 +58,24 @@ try {
     <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
     <!-- Select2 -->
     <link rel="stylesheet" href="/final/public/plugins/select2/css/select2.min.css">
+    
+    <!-- Estilos CSS para campos inválidos -->
+    <style>
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+        .text-danger {
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+        .form-group label {
+            font-weight: 500;
+        }
+        .campo-obligatorio {
+            border-left: 3px solid #dc3545;
+            padding-left: 10px;
+        }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini">
     <div class="wrapper">
@@ -158,56 +176,71 @@ try {
                                             <i class="fas fa-user-graduate"></i> Información Personal del Estudiante
                                         </h5>
                                         <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="primer_nombre">Primer Nombre *</label>
-                                                    <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" 
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_nombre); ?>" required>
+                                            <!-- Nacionalidad como primer campo -->
+                                            <div class="col-md-4">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="nacionalidad">Nacionalidad <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <input type="text" class="form-control" id="nacionalidad" name="nacionalidad"
+                                                           value="<?php echo htmlspecialchars($estudiante->nacionalidad); ?>" required>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_nombre">Segundo Nombre</label>
-                                                    <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_nombre ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="primer_apellido">Primer Apellido *</label>
-                                                    <input type="text" class="form-control" id="primer_apellido" name="primer_apellido"
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_apellido); ?>" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_apellido">Segundo Apellido</label>
-                                                    <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_apellido ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="cedula">Cédula *</label>
+                                            
+                                            <!-- Cédula como segundo campo -->
+                                            <div class="col-md-4">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="cedula" name="cedula" 
                                                            value="<?php echo htmlspecialchars($estudiante->cedula); ?>" required readonly
                                                            style="background-color: #e9ecef;">
                                                     <small class="form-text text-muted">La cédula no se puede modificar</small>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="fecha_nac">Fecha de Nacimiento *</label>
+                                            
+                                            <!-- Fecha de nacimiento como tercer campo -->
+                                            <div class="col-md-4">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="fecha_nac">Fecha de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="date" class="form-control" id="fecha_nac" name="fecha_nac"
                                                            value="<?php echo $estudiante->fecha_nac; ?>" required>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div class="row">
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="sexo">Sexo *</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" 
+                                                           value="<?php echo htmlspecialchars($estudiante->primer_nombre); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="segundo_nombre">Segundo Nombre <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre"
+                                                           value="<?php echo htmlspecialchars($estudiante->segundo_nombre ?? ''); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="primer_apellido">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <input type="text" class="form-control" id="primer_apellido" name="primer_apellido"
+                                                           value="<?php echo htmlspecialchars($estudiante->primer_apellido); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="segundo_apellido">Segundo Apellido <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido"
+                                                           value="<?php echo htmlspecialchars($estudiante->segundo_apellido ?? ''); ?>" required>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="sexo">Sexo <span class="text-danger">* (Obligatorio)</span></label>
                                                     <select class="form-control" id="sexo" name="sexo" required>
                                                         <option value="">Seleccione...</option>
                                                         <option value="Masculino" <?php echo $estudiante->sexo == 'Masculino' ? 'selected' : ''; ?>>Masculino</option>
@@ -215,45 +248,38 @@ try {
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="nacionalidad">Nacionalidad *</label>
-                                                    <input type="text" class="form-control" id="nacionalidad" name="nacionalidad"
-                                                           value="<?php echo htmlspecialchars($estudiante->nacionalidad); ?>" required>
+                                            <div class="col-md-4">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="lugar_nac">Lugar de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <input type="text" class="form-control" id="lugar_nac" name="lugar_nac"
+                                                           value="<?php echo htmlspecialchars($estudiante->lugar_nac ?? ''); ?>" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="telefono">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <input type="text" class="form-control" id="telefono" name="telefono"
+                                                           value="<?php echo htmlspecialchars($estudiante->telefono); ?>" required maxlength="11">
+                                                    <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="lugar_nac">Lugar de Nacimiento</label>
-                                                    <input type="text" class="form-control" id="lugar_nac" name="lugar_nac"
-                                                           value="<?php echo htmlspecialchars($estudiante->lugar_nac ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="telefono">Teléfono Móvil *</label>
-                                                    <input type="text" class="form-control" id="telefono" name="telefono"
-                                                           value="<?php echo htmlspecialchars($estudiante->telefono); ?>" required maxlength="11">
-                                                </div>
-                                            </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="telefono_hab">Teléfono Habitación</label>
                                                     <input type="text" class="form-control" id="telefono_hab" name="telefono_hab"
                                                            value="<?php echo htmlspecialchars($estudiante->telefono_hab ?? ''); ?>" maxlength="11">
+                                                    <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="col-md-8">
                                                 <div class="form-group">
                                                     <label for="correo">Correo Electrónico</label>
                                                     <input type="email" class="form-control" id="correo" name="correo"
                                                            value="<?php echo htmlspecialchars($estudiante->correo ?? ''); ?>">
+                                                    <small class="form-text text-muted">Formato: usuario@dominio.com</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -265,8 +291,8 @@ try {
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="id_parroquia">Parroquia *</label>
-                                                    <select class="form-control select2" id="id_parroquia" name="id_parroquia" required>
+                                                    <label for="id_parroquia">Parroquia</label>
+                                                    <select class="form-control select2" id="id_parroquia" name="id_parroquia">
                                                         <option value="">Seleccione una parroquia...</option>
                                                         <?php
                                                         try {
@@ -291,9 +317,9 @@ try {
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="direccion">Dirección Principal *</label>
+                                                    <label for="direccion">Dirección Principal</label>
                                                     <input type="text" class="form-control" id="direccion" name="direccion"
-                                                           value="<?php echo htmlspecialchars($estudiante->direccion); ?>" required>
+                                                           value="<?php echo htmlspecialchars($estudiante->direccion); ?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-2">
@@ -318,39 +344,39 @@ try {
                                         </h5>
                                         <div class="row">
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="primer_nombre_rep">Primer Nombre *</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="primer_nombre_rep">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="primer_nombre_rep" name="primer_nombre_rep"
                                                            value="<?php echo htmlspecialchars($estudiante->primer_nombre_rep ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_nombre_rep">Segundo Nombre</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="segundo_nombre_rep">Segundo Nombre <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="segundo_nombre_rep" name="segundo_nombre_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_nombre_rep ?? ''); ?>">
+                                                           value="<?php echo htmlspecialchars($estudiante->segundo_nombre_rep ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="primer_apellido_rep">Primer Apellido *</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="primer_apellido_rep">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="primer_apellido_rep" name="primer_apellido_rep"
                                                            value="<?php echo htmlspecialchars($estudiante->primer_apellido_rep ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_apellido_rep">Segundo Apellido</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="segundo_apellido_rep">Segundo Apellido <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="segundo_apellido_rep" name="segundo_apellido_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_apellido_rep ?? ''); ?>">
+                                                           value="<?php echo htmlspecialchars($estudiante->segundo_apellido_rep ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="cedula_rep">Cédula del Representante *</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="cedula_rep">Cédula del Representante <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="cedula_rep" name="cedula_rep"
                                                            value="<?php echo htmlspecialchars($estudiante->cedula_rep ?? ''); ?>" required readonly
                                                            style="background-color: #e9ecef;">
@@ -358,8 +384,8 @@ try {
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="id_parentesco">Parentesco *</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="id_parentesco">Parentesco <span class="text-danger">* (Obligatorio)</span></label>
                                                     <select class="form-control" id="id_parentesco" name="id_parentesco" required>
                                                         <option value="">Seleccione...</option>
                                                         <?php
@@ -382,10 +408,11 @@ try {
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="telefono_rep">Teléfono Móvil *</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="telefono_rep">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="telefono_rep" name="telefono_rep"
                                                            value="<?php echo htmlspecialchars($estudiante->telefono_rep ?? ''); ?>" required maxlength="11">
+                                                    <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -393,6 +420,7 @@ try {
                                                     <label for="telefono_hab_rep">Teléfono Habitación</label>
                                                     <input type="text" class="form-control" id="telefono_hab_rep" name="telefono_hab_rep"
                                                            value="<?php echo htmlspecialchars($estudiante->telefono_hab_rep ?? ''); ?>" maxlength="11">
+                                                    <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -403,6 +431,7 @@ try {
                                                     <label for="correo_rep">Correo Electrónico</label>
                                                     <input type="email" class="form-control" id="correo_rep" name="correo_rep"
                                                            value="<?php echo htmlspecialchars($estudiante->correo_rep ?? ''); ?>">
+                                                    <small class="form-text text-muted">Formato: usuario@dominio.com</small>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
@@ -489,9 +518,178 @@ try {
                 theme: 'bootstrap4'
             });
 
-            // Validación de solo números para teléfonos
+            // Función para convertir texto a mayúsculas
+            function convertirMayusculas(elemento) {
+                elemento.value = elemento.value.toUpperCase();
+            }
+
+            // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
+            $('input[type="text"]:not([readonly])').on('input', function() {
+                convertirMayusculas(this);
+            });
+
+            // Solo letras (para nombres, apellidos, lugar de nacimiento, dirección, calle, casa, ocupación, lugar de trabajo)
+            $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #nacionalidad, #lugar_nac, #direccion, #calle, #casa, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
+                this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                convertirMayusculas(this);
+            });
+
+            // Solo números (para teléfonos)
             $('#telefono, #telefono_hab, #telefono_rep, #telefono_hab_rep').on('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, '');
+                this.value = this.value.replace(/\D/g, '');
+            });
+
+            // Validación de correo electrónico
+            $('#correo, #correo_rep').on('blur', function() {
+                const email = this.value;
+                if (email && !isValidEmail(email)) {
+                    alert('Por favor, ingrese un correo electrónico válido (debe contener @ y dominio)');
+                    this.focus();
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // Función para validar formato de email
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            // Validación en tiempo real para campos obligatorios
+            $('input[required], select[required]').on('blur', function() {
+                const valor = $(this).val();
+                if (!valor) {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // Validación del formulario antes de enviar
+            $('#formEstudiante').on('submit', function(e) {
+                let isValid = true;
+                let mensajesError = [];
+
+                // Campos obligatorios del estudiante
+                const camposObligatoriosEstudiante = {
+                    'nacionalidad': 'Nacionalidad',
+                    'cedula': 'Cédula',
+                    'fecha_nac': 'Fecha de Nacimiento',
+                    'primer_nombre': 'Primer Nombre',
+                    'segundo_nombre': 'Segundo Nombre',
+                    'primer_apellido': 'Primer Apellido',
+                    'segundo_apellido': 'Segundo Apellido',
+                    'sexo': 'Sexo',
+                    'lugar_nac': 'Lugar de Nacimiento',
+                    'telefono': 'Teléfono Móvil'
+                };
+
+                // Campos obligatorios del representante
+                const camposObligatoriosRepresentante = {
+                    'primer_nombre_rep': 'Primer Nombre del Representante',
+                    'segundo_nombre_rep': 'Segundo Nombre del Representante',
+                    'primer_apellido_rep': 'Primer Apellido del Representante',
+                    'segundo_apellido_rep': 'Segundo Apellido del Representante',
+                    'cedula_rep': 'Cédula del Representante',
+                    'id_parentesco': 'Parentesco',
+                    'telefono_rep': 'Teléfono Móvil del Representante'
+                };
+
+                // Validar campos obligatorios del estudiante
+                for (const [campo, nombre] of Object.entries(camposObligatoriosEstudiante)) {
+                    const valor = campo.startsWith('id_') ? 
+                        $(`#${campo}`).val() : 
+                        $(`#${campo}`).val().trim();
+
+                    if (!valor) {
+                        mensajesError.push(`El campo "${nombre}" es obligatorio`);
+                        $(`#${campo}`).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(`#${campo}`).removeClass('is-invalid');
+                    }
+                }
+
+                // Validar campos obligatorios del representante
+                for (const [campo, nombre] of Object.entries(camposObligatoriosRepresentante)) {
+                    const valor = campo.startsWith('id_') ? 
+                        $(`#${campo}`).val() : 
+                        $(`#${campo}`).val().trim();
+
+                    if (!valor) {
+                        mensajesError.push(`El campo "${nombre}" es obligatorio`);
+                        $(`#${campo}`).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(`#${campo}`).removeClass('is-invalid');
+                    }
+                }
+
+                // Validar teléfonos (solo números)
+                const telefono = $('#telefono').val();
+                const telefonoHab = $('#telefono_hab').val();
+                const telefonoRep = $('#telefono_rep').val();
+                const telefonoHabRep = $('#telefono_hab_rep').val();
+
+                if (telefono && !/^\d+$/.test(telefono)) {
+                    mensajesError.push('El teléfono móvil del estudiante debe contener solo números');
+                    isValid = false;
+                }
+
+                if (telefonoHab && !/^\d+$/.test(telefonoHab)) {
+                    mensajesError.push('El teléfono de habitación del estudiante debe contener solo números');
+                    isValid = false;
+                }
+
+                if (telefonoRep && !/^\d+$/.test(telefonoRep)) {
+                    mensajesError.push('El teléfono móvil del representante debe contener solo números');
+                    isValid = false;
+                }
+
+                if (telefonoHabRep && !/^\d+$/.test(telefonoHabRep)) {
+                    mensajesError.push('El teléfono de habitación del representante debe contener solo números');
+                    isValid = false;
+                }
+
+                // Validar correos electrónicos
+                const correo = $('#correo').val();
+                const correoRep = $('#correo_rep').val();
+
+                if (correo && !isValidEmail(correo)) {
+                    mensajesError.push('Por favor, ingrese un correo electrónico válido para el estudiante (formato: usuario@dominio.com)');
+                    isValid = false;
+                }
+
+                if (correoRep && !isValidEmail(correoRep)) {
+                    mensajesError.push('Por favor, ingrese un correo electrónico válido para el representante (formato: usuario@dominio.com)');
+                    isValid = false;
+                }
+
+                // Validar fecha de nacimiento (no puede ser futura)
+                const fechaNac = $('#fecha_nac').val();
+                if (fechaNac) {
+                    const hoy = new Date().toISOString().split('T')[0];
+                    if (fechaNac > hoy) {
+                        mensajesError.push('La fecha de nacimiento no puede ser futura');
+                        isValid = false;
+                    }
+                }
+
+                // Mostrar errores si los hay
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Por favor, corrija los siguientes errores:\n\n• ' + mensajesError.join('\n• '));
+
+                    // Scroll al primer error
+                    $('.is-invalid').first().focus();
+                }
+            });
+
+            // Limpiar validación cuando el usuario empiece a escribir
+            $('input, select').on('input change', function() {
+                $(this).removeClass('is-invalid');
             });
         });
     </script>
