@@ -1175,6 +1175,78 @@ try {
       showStep(2);
     });
 
+
+    // ========== FUNCIÓN PARA LIMPIAR CAMPOS DEL REPRESENTANTE ==========
+    function limpiarCamposRepresentante() {
+      console.log('🔄 Limpiando campos del representante...');
+
+      // Lista de campos a limpiar
+      const camposALimpiar = [
+        'primer_nombre_r', 'segundo_nombre_r', 'primer_apellido_r', 'segundo_apellido_r',
+        'cedula_r', 'correo_r', 'telefono_r', 'telefono_hab_r', 'fecha_nac_r',
+        'lugar_nac_r', 'sexo_r', 'nacionalidad_r', 'profesion_r', 'ocupacion_r',
+        'lugar_trabajo_r', 'parentesco', 'direccion_r', 'calle_r', 'casa_r'
+      ];
+
+      // Limpiar valores de los campos
+      camposALimpiar.forEach(campoId => {
+        const elemento = document.getElementById(campoId);
+        if (elemento) {
+          elemento.value = '';
+          elemento.disabled = false;
+          elemento.classList.remove('is-invalid');
+        }
+      });
+
+      // Resetear selects de ubicación
+      const estadoSelect = document.getElementById('estado_r');
+      const municipioSelect = document.getElementById('municipio_r');
+      const parroquiaSelect = document.getElementById('parroquia_r');
+
+      if (estadoSelect) estadoSelect.value = '';
+      if (municipioSelect) {
+        municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
+        municipioSelect.disabled = true;
+      }
+      if (parroquiaSelect) {
+        parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        parroquiaSelect.disabled = true;
+      }
+
+      // Resetear campos ocultos
+      document.getElementById('representante_existente').value = '0';
+      document.getElementById('id_representante_existente').value = '';
+      document.getElementById('id_direccion_repre').value = '';
+      document.getElementById('tipo_persona').value = '';
+      document.getElementById('id_representante_existente_esc').value = '';
+
+      // Limpiar resultado de validación
+      const resultado = document.getElementById('resultado-validacion');
+      if (resultado) {
+        resultado.innerHTML = '';
+      }
+
+      // Ocultar botón siguiente
+      const nextButton = document.getElementById('btn-next-to-step2');
+      if (nextButton) {
+        nextButton.style.display = 'none';
+      }
+
+      console.log('✅ Campos del representante limpiados');
+    }
+
+    // ========== DETECTAR CAMBIOS EN LA CÉDULA ==========
+    document.getElementById('cedula_representante').addEventListener('input', function() {
+      const representanteExistente = document.getElementById('representante_existente').value;
+      const cedulaActual = this.value;
+
+      // Si ya había una validación y el usuario modifica la cédula, limpiar todo
+      if (representanteExistente === '1' || cedulaActual.length === 0) {
+        limpiarCamposRepresentante();
+        this.style.borderColor = '';
+      }
+    });
+
     // ========== VALIDACIÓN DE REPRESENTANTE ==========
     document.getElementById('btn-validar-representante').addEventListener('click', function() {
       const cedula = document.getElementById('cedula_representante').value;
@@ -1185,7 +1257,32 @@ try {
       validarRepresentante(cedula);
     });
 
+
+    // ========== VALIDACIÓN CON TECLA ENTER ==========
+    document.getElementById('cedula_representante').addEventListener('keypress', function(e) {
+      // Verificar si se presionó la tecla Enter (código 13)
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        e.preventDefault(); // Prevenir el comportamiento por defecto
+
+        const cedula = this.value;
+        if (!cedula) {
+          alert('Por favor ingrese la cédula del representante');
+          return;
+        }
+
+        // Mostrar feedback visual de que se está procesando
+        this.style.borderColor = '#ffc107';
+        document.getElementById('btn-validar-representante').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validando...';
+
+        // Ejecutar la validación
+        validarRepresentante(cedula);
+      }
+    });
+
     function validarRepresentante(cedula) {
+
+      // Guardar referencia de la cédula actual
+      document.getElementById('cedula_representante').currentCedula = cedula;
       // Crear FormData para enviar por POST
       const formData = new FormData();
       formData.append('cedula', cedula);
@@ -1203,6 +1300,16 @@ try {
         .then(data => {
           const resultado = document.getElementById('resultado-validacion');
           const nextButton = document.getElementById('btn-next-to-step2');
+          const cedulaInput = document.getElementById('cedula_representante');
+          const validarBtn = document.getElementById('btn-validar-representante');
+          // Restaurar estado normal del botón
+          validarBtn.innerHTML = 'Validar Representante';
+          cedulaInput.style.borderColor = '';
+
+          if (cedulaInput.currentCedula !== cedula) {
+            console.log('⚠️ La cédula cambió durante la validación, ignorando resultado');
+            return;
+          }
 
           console.log('📊 Datos recibidos:', data);
 
@@ -1394,13 +1501,32 @@ try {
         .catch(error => {
           console.error('❌ Error:', error);
           const resultado = document.getElementById('resultado-validacion');
+          const cedulaInput = document.getElementById('cedula_representante');
+          const validarBtn = document.getElementById('btn-validar-representante');
+
+          // Restaurar estado normal
+          validarBtn.innerHTML = 'Validar Representante';
+          cedulaInput.style.borderColor = '#dc3545'; // Rojo para error
+
           if (resultado) {
             resultado.innerHTML = `
-                    <div class="alert alert-danger">
-                        Error al validar la persona. Intente nuevamente.
-                    </div>
-                `;
+                <div class="alert alert-danger">
+                    Error al validar la persona. Intente nuevamente.
+                </div>
+            `;
           }
+
+
+          // {
+          //   console.error('❌ Error:', error);
+          //   const resultado = document.getElementById('resultado-validacion');
+          //   if (resultado) {
+          //     resultado.innerHTML = `
+          //             <div class="alert alert-danger">
+          //                 Error al validar la persona. Intente nuevamente.
+          //             </div>
+          //         `;
+          //   }
         });
     }
 
