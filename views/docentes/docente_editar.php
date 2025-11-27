@@ -33,6 +33,24 @@ if (!$docente_encontrado) {
     <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
     <link rel="stylesheet" href="/final/public/plugins/select2/css/select2.min.css">
     <link rel="stylesheet" href="/final/public/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    
+    <!-- Estilos CSS para campos inválidos -->
+    <style>
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    .text-danger {
+        color: #dc3545 !important;
+        font-weight: bold;
+    }
+    .form-group label {
+        font-weight: 500;
+    }
+    .campo-obligatorio {
+        border-left: 3px solid #dc3545;
+        padding-left: 10px;
+    }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
@@ -128,6 +146,24 @@ if (!$docente_encontrado) {
                                         <div class="col-md-6">
                                             <h5>Datos Personales</h5>
                                             
+                                            <!-- Nacionalidad como primer campo -->
+                                            <div class="form-group campo-obligatorio">
+                                                <label for="nacionalidad">Nacionalidad <span class="text-danger">* (Obligatorio)</span></label>
+                                                <select class="form-control" id="nacionalidad" name="nacionalidad" required>
+                                                    <option value="">Seleccionar...</option>
+                                                    <option value="Venezolano" <?php echo ($docente->nacionalidad == 'Venezolano') ? 'selected' : ''; ?>>Venezolano</option>
+                                                    <option value="Extranjero" <?php echo ($docente->nacionalidad == 'Extranjero') ? 'selected' : ''; ?>>Extranjero</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Cédula como segundo campo -->
+                                            <div class="form-group campo-obligatorio">
+                                                <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
+                                                <input type="text" class="form-control" id="cedula" name="cedula" 
+                                                       value="<?php echo htmlspecialchars($docente->cedula); ?>" readonly style="background-color: #e9ecef;">
+                                                <small class="form-text text-muted">La cédula no se puede editar después del registro</small>
+                                            </div>
+                                            
                                             <div class="form-group">
                                                 <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" 
@@ -156,76 +192,60 @@ if (!$docente_encontrado) {
                                                 <small class="form-text text-muted">El segundo apellido no se puede editar después del registro</small>
                                             </div>
 
-                                            <div class="form-group">
-                                                <label for="sexo">Sexo</label>
-                                                <select class="form-control" id="sexo" name="sexo" disabled style="background-color: #e9ecef;">
+                                            <!-- Sexo como campo obligatorio y editable -->
+                                            <div class="form-group campo-obligatorio">
+                                                <label for="sexo">Sexo <span class="text-danger">* (Obligatorio)</span></label>
+                                                <select class="form-control" id="sexo" name="sexo" required>
                                                     <option value="">Seleccionar...</option>
                                                     <option value="Masculino" <?php echo ($docente->sexo == 'Masculino') ? 'selected' : ''; ?>>Masculino</option>
                                                     <option value="Femenino" <?php echo ($docente->sexo == 'Femenino') ? 'selected' : ''; ?>>Femenino</option>
                                                 </select>
-                                                <input type="hidden" name="sexo" value="<?php echo htmlspecialchars($docente->sexo); ?>">
-                                                <small class="form-text text-muted">El sexo no se puede editar después del registro</small>
                                             </div>
 
-                                            <div class="form-group">
-                                                <label for="nacionalidad">Nacionalidad</label>
-                                                <select class="form-control" id="nacionalidad" name="nacionalidad" disabled style="background-color: #e9ecef;">
-                                                    <option value="">Seleccionar...</option>
-                                                    <option value="Venezolano" <?php echo ($docente->nacionalidad == 'Venezolano') ? 'selected' : ''; ?>>Venezolano</option>
-                                                    <option value="Extranjero" <?php echo ($docente->nacionalidad == 'Extranjero') ? 'selected' : ''; ?>>Extranjero</option>
-                                                </select>
-                                                <input type="hidden" name="nacionalidad" value="<?php echo htmlspecialchars($docente->nacionalidad); ?>">
-                                                <small class="form-text text-muted">La nacionalidad no se puede editar después del registro</small>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
-                                                <input type="text" class="form-control" id="cedula" name="cedula" 
-                                                       value="<?php echo htmlspecialchars($docente->cedula); ?>" readonly style="background-color: #e9ecef;">
-                                                <small class="form-text text-muted">La cédula no se puede editar después del registro</small>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="fecha_nac">Fecha de Nacimiento</label>
+                                            <!-- Fecha de nacimiento como campo obligatorio -->
+                                            <div class="form-group campo-obligatorio">
+                                                <label for="fecha_nac">Fecha de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="date" class="form-control" id="fecha_nac" name="fecha_nac" 
-                                                       value="<?php echo $docente->fecha_nac; ?>" readonly style="background-color: #e9ecef;">
-                                                <small class="form-text text-muted">La fecha de nacimiento no se puede editar después del registro</small>
+                                                       value="<?php echo $docente->fecha_nac; ?>" required>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="lugar_nac">Lugar de Nacimiento</label>
                                                 <input type="text" class="form-control" id="lugar_nac" name="lugar_nac" 
-                                                       value="<?php echo htmlspecialchars($docente->lugar_nac); ?>" readonly style="background-color: #e9ecef;">
-                                                <small class="form-text text-muted">El lugar de nacimiento no se puede editar después del registro</small>
+                                                       value="<?php echo htmlspecialchars($docente->lugar_nac); ?>">
                                             </div>
                                         </div>
 
                                         <div class="col-md-6">
                                             <h5>Información de Contacto</h5>
 
-                                            <div class="form-group">
-                                                <label for="telefono">Teléfono Móvil</label>
+                                            <!-- Teléfono móvil como campo obligatorio -->
+                                            <div class="form-group campo-obligatorio">
+                                                <label for="telefono">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
                                                 <input type="text" class="form-control" id="telefono" name="telefono" 
-                                                       value="<?php echo htmlspecialchars($docente->telefono); ?>">
+                                                       value="<?php echo htmlspecialchars($docente->telefono); ?>" required maxlength="11">
+                                                <small class="form-text text-muted">Solo se permiten números</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="telefono_hab">Teléfono Habitación</label>
                                                 <input type="text" class="form-control" id="telefono_hab" name="telefono_hab" 
-                                                       value="<?php echo htmlspecialchars($docente->telefono_hab); ?>">
+                                                       value="<?php echo htmlspecialchars($docente->telefono_hab); ?>" maxlength="11">
+                                                <small class="form-text text-muted">Solo se permiten números</small>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="correo">Correo Electrónico</label>
                                                 <input type="email" class="form-control" id="correo" name="correo" 
                                                        value="<?php echo htmlspecialchars($docente->correo); ?>">
+                                                <small class="form-text text-muted">Formato: usuario@dominio.com</small>
                                             </div>
 
                                             <h5 class="mt-4">Información Profesional</h5>
 
-                                            <div class="form-group">
+                                            <div class="form-group campo-obligatorio">
                                                 <label for="id_profesion">Profesión <span class="text-danger">* (Obligatorio)</span></label>
-                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;" disabled style="background-color: #e9ecef;">
+                                                <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;" required>
                                                     <option value="">Seleccionar profesión...</option>
                                                     <?php
                                                     $profesiones = $docente->obtenerProfesiones();
@@ -235,8 +255,6 @@ if (!$docente_encontrado) {
                                                     }
                                                     ?>
                                                 </select>
-                                                <input type="hidden" name="id_profesion" value="<?php echo $docente->id_profesion; ?>">
-                                                <small class="form-text text-muted">La profesión no se puede editar después del registro</small>
                                             </div>
                                         </div>
                                     </div>
@@ -291,7 +309,7 @@ if (!$docente_encontrado) {
 
                                             <div class="alert alert-info">
                                                 <h6><i class="icon fas fa-info"></i> Información</h6>
-                                                Los siguientes datos no se pueden editar después del registro: nombres, apellidos, cédula, sexo, nacionalidad, fecha de nacimiento, lugar de nacimiento y profesión.
+                                                Los siguientes datos no se pueden editar después del registro: nombres, apellidos, cédula, fecha de nacimiento, lugar de nacimiento y profesión.
                                             </div>
                                         </div>
                                     </div>
@@ -331,20 +349,128 @@ $(function () {
         theme: 'bootstrap4'
     });
 
-    // Validación del formulario
-    $('#formEditar').on('submit', function(e) {
-        // Validación de campos obligatorios
-        let profesion = $('#id_profesion').val();
-        let isValid = true;
+    // Función para convertir texto a mayúsculas
+    function convertirMayusculas(elemento) {
+        elemento.value = elemento.value.toUpperCase();
+    }
 
-        if (!profesion) {
-            alert('La profesión es obligatoria');
+    // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
+    $('input[type="text"]:not([readonly])').on('input', function() {
+        convertirMayusculas(this);
+    });
+
+    // Solo letras (para lugar de nacimiento, dirección, calle, casa)
+    $('#lugar_nac, #direccion, #calle, #casa').on('input', function() {
+        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9.,#\-]/g, '');
+        convertirMayusculas(this);
+    });
+
+    // Solo números (para teléfonos)
+    $('#telefono, #telefono_hab').on('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Validación de correo electrónico
+    $('#correo').on('blur', function() {
+        const email = this.value;
+        if (email && !isValidEmail(email)) {
+            alert('Por favor, ingrese un correo electrónico válido (debe contener @ y dominio)');
+            this.focus();
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // Función para validar formato de email
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Validación en tiempo real para campos obligatorios
+    $('input[required], select[required]').on('blur', function() {
+        const valor = $(this).val();
+        if (!valor) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // Validación del formulario antes de enviar
+    $('#formEditar').on('submit', function(e) {
+        let isValid = true;
+        let mensajesError = [];
+
+        // Campos obligatorios
+        const camposObligatorios = {
+            'nacionalidad': 'Nacionalidad',
+            'sexo': 'Sexo',
+            'fecha_nac': 'Fecha de Nacimiento',
+            'telefono': 'Teléfono Móvil',
+            'id_profesion': 'Profesión'
+        };
+
+        // Validar campos obligatorios
+        for (const [campo, nombre] of Object.entries(camposObligatorios)) {
+            const valor = campo.startsWith('id_') ? 
+                $(`#${campo}`).val() : 
+                $(`#${campo}`).val().trim();
+            
+            if (!valor) {
+                mensajesError.push(`El campo "${nombre}" es obligatorio`);
+                $(`#${campo}`).addClass('is-invalid');
+                isValid = false;
+            } else {
+                $(`#${campo}`).removeClass('is-invalid');
+            }
+        }
+
+        // Validar teléfonos (solo números)
+        const telefono = $('#telefono').val();
+        const telefonoHab = $('#telefono_hab').val();
+        
+        if (telefono && !/^\d+$/.test(telefono)) {
+            mensajesError.push('El teléfono móvil debe contener solo números');
+            isValid = false;
+        }
+        
+        if (telefonoHab && !/^\d+$/.test(telefonoHab)) {
+            mensajesError.push('El teléfono de habitación debe contener solo números');
             isValid = false;
         }
 
+        // Validar correo electrónico
+        const correo = $('#correo').val();
+        if (correo && !isValidEmail(correo)) {
+            mensajesError.push('Por favor, ingrese un correo electrónico válido (formato: usuario@dominio.com)');
+            isValid = false;
+        }
+
+        // Validar fecha de nacimiento (no puede ser futura)
+        const fechaNac = $('#fecha_nac').val();
+        if (fechaNac) {
+            const hoy = new Date().toISOString().split('T')[0];
+            if (fechaNac > hoy) {
+                mensajesError.push('La fecha de nacimiento no puede ser futura');
+                isValid = false;
+            }
+        }
+
+        // Mostrar errores si los hay
         if (!isValid) {
             e.preventDefault();
+            alert('Por favor, corrija los siguientes errores:\n\n• ' + mensajesError.join('\n• '));
+            
+            // Scroll al primer error
+            $('.is-invalid').first().focus();
         }
+    });
+
+    // Limpiar validación cuando el usuario empiece a escribir
+    $('input, select').on('input change', function() {
+        $(this).removeClass('is-invalid');
     });
 });
 </script>
