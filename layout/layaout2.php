@@ -24,10 +24,16 @@
 
     <!-- jQuery -->
     <script src="<?= URL; ?>/public/plugins/jquery/jquery.min.js"></script>
+    <script src="<?= URL; ?>/public/plugins/select2/js/select2.full.min.js"></script>
+
     <!-- Bootstrap 4 -->
     <script src="<?= URL; ?>/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= URL; ?>/public/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="<?= URL; ?>/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+
+
     <!-- AdminLTE App -->
     <script src="<?= URL; ?>/public/dist/js/adminlte.min.js"></script>
-    </body>
 
-    </html>
+
+    </body>
