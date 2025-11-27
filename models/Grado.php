@@ -261,7 +261,8 @@ public function listarGradosPeriodoActivo() {
                     par.parentesco, 
                     CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre,
                     rp.cedula as rep_cedula,
-                    per.descripcion_periodo
+                    per.descripcion_periodo,
+                    GROUP_CONCAT(DISTINCT disc.nom_discapacidad SEPARATOR ', ') as discapacidades
                   FROM inscripciones i
                   INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
                   INNER JOIN personas p ON e.id_persona = p.id_persona
@@ -270,11 +271,14 @@ public function listarGradosPeriodoActivo() {
                   LEFT JOIN representantes r ON er.id_representante = r.id_representante
                   LEFT JOIN personas rp ON r.id_persona = rp.id_persona
                   LEFT JOIN parentesco par ON er.id_parentesco = par.id_parentesco 
+                  LEFT JOIN estudiantes_discapacidades ed ON e.id_estudiante = ed.id_estudiante
+                  LEFT JOIN discapacidades disc ON ed.id_discapacidad = disc.id_discapacidad
                   WHERE i.id_nivel_seccion = :id_nivel_seccion 
                     AND i.estatus = 1 
                     AND e.estatus = 1
                     AND per.estatus = 1
                     AND per.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
+                  GROUP BY p.id_persona
                   ORDER BY p.primer_apellido, p.primer_nombre";
         
         $stmt = $this->conn->prepare($query);

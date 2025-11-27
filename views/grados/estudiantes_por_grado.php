@@ -123,6 +123,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                 <th>Nombre Completo</th>
                                 <th>Sexo</th>
                                 <th>Edad</th>
+                                <th>Discapacidades</th>
                                 <th>Fecha Inscripción</th>
                                 <th>Representante</th>
                                 <th>Acciones</th>
@@ -144,6 +145,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                         htmlspecialchars($estudiante['representante_nombre']) . 
                                         ($estudiante['parentesco'] ? ' (' . htmlspecialchars($estudiante['parentesco']) . ')' : '') : 
                                         'No asignado';
+                                    $discapacidades = $estudiante['discapacidades'] ? htmlspecialchars($estudiante['discapacidades']) : 'Ninguna';
                             ?>
                                     <tr>
                                         <td><?php echo $contador++; ?></td>
@@ -151,6 +153,15 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                         <td><?php echo $nombre_completo_estudiante; ?></td>
                                         <td><?php echo htmlspecialchars($estudiante['sexo']); ?></td>
                                         <td><?php echo $edad; ?> años</td>
+                                        <td>
+                                            <?php if ($estudiante['discapacidades']): ?>
+                                                <span class="badge badge-info" title="<?php echo $discapacidades; ?>">
+                                                    <i class="fas fa-wheelchair"></i> Discapacidad
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="text-muted">Ninguna</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?php echo date('d/m/Y', strtotime($estudiante['fecha_inscripcion'])); ?></td>
                                         <td><?php echo $nombre_completo_representante; ?></td>
                                         <td>
@@ -176,7 +187,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="8" class="text-center">No hay estudiantes inscritos en este grado/sección</td>
+                                    <td colspan="9" class="text-center">No hay estudiantes inscritos en este grado/sección</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
