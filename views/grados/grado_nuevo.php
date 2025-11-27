@@ -52,15 +52,15 @@ if ($_POST && isset($_POST['crear_nivel'])) {
             $query = "INSERT INTO niveles (num_nivel, nom_nivel) VALUES (?, ?)";
             $stmt = $db->prepare($query);
             if ($stmt->execute([$num_nivel, $nom_nivel])) {
-                $_SESSION['success'] = "Nivel creado exitosamente.";
+                $_SESSION['success'] = "Grado/Año creado exitosamente.";
                 header("Location: grado_nuevo.php");
                 exit();
             } else {
-                $_SESSION['error'] = "No se pudo crear el nivel.";
+                $_SESSION['error'] = "No se pudo crear el Grado/Año.";
             }
         }
     } catch (Exception $e) {
-        $_SESSION['error'] = "Error al crear nivel: " . $e->getMessage();
+        $_SESSION['error'] = "Error al crear Grado/Año: " . $e->getMessage();
     }
 }
 
@@ -328,7 +328,7 @@ try {
     </footer>
 </div>
 
-<!-- Modal para Nuevo Nivel -->
+<!-- Modal para Nuevo Grado/Año (MODIFICADO) -->
 <div class="modal fade" id="modalNuevoNivel" tabindex="-1" role="dialog" aria-labelledby="modalNuevoNivelLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -338,24 +338,47 @@ try {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post" action="grado_nuevo.php">
+            <form method="post" action="grado_nuevo.php" id="formNuevoNivel">
                 <div class="modal-body">
+                    <!-- NUEVO FLUJO: Selección de Grado/Año -->
                     <div class="form-group">
-                        <label for="nuevo_num_nivel">Número de Grado/Año:</label>
-                        <input type="number" class="form-control" id="nuevo_num_nivel" name="nuevo_num_nivel" 
-                               min="1" max="12" required placeholder="Ej: 3">
-                        <small class="form-text text-muted">Número ordinal del grado/año (1, 2, 3, etc.)</small>
+                        <label for="tipo_nivel">Nivel:</label>
+                        <select class="form-control" id="tipo_nivel" name="tipo_nivel" required onchange="actualizarNombreGradoModal()">
+                            <option value="">Seleccione el tipo</option>
+                            <option value="grado">Grado</option>
+                            <option value="año">Año</option>
+                        </select>
+                        <small class="form-text text-muted">Seleccione si es Grado o Año</small>
                     </div>
+                    
+                    <!-- NUEVO: Selección de número -->
                     <div class="form-group">
-                        <label for="nuevo_nom_nivel">Nombre del Grado/Año:</label>
-                        <input type="text" class="form-control" id="nuevo_nom_nivel" name="nuevo_nom_nivel" 
-                               required placeholder="Ej: Tercer Grado">
-                        <small class="form-text text-muted">Nombre completo del grado/año</small>
+                        <label for="nuevo_num_nivel">Número:</label>
+                        <select class="form-control" id="nuevo_num_nivel" name="nuevo_num_nivel" required onchange="actualizarNombreGradoModal()">
+                            <option value="">Seleccione el número</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                        <small class="form-text text-muted">Número ordinal (1, 2, 3, etc.)</small>
                     </div>
+                    
+                    <!-- NUEVO: Campo de nombre automático -->
+                    <div class="form-group">
+                        <label for="nombre_grado_auto">Nombre del Grado/Año (automático):</label>
+                        <input type="text" class="form-control" id="nombre_grado_auto" name="nombre_grado_auto" readonly>
+                        <small class="form-text text-muted">Se generará automáticamente según su selección</small>
+                    </div>
+                    
+                    <!-- Campo oculto para enviar el nombre final -->
+                    <input type="hidden" id="nuevo_nom_nivel" name="nuevo_nom_nivel">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" name="crear_nivel" class="btn btn-primary">
+                    <button type="submit" name="crear_nivel" class="btn btn-primary" id="btnCrearNivel" disabled>
                         <i class="fas fa-save"></i> Crear Grado/Año
                     </button>
                 </div>
@@ -446,12 +469,47 @@ function validarCombinacion() {
     xhr.send('id_nivel=' + idNivel + '&id_seccion=' + idSeccion);
 }
 
+// Función para actualizar el nombre del grado automáticamente en el modal
+function actualizarNombreGradoModal() {
+    var tipoSelect = document.getElementById('tipo_nivel');
+    var numeroSelect = document.getElementById('nuevo_num_nivel');
+    var nombreInput = document.getElementById('nombre_grado_auto');
+    var hiddenInput = document.getElementById('nuevo_nom_nivel');
+    var btnCrear = document.getElementById('btnCrearNivel');
+    
+    var tipoValor = tipoSelect.value;
+    var numeroValor = numeroSelect.value;
+    
+    // Generar nombre del grado basado en el tipo y número seleccionado
+    var nombresGrados = {
+        '1': 'Primer',
+        '2': 'Segundo', 
+        '3': 'Tercer',
+        '4': 'Cuarto',
+        '5': 'Quinto',
+        '6': 'Sexto'
+    };
+    
+    if (tipoValor && numeroValor) {
+        var nombreBase = nombresGrados[numeroValor] || numeroValor;
+        var nombreCompleto = nombreBase + ' ' + (tipoValor === 'grado' ? 'Grado' : 'Año');
+        
+        nombreInput.value = nombreCompleto;
+        hiddenInput.value = nombreCompleto;
+        btnCrear.disabled = false;
+    } else {
+        nombreInput.value = '';
+        hiddenInput.value = '';
+        btnCrear.disabled = true;
+    }
+}
+
 // Validar al cargar la página si ya hay selecciones
 document.addEventListener('DOMContentLoaded', function() {
     validarCombinacion();
 });
 
-// Validar antes de enviar el formulario
+// Validar antes de enviar el formulario principal
 document.getElementById('formGrado').addEventListener('submit', function(e) {
     var idNivel = document.getElementById('id_nivel').value;
     var idSeccion = document.getElementById('id_seccion').value;
@@ -463,8 +521,28 @@ document.getElementById('formGrado').addEventListener('submit', function(e) {
     }
 });
 
+// Validar formulario del modal antes de enviar
+document.getElementById('formNuevoNivel').addEventListener('submit', function(e) {
+    var tipoNivel = document.getElementById('tipo_nivel').value;
+    var numNivel = document.getElementById('nuevo_num_nivel').value;
+    
+    if (!tipoNivel || !numNivel) {
+        e.preventDefault();
+        alert('Por favor, complete todos los campos del Grado/Año.');
+        return false;
+    }
+});
+
+// Limpiar modal cuando se cierre
+$('#modalNuevoNivel').on('hidden.bs.modal', function () {
+    document.getElementById('formNuevoNivel').reset();
+    document.getElementById('nombre_grado_auto').value = '';
+    document.getElementById('nuevo_nom_nivel').value = '';
+    document.getElementById('btnCrearNivel').disabled = true;
+});
+
 // Recargar la página después de cerrar modales para actualizar los selects
-$('#modalNuevoNivel, #modalNuevaSeccion').on('hidden.bs.modal', function () {
+$('#modalNuevaSeccion').on('hidden.bs.modal', function () {
     location.reload();
 });
 </script>

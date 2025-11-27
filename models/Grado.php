@@ -359,6 +359,36 @@ public function listarGradosPeriodoActivo() {
         
         return $stmt;
     }
+    /**
+ * Crear nuevo nivel con número y nombre automático
+ * @param string $nombre_nivel Nombre del nivel (Ej: Primaria)
+ * @param int $numero_grado Número del grado (1-6)
+ * @return bool True si se creó correctamente
+ */
+public function crearNivelConGrado($nombre_nivel, $numero_grado) {
+    // Generar nombre automático del grado
+    $nombresGrados = [
+        1 => 'Primer Grado',
+        2 => 'Segundo Grado',
+        3 => 'Tercer Grado',
+        4 => 'Cuarto Grado', 
+        5 => 'Quinto Grado',
+        6 => 'Sexto Grado'
+    ];
+    
+    $nom_nivel = $nombresGrados[$numero_grado] ?? 'Grado ' . $numero_grado;
+    
+    $query = "INSERT INTO niveles (num_nivel, nom_nivel) VALUES (?, ?)";
+    $stmt = $this->conn->prepare($query);
+    
+    $numero_grado = htmlspecialchars(strip_tags($numero_grado));
+    $nom_nivel = htmlspecialchars(strip_tags($nom_nivel));
+    
+    if ($stmt->execute([$numero_grado, $nom_nivel])) {
+        return $this->conn->lastInsertId();
+    }
+    return false;
+}
 
     // ========== NUEVOS MÉTODOS PARA HABILITAR/INHABILITAR ==========
 
