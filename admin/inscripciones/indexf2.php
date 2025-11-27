@@ -1119,6 +1119,20 @@ try {
     let currentStep = 1;
     const totalSteps = 3;
 
+    function refreshTabStyles() {
+      const navLinks = document.querySelectorAll('#stepIndicator .nav-link');
+
+      navLinks.forEach(link => {
+        if (link.classList.contains('active')) {
+          link.style.color = 'white';
+          link.style.fontWeight = 'semi-bold';
+        } else {
+          link.style.color = '';
+          link.style.fontWeight = '';
+        }
+      });
+    }
+
     // ========== NAVEGACIÓN ENTRE PASOS ==========
     function showStep(step) {
       // Ocultar todos los pasos
@@ -1126,6 +1140,7 @@ try {
 
       // Mostrar el paso actual
       document.getElementById(`step${step}`).classList.add('active');
+
 
       // Actualizar indicador
       document.querySelectorAll('#stepIndicator .nav-link').forEach((link, index) => {
@@ -1146,12 +1161,16 @@ try {
     // Event listeners para botones de navegación
     document.getElementById('btn-next-to-step2').addEventListener('click', function() {
       showStep(2);
+      refreshTabStyles();
+
     });
 
     document.getElementById('btn-next-to-step3').addEventListener('click', function() {
       // Validar campos requeridos del paso 2 antes de continuar
       const requiredFields = document.querySelectorAll('#step2 [required]');
       let valid = true;
+      refreshTabStyles();
+
 
       requiredFields.forEach(field => {
         if (!field.value.trim()) {
@@ -1164,6 +1183,8 @@ try {
 
       if (valid) {
         showStep(3);
+        refreshTabStyles();
+
       } else {
         alert('Por favor complete todos los campos requeridos del representante.');
       }
@@ -1171,10 +1192,14 @@ try {
 
     document.getElementById('btn-back-to-step1').addEventListener('click', function() {
       showStep(1);
+      refreshTabStyles();
+
     });
 
     document.getElementById('btn-back-to-step2').addEventListener('click', function() {
       showStep(2);
+      refreshTabStyles();
+
     });
 
 
@@ -2271,7 +2296,7 @@ try {
                 <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
                 ${data.mensaje}
                 ${data.disponible ? 
-                    `<br><small class="text-muted">Puede continuar con la inscripción</small>` : 
+                    `<br><small class="text-white">Puede continuar con la inscripción</small>` : 
                     `<br><small class="text-muted">No se puede realizar la inscripción en esta sección</small>`
                 }
             `;
