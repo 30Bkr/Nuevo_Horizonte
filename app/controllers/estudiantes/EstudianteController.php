@@ -52,6 +52,9 @@ class EstudianteController {
             throw new Exception("La cédula del estudiante ya existe en el sistema");
         }
 
+        // Procesar patologías y discapacidades
+        $this->procesarSaludEstudiante($id, $data);
+
         return $this->estudiante->actualizar();
     }
 
@@ -69,6 +72,14 @@ class EstudianteController {
 
     public function obtenerParroquias() {
         return $this->estudiante->obtenerParroquias();
+    }
+
+    public function obtenerPatologias() {
+        return $this->estudiante->obtenerPatologias();
+    }
+
+    public function obtenerDiscapacidades() {
+        return $this->estudiante->obtenerDiscapacidades();
     }
 
     private function asignarDatosEstudiante($data) {
@@ -105,6 +116,104 @@ class EstudianteController {
         $this->estudiante->ocupacion_rep = $data['ocupacion_rep'] ?? '';
         $this->estudiante->lugar_trabajo_rep = $data['lugar_trabajo_rep'] ?? '';
         $this->estudiante->id_parentesco = $data['id_parentesco'] ?? '';
+    }
+
+    private function procesarSaludEstudiante($id_estudiante, $data) {
+        try {
+            // Procesar patologías
+            if (isset($data['patologias'])) {
+                // Eliminar patologías existentes
+                $query_delete = "UPDATE estudiantes_patologias SET estatus = 0 WHERE id_estudiante = ?";
+                $stmt_delete = $this->db->prepare($query_delete);
+                $stmt_delete->bindParam(1, $id_estudiante);
+                $stmt_delete->execute();
+
+                // Insertar nuevas patologías
+                foreach ($data['patologias'] as $id_patologia) {
+                    if (!empty($id_patologia)) {
+                        // Verificar si ya existe
+                        $query_check = "SELECT id_estudiante_patologia FROM estudiantes_patologias 
+                                      WHERE id_estudiante = ? AND id_patologia = ?";
+                        $stmt_check = $this->db->prepare($query_check);
+                        $stmt_check->bindParam(1, $id_estudiante);
+                        $stmt_check->bindParam(2, $id_patologia);
+                        $stmt_check->execute();
+
+                        if ($stmt_check->rowCount() > 0) {
+                            // Actualizar existente
+                            $query_update = "UPDATE estudiantes_patologias SET estatus = 1, actualizacion = NOW() 
+                                           WHERE id_estudiante = ? AND id_patologia = ?";
+                            $stmt_update = $this->db->prepare($query_update);
+                            $stmt_update->bindParam(1, $id_estudiante);
+                            $stmt_update->bindParam(2, $id_patologia);
+                            $stmt_update->execute();
+                        } else {
+                            // Insertar nuevo
+                            $query_insert = "INSERT INTO estudiantes_patologias (id_estudiante, id_patologia, creacion, estatus) 
+                                           VALUES (?, ?, NOW(), 1)";
+                            $stmt_insert = $this->db->prepare($query_insert);
+                            $stmt_insert->bindParam(1, $id_estudiante);
+                            $stmt_insert->bindParam(2, $id_patologia);
+                            $stmt_insert->execute();
+                        }
+                    }
+                }
+            } else {
+                // Si no se enviaron patologías, desactivar todas
+                $query_delete = "UPDATE estudiantes_patologias SET estatus = 0 WHERE id_estudiante = ?";
+                $stmt_delete = $this->db->prepare($query_delete);
+                $stmt_delete->bindParam(1, $id_estudiante);
+                $stmt_delete->execute();
+            }
+
+            // Procesar discapacidades
+            if (isset($data['discapacidades'])) {
+                // Eliminar discapacidades existentes
+                $query_delete = "UPDATE estudiantes_discapacidades SET estatus = 0 WHERE id_estudiante = ?";
+                $stmt_delete = $this->db->prepare($query_delete);
+                $stmt_delete->bindParam(1, $id_estudiante);
+                $stmt_delete->execute();
+
+                // Insertar nuevas discapacidades
+                foreach ($data['discapacidades'] as $id_discapacidad) {
+                    if (!empty($id_discapacidad)) {
+                        // Verificar si ya existe
+                        $query_check = "SELECT id_estudiante_discapacidad FROM estudiantes_discapacidades 
+                                      WHERE id_estudiante = ? AND id_discapacidad = ?";
+                        $stmt_check = $this->db->prepare($query_check);
+                        $stmt_check->bindParam(1, $id_estudiante);
+                        $stmt_check->bindParam(2, $id_discapacidad);
+                        $stmt_check->execute();
+
+                        if ($stmt_check->rowCount() > 0) {
+                            // Actualizar existente
+                            $query_update = "UPDATE estudiantes_discapacidades SET estatus = 1, actualizacion = NOW() 
+                                           WHERE id_estudiante = ? AND id_discapacidad = ?";
+                            $stmt_update = $this->db->prepare($query_update);
+                            $stmt_update->bindParam(1, $id_estudiante);
+                            $stmt_update->bindParam(2, $id_discapacidad);
+                            $stmt_update->execute();
+                        } else {
+                            // Insertar nuevo
+                            $query_insert = "INSERT INTO estudiantes_discapacidades (id_estudiante, id_discapacidad, creacion, estatus) 
+                                           VALUES (?, ?, NOW(), 1)";
+                            $stmt_insert = $this->db->prepare($query_insert);
+                            $stmt_insert->bindParam(1, $id_estudiante);
+                            $stmt_insert->bindParam(2, $id_discapacidad);
+                            $stmt_insert->execute();
+                        }
+                    }
+                }
+            } else {
+                // Si no se enviaron discapacidades, desactivar todas
+                $query_delete = "UPDATE estudiantes_discapacidades SET estatus = 0 WHERE id_estudiante = ?";
+                $stmt_delete = $this->db->prepare($query_delete);
+                $stmt_delete->bindParam(1, $id_estudiante);
+                $stmt_delete->execute();
+            }
+        } catch (Exception $e) {
+            throw new Exception("Error al procesar información de salud: " . $e->getMessage());
+        }
     }
 }
 ?>

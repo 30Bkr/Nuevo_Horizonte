@@ -222,6 +222,79 @@ try {
                                         </div>
                                     </div>
 
+                                    <!-- Sección de Salud -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-12">
+                                            <h5 class="text-primary">
+                                                <i class="fas fa-heartbeat"></i> Información de Salud
+                                            </h5>
+                                            <hr>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Patologías/Enfermedades:</strong><br>
+                                            <?php
+                                            try {
+                                                $database = new Conexion();
+                                                $db = $database->conectar();
+                                                if ($db) {
+                                                    $query_patologias = "SELECT p.nom_patologia 
+                                                                    FROM estudiantes_patologias ep 
+                                                                    INNER JOIN patologias p ON ep.id_patologia = p.id_patologia 
+                                                                    WHERE ep.id_estudiante = ? AND ep.estatus = 1";
+                                                    $stmt_patologias = $db->prepare($query_patologias);
+                                                    $stmt_patologias->bindParam(1, $id_estudiante);
+                                                    $stmt_patologias->execute();
+                                                    
+                                                    $patologias = [];
+                                                    while ($patologia = $stmt_patologias->fetch(PDO::FETCH_ASSOC)) {
+                                                        $patologias[] = $patologia['nom_patologia'];
+                                                    }
+                                                    
+                                                    if (!empty($patologias)) {
+                                                        echo implode(', ', array_map('htmlspecialchars', $patologias));
+                                                    } else {
+                                                        echo 'Ninguna registrada';
+                                                    }
+                                                }
+                                            } catch (Exception $e) {
+                                                echo 'Error al cargar patologías';
+                                            }
+                                            ?>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <strong>Discapacidades:</strong><br>
+                                            <?php
+                                            try {
+                                                $database = new Conexion();
+                                                $db = $database->conectar();
+                                                if ($db) {
+                                                    $query_discapacidades = "SELECT d.nom_discapacidad 
+                                                                        FROM estudiantes_discapacidades ed 
+                                                                        INNER JOIN discapacidades d ON ed.id_discapacidad = d.id_discapacidad 
+                                                                        WHERE ed.id_estudiante = ? AND ed.estatus = 1";
+                                                    $stmt_discapacidades = $db->prepare($query_discapacidades);
+                                                    $stmt_discapacidades->bindParam(1, $id_estudiante);
+                                                    $stmt_discapacidades->execute();
+                                                    
+                                                    $discapacidades = [];
+                                                    while ($discapacidad = $stmt_discapacidades->fetch(PDO::FETCH_ASSOC)) {
+                                                        $discapacidades[] = $discapacidad['nom_discapacidad'];
+                                                    }
+                                                    
+                                                    if (!empty($discapacidades)) {
+                                                        echo implode(', ', array_map('htmlspecialchars', $discapacidades));
+                                                    } else {
+                                                        echo 'Ninguna registrada';
+                                                    }
+                                                }
+                                            } catch (Exception $e) {
+                                                echo 'Error al cargar discapacidades';
+                                            }
+                                            ?>
+                                        </div>
+                                    </div>
+
                                     <!-- Representante -->
                                     <div class="row mb-4">
                                         <div class="col-md-12">

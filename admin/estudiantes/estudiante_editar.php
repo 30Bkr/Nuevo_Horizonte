@@ -30,6 +30,10 @@ try {
 
     $estudiante = $controller->estudiante;
 
+    // Obtener patologías y discapacidades seleccionadas
+    $patologias_seleccionadas = $controller->estudiante->obtenerPatologiasEstudiante($id_estudiante);
+    $discapacidades_seleccionadas = $controller->estudiante->obtenerDiscapacidadesEstudiante($id_estudiante);
+
     // Procesar formulario de actualización
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($controller->actualizar($id_estudiante, $_POST)) {
@@ -176,27 +180,30 @@ try {
                                             <i class="fas fa-user-graduate"></i> Información Personal del Estudiante
                                         </h5>
                                         <div class="row">
-                                            <!-- Nacionalidad como primer campo -->
+                                            <!-- Nacionalidad como lista desplegable -->
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="nacionalidad">Nacionalidad <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="nacionalidad" name="nacionalidad"
-                                                           value="<?php echo htmlspecialchars($estudiante->nacionalidad); ?>" required>
+                                                    <select class="form-control" id="nacionalidad" name="nacionalidad" required>
+                                                        <option value="">Seleccione...</option>
+                                                        <option value="Venezolano" <?php echo $estudiante->nacionalidad == 'Venezolano' ? 'selected' : ''; ?>>Venezolano</option>
+                                                        <option value="Extranjero" <?php echo $estudiante->nacionalidad == 'Extranjero' ? 'selected' : ''; ?>>Extranjero</option>
+                                                    </select>
                                                 </div>
                                             </div>
                                             
-                                            <!-- Cédula como segundo campo -->
+                                            <!-- Cédula editable -->
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="cedula" name="cedula" 
-                                                           value="<?php echo htmlspecialchars($estudiante->cedula); ?>" required readonly
-                                                           style="background-color: #e9ecef;">
-                                                    <small class="form-text text-muted">La cédula no se puede modificar</small>
+                                                           value="<?php echo htmlspecialchars($estudiante->cedula); ?>" required
+                                                           maxlength="20">
+                                                    <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
                                             </div>
                                             
-                                            <!-- Fecha de nacimiento como tercer campo -->
+                                            <!-- Fecha de nacimiento -->
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="fecha_nac">Fecha de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
@@ -338,6 +345,63 @@ try {
                                             </div>
                                         </div>
 
+                                        <!-- Sección de Salud del Estudiante -->
+                                        <h5 class="text-primary mb-3 mt-4">
+                                            <i class="fas fa-heartbeat"></i> Información de Salud del Estudiante
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="patologias">Patologías/Enfermedades</label>
+                                                    <select class="form-control select2" id="patologias" name="patologias[]" multiple>
+                                                        <option value="">Seleccione patologías...</option>
+                                                        <?php
+                                                        try {
+                                                            $database = new Conexion();
+                                                            $db = $database->conectar();
+                                                            if ($db) {
+                                                                $controller_patologias = new EstudianteController($db);
+                                                                $patologias = $controller_patologias->obtenerPatologias();
+                                                                while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
+                                                                    $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
+                                                                    echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
+                                                                }
+                                                            }
+                                                        } catch (Exception $e) {
+                                                            echo "<option value=''>Error al cargar patologías</option>";
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                    <small class="form-text text-muted">Seleccione las patologías que presente el estudiante (opcional)</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="discapacidades">Discapacidades</label>
+                                                    <select class="form-control select2" id="discapacidades" name="discapacidades[]" multiple>
+                                                        <option value="">Seleccione discapacidades...</option>
+                                                        <?php
+                                                        try {
+                                                            $database = new Conexion();
+                                                            $db = $database->conectar();
+                                                            if ($db) {
+                                                                $controller_discapacidades = new EstudianteController($db);
+                                                                $discapacidades = $controller_discapacidades->obtenerDiscapacidades();
+                                                                while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
+                                                                    $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
+                                                                    echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
+                                                                }
+                                                            }
+                                                        } catch (Exception $e) {
+                                                            echo "<option value=''>Error al cargar discapacidades</option>";
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                    <small class="form-text text-muted">Seleccione las discapacidades que presente el estudiante (opcional)</small>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <!-- Datos del Representante -->
                                         <h5 class="text-primary mb-3 mt-4">
                                             <i class="fas fa-user-tie"></i> Datos del Representante
@@ -378,9 +442,9 @@ try {
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="cedula_rep">Cédula del Representante <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="cedula_rep" name="cedula_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->cedula_rep ?? ''); ?>" required readonly
-                                                           style="background-color: #e9ecef;">
-                                                    <small class="form-text text-muted">La cédula del representante no se puede modificar</small>
+                                                           value="<?php echo htmlspecialchars($estudiante->cedula_rep ?? ''); ?>" required
+                                                           maxlength="20">
+                                                    <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -529,13 +593,13 @@ try {
             });
 
             // Solo letras (para nombres, apellidos, lugar de nacimiento, dirección, calle, casa, ocupación, lugar de trabajo)
-            $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #nacionalidad, #lugar_nac, #direccion, #calle, #casa, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
+            $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion, #calle, #casa, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
                 this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
                 convertirMayusculas(this);
             });
 
-            // Solo números (para teléfonos)
-            $('#telefono, #telefono_hab, #telefono_rep, #telefono_hab_rep').on('input', function() {
+            // Solo números (para teléfonos y cédulas)
+            $('#cedula, #cedula_rep, #telefono, #telefono_hab, #telefono_rep, #telefono_hab_rep').on('input', function() {
                 this.value = this.value.replace(/\D/g, '');
             });
 
@@ -690,6 +754,13 @@ try {
             // Limpiar validación cuando el usuario empiece a escribir
             $('input, select').on('input change', function() {
                 $(this).removeClass('is-invalid');
+            });
+
+            // Inicializar Select2 para patologías y discapacidades
+            $('#patologias, #discapacidades').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Seleccione...',
+                allowClear: true
             });
         });
     </script>
