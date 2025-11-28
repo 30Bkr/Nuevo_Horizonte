@@ -520,7 +520,7 @@ try {
                     <div class="col-md-4">
                       <div class="form-group">
                         <label for="correo_e">Correo Electrónico</label>
-                        <input type="email" name="correo_e" class="form-control" required>
+                        <input type="email" name="correo_e" class="form-control">
                       </div>
                     </div>
                   </div>
@@ -528,84 +528,95 @@ try {
                   <!-- PATOLOGÍAS -->
 
                   <!-- PATOLOGÍAS DEL SISTEMA - CARGADAS DESDE BASE DE DATOS -->
-                  <div class="row">
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <label>Patologías/Alergias</label>
 
-                        <!-- Contenedor para los selects dinámicos -->
-                        <div id="contenedor-patologias">
-                          <!-- Select Principal -->
-                          <div class="mb-2 patologia-item">
-                            <select name="patologias[]" class="form-control select-patologia">
-                              <option value="">Seleccione una patología...</option>
-                              <option value="0">Ninguna</option>
-                              <?php
-                              // Cargar patologías desde la base de datos
-                              $patologiaController = new PatologiaController($pdo);
-                              $patologias = $patologiaController->obtenerPatologiasActivas();
-
-                              if (!empty($patologias)) {
-                                foreach ($patologias as $patologia) {
-                                  echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
-                                }
-                              } else {
-                                echo "<option value=''>No hay patologías registradas</option>";
-                              }
-                              ?>
-                            </select>
-                          </div>
-                        </div>
-
-                        <!-- Botón para agregar más patologías -->
-                        <div class="mt-2">
-                          <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
-                            <i class="fas fa-plus"></i> Agregar otra patología
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
                   <!-- DISCAPACIDADES -->
-                  <div class="row">
-                    <div class="col-md-12">
-                      <div class="form-group">
-                        <label>Discapacidades</label>
 
-                        <!-- Contenedor para los selects dinámicos -->
-                        <div id="contenedor-discapacidades">
-                          <!-- Select Principal -->
-                          <div class="mb-2 discapacidad-item">
-                            <select name="discapacidades[]" class="form-control select-discapacidad">
-                              <option value="">Seleccione una discapacidad...</option>
-                              <option value="0">Ninguna</option>
-                              <?php
-                              // Cargar discapacidades desde la base de datos
-                              $discapacidadController = new DiscapacidadController($pdo);
-                              $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas();
+                  <div>
+                    <div class="card-header mt-4">
+                      <h3 class="card-title"><b>Datos de salud</b></h3>
+                    </div>
+                    <div class="card-body">
+                      <div class="row">
+                        <!-- Patologías y Discapacidades en la misma fila -->
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label>Patologías/Alergias</label>
 
-                              if (!empty($discapacidades)) {
-                                foreach ($discapacidades as $discapacidad) {
-                                  echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
-                                }
-                              } else {
-                                echo "<option value=''>No hay discapacidades registradas</option>";
-                              }
-                              ?>
-                            </select>
+                            <!-- Contenedor para los selects dinámicos -->
+                            <div id="contenedor-patologias">
+                              <!-- Select Principal -->
+                              <div class="mb-2 patologia-item">
+                                <select name="patologias[]" class="form-control select-patologia">
+                                  <option value="">Seleccione una patología...</option>
+                                  <option value="0">Ninguna</option>
+                                  <?php
+                                  // Cargar patologías desde la base de datos
+                                  $patologiaController = new PatologiaController($pdo);
+                                  $patologias = $patologiaController->obtenerPatologiasActivas();
+
+                                  if (!empty($patologias)) {
+                                    foreach ($patologias as $patologia) {
+                                      echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
+                                    }
+                                  } else {
+                                    echo "<option value=''>No hay patologías registradas</option>";
+                                  }
+                                  ?>
+                                </select>
+                              </div>
+                            </div>
+
+                            <!-- Botón para agregar más patologías -->
+                            <div class="mt-2">
+                              <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
+                                <i class="fas fa-plus"></i> Agregar otra patología
+                              </button>
+                            </div>
                           </div>
                         </div>
 
-                        <!-- Botón para agregar más discapacidades -->
-                        <div class="mt-2">
-                          <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-discapacidad">
-                            <i class="fas fa-plus"></i> Agregar otra discapacidad
-                          </button>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label>Discapacidades</label>
+
+                            <!-- Contenedor para los selects dinámicos -->
+                            <div id="contenedor-discapacidades">
+                              <!-- Select Principal -->
+                              <div class="mb-2 discapacidad-item">
+                                <select name="discapacidades[]" class="form-control select-discapacidad">
+                                  <option value="">Seleccione una discapacidad...</option>
+                                  <option value="0">Ninguna</option>
+                                  <?php
+                                  // Cargar discapacidades desde la base de datos
+                                  $discapacidadController = new DiscapacidadController($pdo);
+                                  $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas();
+
+                                  if (!empty($discapacidades)) {
+                                    foreach ($discapacidades as $discapacidad) {
+                                      echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
+                                    }
+                                  } else {
+                                    echo "<option value=''>No hay discapacidades registradas</option>";
+                                  }
+                                  ?>
+                                </select>
+                              </div>
+                            </div>
+
+                            <!-- Botón para agregar más discapacidades -->
+                            <div class="mt-2">
+                              <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-discapacidad">
+                                <i class="fas fa-plus"></i> Agregar otra discapacidad
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+
+
 
                   <div class="row">
                     <div class="col-md-12">
@@ -2973,6 +2984,8 @@ try {
 <!-- validaciones de inputs y campos  -->
 <!-- validaciones de inputs y campos  -->
 <!-- VALIDACIONES DE FORMULARIO -->
+
+<!-- VALIDACIONES DE FORMULARIO -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // ========== VALIDACIONES DE CARACTERES ==========
@@ -3077,17 +3090,22 @@ try {
       }
     });
 
-    // Validación de correo del representante
+    // Validación de correo del representante (OBLIGATORIO)
     const correoRepresentante = document.getElementById('correo_r');
     if (correoRepresentante) {
       correoRepresentante.addEventListener('blur', function() {
         const email = this.value.trim();
+        // El correo del representante es obligatorio, debe ser válido si se ingresa
         if (email && !validarEmail(email)) {
           this.classList.add('is-invalid');
           mostrarError(this, 'Por favor ingrese un correo electrónico válido');
-        } else {
+        } else if (email && validarEmail(email)) {
           this.classList.remove('is-invalid');
           this.classList.add('is-valid');
+          ocultarError(this);
+        } else {
+          // Si está vacío, solo remover clases (será validado como campo requerido)
+          this.classList.remove('is-invalid', 'is-valid');
           ocultarError(this);
         }
       });
@@ -3157,17 +3175,22 @@ try {
       });
     }
 
-    // Validación de correo del estudiante
+    // Validación de correo del estudiante (OPCIONAL)
     const correoEstudiante = document.querySelector('[name="correo_e"]');
     if (correoEstudiante) {
       correoEstudiante.addEventListener('blur', function() {
         const email = this.value.trim();
+        // El correo del estudiante es OPCIONAL, solo valida si se ingresa algo
         if (email && !validarEmail(email)) {
           this.classList.add('is-invalid');
-          mostrarError(this, 'Por favor ingrese un correo electrónico válido');
-        } else {
+          mostrarError(this, 'Por favor ingrese un correo electrónico válido o deje el campo vacío');
+        } else if (email && validarEmail(email)) {
           this.classList.remove('is-invalid');
           this.classList.add('is-valid');
+          ocultarError(this);
+        } else {
+          // Si está vacío, es válido (opcional)
+          this.classList.remove('is-invalid', 'is-valid');
           ocultarError(this);
         }
       });
@@ -3200,15 +3223,18 @@ try {
         return;
       }
 
-      // Validar específicamente el correo del representante
-      if (correoRepresentante && correoRepresentante.value.trim()) {
-        if (!validarEmail(correoRepresentante.value.trim())) {
+      // Validar específicamente el correo del representante (OBLIGATORIO)
+      if (correoRepresentante) {
+        const emailRepre = correoRepresentante.value.trim();
+        if (!emailRepre || !validarEmail(emailRepre)) {
           correoRepresentante.classList.add('is-invalid');
           mostrarError(correoRepresentante, 'Por favor ingrese un correo electrónico válido antes de continuar');
           alert('Por favor corrija el correo electrónico del representante antes de continuar.');
           return;
         }
       }
+
+      // El correo del estudiante NO se valida aquí porque es opcional
 
       // Si todo está bien, avanzar al paso 3
       showStep(3);
@@ -3272,6 +3298,7 @@ try {
     console.log('✅ Validaciones de formulario cargadas correctamente');
   });
 </script>
+
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
 include_once("/xampp/htdocs/final/layout/mensajes.php");

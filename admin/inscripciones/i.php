@@ -2255,3 +2255,388 @@ try {
     $conexion->desconectar();
   }
 }
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // ========== VALIDACIONES DE CARACTERES ==========
+
+    // Función para validar solo letras (incluye espacios y acentos)
+    function validarSoloLetras(event) {
+      const key = event.key;
+      // Permitir teclas de control (backspace, delete, tab, etc.)
+      if (event.ctrlKey || event.altKey ||
+        key === 'Backspace' || key === 'Delete' ||
+        key === 'Tab' || key === 'Escape' ||
+        key === 'Enter' || key === 'ArrowLeft' ||
+        key === 'ArrowRight' || key === 'Home' ||
+        key === 'End') {
+        return true;
+      }
+
+      // Expresión regular que permite letras, espacios y caracteres acentuados
+      const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/;
+
+      if (!regex.test(key)) {
+        event.preventDefault();
+        return false;
+      }
+
+      return true;
+    }
+
+    // Función para validar solo números
+    function validarSoloNumeros(event) {
+      const key = event.key;
+      // Permitir teclas de control
+      if (event.ctrlKey || event.altKey ||
+        key === 'Backspace' || key === 'Delete' ||
+        key === 'Tab' || key === 'Escape' ||
+        key === 'Enter' || key === 'ArrowLeft' ||
+        key === 'ArrowRight' || key === 'Home' ||
+        key === 'End') {
+        return true;
+      }
+
+      // Solo permitir números
+      const regex = /^[0-9]$/;
+
+      if (!regex.test(key)) {
+        event.preventDefault();
+        return false;
+      }
+
+      return true;
+    }
+
+    // Función para validar formato de correo electrónico
+    function validarEmail(email) {
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return regex.test(email);
+    }
+
+    // ========== APLICAR VALIDACIONES A LOS CAMPOS DEL REPRESENTANTE ==========
+
+    // Campos de nombres y apellidos del representante
+    const camposLetrasRepresentante = [
+      'primer_nombre_r', 'segundo_nombre_r',
+      'primer_apellido_r', 'segundo_apellido_r',
+      'ocupacion_r', 'lugar_trabajo_r'
+    ];
+
+    camposLetrasRepresentante.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo) {
+        campo.addEventListener('keydown', validarSoloLetras);
+
+        // Validación adicional al perder el foco (para casos de pegado)
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          // Remover caracteres no permitidos (mantener solo letras, espacios y acentos)
+          valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+          // Remover espacios múltiples
+          valor = valor.replace(/\s+/g, ' ').trim();
+          this.value = valor;
+        });
+      }
+    });
+
+    // Campos numéricos del representante
+    const camposNumerosRepresentante = [
+      'cedula_r', 'telefono_r', 'telefono_hab_r'
+    ];
+
+    camposNumerosRepresentante.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo) {
+        campo.addEventListener('keydown', validarSoloNumeros);
+
+        // Validación adicional al perder el foco
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          // Remover caracteres no numéricos
+          valor = valor.replace(/[^0-9]/g, '');
+          this.value = valor;
+        });
+      }
+    });
+
+    // Validación de correo del representante
+    const correoRepresentante = document.getElementById('correo_r');
+    if (correoRepresentante) {
+      correoRepresentante.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !validarEmail(email)) {
+          this.classList.add('is-invalid');
+          mostrarError(this, 'Por favor ingrese un correo electrónico válido');
+        } else {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+          ocultarError(this);
+        }
+      });
+
+      // Remover clases de validación al empezar a escribir
+      correoRepresentante.addEventListener('input', function() {
+        this.classList.remove('is-invalid', 'is-valid');
+        ocultarError(this);
+      });
+    }
+
+    // ========== APLICAR VALIDACIONES A LOS CAMPOS DEL ESTUDIANTE ==========
+
+    // Campos de nombres y apellidos del estudiante
+    const camposLetrasEstudiante = [
+      'primer_nombre_e', 'segundo_nombre_e',
+      'primer_apellido_e', 'segundo_apellido_e'
+    ];
+
+    // Los campos del estudiante tienen name en lugar de id, así que los seleccionamos por name
+    camposLetrasEstudiante.forEach(campoName => {
+      const campo = document.querySelector(`[name="${campoName}"]`);
+      if (campo) {
+        campo.addEventListener('keydown', validarSoloLetras);
+
+        // Validación adicional al perder el foco
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          // Remover caracteres no permitidos
+          valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+          // Remover espacios múltiples
+          valor = valor.replace(/\s+/g, ' ').trim();
+          this.value = valor;
+        });
+      }
+    });
+
+    // Campos numéricos del estudiante
+    const cedulaEstudiante = document.getElementById('cedula_e');
+    const telefonoEstudiante = document.querySelector('[name="telefono_e"]');
+
+    if (cedulaEstudiante) {
+      cedulaEstudiante.addEventListener('keydown', function(event) {
+        // Solo validar si no es de solo lectura (cuando el usuario tiene CI)
+        if (!this.readOnly) {
+          return validarSoloNumeros(event);
+        }
+        return true;
+      });
+
+      cedulaEstudiante.addEventListener('blur', function() {
+        if (!this.readOnly) {
+          let valor = this.value;
+          valor = valor.replace(/[^0-9]/g, '');
+          this.value = valor;
+        }
+      });
+    }
+
+    if (telefonoEstudiante) {
+      telefonoEstudiante.addEventListener('keydown', validarSoloNumeros);
+
+      telefonoEstudiante.addEventListener('blur', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9]/g, '');
+        this.value = valor;
+      });
+    }
+
+    // Validación de correo del estudiante
+    const correoEstudiante = document.querySelector('[name="correo_e"]');
+    if (correoEstudiante) {
+      correoEstudiante.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !validarEmail(email)) {
+          this.classList.add('is-invalid');
+          mostrarError(this, 'Por favor ingrese un correo electrónico válido');
+        } else {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+          ocultarError(this);
+        }
+      });
+
+      // Remover clases de validación al empezar a escribir
+      correoEstudiante.addEventListener('input', function() {
+        this.classList.remove('is-invalid', 'is-valid');
+        ocultarError(this);
+      });
+    }
+
+    // ========== VALIDACIÓN AL PASAR DEL PASO 2 AL PASO 3 ==========
+
+    document.getElementById('btn-next-to-step3').addEventListener('click', function() {
+      // Validar campos requeridos primero
+      const requiredFields = document.querySelectorAll('#step2 [required]');
+      let valid = true;
+
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          valid = false;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+
+      if (!valid) {
+        alert('Por favor complete todos los campos requeridos del representante.');
+        return;
+      }
+
+      // Validar específicamente el correo del representante
+      if (correoRepresentante && correoRepresentante.value.trim()) {
+        if (!validarEmail(correoRepresentante.value.trim())) {
+          correoRepresentante.classList.add('is-invalid');
+          mostrarError(correoRepresentante, 'Por favor ingrese un correo electrónico válido antes de continuar');
+          alert('Por favor corrija el correo electrónico del representante antes de continuar.');
+          return;
+        }
+      }
+
+      // Si todo está bien, avanzar al paso 3
+      showStep(3);
+      refreshTabStyles();
+    });
+
+    // ========== FUNCIONES AUXILIARES ==========
+
+    function mostrarError(campo, mensaje) {
+      // Remover error anterior si existe
+      ocultarError(campo);
+
+      // Crear elemento de error
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'invalid-feedback';
+      errorDiv.style.display = 'block';
+      errorDiv.textContent = mensaje;
+      errorDiv.id = `error-${campo.id || campo.name}`;
+
+      // Insertar después del campo
+      campo.parentNode.appendChild(errorDiv);
+    }
+
+    function ocultarError(campo) {
+      const errorId = `error-${campo.id || campo.name}`;
+      const errorExistente = document.getElementById(errorId);
+      if (errorExistente) {
+        errorExistente.remove();
+      }
+    }
+
+    // ========== ESTILOS PARA LOS ESTADOS DE VALIDACIÓN ==========
+    const style = document.createElement('style');
+    style.textContent = `
+        .is-valid {
+            border-color: #28a745 !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .is-invalid {
+            border-color: #dc3545 !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #dc3545;
+        }
+    `;
+    document.head.appendChild(style);
+
+    console.log('✅ Validaciones de formulario cargadas correctamente');
+  });
+</script>
+
+                   <div>
+                    <div class="card-header mt-4">
+                      <h3 class="card-title"><b>Datos de salud</b></h3>
+                    </div>
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="row">
+                          <div class="col-md-12">
+                            <div class="form-group">
+                              <label>Patologías/Alergias</label>
+
+                              // Contenedor para los selects dinámicos
+                              <div id="contenedor-patologias">
+                                // Select Principal
+                                <div class="mb-2 patologia-item">
+                                  <select name="patologias[]" class="form-control select-patologia">
+                                    <option value="">Seleccione una patología...</option>
+                                    <option value="0">Ninguna</option>
+                                    <?php
+                                    // Cargar patologías desde la base de datos
+                                    $patologiaController = new PatologiaController($pdo);
+                                    $patologias = $patologiaController->obtenerPatologiasActivas();
+
+                                    if (!empty($patologias)) {
+                                      foreach ($patologias as $patologia) {
+                                        echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
+                                      }
+                                    } else {
+                                      echo "<option value=''>No hay patologías registradas</option>";
+                                    }
+                  
+                                    ?>
+                                  </select>
+                                </div>
+                              </div>
+
+                              // Botón para agregar más patologías
+                              <div class="mt-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
+                                  <i class="fas fa-plus"></i> Agregar otra patología
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-12">
+                          <div class="form-group">
+                            <label>Discapacidades</label>
+
+                            // Contenedor para los selects dinámicos
+                            <div id="contenedor-discapacidades">
+                              Select Principal
+                              <div class="mb-2 discapacidad-item">
+                                <select name="discapacidades[]" class="form-control select-discapacidad">
+                                  <option value="">Seleccione una discapacidad...</option>
+                                  <option value="0">Ninguna</option>
+                                  <?php
+                                  // Cargar discapacidades desde la base de datos
+                                  $discapacidadController = new DiscapacidadController($pdo);
+                                  $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas();
+
+                                  if (!empty($discapacidades)) {
+                                    foreach ($discapacidades as $discapacidad) {
+                                      echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
+                                    }
+                                  } else {
+                                    echo "<option value=''>No hay discapacidades registradas</option>";
+                                  }
+                                  ?>
+                                </select>
+                              </div>
+                            </div>
+
+                            // Botón para agregar más discapacidades
+                            <div class="mt-2">
+                              <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-discapacidad">
+                                <i class="fas fa-plus"></i> Agregar otra discapacidad
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div> 
