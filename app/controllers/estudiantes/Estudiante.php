@@ -241,10 +241,10 @@ class Estudiante {
             $stmtDireccion->bindParam(5, $this->id_direccion);
             $stmtDireccion->execute();
 
-            // 2. Actualizar persona (EXCLUYENDO LA CÉDULA)
+            // 2. Actualizar persona (INCLUYENDO LA CÉDULA)
             $queryPersona = "UPDATE personas 
                             SET primer_nombre = UPPER(?), segundo_nombre = UPPER(?), primer_apellido = UPPER(?), segundo_apellido = UPPER(?),
-                                telefono = ?, telefono_hab = ?, correo = LOWER(?), lugar_nac = UPPER(?), 
+                                cedula = ?, telefono = ?, telefono_hab = ?, correo = LOWER(?), lugar_nac = UPPER(?), 
                                 fecha_nac = ?, sexo = UPPER(?), nacionalidad = UPPER(?), actualizacion = NOW()
                             WHERE id_persona = ?";
             
@@ -253,14 +253,15 @@ class Estudiante {
             $stmtPersona->bindParam(2, $this->segundo_nombre);
             $stmtPersona->bindParam(3, $this->primer_apellido);
             $stmtPersona->bindParam(4, $this->segundo_apellido);
-            $stmtPersona->bindParam(5, $this->telefono);
-            $stmtPersona->bindParam(6, $this->telefono_hab);
-            $stmtPersona->bindParam(7, $this->correo);
-            $stmtPersona->bindParam(8, $this->lugar_nac);
-            $stmtPersona->bindParam(9, $this->fecha_nac);
-            $stmtPersona->bindParam(10, $this->sexo);
-            $stmtPersona->bindParam(11, $this->nacionalidad);
-            $stmtPersona->bindParam(12, $this->id_persona);
+            $stmtPersona->bindParam(5, $this->cedula);
+            $stmtPersona->bindParam(6, $this->telefono);
+            $stmtPersona->bindParam(7, $this->telefono_hab);
+            $stmtPersona->bindParam(8, $this->correo);
+            $stmtPersona->bindParam(9, $this->lugar_nac);
+            $stmtPersona->bindParam(10, $this->fecha_nac);
+            $stmtPersona->bindParam(11, $this->sexo);
+            $stmtPersona->bindParam(12, $this->nacionalidad);
+            $stmtPersona->bindParam(13, $this->id_persona);
             $stmtPersona->execute();
 
             // 3. Actualizar representante
@@ -646,5 +647,50 @@ class Estudiante {
         
         return $stmt->rowCount() > 0;
     }
+
+    // Obtener lista de patologías
+    public function obtenerPatologias() {
+        $query = "SELECT id_patologia, nom_patologia FROM patologias WHERE estatus = 1 ORDER BY nom_patologia";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // Obtener lista de discapacidades
+    public function obtenerDiscapacidades() {
+        $query = "SELECT id_discapacidad, nom_discapacidad FROM discapacidades WHERE estatus = 1 ORDER BY nom_discapacidad";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // Obtener patologías del estudiante
+    public function obtenerPatologiasEstudiante($id_estudiante) {
+        $query = "SELECT id_patologia FROM estudiantes_patologias WHERE id_estudiante = ? AND estatus = 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $id_estudiante);
+        $stmt->execute();
+        
+        $patologias = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $patologias[] = $row['id_patologia'];
+        }
+        return $patologias;
+    }
+
+    // Obtener discapacidades del estudiante
+    public function obtenerDiscapacidadesEstudiante($id_estudiante) {
+        $query = "SELECT id_discapacidad FROM estudiantes_discapacidades WHERE id_estudiante = ? AND estatus = 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $id_estudiante);
+        $stmt->execute();
+        
+        $discapacidades = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $discapacidades[] = $row['id_discapacidad'];
+        }
+        return $discapacidades;
+    }
 }
+        
 ?>

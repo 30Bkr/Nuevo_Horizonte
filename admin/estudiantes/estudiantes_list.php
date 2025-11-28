@@ -114,12 +114,15 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
+                            <!-- -->
                                 <div class="card-header">
                                     <h3 class="card-title">Listado de Estudiantes</h3>
                                     <div class="card-tools">
+                                        <!--
                                         <a href="estudiante_nuevo.php" class="btn btn-primary btn-sm">
                                             <i class="fas fa-plus"></i> Nuevo Estudiante
                                         </a>
+                                         -->
                                     </div>
                                 </div>
                                 <!-- /.card-header -->
