@@ -12,6 +12,37 @@ class CuposController
    * Obtiene la capacidad total y estudiantes inscritos para un id_nivel_seccion específico
    * NUEVA VERSIÓN - usa id_nivel_seccion directamente
    */
+
+  public function obtenerTodosLosNiveles()
+  {
+    try {
+      $sql = "
+            SELECT 
+                id_nivel,
+                num_nivel,
+                nom_nivel
+            FROM niveles 
+            WHERE estatus = 1
+            ORDER BY num_nivel
+        ";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+      $niveles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+      return [
+        'success' => true,
+        'niveles' => $niveles
+      ];
+    } catch (PDOException $e) {
+      error_log("Error en obtenerTodosLosNiveles: " . $e->getMessage());
+      return [
+        'success' => false,
+        'message' => 'Error al obtener niveles',
+        'niveles' => []
+      ];
+    }
+  }
   public function obtenerDisponibilidad($id_nivel_seccion, $id_periodo)
   {
     try {
