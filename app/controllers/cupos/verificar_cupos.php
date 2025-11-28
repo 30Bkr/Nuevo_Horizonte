@@ -12,25 +12,21 @@ try {
 
   // NUEVA VERSIÓN - usa id_nivel_seccion directamente
   if (isset($_POST['id_nivel_seccion']) && !empty($_POST['id_nivel_seccion'])) {
-    // En la parte donde procesas la solicitud, cambia esto:
-    if (isset($_POST['id_nivel_seccion']) && !empty($_POST['id_nivel_seccion'])) {
-      // Método nuevo con id_nivel_seccion
-      $id_nivel_seccion = $_POST['id_nivel_seccion'];
-      $id_periodo = $_POST['id_periodo'];
+    $id_nivel_seccion = $_POST['id_nivel_seccion'];
+    $id_periodo = $_POST['id_periodo'];
 
-      if (empty($id_periodo)) {
-        throw new Exception("Parámetro requerido: id_periodo");
-      }
-
-      $conexion = new Conexion();
-      $pdo = $conexion->conectar();
-      $cuposController = new CuposController($pdo);
-
-      // Verificar disponibilidad usando el nuevo método
-      $disponibilidad = $cuposController->obtenerDisponibilidad($id_nivel_seccion, $id_periodo);
-
-      echo json_encode($disponibilidad);
+    if (empty($id_periodo)) {
+      throw new Exception("Parámetro requerido: id_periodo");
     }
+
+    $conexion = new Conexion();
+    $pdo = $conexion->conectar();
+    $cuposController = new CuposController($pdo);
+
+    // Verificar disponibilidad usando el nuevo método
+    $disponibilidad = $cuposController->obtenerDisponibilidad($id_nivel_seccion, $id_periodo);
+
+    echo json_encode($disponibilidad);
   } else if (isset($_POST['id_nivel']) && isset($_POST['id_seccion'])) {
     // MÉTODO DE COMPATIBILIDAD - para código existente que aún usa id_nivel e id_seccion
     $required_params = ['id_nivel', 'id_seccion', 'id_periodo'];

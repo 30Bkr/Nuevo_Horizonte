@@ -12,6 +12,7 @@ include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.ph
 include_once("/xampp/htdocs/final/app/controllers/parentesco/parentesco.php");
 include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
 include_once("/xampp/htdocs/final/app/controllers/discapacidades/discapacidades.php");
+include_once("/xampp/htdocs/final/app/controllers/cupos/cupos.php");
 
 // include_once("/xampp/htdocs/final/app/controllers/representantes/profesiones.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
@@ -752,12 +753,26 @@ try {
                         <div class="col-md-4">
                           <div class="form-group">
                             <label for="id_nivel">Grado/Año<span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
-                            <select name="id_nivel" id="id_nivel" class="form-control" required>
+                            <!-- <select name="id_nivel" id="id_nivel" class="form-control" required>
                               <option value="">Seleccionar Nivel</option>
                               <?php
                               $niveles = [1 => 'Primer Grado', 2 => 'Segundo Grado'];
                               foreach ($niveles as $id => $nivel) {
                                 echo "<option value='$id'>$nivel</option>";
+                              }
+                              ?>
+                            </select> -->
+                            <select name="id_nivel" id="id_nivel" class="form-control" required>
+                              <option value="">Seleccionar Nivel</option>
+                              <?php
+                              // Cargar TODOS los niveles inicialmente
+                              $cuposController = new CuposController($pdo);
+                              $todosLosNiveles = $cuposController->obtenerTodosLosNiveles();
+
+                              if ($todosLosNiveles['success']) {
+                                foreach ($todosLosNiveles['niveles'] as $nivel) {
+                                  echo "<option value='{$nivel['id_nivel']}'>{$nivel['nom_nivel']}</option>";
+                                }
                               }
                               ?>
                             </select>
@@ -798,6 +813,890 @@ try {
     </div>
   </div>
 </div>
+
+<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
+<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
+<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
+<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
+
+<script>
+  // ========== SISTEMA INTEGRADO: VALIDACIÓN DE EDAD + CUPOS ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Inicializando sistema de inscripción...');
+
+    const fechaNacInput = document.querySelector('input[name="fecha_nac_e"]');
+    const nivelSelect = document.querySelector('select[name="id_nivel"]');
+    const seccionSelect = document.querySelector('select[name="id_seccion"]');
+    const periodoSelect = document.querySelector('select[name="id_periodo"]');
+    const submitBtn = document.querySelector('button[type="submit"]');
+
+    let mensajeCupos = null;
+    let todosLosNiveles = [];
+
+    // ========== INICIALIZACIÓN ==========
+    function inicializar() {
+      console.log('🔄 Inicializando sistema...');
+
+      // Guardar copia de todos los niveles disponibles
+      guardarNivelesOriginales();
+
+      // Configurar event listeners
+      configurarEventListeners();
+
+      // Aplicar filtro inicial si hay fecha
+      if (fechaNacInput && fechaNacInput.value) {
+        console.log('📅 Fecha encontrada:', fechaNacInput.value);
+        setTimeout(() => validarEdadYFiltrarNiveles(fechaNacInput.value), 300);
+      }
+
+      // Inicializar secciones si hay nivel seleccionado
+      if (nivelSelect && nivelSelect.value) {
+        console.log('🎯 Nivel pre-seleccionado:', nivelSelect.value);
+        setTimeout(() => cargarSeccionesPorNivel(nivelSelect.value), 500);
+      } else {
+        console.log('⚠️ No hay nivel seleccionado');
+        limpiarSecciones();
+      }
+    }
+
+    function guardarNivelesOriginales() {
+      todosLosNiveles = Array.from(nivelSelect.options);
+      console.log('💾 Niveles guardados:', todosLosNiveles.length);
+    }
+
+    function configurarEventListeners() {
+      // Event listener para fecha de nacimiento
+      if (fechaNacInput) {
+        fechaNacInput.addEventListener('change', function() {
+          console.log('📅 Fecha cambiada:', this.value);
+          validarEdadYFiltrarNiveles(this.value);
+        });
+      }
+
+      // Event listener para nivel
+      if (nivelSelect) {
+        nivelSelect.addEventListener('change', function() {
+          console.log('🎯 Nivel cambiado:', this.value);
+          if (this.value) {
+            cargarSeccionesPorNivel(this.value);
+          } else {
+            limpiarSecciones();
+          }
+        });
+      }
+
+      // Event listener para sección
+      if (seccionSelect) {
+        seccionSelect.addEventListener('change', function() {
+          console.log('📚 Sección cambiada:', this.value);
+          if (this.value && periodoSelect && periodoSelect.value) {
+            verificarCupos();
+          } else {
+            eliminarMensajeCupos();
+          }
+        });
+      }
+
+      // Event listener para período
+      if (periodoSelect) {
+        periodoSelect.addEventListener('change', function() {
+          console.log('📅 Período cambiado:', this.value);
+          if (this.value && seccionSelect && seccionSelect.value) {
+            verificarCupos();
+          } else {
+            eliminarMensajeCupos();
+          }
+        });
+      }
+    }
+
+    // ========== VALIDACIÓN DE EDAD ==========
+    function validarEdadYFiltrarNiveles(fechaNacimiento) {
+      if (!fechaNacimiento) {
+        console.log('⚠️ No hay fecha de nacimiento');
+        restaurarTodosLosNiveles();
+        return;
+      }
+
+      const edad = calcularEdad(fechaNacimiento);
+      console.log(`🎯 Edad calculada: ${edad} años`);
+
+      if (edad < 3) {
+        mostrarErrorEdad('El estudiante debe tener al menos 4 años para ser inscrito');
+        return;
+      }
+
+      if (edad > 20) {
+        mostrarErrorEdad('El estudiante no puede tener más de 18 años');
+        return;
+      }
+
+      filtrarNivelesPorEdad(edad);
+    }
+
+    function calcularEdad(fechaNacimiento) {
+      const fechaNac = new Date(fechaNacimiento);
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - fechaNac.getFullYear();
+      const mes = hoy.getMonth() - fechaNac.getMonth();
+
+      // Ajustar si aún no ha cumplido años este año
+      if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+        edad--;
+      }
+      return edad;
+    }
+
+    function filtrarNivelesPorEdad(edad) {
+      const valorActual = nivelSelect.value;
+
+      // Limpiar select
+      nivelSelect.innerHTML = '<option value="">Seleccionar Nivel</option>';
+
+      let nivelesFiltrados = 0;
+
+      // Agregar niveles filtrados
+      todosLosNiveles.forEach(nivel => {
+        if (nivel.value && esNivelAptoParaEdad(nivel.textContent, edad)) {
+          nivelSelect.appendChild(nivel.cloneNode(true));
+          nivelesFiltrados++;
+        }
+      });
+
+
+      console.log(`📚 Niveles filtrados: ${nivelesFiltrados} para edad ${edad}`);
+      console.log(`📊 Rango aplicado: ${obtenerRangoEdad(edad)}`);
+
+      // Manejar selección actual
+      manejarSeleccionActual(valorActual);
+    }
+
+    function esNivelAptoParaEdad(nombreNivel, edad) {
+      const texto = nombreNivel.toLowerCase();
+      const esGrado = texto.includes('grado');
+      const esAnio = texto.includes('año') || texto.includes('ano');
+      const numero = extraerNumero(texto);
+
+      console.log(`🔍 Analizando nivel: "${nombreNivel}" - Grado:${esGrado} Año:${esAnio} Número:${numero}`);
+
+      if (edad >= 4 && edad <= 10) {
+        // 4-10 años: solo grados (desde 1° hasta 6° grado)
+        return esGrado && numero >= 1 && numero <= 6;
+      } else if (edad >= 11 && edad <= 12) {
+        // 11-12 años: grados 4,5,6 y años 1,2,3
+        if (esGrado) return numero >= 4 && numero <= 6;
+        if (esAnio) return numero >= 1 && numero <= 3;
+        return false;
+      } else if (edad >= 13 && edad <= 18) {
+        // 13-18 años: solo años (desde 1° año hasta donde corresponda)
+        return esAnio;
+      }
+      return false;
+    }
+
+    function obtenerRangoEdad(edad) {
+      if (edad >= 4 && edad <= 10) return "4-10 años: Solo GRADOS (1°-6°)";
+      if (edad >= 11 && edad <= 12) return "11-12 años: GRADOS (4°-6°) y AÑOS (1°-3°)";
+      if (edad >= 13 && edad <= 18) return "13-18 años: Solo AÑOS";
+      return "Edad fuera de rango";
+    }
+
+    function extraerNumero(texto) {
+      // Mejorar la extracción de números para capturar mejor los niveles
+      const match = texto.match(/(\d+)/);
+      const numero = match ? parseInt(match[1]) : 0;
+
+      // Si no encuentra número, intentar con números escritos
+      if (numero === 0) {
+        const numerosEscritos = {
+          'primero': 1,
+          'primer': 1,
+          'primera': 1,
+          'segundo': 2,
+          'segunda': 2,
+          'tercero': 3,
+          'tercer': 3,
+          'tercera': 3,
+          'cuarto': 4,
+          'cuarta': 4,
+          'quinto': 5,
+          'quinta': 5,
+          'sexto': 6,
+          'sexta': 6
+        };
+
+        for (const [palabra, valor] of Object.entries(numerosEscritos)) {
+          if (texto.includes(palabra)) {
+            return valor;
+          }
+        }
+      }
+
+      return numero;
+    }
+
+    function manejarSeleccionActual(valorAnterior) {
+      if (valorAnterior && nivelSelect.querySelector(`option[value="${valorAnterior}"]`)) {
+        nivelSelect.value = valorAnterior;
+        console.log('✅ Selección anterior restaurada:', valorAnterior);
+      } else {
+        nivelSelect.value = '';
+        console.log('🔄 Selección anterior no disponible, limpiando...');
+        limpiarSecciones();
+      }
+
+      // Selección automática si solo hay una opción
+      const opcionesDisponibles = Array.from(nivelSelect.options).filter(opt => opt.value !== '');
+      if (opcionesDisponibles.length === 1) {
+        nivelSelect.value = opcionesDisponibles[0].value;
+        console.log('🤖 Selección automática:', opcionesDisponibles[0].value);
+        setTimeout(() => {
+          nivelSelect.dispatchEvent(new Event('change'));
+        }, 200);
+      }
+    }
+
+    function restaurarTodosLosNiveles() {
+      nivelSelect.innerHTML = '';
+      todosLosNiveles.forEach(nivel => {
+        nivelSelect.appendChild(nivel.cloneNode(true));
+      });
+      console.log('🔄 Todos los niveles restaurados');
+      limpiarSecciones();
+    }
+
+    function mostrarErrorEdad(mensaje) {
+      console.error('❌ Error de edad:', mensaje);
+
+      // Limpiar niveles
+      nivelSelect.innerHTML = '<option value="">Edad no válida</option>';
+      nivelSelect.disabled = true;
+      limpiarSecciones();
+
+      // Mostrar mensaje de error temporal
+      const existingError = nivelSelect.parentNode.querySelector('.alert-error-edad');
+      if (existingError) existingError.remove();
+
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'alert alert-danger mt-2 alert-error-edad';
+      errorDiv.innerHTML = `<strong>❌ Error:</strong> ${mensaje}`;
+
+      nivelSelect.parentNode.appendChild(errorDiv);
+
+      // Remover error después de 5 segundos
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.remove();
+        }
+        nivelSelect.disabled = false;
+        restaurarTodosLosNiveles();
+      }, 5000);
+    }
+
+    // ========== SISTEMA DE CUPOS ==========
+    function limpiarSecciones() {
+      if (seccionSelect) {
+        seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
+        seccionSelect.disabled = true;
+        eliminarMensajeCupos();
+        console.log('🔄 Secciones limpiadas');
+      }
+    }
+
+    function cargarSeccionesPorNivel(idNivel) {
+      if (!seccionSelect) return;
+
+      console.log('📡 Cargando secciones para nivel:', idNivel);
+
+      const formData = new FormData();
+      formData.append('id_nivel', idNivel);
+
+      seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
+      seccionSelect.disabled = true;
+      eliminarMensajeCupos();
+
+      fetch('/final/app/controllers/cupos/cargar_secciones.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Error en la respuesta del servidor');
+          return response.json();
+        })
+        .then(data => {
+          console.log('📊 Respuesta secciones:', data);
+
+          seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
+
+          if (data.success && data.secciones && data.secciones.length > 0) {
+            data.secciones.forEach(seccion => {
+              const option = document.createElement('option');
+              option.value = seccion.id_seccion;
+              option.textContent = `${seccion.nom_seccion} (Capacidad: ${seccion.capacidad})`;
+              option.setAttribute('data-nivel-seccion', seccion.id_nivel_seccion);
+              seccionSelect.appendChild(option);
+            });
+            seccionSelect.disabled = false;
+            console.log('✅ Secciones cargadas:', data.secciones.length);
+          } else {
+            seccionSelect.innerHTML = '<option value="">No hay secciones disponibles</option>';
+            seccionSelect.disabled = true;
+            console.warn('⚠️ No se encontraron secciones para el nivel:', idNivel);
+          }
+
+          // Verificar cupos si ya hay período seleccionado
+          if (periodoSelect && periodoSelect.value && seccionSelect.value) {
+            setTimeout(verificarCupos, 100);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error al cargar secciones:', error);
+          seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
+          seccionSelect.disabled = true;
+        });
+    }
+
+    function verificarCupos() {
+      const selectedOption = seccionSelect.options[seccionSelect.selectedIndex];
+
+      if (!nivelSelect.value || !seccionSelect.value || !periodoSelect.value || !selectedOption) {
+        console.log('⚠️ Faltan datos para verificar cupos');
+        eliminarMensajeCupos();
+        return;
+      }
+
+      const id_nivel_seccion = selectedOption.getAttribute('data-nivel-seccion');
+      const id_periodo = periodoSelect.value;
+
+      if (!id_nivel_seccion) {
+        console.error('❌ No se encontró id_nivel_seccion en la opción seleccionada');
+        return;
+      }
+
+      console.log('🔍 Verificando cupos para:', {
+        id_nivel_seccion,
+        id_periodo
+      });
+
+      const formData = new FormData();
+      formData.append('id_nivel_seccion', id_nivel_seccion);
+      formData.append('id_periodo', id_periodo);
+
+      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Error en la respuesta del servidor');
+          return response.json();
+        })
+        .then(data => {
+          console.log('📊 Respuesta de cupos:', data);
+          mostrarMensajeCupos(data);
+        })
+        .catch(error => {
+          console.error('❌ Error al verificar cupos:', error);
+          mostrarMensajeCupos({
+            success: false,
+            disponible: false,
+            mensaje: 'Error al verificar disponibilidad de cupos'
+          });
+        });
+    }
+
+    function mostrarMensajeCupos(data) {
+      eliminarMensajeCupos();
+
+      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
+      if (!informacionAcademica) {
+        console.warn('⚠️ No se encontró el contenedor para el mensaje de cupos');
+        return;
+      }
+
+      mensajeCupos = document.createElement('div');
+      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
+
+      if (data.success) {
+        mensajeCupos.innerHTML = `
+                <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
+                ${data.mensaje}
+                ${data.disponible ? 
+                    `<br><small class="text-white">Puede continuar con la inscripción</small>` : 
+                    `<br><small class="text-white">No se puede realizar la inscripción en esta sección</small>`
+                }
+            `;
+      } else {
+        mensajeCupos.innerHTML = `
+                <strong>❌ ERROR</strong><br>
+                ${data.message || 'Error al verificar cupos'}
+            `;
+      }
+
+      informacionAcademica.appendChild(mensajeCupos);
+
+      if (submitBtn) {
+        submitBtn.disabled = !data.disponible;
+        console.log('🔄 Botón submit:', data.disponible ? 'HABILITADO' : 'DESHABILITADO');
+      }
+    }
+
+    function eliminarMensajeCupos() {
+      if (mensajeCupos) {
+        mensajeCupos.remove();
+        mensajeCupos = null;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // ========== INICIAR SISTEMA ==========
+    inicializar();
+  });
+</script>
+
+<!-- <script>
+  // ========== CARGAR SECCIONES POR NIVEL Y VALIDACIÓN DE CUPOS ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    const nivelSelect = document.querySelector('select[name="id_nivel"]');
+    const seccionSelect = document.querySelector('select[name="id_seccion"]');
+    const periodoSelect = document.querySelector('select[name="id_periodo"]');
+    const submitBtn = document.querySelector('button[type="submit"]');
+
+    let mensajeCupos = null;
+
+    // ========== FUNCIÓN PARA CARGAR SECCIONES POR NIVEL ==========
+    function cargarSeccionesPorNivel(idNivel) {
+      if (!idNivel) {
+        // Si no hay nivel seleccionado, limpiar secciones
+        seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
+        seccionSelect.disabled = true;
+        eliminarMensajeCupos();
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('id_nivel', idNivel);
+
+      // Mostrar loading en el select de secciones
+      seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
+      seccionSelect.disabled = true;
+      eliminarMensajeCupos();
+
+      fetch('/final/app/controllers/cupos/cargar_secciones.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
+
+          if (data.success && data.secciones && data.secciones.length > 0) {
+            data.secciones.forEach(seccion => {
+              seccionSelect.innerHTML += `<option value="${seccion.id_seccion}" data-nivel-seccion="${seccion.id_nivel_seccion}">
+                        ${seccion.nom_seccion} (Capacidad: ${seccion.capacidad})
+                    </option>`;
+            });
+            seccionSelect.disabled = false;
+
+            console.log('✅ Secciones cargadas:', data.secciones.length);
+          } else {
+            seccionSelect.innerHTML = '<option value="">No hay secciones disponibles para este nivel</option>';
+            seccionSelect.disabled = true;
+            console.warn('⚠️ No se encontraron secciones para el nivel:', idNivel);
+          }
+
+          // Una vez cargadas las secciones, verificar cupos si ya hay período seleccionado
+          if (periodoSelect && periodoSelect.value) {
+            setTimeout(verificarCupos, 100);
+          }
+        })
+        .catch(error => {
+          console.error('❌ Error al cargar secciones:', error);
+          seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
+          seccionSelect.disabled = true;
+        });
+    }
+
+    // ========== FUNCIÓN PARA VERIFICAR CUPOS (ACTUALIZADA) ==========
+    function verificarCupos() {
+      const selectedOption = seccionSelect.options[seccionSelect.selectedIndex];
+
+      if (!nivelSelect.value || !seccionSelect.value || !periodoSelect.value || !selectedOption) {
+        eliminarMensajeCupos();
+        return;
+      }
+
+      const id_nivel_seccion = selectedOption.getAttribute('data-nivel-seccion');
+      const id_periodo = periodoSelect.value;
+
+      if (!id_nivel_seccion) {
+        console.error('❌ No se encontró el id_nivel_seccion en la opción seleccionada');
+        eliminarMensajeCupos();
+        return;
+      }
+
+      console.log('🔍 Verificando cupos para:', {
+        id_nivel_seccion: id_nivel_seccion,
+        id_periodo: id_periodo,
+        nivel: nivelSelect.value,
+        seccion: seccionSelect.value
+      });
+
+      const formData = new FormData();
+      formData.append('id_nivel_seccion', id_nivel_seccion);
+      formData.append('id_periodo', id_periodo);
+
+      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('📊 Respuesta de cupos:', data);
+          mostrarMensajeCupos(data);
+        })
+        .catch(error => {
+          console.error('❌ Error al verificar cupos:', error);
+          // Mostrar mensaje de error
+          mostrarMensajeCupos({
+            success: false,
+            disponible: false,
+            mensaje: 'Error al verificar disponibilidad de cupos'
+          });
+        });
+    }
+
+    // ========== FUNCIÓN PARA MOSTRAR MENSAJE DE CUPOS ==========
+    function mostrarMensajeCupos(data) {
+      eliminarMensajeCupos();
+
+      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
+      if (!informacionAcademica) {
+        console.warn('⚠️ No se encontró el contenedor para el mensaje de cupos');
+        return;
+      }
+
+      mensajeCupos = document.createElement('div');
+      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
+
+      if (data.success) {
+        mensajeCupos.innerHTML = `
+                <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
+                ${data.mensaje}
+                ${data.disponible ? 
+                    `<br><small class="text-white">Puede continuar con la inscripción</small>` : 
+                    `<br><small class="text-white">No se puede realizar la inscripción en esta sección</small>`
+                }
+            `;
+      } else {
+        mensajeCupos.innerHTML = `
+                <strong>❌ ERROR</strong><br>
+                ${data.message || 'Error al verificar cupos'}
+            `;
+      }
+
+      informacionAcademica.appendChild(mensajeCupos);
+
+      // Deshabilitar/habilitar el botón de enviar
+      if (submitBtn) {
+        submitBtn.disabled = !data.disponible;
+        console.log('🔄 Botón submit:', data.disponible ? 'HABILITADO' : 'DESHABILITADO');
+      }
+    }
+
+    // ========== FUNCIÓN PARA ELIMINAR MENSAJE DE CUPOS ==========
+    function eliminarMensajeCupos() {
+      if (mensajeCupos) {
+        mensajeCupos.remove();
+        mensajeCupos = null;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // ========== EVENT LISTENERS ==========
+
+    // Event listener para cambios en el nivel
+    if (nivelSelect) {
+      nivelSelect.addEventListener('change', function() {
+        const idNivel = this.value;
+        console.log('🎯 Nivel cambiado:', idNivel);
+        cargarSeccionesPorNivel(idNivel);
+      });
+    }
+
+    // Event listener para cambios en la sección
+    if (seccionSelect) {
+      seccionSelect.addEventListener('change', function() {
+        console.log('🎯 Sección cambiada:', this.value);
+        if (this.value && periodoSelect.value) {
+          verificarCupos();
+        } else {
+          eliminarMensajeCupos();
+        }
+      });
+    }
+
+    // Event listener para cambios en el período
+    if (periodoSelect) {
+      periodoSelect.addEventListener('change', function() {
+        console.log('🎯 Período cambiado:', this.value);
+        if (this.value && seccionSelect.value) {
+          verificarCupos();
+        } else {
+          eliminarMensajeCupos();
+        }
+      });
+    }
+
+    // ========== INICIALIZACIÓN ==========
+
+    // Cargar secciones si ya hay un nivel seleccionado (al recargar página)
+    if (nivelSelect && nivelSelect.value) {
+      console.log('🔄 Inicializando con nivel pre-seleccionado:', nivelSelect.value);
+      setTimeout(() => {
+        cargarSeccionesPorNivel(nivelSelect.value);
+      }, 500);
+    } else {
+      // Inicializar select de secciones como deshabilitado
+      seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
+      seccionSelect.disabled = true;
+    }
+
+    // Verificar cupos al cargar si ya hay valores seleccionados
+    setTimeout(() => {
+      if (nivelSelect.value && seccionSelect.value && periodoSelect.value) {
+        console.log('🔄 Verificando cupos iniciales...');
+        verificarCupos();
+      }
+    }, 1000);
+
+    // Debug inicial
+    console.log('🔍 Estado inicial de selects:', {
+      nivel: nivelSelect ? nivelSelect.value : 'No encontrado',
+      seccion: seccionSelect ? seccionSelect.value : 'No encontrado',
+      periodo: periodoSelect ? periodoSelect.value : 'No encontrado'
+    });
+  });
+</script>
+
+
+
+<script>
+  // ========== VALIDACIÓN DE EDAD Y FILTRADO DE NIVELES ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    const fechaNacInput = document.querySelector('input[name="fecha_nac_e"]');
+    const nivelSelect = document.querySelector('select[name="id_nivel"]');
+
+    // Event listener para cambios en la fecha de nacimiento
+    if (fechaNacInput) {
+      fechaNacInput.addEventListener('change', function() {
+        validarEdadYFiltrarNiveles(this.value);
+      });
+    }
+
+    // Función para calcular edad y filtrar niveles
+    function validarEdadYFiltrarNiveles(fechaNacimiento) {
+      if (!fechaNacimiento) return;
+
+      const fechaNac = new Date(fechaNacimiento);
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - fechaNac.getFullYear();
+      const mes = hoy.getMonth() - fechaNac.getMonth();
+
+      if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+        edad--;
+      }
+
+      console.log(`🎯 Edad calculada: ${edad} años`);
+
+      // Filtrar niveles según la edad
+      filtrarNivelesPorEdad(edad);
+    }
+
+    // Función para filtrar niveles según la edad
+    function filtrarNivelesPorEdad(edad) {
+      if (!nivelSelect) return;
+
+      // Guardar el valor actual seleccionado
+      const valorActual = nivelSelect.value;
+
+      // Obtener todas las opciones disponibles
+      const todasLasOpciones = Array.from(nivelSelect.options);
+
+      // Limpiar el select
+      nivelSelect.innerHTML = '<option value="">Seleccionar Nivel</option>';
+
+      // Filtrar opciones según la edad
+      todasLasOpciones.forEach(opcion => {
+        if (opcion.value === '') return; // Saltar la opción vacía
+
+        const textoNivel = opcion.textContent.toLowerCase();
+        const esGrado = textoNivel.includes('grado');
+        const esAnio = textoNivel.includes('año') || textoNivel.includes('ano');
+
+        let mostrarOpcion = false;
+
+        if (edad >= 4 && edad <= 10) {
+          // Entre 4-10 años: solo grados
+          mostrarOpcion = esGrado;
+        } else if (edad > 10 && edad <= 12) {
+          // Entre 10-12 años: grados 4,5,6 y años 1,2,3
+          if (esGrado) {
+            const numeroGrado = extraerNumero(textoNivel);
+            mostrarOpcion = numeroGrado >= 4 && numeroGrado <= 6;
+          } else if (esAnio) {
+            const numeroAnio = extraerNumero(textoNivel);
+            mostrarOpcion = numeroAnio >= 1 && numeroAnio <= 3;
+          }
+        } else if (edad > 12) {
+          // Mayor de 12 años: solo años
+          mostrarOpcion = esAnio;
+        }
+
+        if (mostrarOpcion) {
+          nivelSelect.appendChild(opcion);
+        }
+      });
+
+      // Restaurar selección anterior si todavía está disponible
+      if (valorActual && nivelSelect.querySelector(`option[value="${valorActual}"]`)) {
+        nivelSelect.value = valorActual;
+      } else {
+        nivelSelect.value = '';
+        // Limpiar secciones si no hay nivel seleccionado
+        const seccionSelect = document.querySelector('select[name="id_seccion"]');
+        if (seccionSelect) {
+          seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
+          seccionSelect.disabled = true;
+        }
+      }
+
+      // Si quedó solo una opción, seleccionarla automáticamente
+      const opcionesDisponibles = Array.from(nivelSelect.options).filter(opt => opt.value !== '');
+      if (opcionesDisponibles.length === 1) {
+        nivelSelect.value = opcionesDisponibles[0].value;
+        // Disparar evento change para cargar secciones automáticamente
+        nivelSelect.dispatchEvent(new Event('change'));
+      }
+
+      console.log(`📚 Niveles disponibles para edad ${edad}:`, opcionesDisponibles.length);
+    }
+
+    // Función auxiliar para extraer números del texto del nivel
+    function extraerNumero(texto) {
+      const match = texto.match(/(\d+)/);
+      return match ? parseInt(match[1]) : 0;
+    }
+
+    // También validar al cargar la página si ya hay una fecha
+    if (fechaNacInput && fechaNacInput.value) {
+      setTimeout(() => {
+        validarEdadYFiltrarNiveles(fechaNacInput.value);
+      }, 500);
+    }
+  });
+</script> -->
+
+
+
+<!-- <script>
+  // ========== VALIDACIÓN DE CUPOS EN TIEMPO REAL ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    const nivelSelect = document.querySelector('select[name="id_nivel"]');
+    const seccionSelect = document.querySelector('select[name="id_seccion"]');
+    const periodoSelect = document.querySelector('select[name="id_periodo"]');
+    const submitBtn = document.querySelector('button[type="submit"]');
+
+    let mensajeCupos = null;
+
+    // Función para verificar cupos
+    function verificarCupos() {
+      const id_nivel = nivelSelect.value;
+      const id_seccion = seccionSelect.value;
+      const id_periodo = periodoSelect.value;
+
+      if (!id_nivel || !id_seccion || !id_periodo) {
+        eliminarMensajeCupos();
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('id_nivel', id_nivel);
+      formData.append('id_seccion', id_seccion);
+      formData.append('id_periodo', id_periodo);
+
+      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          mostrarMensajeCupos(data);
+        })
+        .catch(error => {
+          console.error('Error al verificar cupos:', error);
+        });
+    }
+
+    // Función para mostrar mensaje de cupos
+    function mostrarMensajeCupos(data) {
+      eliminarMensajeCupos();
+
+      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
+      if (!informacionAcademica) return;
+
+      mensajeCupos = document.createElement('div');
+      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
+      mensajeCupos.innerHTML = `
+            <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
+            ${data.mensaje}
+            ${data.disponible ? 
+                `<br><small class="text-muted">Puede continuar con la inscripción</small>` : 
+                `<br><small class="text-muted">No se puede realizar la inscripción en esta sección</small>`
+            }
+        `;
+
+      informacionAcademica.appendChild(mensajeCupos);
+
+      // Deshabilitar/enable el botón de enviar
+      if (submitBtn) {
+        submitBtn.disabled = !data.disponible;
+      }
+    }
+
+    // Función para eliminar mensaje de cupos
+    function eliminarMensajeCupos() {
+      if (mensajeCupos) {
+        mensajeCupos.remove();
+        mensajeCupos = null;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // Event listeners para cambios en los selects
+    if (nivelSelect) nivelSelect.addEventListener('change', verificarCupos);
+    if (seccionSelect) seccionSelect.addEventListener('change', verificarCupos);
+    if (periodoSelect) periodoSelect.addEventListener('change', verificarCupos);
+
+    // Verificar cupos al cargar si ya hay valores seleccionados
+    setTimeout(verificarCupos, 500);
+  });
+</script> -->
 
 <!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
 <!-- - Aca hacemos la validacion sobre si el estudiante vive en la misma casa -- -->
@@ -2066,331 +2965,7 @@ try {
     });
   });
 </script>
-<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
-<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
-<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
-<!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
-<!-- <script>
-  // ========== VALIDACIÓN DE CUPOS EN TIEMPO REAL ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-    const seccionSelect = document.querySelector('select[name="id_seccion"]');
-    const periodoSelect = document.querySelector('select[name="id_periodo"]');
-    const submitBtn = document.querySelector('button[type="submit"]');
 
-    let mensajeCupos = null;
-
-    // Función para verificar cupos
-    function verificarCupos() {
-      const id_nivel = nivelSelect.value;
-      const id_seccion = seccionSelect.value;
-      const id_periodo = periodoSelect.value;
-
-      if (!id_nivel || !id_seccion || !id_periodo) {
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('id_nivel', id_nivel);
-      formData.append('id_seccion', id_seccion);
-      formData.append('id_periodo', id_periodo);
-
-      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          mostrarMensajeCupos(data);
-        })
-        .catch(error => {
-          console.error('Error al verificar cupos:', error);
-        });
-    }
-
-    // Función para mostrar mensaje de cupos
-    function mostrarMensajeCupos(data) {
-      eliminarMensajeCupos();
-
-      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
-      if (!informacionAcademica) return;
-
-      mensajeCupos = document.createElement('div');
-      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
-      mensajeCupos.innerHTML = `
-            <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
-            ${data.mensaje}
-            ${data.disponible ? 
-                `<br><small class="text-muted">Puede continuar con la inscripción</small>` : 
-                `<br><small class="text-muted">No se puede realizar la inscripción en esta sección</small>`
-            }
-        `;
-
-      informacionAcademica.appendChild(mensajeCupos);
-
-      // Deshabilitar/enable el botón de enviar
-      if (submitBtn) {
-        submitBtn.disabled = !data.disponible;
-      }
-    }
-
-    // Función para eliminar mensaje de cupos
-    function eliminarMensajeCupos() {
-      if (mensajeCupos) {
-        mensajeCupos.remove();
-        mensajeCupos = null;
-      }
-      if (submitBtn) {
-        submitBtn.disabled = false;
-      }
-    }
-
-    // Event listeners para cambios en los selects
-    if (nivelSelect) nivelSelect.addEventListener('change', verificarCupos);
-    if (seccionSelect) seccionSelect.addEventListener('change', verificarCupos);
-    if (periodoSelect) periodoSelect.addEventListener('change', verificarCupos);
-
-    // Verificar cupos al cargar si ya hay valores seleccionados
-    setTimeout(verificarCupos, 500);
-  });
-</script> -->
-<script>
-  // ========== CARGAR SECCIONES POR NIVEL Y VALIDACIÓN DE CUPOS ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-    const seccionSelect = document.querySelector('select[name="id_seccion"]');
-    const periodoSelect = document.querySelector('select[name="id_periodo"]');
-    const submitBtn = document.querySelector('button[type="submit"]');
-
-    let mensajeCupos = null;
-
-    // ========== FUNCIÓN PARA CARGAR SECCIONES POR NIVEL ==========
-    function cargarSeccionesPorNivel(idNivel) {
-      if (!idNivel) {
-        // Si no hay nivel seleccionado, limpiar secciones
-        seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-        seccionSelect.disabled = true;
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('id_nivel', idNivel);
-
-      // Mostrar loading en el select de secciones
-      seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
-      seccionSelect.disabled = true;
-      eliminarMensajeCupos();
-
-      fetch('/final/app/controllers/cupos/cargar_secciones.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
-
-          if (data.success && data.secciones && data.secciones.length > 0) {
-            data.secciones.forEach(seccion => {
-              seccionSelect.innerHTML += `<option value="${seccion.id_seccion}" data-nivel-seccion="${seccion.id_nivel_seccion}">
-                        ${seccion.nom_seccion} (Capacidad: ${seccion.capacidad})
-                    </option>`;
-            });
-            seccionSelect.disabled = false;
-
-            console.log('✅ Secciones cargadas:', data.secciones.length);
-          } else {
-            seccionSelect.innerHTML = '<option value="">No hay secciones disponibles para este nivel</option>';
-            seccionSelect.disabled = true;
-            console.warn('⚠️ No se encontraron secciones para el nivel:', idNivel);
-          }
-
-          // Una vez cargadas las secciones, verificar cupos si ya hay período seleccionado
-          if (periodoSelect && periodoSelect.value) {
-            setTimeout(verificarCupos, 100);
-          }
-        })
-        .catch(error => {
-          console.error('❌ Error al cargar secciones:', error);
-          seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
-          seccionSelect.disabled = true;
-        });
-    }
-
-    // ========== FUNCIÓN PARA VERIFICAR CUPOS (ACTUALIZADA) ==========
-    function verificarCupos() {
-      const selectedOption = seccionSelect.options[seccionSelect.selectedIndex];
-
-      if (!nivelSelect.value || !seccionSelect.value || !periodoSelect.value || !selectedOption) {
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const id_nivel_seccion = selectedOption.getAttribute('data-nivel-seccion');
-      const id_periodo = periodoSelect.value;
-
-      if (!id_nivel_seccion) {
-        console.error('❌ No se encontró el id_nivel_seccion en la opción seleccionada');
-        eliminarMensajeCupos();
-        return;
-      }
-
-      console.log('🔍 Verificando cupos para:', {
-        id_nivel_seccion: id_nivel_seccion,
-        id_periodo: id_periodo,
-        nivel: nivelSelect.value,
-        seccion: seccionSelect.value
-      });
-
-      const formData = new FormData();
-      formData.append('id_nivel_seccion', id_nivel_seccion);
-      formData.append('id_periodo', id_periodo);
-
-      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('📊 Respuesta de cupos:', data);
-          mostrarMensajeCupos(data);
-        })
-        .catch(error => {
-          console.error('❌ Error al verificar cupos:', error);
-          // Mostrar mensaje de error
-          mostrarMensajeCupos({
-            success: false,
-            disponible: false,
-            mensaje: 'Error al verificar disponibilidad de cupos'
-          });
-        });
-    }
-
-    // ========== FUNCIÓN PARA MOSTRAR MENSAJE DE CUPOS ==========
-    function mostrarMensajeCupos(data) {
-      eliminarMensajeCupos();
-
-      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
-      if (!informacionAcademica) {
-        console.warn('⚠️ No se encontró el contenedor para el mensaje de cupos');
-        return;
-      }
-
-      mensajeCupos = document.createElement('div');
-      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
-
-      if (data.success) {
-        mensajeCupos.innerHTML = `
-                <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
-                ${data.mensaje}
-                ${data.disponible ? 
-                    `<br><small class="text-white">Puede continuar con la inscripción</small>` : 
-                    `<br><small class="text-white">No se puede realizar la inscripción en esta sección</small>`
-                }
-            `;
-      } else {
-        mensajeCupos.innerHTML = `
-                <strong>❌ ERROR</strong><br>
-                ${data.message || 'Error al verificar cupos'}
-            `;
-      }
-
-      informacionAcademica.appendChild(mensajeCupos);
-
-      // Deshabilitar/habilitar el botón de enviar
-      if (submitBtn) {
-        submitBtn.disabled = !data.disponible;
-        console.log('🔄 Botón submit:', data.disponible ? 'HABILITADO' : 'DESHABILITADO');
-      }
-    }
-
-    // ========== FUNCIÓN PARA ELIMINAR MENSAJE DE CUPOS ==========
-    function eliminarMensajeCupos() {
-      if (mensajeCupos) {
-        mensajeCupos.remove();
-        mensajeCupos = null;
-      }
-      if (submitBtn) {
-        submitBtn.disabled = false;
-      }
-    }
-
-    // ========== EVENT LISTENERS ==========
-
-    // Event listener para cambios en el nivel
-    if (nivelSelect) {
-      nivelSelect.addEventListener('change', function() {
-        const idNivel = this.value;
-        console.log('🎯 Nivel cambiado:', idNivel);
-        cargarSeccionesPorNivel(idNivel);
-      });
-    }
-
-    // Event listener para cambios en la sección
-    if (seccionSelect) {
-      seccionSelect.addEventListener('change', function() {
-        console.log('🎯 Sección cambiada:', this.value);
-        if (this.value && periodoSelect.value) {
-          verificarCupos();
-        } else {
-          eliminarMensajeCupos();
-        }
-      });
-    }
-
-    // Event listener para cambios en el período
-    if (periodoSelect) {
-      periodoSelect.addEventListener('change', function() {
-        console.log('🎯 Período cambiado:', this.value);
-        if (this.value && seccionSelect.value) {
-          verificarCupos();
-        } else {
-          eliminarMensajeCupos();
-        }
-      });
-    }
-
-    // ========== INICIALIZACIÓN ==========
-
-    // Cargar secciones si ya hay un nivel seleccionado (al recargar página)
-    if (nivelSelect && nivelSelect.value) {
-      console.log('🔄 Inicializando con nivel pre-seleccionado:', nivelSelect.value);
-      setTimeout(() => {
-        cargarSeccionesPorNivel(nivelSelect.value);
-      }, 500);
-    } else {
-      // Inicializar select de secciones como deshabilitado
-      seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-      seccionSelect.disabled = true;
-    }
-
-    // Verificar cupos al cargar si ya hay valores seleccionados
-    setTimeout(() => {
-      if (nivelSelect.value && seccionSelect.value && periodoSelect.value) {
-        console.log('🔄 Verificando cupos iniciales...');
-        verificarCupos();
-      }
-    }, 1000);
-
-    // Debug inicial
-    console.log('🔍 Estado inicial de selects:', {
-      nivel: nivelSelect ? nivelSelect.value : 'No encontrado',
-      seccion: seccionSelect ? seccionSelect.value : 'No encontrado',
-      periodo: periodoSelect ? periodoSelect.value : 'No encontrado'
-    });
-  });
-</script>
 
 
 <!-- validaciones de inputs y campos  -->
