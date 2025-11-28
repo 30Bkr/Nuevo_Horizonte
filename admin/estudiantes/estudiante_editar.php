@@ -48,6 +48,32 @@ try {
     header("Location: estudiantes_list.php");
     exit();
 }
+
+// Obtener datos para los selects
+try {
+    $database = new Conexion();
+    $db = $database->conectar();
+    if ($db) {
+        $controller_data = new EstudianteController($db);
+        
+        // Obtener parroquias
+        $parroquias = $controller_data->obtenerParroquias();
+        
+        // Obtener patologías
+        $patologias = $controller_data->obtenerPatologias();
+        
+        // Obtener discapacidades
+        $discapacidades = $controller_data->obtenerDiscapacidades();
+        
+        // Obtener parentescos
+        $parentescos = $controller_data->obtenerParentescos();
+        
+        // Obtener profesiones
+        $profesiones = $controller_data->obtenerProfesiones();
+    }
+} catch (Exception $e) {
+    // Error al cargar datos adicionales, pero continuamos
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -78,6 +104,12 @@ try {
         .campo-obligatorio {
             border-left: 3px solid #dc3545;
             padding-left: 10px;
+        }
+        .select2-container--bootstrap4 .select2-selection--multiple {
+            min-height: 38px;
+        }
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: 38px;
         }
     </style>
 </head>
@@ -186,8 +218,8 @@ try {
                                                     <label for="nacionalidad">Nacionalidad <span class="text-danger">* (Obligatorio)</span></label>
                                                     <select class="form-control" id="nacionalidad" name="nacionalidad" required>
                                                         <option value="">Seleccione...</option>
-                                                        <option value="Venezolano" <?php echo $estudiante->nacionalidad == 'Venezolano' ? 'selected' : ''; ?>>Venezolano</option>
-                                                        <option value="Extranjero" <?php echo $estudiante->nacionalidad == 'Extranjero' ? 'selected' : ''; ?>>Extranjero</option>
+                                                        <option value="Venezolano" <?php echo ($estudiante->nacionalidad ?? '') == 'Venezolano' ? 'selected' : ''; ?>>Venezolano</option>
+                                                        <option value="Extranjero" <?php echo ($estudiante->nacionalidad ?? '') == 'Extranjero' ? 'selected' : ''; ?>>Extranjero</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -197,7 +229,7 @@ try {
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="cedula" name="cedula" 
-                                                           value="<?php echo htmlspecialchars($estudiante->cedula); ?>" required
+                                                           value="<?php echo htmlspecialchars($estudiante->cedula ?? ''); ?>" required
                                                            maxlength="20">
                                                     <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
@@ -208,7 +240,7 @@ try {
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="fecha_nac">Fecha de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="date" class="form-control" id="fecha_nac" name="fecha_nac"
-                                                           value="<?php echo $estudiante->fecha_nac; ?>" required>
+                                                           value="<?php echo $estudiante->fecha_nac ?? ''; ?>" required>
                                                 </div>
                                             </div>
                                         </div>
@@ -218,7 +250,7 @@ try {
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" 
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_nombre); ?>" required>
+                                                           value="<?php echo htmlspecialchars($estudiante->primer_nombre ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -232,7 +264,7 @@ try {
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="primer_apellido">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="primer_apellido" name="primer_apellido"
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_apellido); ?>" required>
+                                                           value="<?php echo htmlspecialchars($estudiante->primer_apellido ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -250,8 +282,8 @@ try {
                                                     <label for="sexo">Sexo <span class="text-danger">* (Obligatorio)</span></label>
                                                     <select class="form-control" id="sexo" name="sexo" required>
                                                         <option value="">Seleccione...</option>
-                                                        <option value="Masculino" <?php echo $estudiante->sexo == 'Masculino' ? 'selected' : ''; ?>>Masculino</option>
-                                                        <option value="Femenino" <?php echo $estudiante->sexo == 'Femenino' ? 'selected' : ''; ?>>Femenino</option>
+                                                        <option value="Masculino" <?php echo ($estudiante->sexo ?? '') == 'Masculino' ? 'selected' : ''; ?>>Masculino</option>
+                                                        <option value="Femenino" <?php echo ($estudiante->sexo ?? '') == 'Femenino' ? 'selected' : ''; ?>>Femenino</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -266,7 +298,7 @@ try {
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="telefono">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
                                                     <input type="text" class="form-control" id="telefono" name="telefono"
-                                                           value="<?php echo htmlspecialchars($estudiante->telefono); ?>" required maxlength="11">
+                                                           value="<?php echo htmlspecialchars($estudiante->telefono ?? ''); ?>" required maxlength="11">
                                                     <small class="form-text text-muted">Solo se permiten números</small>
                                                 </div>
                                             </div>
@@ -299,23 +331,17 @@ try {
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="id_parroquia">Parroquia</label>
-                                                    <select class="form-control select2" id="id_parroquia" name="id_parroquia">
+                                                    <select class="form-control select2" id="id_parroquia" name="id_parroquia" style="width: 100%;">
                                                         <option value="">Seleccione una parroquia...</option>
                                                         <?php
-                                                        try {
-                                                            $database = new Conexion();
-                                                            $db = $database->conectar();
-                                                            if ($db) {
-                                                                $controller_parroquias = new EstudianteController($db);
-                                                                $parroquias = $controller_parroquias->obtenerParroquias();
-                                                                while ($parroquia = $parroquias->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = $estudiante->id_parroquia == $parroquia['id_parroquia'] ? 'selected' : '';
-                                                                    echo "<option value='{$parroquia['id_parroquia']}' {$selected}>
-                                                                            {$parroquia['nom_parroquia']} - {$parroquia['nom_municipio']} - {$parroquia['nom_estado']}
-                                                                          </option>";
-                                                                }
+                                                        if (isset($parroquias) && $parroquias) {
+                                                            while ($parroquia = $parroquias->fetch(PDO::FETCH_ASSOC)) {
+                                                                $selected = ($estudiante->id_parroquia ?? '') == $parroquia['id_parroquia'] ? 'selected' : '';
+                                                                echo "<option value='{$parroquia['id_parroquia']}' {$selected}>
+                                                                        {$parroquia['nom_parroquia']} - {$parroquia['nom_municipio']} - {$parroquia['nom_estado']}
+                                                                      </option>";
                                                             }
-                                                        } catch (Exception $e) {
+                                                        } else {
                                                             echo "<option value=''>Error al cargar parroquias</option>";
                                                         }
                                                         ?>
@@ -326,7 +352,7 @@ try {
                                                 <div class="form-group">
                                                     <label for="direccion">Dirección Principal</label>
                                                     <input type="text" class="form-control" id="direccion" name="direccion"
-                                                           value="<?php echo htmlspecialchars($estudiante->direccion); ?>">
+                                                           value="<?php echo htmlspecialchars($estudiante->direccion ?? ''); ?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-2">
@@ -353,21 +379,15 @@ try {
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="patologias">Patologías/Enfermedades</label>
-                                                    <select class="form-control select2" id="patologias" name="patologias[]" multiple>
+                                                    <select class="form-control select2" id="patologias" name="patologias[]" multiple="multiple" style="width: 100%;">
                                                         <option value="">Seleccione patologías...</option>
                                                         <?php
-                                                        try {
-                                                            $database = new Conexion();
-                                                            $db = $database->conectar();
-                                                            if ($db) {
-                                                                $controller_patologias = new EstudianteController($db);
-                                                                $patologias = $controller_patologias->obtenerPatologias();
-                                                                while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
-                                                                    echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
-                                                                }
+                                                        if (isset($patologias) && $patologias) {
+                                                            while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
+                                                                $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
+                                                                echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
                                                             }
-                                                        } catch (Exception $e) {
+                                                        } else {
                                                             echo "<option value=''>Error al cargar patologías</option>";
                                                         }
                                                         ?>
@@ -378,21 +398,15 @@ try {
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label for="discapacidades">Discapacidades</label>
-                                                    <select class="form-control select2" id="discapacidades" name="discapacidades[]" multiple>
+                                                    <select class="form-control select2" id="discapacidades" name="discapacidades[]" multiple="multiple" style="width: 100%;">
                                                         <option value="">Seleccione discapacidades...</option>
                                                         <?php
-                                                        try {
-                                                            $database = new Conexion();
-                                                            $db = $database->conectar();
-                                                            if ($db) {
-                                                                $controller_discapacidades = new EstudianteController($db);
-                                                                $discapacidades = $controller_discapacidades->obtenerDiscapacidades();
-                                                                while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
-                                                                    echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
-                                                                }
+                                                        if (isset($discapacidades) && $discapacidades) {
+                                                            while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
+                                                                $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
+                                                                echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
                                                             }
-                                                        } catch (Exception $e) {
+                                                        } else {
                                                             echo "<option value=''>Error al cargar discapacidades</option>";
                                                         }
                                                         ?>
@@ -453,18 +467,12 @@ try {
                                                     <select class="form-control" id="id_parentesco" name="id_parentesco" required>
                                                         <option value="">Seleccione...</option>
                                                         <?php
-                                                        try {
-                                                            $database = new Conexion();
-                                                            $db = $database->conectar();
-                                                            if ($db) {
-                                                                $controller_parentescos = new EstudianteController($db);
-                                                                $parentescos = $controller_parentescos->obtenerParentescos();
-                                                                while ($parentesco = $parentescos->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = ($estudiante->id_parentesco ?? '') == $parentesco['id_parentesco'] ? 'selected' : '';
-                                                                    echo "<option value='{$parentesco['id_parentesco']}' {$selected}>{$parentesco['parentesco']}</option>";
-                                                                }
+                                                        if (isset($parentescos) && $parentescos) {
+                                                            while ($parentesco = $parentescos->fetch(PDO::FETCH_ASSOC)) {
+                                                                $selected = ($estudiante->id_parentesco ?? '') == $parentesco['id_parentesco'] ? 'selected' : '';
+                                                                echo "<option value='{$parentesco['id_parentesco']}' {$selected}>{$parentesco['parentesco']}</option>";
                                                             }
-                                                        } catch (Exception $e) {
+                                                        } else {
                                                             echo "<option value=''>Error al cargar parentescos</option>";
                                                         }
                                                         ?>
@@ -501,21 +509,15 @@ try {
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="id_profesion_rep">Profesión</label>
-                                                    <select class="form-control select2" id="id_profesion_rep" name="id_profesion_rep">
+                                                    <select class="form-control select2" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;">
                                                         <option value="">Seleccione una profesión...</option>
                                                         <?php
-                                                        try {
-                                                            $database = new Conexion();
-                                                            $db = $database->conectar();
-                                                            if ($db) {
-                                                                $controller_profesiones = new EstudianteController($db);
-                                                                $profesiones = $controller_profesiones->obtenerProfesiones();
-                                                                while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
-                                                                    echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
-                                                                }
+                                                        if (isset($profesiones) && $profesiones) {
+                                                            while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
+                                                                $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
+                                                                echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
                                                             }
-                                                        } catch (Exception $e) {
+                                                        } else {
                                                             echo "<option value=''>Error al cargar profesiones</option>";
                                                         }
                                                         ?>
@@ -577,9 +579,18 @@ try {
 
     <script>
         $(function () {
-            // Inicializar Select2
+            // Inicializar Select2 para todos los selects
             $('.select2').select2({
-                theme: 'bootstrap4'
+                theme: 'bootstrap4',
+                width: 'resolve'
+            });
+
+            // Inicializar específicamente para selects múltiples
+            $('#patologias, #discapacidades').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Seleccione...',
+                allowClear: true,
+                width: '100%'
             });
 
             // Función para convertir texto a mayúsculas
@@ -754,13 +765,6 @@ try {
             // Limpiar validación cuando el usuario empiece a escribir
             $('input, select').on('input change', function() {
                 $(this).removeClass('is-invalid');
-            });
-
-            // Inicializar Select2 para patologías y discapacidades
-            $('#patologias, #discapacidades').select2({
-                theme: 'bootstrap4',
-                placeholder: 'Seleccione...',
-                allowClear: true
             });
         });
     </script>

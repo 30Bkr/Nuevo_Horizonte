@@ -41,13 +41,13 @@ if ($_POST && isset($_POST['crear_nivel'])) {
         $num_nivel = $_POST['nuevo_num_nivel'];
         $nom_nivel = $_POST['nuevo_nom_nivel'];
         
-        // Validar que no exista el nivel
-        $query_check = "SELECT id_nivel FROM niveles WHERE (num_nivel = ? OR nom_nivel = ?) AND estatus = 1";
+        // Validar que no exista el nivel con el mismo nombre
+        $query_check = "SELECT id_nivel FROM niveles WHERE nom_nivel = ? AND estatus = 1";
         $stmt_check = $db->prepare($query_check);
-        $stmt_check->execute([$num_nivel, $nom_nivel]);
+        $stmt_check->execute([$nom_nivel]);
         
         if ($stmt_check->rowCount() > 0) {
-            $_SESSION['error'] = "Ya existe un nivel con ese número o nombre.";
+            $_SESSION['error'] = "Ya existe un nivel con ese nombre exacto.";
         } else {
             $query = "INSERT INTO niveles (num_nivel, nom_nivel) VALUES (?, ?)";
             $stmt = $db->prepare($query);
@@ -316,7 +316,7 @@ try {
                                     <small><i class="icon fas fa-exclamation-triangle"></i> No se puede crear una combinación de grado/año y sección que ya existe.</small>
                                 </div>
                                 <div class="alert alert-info">
-                                    <small><i class="icon fas fa-info-circle"></i> Solo se muestran grados/años y secciones activos en las listas.</small>
+                                    <small><i class="icon fas fa-info-circle"></i> Ahora puedes crear tanto "Primer Grado" como "Primer Año" sin conflictos.</small>
                                 </div>
                             </div>
                         </div>

@@ -38,65 +38,65 @@ class Grado {
     }
 
     /**
- * Listar todos los grados con conteo de alumnos SOLO del período activo
- * @return PDOStatement Lista de grados con información de alumnos
- */
-public function listarGradosConAlumnos() {
-    $query = "SELECT 
-                ns.id_nivel_seccion,
-                n.nom_nivel as nombre_grado,
-                s.nom_seccion as seccion,
-                ns.capacidad,
-                ns.estatus,
-                COUNT(i.id_inscripcion) as total_alumnos
-              FROM " . $this->table_name . " ns
-              INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-              INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-              LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
-                AND i.estatus = 1
-                AND i.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
-              WHERE n.estatus = 1 AND s.estatus = 1  -- Solo niveles y secciones activos
-              GROUP BY ns.id_nivel_seccion
-              ORDER BY n.num_nivel, s.nom_seccion";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->execute();
-    
-    return $stmt;
-}
+     * Listar todos los grados con conteo de alumnos SOLO del período activo
+     * @return PDOStatement Lista de grados con información de alumnos
+     */
+    public function listarGradosConAlumnos() {
+        $query = "SELECT 
+                    ns.id_nivel_seccion,
+                    n.nom_nivel as nombre_grado,
+                    s.nom_seccion as seccion,
+                    ns.capacidad,
+                    ns.estatus,
+                    COUNT(i.id_inscripcion) as total_alumnos
+                  FROM " . $this->table_name . " ns
+                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                  LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+                    AND i.estatus = 1
+                    AND i.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
+                  WHERE n.estatus = 1 AND s.estatus = 1  -- Solo niveles y secciones activos
+                  GROUP BY ns.id_nivel_seccion
+                  ORDER BY n.num_nivel, s.nom_seccion";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        return $stmt;
+    }
 
     /**
- * Listar grados que tienen inscripciones en el período activo
- * @return PDOStatement Lista de grados activos en el período actual
- */
-public function listarGradosPeriodoActivo() {
-    $query = "SELECT DISTINCT
-                ns.id_nivel_seccion,
-                n.nom_nivel as nombre_grado,
-                s.nom_seccion as seccion,
-                ns.capacidad,
-                ns.estatus,
-                COUNT(i.id_inscripcion) as total_alumnos,
-                per.descripcion_periodo
-              FROM " . $this->table_name . " ns
-              INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-              INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-              INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
-              INNER JOIN periodos per ON i.id_periodo = per.id_periodo
-              WHERE n.estatus = 1 
-                AND s.estatus = 1
-                AND ns.estatus = 1
-                AND i.estatus = 1
-                AND per.estatus = 1  -- Solo períodos activos
-                AND per.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
-              GROUP BY ns.id_nivel_seccion
-              ORDER BY n.num_nivel, s.nom_seccion";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->execute();
-    
-    return $stmt;
-}
+     * Listar grados que tienen inscripciones en el período activo
+     * @return PDOStatement Lista de grados activos en el período actual
+     */
+    public function listarGradosPeriodoActivo() {
+        $query = "SELECT DISTINCT
+                    ns.id_nivel_seccion,
+                    n.nom_nivel as nombre_grado,
+                    s.nom_seccion as seccion,
+                    ns.capacidad,
+                    ns.estatus,
+                    COUNT(i.id_inscripcion) as total_alumnos,
+                    per.descripcion_periodo
+                  FROM " . $this->table_name . " ns
+                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                  INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+                  INNER JOIN periodos per ON i.id_periodo = per.id_periodo
+                  WHERE n.estatus = 1 
+                    AND s.estatus = 1
+                    AND ns.estatus = 1
+                    AND i.estatus = 1
+                    AND per.estatus = 1  -- Solo períodos activos
+                    AND per.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
+                  GROUP BY ns.id_nivel_seccion
+                  ORDER BY n.num_nivel, s.nom_seccion";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        return $stmt;
+    }
 
     // Obtener todas las secciones disponibles
     public function obtenerSecciones() {
@@ -108,16 +108,18 @@ public function listarGradosPeriodoActivo() {
 
     // Obtener todos los niveles disponibles
     public function obtenerNiveles() {
-        $query = "SELECT * FROM niveles WHERE estatus = 1 ORDER BY num_nivel";
+        $query = "SELECT * FROM niveles WHERE estatus = 1 ORDER BY num_nivel, nom_nivel";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
 
-    // Verificar si ya existe la combinación nivel-sección
+    // Verificar si ya existe la combinación nivel-sección (MODIFICADO)
     public function existeCombinacion($id_nivel, $id_seccion) {
-        $query = "SELECT id_nivel_seccion FROM " . $this->table_name . " 
-                  WHERE id_nivel = ? AND id_seccion = ? AND estatus = 1 
+        $query = "SELECT ns.id_nivel_seccion 
+                  FROM " . $this->table_name . " ns
+                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                  WHERE n.id_nivel = ? AND ns.id_seccion = ? AND ns.estatus = 1 
                   LIMIT 0,1";
         
         $stmt = $this->conn->prepare($query);
@@ -363,36 +365,37 @@ public function listarGradosPeriodoActivo() {
         
         return $stmt;
     }
+
     /**
- * Crear nuevo nivel con número y nombre automático
- * @param string $nombre_nivel Nombre del nivel (Ej: Primaria)
- * @param int $numero_grado Número del grado (1-6)
- * @return bool True si se creó correctamente
- */
-public function crearNivelConGrado($nombre_nivel, $numero_grado) {
-    // Generar nombre automático del grado
-    $nombresGrados = [
-        1 => 'Primer Grado',
-        2 => 'Segundo Grado',
-        3 => 'Tercer Grado',
-        4 => 'Cuarto Grado', 
-        5 => 'Quinto Grado',
-        6 => 'Sexto Grado'
-    ];
-    
-    $nom_nivel = $nombresGrados[$numero_grado] ?? 'Grado ' . $numero_grado;
-    
-    $query = "INSERT INTO niveles (num_nivel, nom_nivel) VALUES (?, ?)";
-    $stmt = $this->conn->prepare($query);
-    
-    $numero_grado = htmlspecialchars(strip_tags($numero_grado));
-    $nom_nivel = htmlspecialchars(strip_tags($nom_nivel));
-    
-    if ($stmt->execute([$numero_grado, $nom_nivel])) {
-        return $this->conn->lastInsertId();
+     * Crear nuevo nivel con número y nombre automático
+     * @param string $nombre_nivel Nombre del nivel (Ej: Primaria)
+     * @param int $numero_grado Número del grado (1-6)
+     * @return bool True si se creó correctamente
+     */
+    public function crearNivelConGrado($nombre_nivel, $numero_grado) {
+        // Generar nombre automático del grado
+        $nombresGrados = [
+            1 => 'Primer Grado',
+            2 => 'Segundo Grado',
+            3 => 'Tercer Grado',
+            4 => 'Cuarto Grado', 
+            5 => 'Quinto Grado',
+            6 => 'Sexto Grado'
+        ];
+        
+        $nom_nivel = $nombresGrados[$numero_grado] ?? 'Grado ' . $numero_grado;
+        
+        $query = "INSERT INTO niveles (num_nivel, nom_nivel) VALUES (?, ?)";
+        $stmt = $this->conn->prepare($query);
+        
+        $numero_grado = htmlspecialchars(strip_tags($numero_grado));
+        $nom_nivel = htmlspecialchars(strip_tags($nom_nivel));
+        
+        if ($stmt->execute([$numero_grado, $nom_nivel])) {
+            return $this->conn->lastInsertId();
+        }
+        return false;
     }
-    return false;
-}
 
     // ========== NUEVOS MÉTODOS PARA HABILITAR/INHABILITAR ==========
 
