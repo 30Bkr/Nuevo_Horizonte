@@ -691,7 +691,7 @@ try {
 
                   <div class="informacion_academica">
                     <div class="card-header mt-4">
-                      <h3 class="card-title"><b>Informacion Academica</b></h3>
+                      <h3 class="card-title"><b>Información Académica</b></h3>
                     </div>
                     <div class="card-body">
                       <!-- <div class="row">
