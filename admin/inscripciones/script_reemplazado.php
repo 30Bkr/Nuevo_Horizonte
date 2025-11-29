@@ -1,5 +1,5 @@
 <!-- Aca Enviamos informacion del formulario -->
-<script>
+<!-- <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Manejar el envío del formulario
       document.getElementById('form-inscripcion').addEventListener('submit', function(e) {
@@ -155,4 +155,4 @@
       };
   });
 </script>
-</script> -->
+</script> --> -->

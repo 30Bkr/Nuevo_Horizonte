@@ -3604,22 +3604,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
             }
         })
-        .catch(error => {
-            console.error('Error completo:', error);
+        //.catch(error => {
+           // console.error('Error completo:', error);
 
             // Mostrar error específico
-            if (error.message.includes('JSON')) {
-                alert('❌ Error: El servidor no respondió con JSON válido. Verifica que el archivo PHP no tenga errores.');
-            } else {
-                alert('❌ Error de conexión: ' + error.message);
-            }
+           // if //(error.message.includes('JSON')) {
+                //alert('❌ Error: El servidor no respondió con JSON válido. Verifica que el archivo PHP no tenga errores.');
+            //} //else {
+              // alert('❌ Error de conexión: ' + error.message);
+           // }
 
             // Rehabilitar botón
-            submitBtn.innerHTML = originalText;
+            submitBtn.innerHTML = originalText
             submitBtn.disabled = false;
         });
     });
-});
+//});
 </script>
 
 <?php
