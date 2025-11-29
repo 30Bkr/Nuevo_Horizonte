@@ -2566,6 +2566,12 @@ try {
 <script>
    // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
 function generarConstanciaInscripcion(idInscripcion) {
+    // ✅ VALIDACIÓN ADICIONAL: Verificar que el ID sea numérico
+    if (!idInscripcion || isNaN(idInscripcion)) {
+        console.error('❌ ID de inscripción no válido para generar constancia:', idInscripcion);
+        return Promise.reject(new Error('ID de inscripción no válido'));
+    }
+    
     return new Promise((resolve, reject) => {
         console.log('📄 Generando constancia para inscripción ID:', idInscripcion);
         
@@ -2575,112 +2581,39 @@ function generarConstanciaInscripcion(idInscripcion) {
         generatingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando constancia de inscripción...';
         document.querySelector('.content-wrapper').prepend(generatingMsg);
         
-        // Llamar al endpoint AJAX para generar la constancia
-        const formData = new FormData();
-        formData.append('id_inscripcion', idInscripcion);
+        // Usar directamente generar_constancia.php (SIMPLIFICADO)
+        const constanciaUrl = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
         
-        fetch('/final/app/controllers/inscripciones/generar_constancia_ajax.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                return response.text().then(text => {
-                    console.log('📨 Respuesta de constancia (texto):', text.substring(0, 200));
-                    
-                    // Si parece que fue exitoso a pesar de no ser JSON
-                    if (text.includes('success') || text.includes('download_url') || text.includes('generada')) {
-                        console.log('✅ Constancia generada (respuesta no JSON pero exitosa)');
-                        
-                        // Intentar extraer la URL de descarga si está en el texto
-                        let downloadUrl = '/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=' + idInscripcion;
-                        
-                        // Buscar patrones de URL en el texto
-                        const urlMatch = text.match(/"download_url":"([^"]+)"/) || text.match(/download_url[^"]*"([^"]+)"/);
-                        if (urlMatch) {
-                            downloadUrl = urlMatch[1];
-                        }
-                        
-                        return { 
-                            success: true, 
-                            download_url: downloadUrl,
-                            message: 'Constancia generada exitosamente'
-                        };
-                    }
-                    throw new Error('Error generando constancia');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
+        setTimeout(() => {
             generatingMsg.remove();
             
-            if (data.success) {
-                console.log('✅ Constancia generada:', data.download_url);
-                
-                const successMsg = document.createElement('div');
-                successMsg.className = 'alert alert-success';
-                successMsg.innerHTML = `
-                    <strong>✅ Inscripción completada exitosamente</strong><br>
-                    <small>La constancia se ha generado y descargará automáticamente.</small>
-                `;
-                document.querySelector('.content-wrapper').prepend(successMsg);
-                
-                // Descargar automáticamente si hay URL
-                if (data.download_url) {
-                    setTimeout(() => {
-                        console.log('🔗 Abriendo URL:', data.download_url);
-                        window.open(data.download_url, '_blank');
-                    }, 800);
-                } else {
-                    // Fallback: usar el generador directo
-                    setTimeout(() => {
-                        const fallbackUrl = '/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=' + idInscripcion;
-                        console.log('🔗 Usando fallback URL:', fallbackUrl);
-                        window.open(fallbackUrl, '_blank');
-                    }, 800);
-                }
-                
-                resolve(data);
-            } else {
-                console.warn('⚠️ Constancia no generada:', data.message);
-                
-                // Mostrar opción manual
-                const warningMsg = document.createElement('div');
-                warningMsg.className = 'alert alert-warning';
-                warningMsg.innerHTML = `
-                    <strong>✅ Inscripción completada</strong><br>
-                    <small>Puede generar la constancia manualmente si es necesario.</small><br>
-                    <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
-                       target="_blank" class="btn btn-outline-primary btn-sm mt-2">
-                        <i class="fas fa-redo"></i> Generar Constancia Manualmente
-                    </a>
-                `;
-                document.querySelector('.content-wrapper').prepend(warningMsg);
-                
-                resolve(data);
-            }
-        })
-        .catch(error => {
-            console.warn('⚠️ Error en generación de constancia:', error);
-            generatingMsg.remove();
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success';
+            successMsg.innerHTML = `
+                <strong>✅ Inscripción completada exitosamente</strong><br>
+                <small>La constancia se abrirá en una nueva ventana para visualización.</small>
+                <br><small><em>Puede usar el botón de descarga del navegador si desea guardarla.</em></small>
+            `;
+            document.querySelector('.content-wrapper').prepend(successMsg);
             
-            // Mostrar mensaje con opción manual
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'alert alert-warning';
-            errorMsg.innerHTML = `
-                <strong>✅ Inscripción completada</strong><br>
-                <small>Puede generar la constancia manualmente.</small><br>
-                <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
-                   target="_blank" class="btn btn-outline-primary btn-sm mt-2">
-                    <i class="fas fa-redo"></i> Generar Constancia Manualmente
+            // Abrir en nueva pestaña para VISUALIZACIÓN (no descarga automática)
+            console.log('🔗 Abriendo constancia para visualización:', constanciaUrl);
+            window.open(constanciaUrl, '_blank', 'width=1000,height=700,scrollbars=yes');
+            
+            // También mostrar botón por si la ventana emergente es bloqueada
+            const buttonMsg = document.createElement('div');
+            buttonMsg.className = 'alert alert-info mt-2';
+            buttonMsg.innerHTML = `
+                <small>Si la constancia no se abrió automáticamente:</small><br>
+                <a href="${constanciaUrl}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">
+                    <i class="fas fa-external-link-alt"></i> Abrir Constancia Manualmente
                 </a>
             `;
-            document.querySelector('.content-wrapper').prepend(errorMsg);
+            document.querySelector('.content-wrapper').prepend(buttonMsg);
             
-            resolve(); // Resolvemos igual para continuar
-        });
+            resolve({ success: true });
+            
+        }, 1500); // Pequeño delay para mejor experiencia de usuario
     });
 }
 
@@ -2782,41 +2715,66 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.querySelector('.content-wrapper').prepend(successAlert);
 
-            // Intentar obtener el ID de inscripción de diferentes maneras
-            let idInscripcion = data.id_inscripcion;
+           // Intentar obtener el ID de inscripción
+let idInscripcion = data.id_inscripcion;
+
+// SOLUCIÓN RÁPIDA: Si no hay ID, no generar constancia
+if (!idInscripcion) {
+    console.warn('⚠️ No se generará constancia - ID no recibido');
+    idInscripcion = null;
+}
+           console.log('🎯 ID de inscripción a usar:', idInscripcion);
+
+// SOLO generar constancia si tenemos un ID válido (numérico)
+if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
+    // Generar constancia con el ID disponible
+    generarConstanciaInscripcion(idInscripcion)
+        .then(() => {
+            console.log('✅ Proceso de constancia completado');
             
-            // Si no hay ID en la respuesta, intentar alternativas
-            if (!idInscripcion) {
-                console.warn('⚠️ No se recibió ID de inscripción, usando estrategias alternativas...');
-                
-                // Estrategia 1: Intentar obtener del último registro (si tu sistema lo permite)
-                idInscripcion = 'last';
-                
-                // Estrategia 2: Usar un timestamp como referencia
-                // idInscripcion = 'ref_' + Date.now();
-            }
-
-            console.log('🎯 ID de inscripción a usar:', idInscripcion);
-
-            // Generar constancia con el ID disponible
-            generarConstanciaInscripcion(idInscripcion)
-                .then(() => {
-                    console.log('✅ Proceso de constancia completado');
-                    
-                    // Redirigir después de un tiempo
-                    setTimeout(() => {
-                        console.log('🔄 Redirigiendo a dashboard...');
-                        window.location.href = '/final/admin/index.php';
-                    }, 5000);
-                })
-                .catch((error) => {
-                    console.warn('⚠️ Error en proceso de constancia:', error);
-                    
-                    // Redirigir incluso si hay error en la constancia
-                    setTimeout(() => {
-                        window.location.href = '/final/admin/index.php';
-                    }, 4000);
-                });
+            // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
+            setTimeout(() => {
+                console.log('🔄 Redirigiendo a dashboard...');
+                window.location.href = '/final/admin/index.php';
+            }, 8000); // 8 segundos para dar tiempo al usuario
+        })
+        .catch((error) => {
+            console.warn('⚠️ Error en proceso de constancia:', error);
+            
+            // Mostrar mensaje de error pero continuar
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'alert alert-warning mt-2';
+            errorMsg.innerHTML = `
+                <small>Hubo un problema con la constancia, pero la inscripción fue exitosa.</small><br>
+                <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
+                   target="_blank" class="btn btn-outline-warning btn-sm mt-1">
+                    <i class="fas fa-redo"></i> Intentar Generar Constancia Nuevamente
+                </a>
+            `;
+            document.querySelector('.content-wrapper').prepend(errorMsg);
+            
+            // Redirigir después de más tiempo
+            setTimeout(() => {
+                window.location.href = '/final/admin/index.php';
+            }, 6000);
+        });
+} else {
+    // Si no hay ID válido, solo redirigir
+    console.warn('⚠️ No se generará constancia - ID no válido:', idInscripcion);
+    
+    const noConstanciaMsg = document.createElement('div');
+    noConstanciaMsg.className = 'alert alert-info mt-3';
+    noConstanciaMsg.innerHTML = `
+        <strong>✅ Inscripción completada exitosamente</strong><br>
+        <small>Puede generar la constancia más tarde desde el listado de estudiantes.</small>
+    `;
+    document.querySelector('.content-wrapper').prepend(noConstanciaMsg);
+    
+    setTimeout(() => {
+        console.log('🔄 Redirigiendo a dashboard...');
+        window.location.href = '/final/admin/index.php';
+    }, 5000);
+}
 
         })
         .catch(error => {
@@ -2838,15 +2796,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 successAlert.innerHTML = `<strong>✅ Proceso completado</strong>`;
                 document.querySelector('.content-wrapper').prepend(successAlert);
                 
-                // Intentar generar constancia de todas formas
-                setTimeout(() => {
-                    generarConstanciaInscripcion('last')
-                        .finally(() => {
-                            setTimeout(() => {
-                                window.location.href = '/final/admin/index.php';
-                            }, 4000);
-                        });
-                }, 1000);
+                // // Intentar generar constancia de todas formas
+                // setTimeout(() => {
+                //     generarConstanciaInscripcion('last')
+                //         .finally(() => {
+                //             setTimeout(() => {
+                //                 window.location.href = '/final/admin/index.php';
+                //             }, 4000);
+                //         });
+                // }, 1000);
             }
             
             // Rehabilitar botón en caso de error crítico

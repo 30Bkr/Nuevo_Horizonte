@@ -31,7 +31,20 @@ try {
     $database = new Conexion();
     $db = $database->conectar();
 
-    // CONSULTA PARA OBTENER DATOS DE LA INSCRIPCIÓN
+    // OBTENER DATOS DE LA DIRECTORA DESDE LA TABLA GLOBALES
+    $sql_globales = "SELECT nom_directora, ci_directora FROM globales WHERE id_globales = 1";
+    $stmt_globales = $db->prepare($sql_globales);
+    $stmt_globales->execute();
+    $directora = $stmt_globales->fetch(PDO::FETCH_ASSOC);
+
+    if (!$directora) {
+        throw new Exception("No se encontraron datos de la directora en la tabla globales");
+    }
+
+    // CONVERTIR NOMBRE DE DIRECTORA A MAYÚSCULAS
+    $directora_nombre_mayusculas = mb_strtoupper($directora['nom_directora'], 'UTF-8');
+
+    // CONSULTA PARA OBTENER DATOS DE LA INSCRIPCIÓN (ACTUALIZADA)
     $sql_inscripcion = "
         SELECT
             I.id_inscripcion,
@@ -44,14 +57,9 @@ try {
             UPPER(N.nom_nivel) AS nivel_nombre,
             UPPER(S.nom_seccion) AS seccion_nombre,
             UPPER(CONCAT(N.nom_nivel, ' ', S.nom_seccion)) AS nivel_seccion,
-            UPPER(CONCAT(PDIR.primer_nombre, ' ', COALESCE(PDIR.segundo_nombre, ''), ' ', PDIR.primer_apellido, ' ', COALESCE(PDIR.segundo_apellido, ''))) AS nombre_director,
-            PDIR.cedula AS cedula_director,
-            MDIR.nom_municipio AS municipio_emisor,
-            UPPER(EE.nom_estado) AS estado_zona_educativa,
             DATE_FORMAT(I.fecha_inscripcion, '%d') AS dia_inscripcion,
             DATE_FORMAT(I.fecha_inscripcion, '%m') AS mes_inscripcion,
-            DATE_FORMAT(I.fecha_inscripcion, '%Y') AS anio_inscripcion,
-            PDIR.primer_apellido AS apellido_director
+            DATE_FORMAT(I.fecha_inscripcion, '%Y') AS anio_inscripcion
         FROM
             inscripciones I
         JOIN estudiantes E ON I.id_estudiante = E.id_estudiante
@@ -60,15 +68,6 @@ try {
         LEFT JOIN niveles_secciones NS ON I.id_nivel_seccion = NS.id_nivel_seccion
         LEFT JOIN niveles N ON NS.id_nivel = N.id_nivel
         LEFT JOIN secciones S ON NS.id_seccion = S.id_seccion
-        LEFT JOIN direcciones DE ON PE.id_direccion = DE.id_direccion
-        LEFT JOIN parroquias PAE ON DE.id_parroquia = PAE.id_parroquia
-        LEFT JOIN municipios ME ON PAE.id_municipio = ME.id_municipio
-        LEFT JOIN estados EE ON ME.id_estado = EE.id_estado
-        JOIN usuarios U ON I.id_usuario = U.id_usuario
-        JOIN personas PDIR ON U.id_persona = PDIR.id_persona
-        JOIN direcciones DDIR ON PDIR.id_direccion = DDIR.id_direccion
-        JOIN parroquias PADIR ON DDIR.id_parroquia = PADIR.id_parroquia
-        JOIN municipios MDIR ON PADIR.id_municipio = MDIR.id_municipio
         WHERE
             I.id_inscripcion = :id_inscripcion;
     ";
@@ -101,15 +100,19 @@ try {
     $NOMBRE_INSTITUCION = 'U.E.N NUEVO HORIZONTE';
     $PARROQUIA_INSTITUCION = 'Sucre';
     $MUNICIPIO_INSTITUCION = 'Libertador';
+    $CIUDAD_EXPEDICION = 'Caracas'; // Ciudad fija para "Constancia que se expide en..."
 
     // Ruta de la imagen del cintillo
-    $ruta_cintillo = __DIR__ . '/../../../../public/images/cintillo_oficial.png';
+   $ruta_cintillo = $_SERVER['DOCUMENT_ROOT'] . '/final/public/images/cintillo_oficial.png';
     $cintillo_base64 = '';
     
     // Convertir imagen a base64 para incluirla en el HTML
     if (file_exists($ruta_cintillo)) {
         $image_data = file_get_contents($ruta_cintillo);
         $cintillo_base64 = 'data:image/png;base64,' . base64_encode($image_data);
+    } else {
+        // Si no existe la imagen, mostrar mensaje de debug
+        error_log("No se encontró la imagen del cintillo en: " . $ruta_cintillo);
     }
 
     // Crear contenido HTML para el PDF
@@ -162,43 +165,56 @@ try {
                 padding-bottom: 10px;
                 border-bottom: 3px solid #003366;
             }
-            /* CONTENIDO DE LA CONSTANCIA */
+            /* CONTENIDO DE LA CONSTANCIA - CORREGIDO */
             .constancia-content {
                 text-align: justify;
                 margin: 20px 0;
                 font-size: 13px;
                 line-height: 1.6;
+                text-justify: inter-character;
+                word-spacing: -0.5px;
+                letter-spacing: -0.1px;
+                hyphens: auto;
             }
             .constancia-content strong {
                 color: #003366;
             }
-            /* FIRMA Y SELLO */
+            /* FIRMA Y SELLO - CORREGIDO */
             .firma-section {
-                margin-top: 60px;
-                text-align: center;
+            margin-top: 100px;
+            margin-bottom: 40px; /* Agregar margen inferior */
+            text-align: center;
+            }
             }
             .linea-firma {
                 border-bottom: 1px solid #000;
-                width: 300px;
-                margin: 0 auto 5px auto;
+                width: 350px;
+                margin: 0 auto 15px auto;
+                height: 1px;
             }
             .nombre-director {
                 font-weight: bold;
-                margin-top: 10px;
+                margin-top: 5px;
+                text-align: center;
+                font-size: 14px;
+                text-transform: uppercase;
             }
             .cargo-director {
                 font-style: italic;
                 color: #666;
+                text-align: center;
+                margin-top: 3px;
+                font-size: 12px;
             }
             /* INFORMACIÓN INSTITUCIONAL */
             .info-institucional {
                 text-align: center;
-                margin: 10px 0;
+                margin: 20px 0 10px 0; /* Reducir margen superior */
                 font-size: 11px;
                 color: #666;
                 border-top: 1px solid #ccc;
                 padding-top: 10px;
-            }
+                }
             /* PIE DE PÁGINA */
             .footer {
                 margin-top: 20px;
@@ -228,32 +244,31 @@ try {
             
             <!-- CONTENIDO DE LA CONSTANCIA -->
             <div class="constancia-content">
-                Quien suscribe <strong>' . $datos['nombre_director'] . '</strong>, titular de la Cédula
-                de Identidad Nº <strong>' . $datos['cedula_director'] . '</strong> en su condición de Director(a) de la 
-                <strong>' . $NOMBRE_INSTITUCION . '</strong>, ubicado en el municipio ' . $MUNICIPIO_INSTITUCION . ', 
-                parroquia <strong>' . $PARROQUIA_INSTITUCION . '</strong> adscrita a la Zona Educativa del estado 
-                <strong>' . $datos['estado_zona_educativa'] . '</strong>, certifica por medio de la presente que 
-                el (la) estudiante <strong>' . $datos['nombre_estudiante'] . '</strong> titular de la 
+                Quien suscribe <strong>' . $directora_nombre_mayusculas . '</strong>, titular de la Cédula
+                de Identidad Nº <strong>' . ($directora['ci_directora'] ?: 'No especificada') . '</strong> en su condición de Director(a) de la 
+                <strong>' . $NOMBRE_INSTITUCION . '</strong>, ubicada en el municipio ' . $MUNICIPIO_INSTITUCION . ', 
+                parroquia <strong>' . $PARROQUIA_INSTITUCION . '</strong>, certifica por medio de la presente que 
+                el (la) estudiante <strong>' . $datos['nombre_estudiante'] . '</strong>, titular de la 
                 Cédula Escolar Nº, Cédula de Identidad Nº o Pasaporte Nº <strong>' . $datos['cedula_estudiante'] . '</strong>,
                 nacido (a) en <strong>' . $datos['lugar_nacimiento'] . '</strong> en fecha <strong>' . $datos['fecha_nacimiento'] . '</strong>, 
                 ha sido inscrito en esta institución para cursar el <strong>' . $datos['nivel_seccion'] . '</strong> 
                 del Nivel de Educación ' . $tipo_nivel . ' durante el período escolar <strong>' . $datos['periodo_escolar'] . '</strong>, 
                 previo cumplimiento de los requisitos exigidos en la normativa legal vigente.
                 <br><br>
-                Constancia que se expide en <strong>' . $datos['municipio_emisor'] . '</strong>, a los <strong>' . $datos['dia_inscripcion'] . '</strong> 
+                Constancia que se expide en <strong>' . $CIUDAD_EXPEDICION . '</strong>, a los <strong>' . $datos['dia_inscripcion'] . '</strong> 
                 días del mes de <strong>' . strtoupper($mes_inscripcion_espanol) . '</strong> de <strong>' . $datos['anio_inscripcion'] . '</strong>.
             </div>
             
-            <!-- SECCIÓN DE FIRMA -->
+                       <!-- SECCIÓN DE FIRMA - CORREGIDA -->
             <div class="firma-section">
                 <div class="linea-firma"></div>
-                <div class="nombre-director">' . $datos['nombre_director'] . '</div>
+                <div class="nombre-director">' . $directora_nombre_mayusculas . '</div>
                 <div class="cargo-director">DIRECTOR(A)</div>
             </div>
             
-            <!-- INFORMACIÓN INSTITUCIONAL -->
+            <!-- INFORMACIÓN INSTITUCIONAL - MÁS ESPACIO -->
             <div class="info-institucional">
-                ' . $NOMBRE_INSTITUCION . ' | ' . $MUNICIPIO_INSTITUCION . ' - ' . $PARROQUIA_INSTITUCION . ' | Estado ' . $datos['estado_zona_educativa'] . '
+                ' . $NOMBRE_INSTITUCION . ' | ' . $MUNICIPIO_INSTITUCION . ' - ' . $PARROQUIA_INSTITUCION . '
                 <br>Constancia generada el ' . $fecha_actual . '
             </div>
 
@@ -272,9 +287,11 @@ try {
     $html2pdf->setTestTdInOnePage(false);
     $html2pdf->writeHTML($html);
     
-    // Descargar el PDF con nombre personalizado
+    // En lugar de descargar automáticamente, mostrar en el navegador
     $filename = 'constancia_inscripcion_' . $datos['cedula_estudiante'] . '_' . date('Y-m-d') . '.pdf';
-    $html2pdf->output($filename, 'D');
+    
+    // Mostrar en el navegador (I = inline)
+    $html2pdf->output($filename, 'I');
 
 } catch (Html2PdfException $e) {
     // Manejar errores de HTML2PDF
