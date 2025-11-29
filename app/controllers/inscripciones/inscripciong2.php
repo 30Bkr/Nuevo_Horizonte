@@ -1,6 +1,17 @@
 <?php
-session_start();
+// LIMPIAR ABSOLUTAMENTE TODO BUFFER ANTES DE COMENZAR
+while (ob_get_level()) {
+    ob_end_clean();
+}
+
+// Iniciar sesión SIN output
+@session_start();
+
 header('Content-Type: application/json');
+
+// Desactivar todo output posible
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 
 include_once("/xampp/htdocs/final/app/conexion.php");
 include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
@@ -527,18 +538,21 @@ try {
   error_log("REinscripción creada con ID: " . $id_inscripcion);
 
   // Confirmar transacción
-  $pdo->commit();
+ $pdo->commit();
 
-  // Respuesta de éxito
-  error_log("REinscripción completada exitosamente");
-  echo json_encode([
-    'success' => true,
-    'message' => 'REinscripción realizada exitosamente',
-    'id_inscripcion' => $id_inscripcion,
-    'id_estudiante' => $id_estudiante,
-    'id_representante' => $id_representante,
-    'tipo_persona' => $tipo_persona
-  ]);
+// Respuesta de éxito con el ID de inscripción
+error_log("REinscripción completada exitosamente");
+
+// ENVIAR RESPUESTA JSON - ESTO ES LO ÚNICO QUE DEBE SALIR
+    echo json_encode([
+        'success' => true,
+        'message' => 'REinscripción realizada exitosamente',
+        'id_inscripcion' => $id_inscripcion,
+        'id_estudiante' => $id_estudiante,
+        'id_representante' => $id_representante,
+        'tipo_persona' => $tipo_persona
+    ]);
+  
 } catch (Exception $e) {
   // Revertir transacción en caso de error
   if (isset($pdo) && $pdo->inTransaction()) {
@@ -548,14 +562,25 @@ try {
 
   error_log("Error en inscripción: " . $e->getMessage());
 
-  http_response_code(400);
-  echo json_encode([
-    'success' => false,
-    'message' => 'Error en la inscripción: ' . $e->getMessage()
-  ]);
+ // ENVIAR ERROR EN JSON
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Error en la inscripción: ' . $e->getMessage()
+    ]);
+
 } finally {
   // Cerrar conexión si existe
   if (isset($conexion)) {
     $conexion->desconectar();
   }
+
+  // LIMPIAR CUALQUIER BUFFER QUE HAYA QUEDADO
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
+    // FORZAR SALIDA INMEDIATA
+    exit;
 }
+?>
