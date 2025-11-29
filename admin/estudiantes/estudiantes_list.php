@@ -1,12 +1,15 @@
 <?php
 session_start();
+include_once("/xampp/htdocs/final/layout/layaout1.php");
+
 
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
 include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.php';
-include_once("/xampp/htdocs/final/layout/layaout1.php");
-
 ?>
+
+
+
 <!-- Content Wrapper -->
 <div class="content-wrapper">
     <!-- Content Header -->
@@ -168,6 +171,16 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 <!-- /.content-wrapper -->
 
 
+
+<!-- jQuery -->
+<script src="/final/public/plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/final/public/dist/js/adminlte.min.js"></script>
 
 <script>
     $(function() {

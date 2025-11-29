@@ -35,5 +35,13 @@
     <!-- AdminLTE App -->
     <script src="<?= URL; ?>/public/dist/js/adminlte.min.js"></script>
 
-
+    <!-- jQuery -->
+    <script src="/final/public/plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables -->
+    <script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="/final/public/dist/js/adminlte.min.js"></script>
     </body>
