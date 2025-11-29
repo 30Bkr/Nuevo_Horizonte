@@ -119,4 +119,44 @@ class EstudianteController
       return false;
     }
   }
+  public function obtenerEstudiantesPorRepresentante($id_representante)
+  {
+    $sql = "SELECT e.*, p.*, er.id_parentesco, par.parentesco,
+                   (SELECT ns.id_nivel FROM inscripciones i 
+                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                    INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
+                    WHERE i.id_estudiante = e.id_estudiante 
+                    ORDER BY i.id_inscripcion DESC LIMIT 1) as ultimo_nivel_id,
+                   (SELECT n.nom_nivel FROM inscripciones i 
+                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                    INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
+                    WHERE i.id_estudiante = e.id_estudiante 
+                    ORDER BY i.id_inscripcion DESC LIMIT 1) as nombre_nivel,
+                   (SELECT n.num_nivel FROM inscripciones i 
+                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                    INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
+                    WHERE i.id_estudiante = e.id_estudiante 
+                    ORDER BY i.id_inscripcion DESC LIMIT 1) as num_nivel,
+                   (SELECT s.nom_seccion FROM inscripciones i 
+                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                    INNER JOIN secciones s ON ns.id_seccion = s.id_seccion 
+                    WHERE i.id_estudiante = e.id_estudiante 
+                    ORDER BY i.id_inscripcion DESC LIMIT 1) as nom_seccion,
+                   (SELECT per.descripcion_periodo FROM inscripciones i 
+                    INNER JOIN periodos per ON i.id_periodo = per.id_periodo 
+                    WHERE i.id_estudiante = e.id_estudiante 
+                    ORDER BY i.id_inscripcion DESC LIMIT 1) as periodo_anterior_desc,
+                   (SELECT CASE WHEN MAX(i.id_periodo) = (SELECT MAX(id_periodo) FROM periodos WHERE estatus = 1) 
+                    THEN 'Inscrito' ELSE 'No inscrito' END 
+                    FROM inscripciones i WHERE i.id_estudiante = e.id_estudiante) as estado_inscripcion
+            FROM estudiantes e
+            INNER JOIN personas p ON e.id_persona = p.id_persona
+            INNER JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
+            INNER JOIN parentesco par ON er.id_parentesco = par.id_parentesco
+            WHERE er.id_representante = ? AND e.estatus = 1";
+
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([$id_representante]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
 }

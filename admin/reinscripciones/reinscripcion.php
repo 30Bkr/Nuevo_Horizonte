@@ -571,7 +571,7 @@ try {
                         <div class="card-footer text-center">
                             <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
                                     data-id="${estudiante.id_estudiante}">
-                                <i class="fas fa-sync-alt"></i> Reinscribir
+                                <i class="fas fa-sync-alt"></i> Seleccionar
                             </button>
                         </div>
                     </div>

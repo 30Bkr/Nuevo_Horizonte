@@ -1266,449 +1266,6 @@ try {
   });
 </script>
 
-<!-- <script>
-  // ========== CARGAR SECCIONES POR NIVEL Y VALIDACIÓN DE CUPOS ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-    const seccionSelect = document.querySelector('select[name="id_seccion"]');
-    const periodoSelect = document.querySelector('select[name="id_periodo"]');
-    const submitBtn = document.querySelector('button[type="submit"]');
-
-    let mensajeCupos = null;
-
-    // ========== FUNCIÓN PARA CARGAR SECCIONES POR NIVEL ==========
-    function cargarSeccionesPorNivel(idNivel) {
-      if (!idNivel) {
-        // Si no hay nivel seleccionado, limpiar secciones
-        seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-        seccionSelect.disabled = true;
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('id_nivel', idNivel);
-
-      // Mostrar loading en el select de secciones
-      seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
-      seccionSelect.disabled = true;
-      eliminarMensajeCupos();
-
-      fetch('/final/app/controllers/cupos/cargar_secciones.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
-
-          if (data.success && data.secciones && data.secciones.length > 0) {
-            data.secciones.forEach(seccion => {
-              seccionSelect.innerHTML += `<option value="${seccion.id_seccion}" data-nivel-seccion="${seccion.id_nivel_seccion}">
-                        ${seccion.nom_seccion} (Capacidad: ${seccion.capacidad})
-                    </option>`;
-            });
-            seccionSelect.disabled = false;
-
-            console.log('✅ Secciones cargadas:', data.secciones.length);
-          } else {
-            seccionSelect.innerHTML = '<option value="">No hay secciones disponibles para este nivel</option>';
-            seccionSelect.disabled = true;
-            console.warn('⚠️ No se encontraron secciones para el nivel:', idNivel);
-          }
-
-          // Una vez cargadas las secciones, verificar cupos si ya hay período seleccionado
-          if (periodoSelect && periodoSelect.value) {
-            setTimeout(verificarCupos, 100);
-          }
-        })
-        .catch(error => {
-          console.error('❌ Error al cargar secciones:', error);
-          seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
-          seccionSelect.disabled = true;
-        });
-    }
-
-    // ========== FUNCIÓN PARA VERIFICAR CUPOS (ACTUALIZADA) ==========
-    function verificarCupos() {
-      const selectedOption = seccionSelect.options[seccionSelect.selectedIndex];
-
-      if (!nivelSelect.value || !seccionSelect.value || !periodoSelect.value || !selectedOption) {
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const id_nivel_seccion = selectedOption.getAttribute('data-nivel-seccion');
-      const id_periodo = periodoSelect.value;
-
-      if (!id_nivel_seccion) {
-        console.error('❌ No se encontró el id_nivel_seccion en la opción seleccionada');
-        eliminarMensajeCupos();
-        return;
-      }
-
-      console.log('🔍 Verificando cupos para:', {
-        id_nivel_seccion: id_nivel_seccion,
-        id_periodo: id_periodo,
-        nivel: nivelSelect.value,
-        seccion: seccionSelect.value
-      });
-
-      const formData = new FormData();
-      formData.append('id_nivel_seccion', id_nivel_seccion);
-      formData.append('id_periodo', id_periodo);
-
-      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('📊 Respuesta de cupos:', data);
-          mostrarMensajeCupos(data);
-        })
-        .catch(error => {
-          console.error('❌ Error al verificar cupos:', error);
-          // Mostrar mensaje de error
-          mostrarMensajeCupos({
-            success: false,
-            disponible: false,
-            mensaje: 'Error al verificar disponibilidad de cupos'
-          });
-        });
-    }
-
-    // ========== FUNCIÓN PARA MOSTRAR MENSAJE DE CUPOS ==========
-    function mostrarMensajeCupos(data) {
-      eliminarMensajeCupos();
-
-      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
-      if (!informacionAcademica) {
-        console.warn('⚠️ No se encontró el contenedor para el mensaje de cupos');
-        return;
-      }
-
-      mensajeCupos = document.createElement('div');
-      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
-
-      if (data.success) {
-        mensajeCupos.innerHTML = `
-                <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
-                ${data.mensaje}
-                ${data.disponible ? 
-                    `<br><small class="text-white">Puede continuar con la inscripción</small>` : 
-                    `<br><small class="text-white">No se puede realizar la inscripción en esta sección</small>`
-                }
-            `;
-      } else {
-        mensajeCupos.innerHTML = `
-                <strong>❌ ERROR</strong><br>
-                ${data.message || 'Error al verificar cupos'}
-            `;
-      }
-
-      informacionAcademica.appendChild(mensajeCupos);
-
-      // Deshabilitar/habilitar el botón de enviar
-      if (submitBtn) {
-        submitBtn.disabled = !data.disponible;
-        console.log('🔄 Botón submit:', data.disponible ? 'HABILITADO' : 'DESHABILITADO');
-      }
-    }
-
-    // ========== FUNCIÓN PARA ELIMINAR MENSAJE DE CUPOS ==========
-    function eliminarMensajeCupos() {
-      if (mensajeCupos) {
-        mensajeCupos.remove();
-        mensajeCupos = null;
-      }
-      if (submitBtn) {
-        submitBtn.disabled = false;
-      }
-    }
-
-    // ========== EVENT LISTENERS ==========
-
-    // Event listener para cambios en el nivel
-    if (nivelSelect) {
-      nivelSelect.addEventListener('change', function() {
-        const idNivel = this.value;
-        console.log('🎯 Nivel cambiado:', idNivel);
-        cargarSeccionesPorNivel(idNivel);
-      });
-    }
-
-    // Event listener para cambios en la sección
-    if (seccionSelect) {
-      seccionSelect.addEventListener('change', function() {
-        console.log('🎯 Sección cambiada:', this.value);
-        if (this.value && periodoSelect.value) {
-          verificarCupos();
-        } else {
-          eliminarMensajeCupos();
-        }
-      });
-    }
-
-    // Event listener para cambios en el período
-    if (periodoSelect) {
-      periodoSelect.addEventListener('change', function() {
-        console.log('🎯 Período cambiado:', this.value);
-        if (this.value && seccionSelect.value) {
-          verificarCupos();
-        } else {
-          eliminarMensajeCupos();
-        }
-      });
-    }
-
-    // ========== INICIALIZACIÓN ==========
-
-    // Cargar secciones si ya hay un nivel seleccionado (al recargar página)
-    if (nivelSelect && nivelSelect.value) {
-      console.log('🔄 Inicializando con nivel pre-seleccionado:', nivelSelect.value);
-      setTimeout(() => {
-        cargarSeccionesPorNivel(nivelSelect.value);
-      }, 500);
-    } else {
-      // Inicializar select de secciones como deshabilitado
-      seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-      seccionSelect.disabled = true;
-    }
-
-    // Verificar cupos al cargar si ya hay valores seleccionados
-    setTimeout(() => {
-      if (nivelSelect.value && seccionSelect.value && periodoSelect.value) {
-        console.log('🔄 Verificando cupos iniciales...');
-        verificarCupos();
-      }
-    }, 1000);
-
-    // Debug inicial
-    console.log('🔍 Estado inicial de selects:', {
-      nivel: nivelSelect ? nivelSelect.value : 'No encontrado',
-      seccion: seccionSelect ? seccionSelect.value : 'No encontrado',
-      periodo: periodoSelect ? periodoSelect.value : 'No encontrado'
-    });
-  });
-</script>
-
-
-
-<script>
-  // ========== VALIDACIÓN DE EDAD Y FILTRADO DE NIVELES ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const fechaNacInput = document.querySelector('input[name="fecha_nac_e"]');
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-
-    // Event listener para cambios en la fecha de nacimiento
-    if (fechaNacInput) {
-      fechaNacInput.addEventListener('change', function() {
-        validarEdadYFiltrarNiveles(this.value);
-      });
-    }
-
-    // Función para calcular edad y filtrar niveles
-    function validarEdadYFiltrarNiveles(fechaNacimiento) {
-      if (!fechaNacimiento) return;
-
-      const fechaNac = new Date(fechaNacimiento);
-      const hoy = new Date();
-      let edad = hoy.getFullYear() - fechaNac.getFullYear();
-      const mes = hoy.getMonth() - fechaNac.getMonth();
-
-      if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-        edad--;
-      }
-
-      console.log(`🎯 Edad calculada: ${edad} años`);
-
-      // Filtrar niveles según la edad
-      filtrarNivelesPorEdad(edad);
-    }
-
-    // Función para filtrar niveles según la edad
-    function filtrarNivelesPorEdad(edad) {
-      if (!nivelSelect) return;
-
-      // Guardar el valor actual seleccionado
-      const valorActual = nivelSelect.value;
-
-      // Obtener todas las opciones disponibles
-      const todasLasOpciones = Array.from(nivelSelect.options);
-
-      // Limpiar el select
-      nivelSelect.innerHTML = '<option value="">Seleccionar Nivel</option>';
-
-      // Filtrar opciones según la edad
-      todasLasOpciones.forEach(opcion => {
-        if (opcion.value === '') return; // Saltar la opción vacía
-
-        const textoNivel = opcion.textContent.toLowerCase();
-        const esGrado = textoNivel.includes('grado');
-        const esAnio = textoNivel.includes('año') || textoNivel.includes('ano');
-
-        let mostrarOpcion = false;
-
-        if (edad >= 4 && edad <= 10) {
-          // Entre 4-10 años: solo grados
-          mostrarOpcion = esGrado;
-        } else if (edad > 10 && edad <= 12) {
-          // Entre 10-12 años: grados 4,5,6 y años 1,2,3
-          if (esGrado) {
-            const numeroGrado = extraerNumero(textoNivel);
-            mostrarOpcion = numeroGrado >= 4 && numeroGrado <= 6;
-          } else if (esAnio) {
-            const numeroAnio = extraerNumero(textoNivel);
-            mostrarOpcion = numeroAnio >= 1 && numeroAnio <= 3;
-          }
-        } else if (edad > 12) {
-          // Mayor de 12 años: solo años
-          mostrarOpcion = esAnio;
-        }
-
-        if (mostrarOpcion) {
-          nivelSelect.appendChild(opcion);
-        }
-      });
-
-      // Restaurar selección anterior si todavía está disponible
-      if (valorActual && nivelSelect.querySelector(`option[value="${valorActual}"]`)) {
-        nivelSelect.value = valorActual;
-      } else {
-        nivelSelect.value = '';
-        // Limpiar secciones si no hay nivel seleccionado
-        const seccionSelect = document.querySelector('select[name="id_seccion"]');
-        if (seccionSelect) {
-          seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-          seccionSelect.disabled = true;
-        }
-      }
-
-      // Si quedó solo una opción, seleccionarla automáticamente
-      const opcionesDisponibles = Array.from(nivelSelect.options).filter(opt => opt.value !== '');
-      if (opcionesDisponibles.length === 1) {
-        nivelSelect.value = opcionesDisponibles[0].value;
-        // Disparar evento change para cargar secciones automáticamente
-        nivelSelect.dispatchEvent(new Event('change'));
-      }
-
-      console.log(`📚 Niveles disponibles para edad ${edad}:`, opcionesDisponibles.length);
-    }
-
-    // Función auxiliar para extraer números del texto del nivel
-    function extraerNumero(texto) {
-      const match = texto.match(/(\d+)/);
-      return match ? parseInt(match[1]) : 0;
-    }
-
-    // También validar al cargar la página si ya hay una fecha
-    if (fechaNacInput && fechaNacInput.value) {
-      setTimeout(() => {
-        validarEdadYFiltrarNiveles(fechaNacInput.value);
-      }, 500);
-    }
-  });
-</script> -->
-
-
-
-<!-- <script>
-  // ========== VALIDACIÓN DE CUPOS EN TIEMPO REAL ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-    const seccionSelect = document.querySelector('select[name="id_seccion"]');
-    const periodoSelect = document.querySelector('select[name="id_periodo"]');
-    const submitBtn = document.querySelector('button[type="submit"]');
-
-    let mensajeCupos = null;
-
-    // Función para verificar cupos
-    function verificarCupos() {
-      const id_nivel = nivelSelect.value;
-      const id_seccion = seccionSelect.value;
-      const id_periodo = periodoSelect.value;
-
-      if (!id_nivel || !id_seccion || !id_periodo) {
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('id_nivel', id_nivel);
-      formData.append('id_seccion', id_seccion);
-      formData.append('id_periodo', id_periodo);
-
-      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          mostrarMensajeCupos(data);
-        })
-        .catch(error => {
-          console.error('Error al verificar cupos:', error);
-        });
-    }
-
-    // Función para mostrar mensaje de cupos
-    function mostrarMensajeCupos(data) {
-      eliminarMensajeCupos();
-
-      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
-      if (!informacionAcademica) return;
-
-      mensajeCupos = document.createElement('div');
-      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
-      mensajeCupos.innerHTML = `
-            <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
-            ${data.mensaje}
-            ${data.disponible ? 
-                `<br><small class="text-muted">Puede continuar con la inscripción</small>` : 
-                `<br><small class="text-muted">No se puede realizar la inscripción en esta sección</small>`
-            }
-        `;
-
-      informacionAcademica.appendChild(mensajeCupos);
-
-      // Deshabilitar/enable el botón de enviar
-      if (submitBtn) {
-        submitBtn.disabled = !data.disponible;
-      }
-    }
-
-    // Función para eliminar mensaje de cupos
-    function eliminarMensajeCupos() {
-      if (mensajeCupos) {
-        mensajeCupos.remove();
-        mensajeCupos = null;
-      }
-      if (submitBtn) {
-        submitBtn.disabled = false;
-      }
-    }
-
-    // Event listeners para cambios en los selects
-    if (nivelSelect) nivelSelect.addEventListener('change', verificarCupos);
-    if (seccionSelect) seccionSelect.addEventListener('change', verificarCupos);
-    if (periodoSelect) periodoSelect.addEventListener('change', verificarCupos);
-
-    // Verificar cupos al cargar si ya hay valores seleccionados
-    setTimeout(verificarCupos, 500);
-  });
-</script> -->
-
 <!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
 <!-- - Aca hacemos la validacion sobre si el estudiante vive en la misma casa -- -->
 <!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
@@ -2564,7 +2121,7 @@ try {
 
 <!-- Aca Enviamos informacion del formulario -->
 <script>
-   // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
+    // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
 function generarConstanciaInscripcion(idInscripcion) {
     // ✅ VALIDACIÓN ADICIONAL: Verificar que el ID sea numérico
     if (!idInscripcion || isNaN(idInscripcion)) {
@@ -2614,208 +2171,195 @@ function generarConstanciaInscripcion(idInscripcion) {
             resolve({ success: true });
             
         }, 1500); // Pequeño delay para mejor experiencia de usuario
-    });
-}
 
-// Modificar el manejo del envío del formulario
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('form-inscripcion');
-    
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        console.log('Formulario enviado - iniciando procesamiento...');
-        
-        // Mostrar loading
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-        submitBtn.disabled = true;
+    }); // <--- Cierra el return new Promise()
+} // <--- Cierra function generarConstanciaInscripcion()
 
-        // Habilitar campos deshabilitados temporalmente para el envío
-        document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
-            element.disabled = false;
-        });
+    // Modificar el manejo del envío del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('form-inscripcion');
 
-        const formData = new FormData(this);
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Formulario enviado - iniciando procesamiento...');
 
-        // Mostrar mensaje de procesamiento
-        const processingMsg = document.createElement('div');
-        processingMsg.className = 'alert alert-info';
-        processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando inscripción...';
-        document.querySelector('.content-wrapper').prepend(processingMsg);
+            // Mostrar loading
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            submitBtn.disabled = true;
 
-        // ⚠️ ESTRATEGIA: Intentar la inscripción pero SILENCIAR errores JSON si al final funciona
-        fetch(this.action, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            // Primero intentamos como texto para ver qué devuelve realmente
-            return response.text().then(text => {
-                console.log('📨 Respuesta cruda del servidor:', text.substring(0, 300));
-                
-                // Intentar parsear como JSON
-                try {
-                    const jsonData = JSON.parse(text);
-                    console.log('✅ JSON parseado correctamente:', jsonData);
-                    return jsonData;
-                } catch (jsonError) {
-                    console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
-                    
-                    // Buscar pistas de éxito en el texto crudo
-                    const hasSuccessIndicators = 
-                        text.includes('success') || 
-                        text.includes('id_inscripcion') || 
-                        text.includes('exitosamente') ||
-                        text.length < 100; // Si la respuesta es muy corta, probablemente fue exitosa
-                    
-                    if (hasSuccessIndicators) {
-                        console.log('🎯 Respuesta parece exitosa a pesar del formato JSON inválido');
-                        
-                        // Intentar extraer el ID de inscripción del texto
-                        let idInscripcion = null;
-                        const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
-                        if (idMatch) {
-                            idInscripcion = idMatch[1];
+            // Habilitar campos deshabilitados temporalmente para el envío
+            document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
+                element.disabled = false;
+            });
+
+            const formData = new FormData(this);
+
+            // Mostrar mensaje de procesamiento
+            const processingMsg = document.createElement('div');
+            processingMsg.className = 'alert alert-info';
+            processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando inscripción...';
+            document.querySelector('.content-wrapper').prepend(processingMsg);
+
+            // ⚠️ ESTRATEGIA: Intentar la inscripción pero SILENCIAR errores JSON si al final funciona
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                // Primero intentamos como texto para ver qué devuelve realmente
+                return response.text().then(text => {
+                    console.log('📨 Respuesta cruda del servidor:', text.substring(0, 300));
+
+                    // Intentar parsear como JSON
+                    try {
+                        const jsonData = JSON.parse(text);
+                        console.log('✅ JSON parseado correctamente:', jsonData);
+                        return jsonData;
+                    } catch (jsonError) {
+                        console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
+
+                        // Buscar pistas de éxito en el texto crudo
+                        const hasSuccessIndicators =
+                            text.includes('success') ||
+                            text.includes('id_inscripcion') ||
+                            text.includes('exitosamente') ||
+                            text.length < 100; // Si la respuesta es muy corta, probablemente fue exitosa
+
+                        if (hasSuccessIndicators) {
+                            console.log('🎯 Respuesta parece exitosa a pesar del formato JSON inválido');
+
+                            // Intentar extraer el ID de inscripción del texto
+                            let idInscripcion = null;
+                            const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
+                            if (idMatch) {
+                                idInscripcion = idMatch[1];
+                            }
+
+                            return {
+                                success: true,
+                                message: 'Inscripción procesada exitosamente',
+                                id_inscripcion: idInscripcion
+                            };
                         }
-                        
+
+                        // Si no hay indicadores de éxito, devolver éxito igual (estrategia conservadora)
+                        console.log('🔄 No hay indicadores claros, asumiendo éxito por defecto');
                         return {
                             success: true,
-                            message: 'Inscripción procesada exitosamente',
-                            id_inscripcion: idInscripcion
+                            message: 'Proceso completado',
+                            id_inscripcion: null
                         };
                     }
-                    
-                    // Si no hay indicadores de éxito, devolver éxito igual (estrategia conservadora)
-                    console.log('🔄 No hay indicadores claros, asumiendo éxito por defecto');
-                    return {
-                        success: true,
-                        message: 'Proceso completado',
-                        id_inscripcion: null
-                    };
+                });
+            })
+            .then(data => {
+                // Remover mensaje de procesamiento
+                processingMsg.remove();
+
+                console.log('📊 Resultado final del proceso:', data);
+
+                // Intentar obtener el ID de inscripción
+                let idInscripcion = data.id_inscripcion;
+
+                // SOLUCIÓN RÁPIDA: Si no hay ID, no generar constancia
+                if (!idInscripcion) {
+                    console.warn('⚠️ No se generará constancia - ID no recibido');
+                    idInscripcion = null;
                 }
-            });
-        })
-        .then(data => {
-            // Remover mensaje de procesamiento
-            processingMsg.remove();
-            
-            console.log('📊 Resultado final del proceso:', data);
+                console.log('🎯 ID de inscripción a usar:', idInscripcion);
 
-            // SIEMPRE considerar éxito si llegamos hasta aquí
-            const successAlert = document.createElement('div');
-            successAlert.className = 'alert alert-success';
-            
-            if (data.success) {
-                successAlert.innerHTML = `<strong>✅ ${data.message || 'Inscripción completada exitosamente'}</strong>`;
-            } else {
-                // Aún si data.success es false, mostramos éxito (estrategia de silenciamiento)
-                successAlert.innerHTML = `<strong>✅ Proceso completado</strong><br><small>La inscripción ha sido procesada.</small>`;
-            }
-            
-            document.querySelector('.content-wrapper').prepend(successAlert);
+                // SOLO generar constancia si tenemos un ID válido (numérico)
+                if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
+                    // Generar constancia con el ID disponible
+                    generarConstanciaInscripcion(idInscripcion)
+                        .then(() => {
+                            console.log('✅ Proceso de constancia completado');
+                            
+                            // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
+                            setTimeout(() => {
+                                console.log('🔄 Redirigiendo a dashboard...');
+                                window.location.href = '/final/admin/index.php';
+                            }, 8000); // 8 segundos para dar tiempo al usuario
+                        })
+                        .catch((error) => {
+                            console.warn('⚠️ Error en proceso de constancia:', error);
+                            
+                            // Mostrar mensaje de error pero continuar
+                            const errorMsg = document.createElement('div');
+                            errorMsg.className = 'alert alert-warning mt-2';
+                            errorMsg.innerHTML = `
+                                <small>Hubo un problema con la constancia, pero la inscripción fue exitosa.</small><br>
+                                <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
+                                    target="_blank" class="btn btn-outline-warning btn-sm mt-1">
+                                    <i class="fas fa-redo"></i> Intentar Generar Constancia Nuevamente
+                                </a>
+                            `;
+                            document.querySelector('.content-wrapper').prepend(errorMsg);
+                            
+                            // Redirigir después de más tiempo
+                            setTimeout(() => {
+                                window.location.href = '/final/admin/index.php';
+                            }, 6000);
+                        });
+                } else {
+                    // Si no hay ID válido, solo redirigir
+                    console.warn('⚠️ No se generará constancia - ID no válido:', idInscripcion);
+                    
+                    const noConstanciaMsg = document.createElement('div');
+                    noConstanciaMsg.className = 'alert alert-info mt-3';
+                    noConstanciaMsg.innerHTML = `
+                        <strong>✅ Inscripción completada exitosamente</strong><br>
+                        <small>Puede generar la constancia más tarde desde el listado de estudiantes.</small>
+                    `;
+                    document.querySelector('.content-wrapper').prepend(noConstanciaMsg);
+                    
+                    setTimeout(() => {
+                        console.log('🔄 Redirigiendo a dashboard...');
+                        window.location.href = '/final/admin/index.php';
+                    }, 5000);
+                }
 
-           // Intentar obtener el ID de inscripción
-let idInscripcion = data.id_inscripcion;
-
-// SOLUCIÓN RÁPIDA: Si no hay ID, no generar constancia
-if (!idInscripcion) {
-    console.warn('⚠️ No se generará constancia - ID no recibido');
-    idInscripcion = null;
-}
-           console.log('🎯 ID de inscripción a usar:', idInscripcion);
-
-// SOLO generar constancia si tenemos un ID válido (numérico)
-if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
-    // Generar constancia con el ID disponible
-    generarConstanciaInscripcion(idInscripcion)
-        .then(() => {
-            console.log('✅ Proceso de constancia completado');
-            
-            // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
-            setTimeout(() => {
-                console.log('🔄 Redirigiendo a dashboard...');
-                window.location.href = '/final/admin/index.php';
-            }, 8000); // 8 segundos para dar tiempo al usuario
-        })
-        .catch((error) => {
-            console.warn('⚠️ Error en proceso de constancia:', error);
-            
-            // Mostrar mensaje de error pero continuar
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'alert alert-warning mt-2';
-            errorMsg.innerHTML = `
-                <small>Hubo un problema con la constancia, pero la inscripción fue exitosa.</small><br>
-                <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
-                   target="_blank" class="btn btn-outline-warning btn-sm mt-1">
-                    <i class="fas fa-redo"></i> Intentar Generar Constancia Nuevamente
-                </a>
-            `;
-            document.querySelector('.content-wrapper').prepend(errorMsg);
-            
-            // Redirigir después de más tiempo
-            setTimeout(() => {
-                window.location.href = '/final/admin/index.php';
-            }, 6000);
-        });
-} else {
-    // Si no hay ID válido, solo redirigir
-    console.warn('⚠️ No se generará constancia - ID no válido:', idInscripcion);
-    
-    const noConstanciaMsg = document.createElement('div');
-    noConstanciaMsg.className = 'alert alert-info mt-3';
-    noConstanciaMsg.innerHTML = `
-        <strong>✅ Inscripción completada exitosamente</strong><br>
-        <small>Puede generar la constancia más tarde desde el listado de estudiantes.</small>
-    `;
-    document.querySelector('.content-wrapper').prepend(noConstanciaMsg);
-    
-    setTimeout(() => {
-        console.log('🔄 Redirigiendo a dashboard...');
-        window.location.href = '/final/admin/index.php';
-    }, 5000);
-}
-
-        })
-        .catch(error => {
-            console.error('💥 Error crítico en el proceso:', error);
-            
-            // Remover mensaje de procesamiento
-            processingMsg.remove();
-            
-            // Solo mostrar error si es realmente crítico (errores de red)
-            if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
-                const errorAlert = document.createElement('div');
-                errorAlert.className = 'alert alert-danger';
-                errorAlert.innerHTML = `<strong>❌ Error de conexión</strong><br><small>No se pudo conectar con el servidor.</small>`;
-                document.querySelector('.content-wrapper').prepend(errorAlert);
-            } else {
-                // Para otros errores, mostrar éxito (nuestra estrategia de silenciamiento)
-                const successAlert = document.createElement('div');
-                successAlert.className = 'alert alert-success';
-                successAlert.innerHTML = `<strong>✅ Proceso completado</strong>`;
-                document.querySelector('.content-wrapper').prepend(successAlert);
+            })
+            .catch(error => {
+                console.error('💥 Error crítico en el proceso:', error);
                 
-                // // Intentar generar constancia de todas formas
-                // setTimeout(() => {
-                //     generarConstanciaInscripcion('last')
-                //         .finally(() => {
-                //             setTimeout(() => {
-                //                 window.location.href = '/final/admin/index.php';
-                //             }, 4000);
-                //         });
-                // }, 1000);
-            }
-            
-            // Rehabilitar botón en caso de error crítico
-            if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        });
-    });
-});
-</script>
+                // Remover mensaje de procesamiento
+                processingMsg.remove();
+                
+                // Solo mostrar error si es realmente crítico (errores de red)
+                if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+                    const errorAlert = document.createElement('div');
+                    errorAlert.className = 'alert alert-danger';
+                    errorAlert.innerHTML = `<strong>❌ Error de conexión</strong><br><small>No se pudo conectar con el servidor.</small>`;
+                    document.querySelector('.content-wrapper').prepend(errorAlert);
+                } else {
+                    // Para otros errores, mostrar éxito (nuestra estrategia de silenciamiento)
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'alert alert-success';
+                    successAlert.innerHTML = `<strong>✅ Proceso completado</strong>`;
+                    document.querySelector('.content-wrapper').prepend(successAlert);
+                    
+                    // // Intentar generar constancia de todas formas
+                    // setTimeout(() => {
+                    //     generarConstanciaInscripcion('last')
+                    //         .finally(() => {
+                    //             setTimeout(() => {
+                    //                 window.location.href = '/final/admin/index.php';
+                    //             }, 4000);
+                    //         });
+                    // }, 1000);
+                }
+                
+                // Rehabilitar botón en caso de error crítico
+                if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            }); // <--- Cierre de la función de callback del .catch
+        }); // <--- Cierre del form.addEventListener('submit'
+    }); // <--- Cierre del document.addEventListener('DOMContentLoaded'
 </script>
 
 
@@ -3482,102 +3026,102 @@ if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
   });
 
   // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
-function generarConstanciaInscripcion(idInscripcion) {
+  function generarConstanciaInscripcion(idInscripcion) {
     console.log('📄 Generando constancia para inscripción ID:', idInscripcion);
-    
+
     // Abrir en nueva pestaña para generar el PDF
     const url = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
     window.open(url, '_blank');
-}
+  }
 
-// Modificar el manejo del envío del formulario para incluir la generación de constancia
-document.addEventListener('DOMContentLoaded', function() {
+  // Modificar el manejo del envío del formulario para incluir la generación de constancia
+  document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('form-inscripcion');
-    
+
     // Guardar referencia al event listener original
     const originalSubmitHandler = form.onsubmit;
-    
+
     form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        console.log('Formulario enviado - iniciando procesamiento...');
-        
-        // Mostrar loading
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-        submitBtn.disabled = true;
+      e.preventDefault();
+      console.log('Formulario enviado - iniciando procesamiento...');
 
-        // Habilitar campos deshabilitados temporalmente para el envío
-        document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
-            element.disabled = false;
-        });
+      // Mostrar loading
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      submitBtn.disabled = true;
 
-        const formData = new FormData(this);
+      // Habilitar campos deshabilitados temporalmente para el envío
+      document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
+        element.disabled = false;
+      });
 
-        console.log('Datos a enviar:');
-        for (let [key, value] of formData.entries()) {
-            console.log(key + ': ' + value);
-        }
+      const formData = new FormData(this);
 
-        fetch(this.action, {
-            method: 'POST',
-            body: formData
+      console.log('Datos a enviar:');
+      for (let [key, value] of formData.entries()) {
+        console.log(key + ': ' + value);
+      }
+
+      fetch(this.action, {
+          method: 'POST',
+          body: formData
         })
         .then(response => {
-            console.log('Respuesta recibida, status:', response.status);
+          console.log('Respuesta recibida, status:', response.status);
 
-            // Verificar si la respuesta es JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('La respuesta no es JSON');
-            }
-            return response.json();
+          // Verificar si la respuesta es JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('La respuesta no es JSON');
+          }
+          return response.json();
         })
         .then(data => {
-            console.log('Datos procesados:', data);
+          console.log('Datos procesados:', data);
 
-            if (data.success) {
-                // Mostrar mensaje de éxito
-                alert('✅ ' + data.message);
-                
-                // Generar constancia si tenemos el ID de inscripción
-                if (data.id_inscripcion) {
-                    console.log('🎯 ID de inscripción obtenido:', data.id_inscripcion);
-                    setTimeout(() => {
-                        generarConstanciaInscripcion(data.id_inscripcion);
-                    }, 1000);
-                } else {
-                    console.warn('⚠️ No se recibió ID de inscripción en la respuesta');
-                }
-                
-                // Redirigir después de 3 segundos
-                setTimeout(() => {
-                    window.location.href = '/final/admin/index.php';
-                }, 3000);
-                
+          if (data.success) {
+            // Mostrar mensaje de éxito
+            alert('✅ ' + data.message);
+
+            // Generar constancia si tenemos el ID de inscripción
+            if (data.id_inscripcion) {
+              console.log('🎯 ID de inscripción obtenido:', data.id_inscripcion);
+              setTimeout(() => {
+                generarConstanciaInscripcion(data.id_inscripcion);
+              }, 1000);
             } else {
-                alert('❌ ' + data.message);
-                // Rehabilitar botón
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
+              console.warn('⚠️ No se recibió ID de inscripción en la respuesta');
             }
-        })
-        //.catch(error => {
-           // console.error('Error completo:', error);
 
-            // Mostrar error específico
-           // if //(error.message.includes('JSON')) {
-                //alert('❌ Error: El servidor no respondió con JSON válido. Verifica que el archivo PHP no tenga errores.');
-            //} //else {
-              // alert('❌ Error de conexión: ' + error.message);
-           // }
+            // Redirigir después de 3 segundos
+            setTimeout(() => {
+              window.location.href = '/final/admin/index.php';
+            }, 3000);
 
+          } else {
+            alert('❌ ' + data.message);
             // Rehabilitar botón
-            submitBtn.innerHTML = originalText
+            submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
-        });
+          }
+        })
+      //.catch(error => {
+      // console.error('Error completo:', error);
+
+      // Mostrar error específico
+      // if //(error.message.includes('JSON')) {
+      //alert('❌ Error: El servidor no respondió con JSON válido. Verifica que el archivo PHP no tenga errores.');
+      //} //else {
+      // alert('❌ Error de conexión: ' + error.message);
+      // }
+
+      // Rehabilitar botón
+      submitBtn.innerHTML = originalText
+      submitBtn.disabled = false;
     });
-//});
+  });
+  //});
 </script>
 
 <?php

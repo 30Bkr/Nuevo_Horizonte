@@ -8,6 +8,22 @@ class DiscapacidadController
     $this->pdo = $pdo;
   }
 
+  public function obtenerDiscapacidadesPorEstudiante($id_estudiante)
+  {
+    try {
+      $sql = "SELECT d.id_discapacidad, d.nom_discapacidad 
+                FROM estudiantes_discapacidades ed 
+                JOIN discapacidades d ON ed.id_discapacidad = d.id_discapacidad 
+                WHERE ed.id_estudiante = ? AND ed.estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_estudiante]);
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error obteniendo discapacidades del estudiante: " . $e->getMessage());
+      return [];
+    }
+  }
+
   /**
    * Obtiene todas las discapacidades activas
    */
