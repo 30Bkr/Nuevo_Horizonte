@@ -8,6 +8,22 @@ class PatologiaController
     $this->pdo = $pdo;
   }
 
+  public function obtenerPatologiasPorEstudiante($id_estudiante)
+  {
+    try {
+      $sql = "SELECT p.id_patologia, p.nom_patologia 
+                FROM estudiantes_patologias ep 
+                JOIN patologias p ON ep.id_patologia = p.id_patologia 
+                WHERE ep.id_estudiante = ? AND ep.estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_estudiante]);
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error obteniendo patologías del estudiante: " . $e->getMessage());
+      return [];
+    }
+  }
+
   public function obtenerPatologiasActivas()
   {
     try {
