@@ -182,7 +182,7 @@ try {
                                         </div>
                                     </div>
                                 </div>
-
+                                                            
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group campo-obligatorio">
@@ -192,10 +192,10 @@ try {
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="form-group campo-obligatorio">
-                                            <label for="segundo_nombre">Segundo Nombre <span class="text-danger">* (Obligatorio)</span></label>
+                                        <div class="form-group">
+                                            <label for="segundo_nombre">Segundo Nombre</label>
                                             <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre"
-                                                value="<?php echo htmlspecialchars($estudiante->segundo_nombre ?? ''); ?>" required>
+                                                value="<?php echo htmlspecialchars($estudiante->segundo_nombre ?? ''); ?>">
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -206,10 +206,10 @@ try {
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="form-group campo-obligatorio">
-                                            <label for="segundo_apellido">Segundo Apellido <span class="text-danger">* (Obligatorio)</span></label>
+                                        <div class="form-group">
+                                            <label for="segundo_apellido">Segundo Apellido</label>
                                             <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido"
-                                                value="<?php echo htmlspecialchars($estudiante->segundo_apellido ?? ''); ?>" required>
+                                                value="<?php echo htmlspecialchars($estudiante->segundo_apellido ?? ''); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -233,10 +233,10 @@ try {
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group campo-obligatorio">
-                                            <label for="telefono">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
+                                        <div class="form-group">
+                                            <label for="telefono">Teléfono Móvil</label>
                                             <input type="text" class="form-control" id="telefono" name="telefono"
-                                                value="<?php echo htmlspecialchars($estudiante->telefono ?? ''); ?>" required maxlength="11">
+                                                value="<?php echo htmlspecialchars($estudiante->telefono ?? ''); ?>"maxlength="11">
                                             <small class="form-text text-muted">Solo se permiten números</small>
                                         </div>
                                     </div>
@@ -367,10 +367,10 @@ try {
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="form-group campo-obligatorio">
-                                            <label for="segundo_nombre_rep">Segundo Nombre <span class="text-danger">* (Obligatorio)</span></label>
+                                        <div class="form-group">
+                                            <label for="segundo_nombre_rep">Segundo Nombre</label>
                                             <input type="text" class="form-control" id="segundo_nombre_rep" name="segundo_nombre_rep"
-                                                value="<?php echo htmlspecialchars($estudiante->segundo_nombre_rep ?? ''); ?>" required>
+                                                value="<?php echo htmlspecialchars($estudiante->segundo_nombre_rep ?? ''); ?>">
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -381,10 +381,10 @@ try {
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="form-group campo-obligatorio">
-                                            <label for="segundo_apellido_rep">Segundo Apellido <span class="text-danger">* (Obligatorio)</span></label>
+                                        <div class="form-group">
+                                            <label for="segundo_apellido_rep">Segundo Apellido</label>
                                             <input type="text" class="form-control" id="segundo_apellido_rep" name="segundo_apellido_rep"
-                                                value="<?php echo htmlspecialchars($estudiante->segundo_apellido_rep ?? ''); ?>" required>
+                                                value="<?php echo htmlspecialchars($estudiante->segundo_apellido_rep ?? ''); ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -437,17 +437,17 @@ try {
 
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="correo_rep">Correo Electrónico</label>
+                                        <div class="form-group campo-obligatorio">
+                                            <label for="correo_rep">Correo Electrónico<span class="text-danger">* (Obligatorio)</span></label>
                                             <input type="email" class="form-control" id="correo_rep" name="correo_rep"
-                                                value="<?php echo htmlspecialchars($estudiante->correo_rep ?? ''); ?>">
+                                                value="<?php echo htmlspecialchars($estudiante->correo_rep ?? ''); ?>" required>
                                             <small class="form-text text-muted">Formato: usuario@dominio.com</small>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="id_profesion_rep">Profesión</label>
-                                            <select class="form-control select2" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;">
+                                        <div class="form-group campo-obligatorio">
+                                            <label for="id_profesion_rep">Profesión<span class="text-danger">* (Obligatorio)</span></label>
+                                            <select class="form-control select2" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;" required>
                                                 <option value="">Seleccione una profesión...</option>
                                                 <?php
                                                 if (isset($profesiones) && $profesiones) {
@@ -463,10 +463,10 @@ try {
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="ocupacion_rep">Ocupación</label>
+                                        <div class="form-group campo-obligatorio">
+                                            <label for="ocupacion_rep">Ocupación<span class="text-danger">* (Obligatorio)</span></label>
                                             <input type="text" class="form-control" id="ocupacion_rep" name="ocupacion_rep"
-                                                value="<?php echo htmlspecialchars($estudiante->ocupacion_rep ?? ''); ?>">
+                                                value="<?php echo htmlspecialchars($estudiante->ocupacion_rep ?? ''); ?>" required>
                                         </div>
                                     </div>
                                 </div>
@@ -576,20 +576,20 @@ try {
                 'cedula': 'Cédula',
                 'fecha_nac': 'Fecha de Nacimiento',
                 'primer_nombre': 'Primer Nombre',
-                'segundo_nombre': 'Segundo Nombre',
+                //'segundo_nombre': 'Segundo Nombre',
                 'primer_apellido': 'Primer Apellido',
-                'segundo_apellido': 'Segundo Apellido',
+                //'segundo_apellido': 'Segundo Apellido',
                 'sexo': 'Sexo',
                 'lugar_nac': 'Lugar de Nacimiento',
-                'telefono': 'Teléfono Móvil'
+                //'telefono': 'Teléfono Móvil'
             };
 
             // Campos obligatorios del representante
             const camposObligatoriosRepresentante = {
                 'primer_nombre_rep': 'Primer Nombre del Representante',
-                'segundo_nombre_rep': 'Segundo Nombre del Representante',
+                //'segundo_nombre_rep': 'Segundo Nombre del Representante',
                 'primer_apellido_rep': 'Primer Apellido del Representante',
-                'segundo_apellido_rep': 'Segundo Apellido del Representante',
+                //'segundo_apellido_rep': 'Segundo Apellido del Representante',
                 'cedula_rep': 'Cédula del Representante',
                 'id_parentesco': 'Parentesco',
                 'telefono_rep': 'Teléfono Móvil del Representante'
