@@ -654,7 +654,6 @@ try {
           link.classList.add('disabled');
         }
       });
-
       currentStep = step;
     }
 

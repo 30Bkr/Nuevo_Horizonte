@@ -80,6 +80,7 @@ try {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   }
 </style>
+
 <style>
   .step {
     display: none;
@@ -263,17 +264,6 @@ try {
                     </div>
                     <div class="card-body">
                       <div class="row">
-                        <!-- <div class="col-md-4">
-                          <div class="form-group">
-                            <label for="id_periodo">Período Académico</label>
-                            <select name="id_periodo" class="form-control" required>
-                              <option value="">Seleccionar Período</option>
-                              <?php
-                              echo "<option value='1' selected>Año Escolar 2024-2025</option>";
-                              ?>
-                            </select>
-                          </div>
-                        </div> -->
                         <div class="col-md-4">
                           <div class="form-group">
                             <label for="id_periodo">Período Académico</label>
@@ -370,264 +360,43 @@ try {
 </div>
 
 <script>
-  // Event listener para el envío del formulario con Fetch
-  document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevenir envío tradicional
-
-    // Validar que todos los campos requeridos estén llenos
-    const requiredFields = this.querySelectorAll('[required]');
-    let valid = true;
-
-    requiredFields.forEach(field => {
-      if (!field.value.trim()) {
-        valid = false;
-        field.classList.add('is-invalid');
-      } else {
-        field.classList.remove('is-invalid');
-      }
-    });
-
-    // Validar que se haya seleccionado un estudiante
-    const idEstudiante = document.getElementById('id_estudiante_existente').value;
-    if (!idEstudiante) {
-      alert('Por favor seleccione un estudiante');
-      valid = false;
+  // CLASE COMPLETA JavaScript - Reemplaza TODO tu script actual
+  class ReinscripcionWizard {
+    constructor() {
+      this.currentStep = 1;
+      this.totalSteps = 3;
+      this.estudiantesData = [];
+      this.init();
     }
 
-    if (!valid) {
-      alert('Por favor complete todos los campos requeridos');
-      return;
+    init() {
+      this.bindEvents();
+      this.showStep(1);
     }
 
-    // Mostrar loading en el botón
-    const submitBtn = document.getElementById('btn-submit');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-    submitBtn.disabled = true;
+    bindEvents() {
+      // Navegación entre pasos
+      document.getElementById('btn-next-to-step2').addEventListener('click', () => this.nextStep());
+      document.getElementById('btn-next-to-step3').addEventListener('click', () => this.nextStep());
+      document.getElementById('btn-back-to-step1').addEventListener('click', () => this.previousStep());
+      document.getElementById('btn-back-to-step2').addEventListener('click', () => this.previousStep());
 
-    // Obtener datos del formulario
-    const formData = new FormData(this);
+      // Validar representante
+      document.getElementById('btn-validar-representante').addEventListener('click', () => this.validarRepresentante());
 
-    // Agregar datos adicionales necesarios
-    formData.append('id_estudiante_existente', document.getElementById('id_estudiante_existente').value);
-    formData.append('representante_existente', '1');
-    formData.append('estudiante_existente', '1');
+      // Cancelar
+      document.getElementById('btn-cancelar').addEventListener('click', () => this.cancelar());
 
-    // Enviar con Fetch
-    fetch('/final/app/controllers/inscripciones/reinscripciong2.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Error en la respuesta del servidor');
-        }
-        return response.json();
-      })
-      .then(data => {
-        // Restaurar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-
-        const mensajeDiv = document.getElementById('mensaje-resultado');
-
-        if (data.success) {
-          // Éxito
-          mensajeDiv.innerHTML = `
-                <div class="alert alert-success alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
-                    ${data.message}<br>
-                    <strong>Estudiante:</strong> ${data.estudiante_nombre || ''}<br>
-                    <strong>ID de Reinscripción:</strong> ${data.id_inscripcion}
-                </div>
-            `;
-          mensajeDiv.style.display = 'block';
-
-          // Redirigir después de 3 segundos
-          setTimeout(() => {
-            window.location.href = 'http://localhost/final/admin/index.php';
-          }, 3000);
-
-        } else {
-          // Error
-          mensajeDiv.innerHTML = `
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-ban"></i> Error</h5>
-                    ${data.message}
-                </div>
-            `;
-          mensajeDiv.style.display = 'block';
-        }
-
-        // Hacer scroll al mensaje
-        mensajeDiv.scrollIntoView({
-          behavior: 'smooth'
-        });
-      })
-      .catch(error => {
-        // Restaurar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-
-        // Error de conexión
-        const mensajeDiv = document.getElementById('mensaje-resultado');
-        mensajeDiv.innerHTML = `
-            <div class="alert alert-danger alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <h5><i class="icon fas fa-ban"></i> Error de conexión</h5>
-                No se pudo conectar con el servidor. Intente nuevamente.
-            </div>
-        `;
-        mensajeDiv.style.display = 'block';
-        mensajeDiv.scrollIntoView({
-          behavior: 'smooth'
-        });
-
-        console.error('Error:', error);
-      });
-  });
-</script>
-
-<script>
-  // Event listener para el envío del formulario con Fetch
-  document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevenir envío tradicional
-
-    // Validar que todos los campos requeridos estén llenos
-    const requiredFields = this.querySelectorAll('[required]');
-    let valid = true;
-
-    requiredFields.forEach(field => {
-      if (!field.value.trim()) {
-        valid = false;
-        field.classList.add('is-invalid');
-      } else {
-        field.classList.remove('is-invalid');
-      }
-    });
-
-    // Validar que se haya seleccionado un estudiante
-    const idEstudiante = document.getElementById('id_estudiante_existente').value;
-    if (!idEstudiante) {
-      alert('Por favor seleccione un estudiante');
-      valid = false;
+      // Submit del formulario
+      document.getElementById('form-reinscripcion').addEventListener('submit', (e) => this.submitForm(e));
     }
 
-    if (!valid) {
-      alert('Por favor complete todos los campos requeridos');
-      return;
-    }
-
-    // Mostrar loading en el botón
-    const submitBtn = document.getElementById('btn-submit');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-    submitBtn.disabled = true;
-
-    // Obtener datos del formulario
-    const formData = new FormData(this);
-
-    // Agregar datos adicionales necesarios
-    formData.append('id_estudiante_existente', document.getElementById('id_estudiante_existente').value);
-    formData.append('representante_existente', '1');
-    formData.append('estudiante_existente', '1');
-
-    // Enviar con Fetch
-    fetch('/final/app/controllers/inscripciones/reinscripciong2.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Error en la respuesta del servidor');
-        }
-        return response.json();
-      })
-      .then(data => {
-        // Restaurar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-
-        const mensajeDiv = document.getElementById('mensaje-resultado');
-
-        if (data.success) {
-          // Éxito
-          mensajeDiv.innerHTML = `
-                <div class="alert alert-success alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
-                    ${data.message}<br>
-                    <strong>Estudiante:</strong> ${data.estudiante_nombre || ''}<br>
-                    <strong>ID de Reinscripción:</strong> ${data.id_inscripcion}
-                </div>
-            `;
-          mensajeDiv.style.display = 'block';
-
-          // Redirigir después de 3 segundos
-          setTimeout(() => {
-            window.location.href = 'http://localhost/final/admin/index.php';
-          }, 3000);
-
-        } else {
-          // Error
-          mensajeDiv.innerHTML = `
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-ban"></i> Error</h5>
-                    ${data.message}
-                </div>
-            `;
-          mensajeDiv.style.display = 'block';
-        }
-
-        // Hacer scroll al mensaje
-        mensajeDiv.scrollIntoView({
-          behavior: 'smooth'
-        });
-      })
-      .catch(error => {
-        // Restaurar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-
-        // Error de conexión
-        const mensajeDiv = document.getElementById('mensaje-resultado');
-        mensajeDiv.innerHTML = `
-            <div class="alert alert-danger alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <h5><i class="icon fas fa-ban"></i> Error de conexión</h5>
-                No se pudo conectar con el servidor. Intente nuevamente.
-            </div>
-        `;
-        mensajeDiv.style.display = 'block';
-        mensajeDiv.scrollIntoView({
-          behavior: 'smooth'
-        });
-
-        console.error('Error:', error);
-      });
-  });
-
-  // El resto del código JavaScript que ya tienes
-  document.addEventListener('DOMContentLoaded', function() {
-    let currentStep = 1;
-    const totalSteps = 3;
-    let estudiantesData = [];
-
-    // Función para limpiar mensajes de resultado
-    function limpiarMensajes() {
-      const mensajeDiv = document.getElementById('mensaje-resultado');
-      mensajeDiv.style.display = 'none';
-      mensajeDiv.innerHTML = '';
-    }
-
-    // Funciones para navegación entre pasos
-    function showStep(step) {
+    showStep(step) {
+      // Ocultar todos los pasos
       document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
       document.getElementById(`step${step}`).classList.add('active');
 
+      // Actualizar indicador
       document.querySelectorAll('#stepIndicator .nav-link').forEach((link, index) => {
         if (index + 1 === step) {
           link.classList.add('active');
@@ -640,591 +409,434 @@ try {
         }
       });
 
-      currentStep = step;
+      this.currentStep = step;
+      this.limpiarMensajes();
     }
 
-    // Event listeners para botones de navegación
-    document.getElementById('btn-next-to-step2').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(2);
-    });
-
-    document.getElementById('btn-next-to-step3').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(3);
-    });
-
-    document.getElementById('btn-back-to-step1').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(1);
-    });
-
-    document.getElementById('btn-back-to-step2').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(2);
-    });
-
-    // Event listener para el botón cancelar
-    document.getElementById('btn-cancelar').addEventListener('click', function() {
-      limpiarMensajes();
-
-      // Opcional: Mostrar confirmación antes de cancelar
-      if (confirm('¿Está seguro de que desea cancelar la reinscripción? Los datos no guardados se perderán.')) {
-        window.location.href = 'http://localhost/final/admin/index.php';
+    nextStep() {
+      if (this.currentStep < this.totalSteps) {
+        this.showStep(this.currentStep + 1);
       }
-    });
+    }
 
-    // Validar representante
-    document.getElementById('btn-validar-representante').addEventListener('click', function() {
+    previousStep() {
+      if (this.currentStep > 1) {
+        this.showStep(this.currentStep - 1);
+      }
+    }
+
+    limpiarMensajes() {
+      const mensajeDiv = document.getElementById('mensaje-resultado');
+      mensajeDiv.style.display = 'none';
+      mensajeDiv.innerHTML = '';
+    }
+
+    async validarRepresentante() {
       const cedula = document.getElementById('cedula_representante').value;
+
       if (!cedula) {
         alert('Por favor ingrese la cédula del representante');
         return;
       }
-      validarRepresentante(cedula);
-    });
 
-    function validarRepresentante(cedula) {
-      const formData = new FormData();
-      formData.append('cedula', cedula);
+      try {
+        const formData = new FormData();
+        formData.append('cedula', cedula);
 
-      fetch('/final/app/controllers/representantes/validar2.php', {
+        const response = await fetch('/final/app/controllers/representantes/validar2.php', {
           method: 'POST',
           body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          const resultado = document.getElementById('resultado-validacion');
-          const nextButton = document.getElementById('btn-next-to-step2');
+        });
 
-          if (data.existe) {
-            resultado.innerHTML = `
+        const data = await response.json();
+        this.mostrarResultadoValidacion(data);
+
+      } catch (error) {
+        console.error('Error:', error);
+        this.mostrarErrorValidacion();
+      }
+    }
+
+    mostrarResultadoValidacion(data) {
+      const resultado = document.getElementById('resultado-validacion');
+      const nextButton = document.getElementById('btn-next-to-step2');
+
+      if (data.existe) {
+        resultado.innerHTML = `
                 <div class="alert alert-success">
                     <strong>Representante encontrado:</strong> ${data.nombre_completo}
                     <br>Se encontraron ${data.total_estudiantes || 0} estudiante(s) asociado(s).
                 </div>
-                `;
+            `;
 
-            // Guardar datos del representante
-            document.getElementById('representante_existente').value = '1';
-            document.getElementById('id_direccion_repre').value = data.id_direccion;
-            document.getElementById('id_representante_existente').value = data.id_representante;
+        // Guardar datos del representante
+        document.getElementById('representante_existente').value = '1';
+        document.getElementById('id_direccion_repre').value = data.id_direccion;
+        document.getElementById('id_representante_existente').value = data.id_representante;
 
-            // Mostrar información del representante en el paso 2
-            document.getElementById('datos-representante').innerHTML = `
-                <strong>Nombre:</strong> ${data.nombre_completo}<br>
-                <strong>Cédula:</strong> ${data.cedula}<br>
-                <strong>Teléfono:</strong> ${data.telefono || 'No registrado'}
-                `;
-            document.getElementById('info-representante').style.display = 'block';
+        // Mostrar información del representante
+        this.mostrarInfoRepresentante(data);
 
-            // Cargar estudiantes del representante
-            cargarEstudiantesRepresentante(data.id_representante);
+        // Cargar estudiantes
+        this.cargarEstudiantesRepresentante(data.id_representante);
 
-            nextButton.style.display = 'inline-block';
+        nextButton.style.display = 'inline-block';
 
-          } else {
-            resultado.innerHTML = `
+      } else {
+        resultado.innerHTML = `
                 <div class="alert alert-info">
                     <strong>Representante no encontrado.</strong> Por favor introduzca cédula de identidad válida.
                 </div>
-                `;
-            document.getElementById('representante_existente').value = '0';
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('resultado-validacion').innerHTML = `
+            `;
+        document.getElementById('representante_existente').value = '0';
+      }
+    }
+
+    mostrarErrorValidacion() {
+      document.getElementById('resultado-validacion').innerHTML = `
             <div class="alert alert-danger">
                 Error al validar el representante. Intente nuevamente.
             </div>
-            `;
-        });
+        `;
     }
 
-    function cargarEstudiantesRepresentante(idRepresentante) {
-      const formData = new FormData();
-      formData.append('id_representante', idRepresentante);
+    mostrarInfoRepresentante(data) {
+      document.getElementById('datos-representante').innerHTML = `
+            <strong>Nombre:</strong> ${data.nombre_completo}<br>
+            <strong>Cédula:</strong> ${data.cedula}<br>
+            <strong>Teléfono:</strong> ${data.telefono || 'No registrado'}
+        `;
+      document.getElementById('info-representante').style.display = 'block';
+    }
 
-      fetch('/final/app/controllers/estudiantes/estudiantes_por_representante.php', {
+    async cargarEstudiantesRepresentante(idRepresentante) {
+      try {
+        const formData = new FormData();
+        formData.append('id_representante', idRepresentante);
+
+        const response = await fetch('/final/app/controllers/estudiantes/estudiantes_por_representante.php', {
           method: 'POST',
           body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          estudiantesData = data.estudiantes || [];
-          mostrarEstudiantes(estudiantesData);
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('lista-estudiantes').innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-danger">
-                Error al cargar los estudiantes. Intente nuevamente.
-                </div>
-            </div>
-            `;
         });
+
+        const data = await response.json();
+        this.estudiantesData = data.estudiantes || [];
+        this.mostrarEstudiantes();
+
+      } catch (error) {
+        console.error('Error:', error);
+        this.mostrarErrorCargaEstudiantes();
+      }
     }
 
-    function mostrarEstudiantes(estudiantes) {
+    mostrarEstudiantes() {
       const container = document.getElementById('lista-estudiantes');
 
-      if (estudiantes.length === 0) {
+      if (this.estudiantesData.length === 0) {
         container.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-warning">
-                    No se encontraron estudiantes asociados a este representante.
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        No se encontraron estudiantes asociados a este representante.
+                    </div>
                 </div>
-            </div>
             `;
         return;
       }
 
-      console.log("Estudiantes para reinscripción:", estudiantes);
-
       let html = '';
-      estudiantes.forEach(estudiante => {
-        // Manejar datos que pueden ser null/undefined
+      this.estudiantesData.forEach(estudiante => {
         const nivel = estudiante.nombre_nivel || 'No asignado';
         const seccion = estudiante.nom_seccion || '';
         const nivelSeccion = seccion ? ` - ${seccion}` : '';
         const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
-
-        // Estado basado en inscripción en período ACTIVO
         const estado = estudiante.estado_inscripcion || 'No inscrito';
         const badgeClass = (estado === 'Inscrito') ? 'badge-success' : 'badge-warning';
 
         html += `
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card estudiante-card" data-id="${estudiante.id_estudiante}" 
-                    style="cursor: pointer; border: 1px solid #dee2e6; transition: all 0.3s ease;">
-                    <div class="card-header bg-light">
-                        <h5 class="card-title mb-0">${estudiante.primer_nombre} ${estudiante.primer_apellido}</h5>
-                    </div>
-                    <div class="card-body estudiante-info">
-                        <p class="mb-1"><strong>Cédula:</strong> ${estudiante.cedula}</p>
-                        <p class="mb-1"><strong>Último Nivel:</strong> ${nivel}${nivelSeccion}</p>
-                        <p class="mb-1"><strong>Período Anterior:</strong> ${periodoAnterior}</p>
-                        <p class="mb-1"><strong>Parentesco:</strong> ${estudiante.parentesco}</p>
-                        <p class="mb-0"><strong>Estado Actual:</strong> 
-                            <span class="badge ${badgeClass}">
-                                ${estado}
-                            </span>
-                        </p>
-                    </div>
-                    <div class="card-footer text-center">
-                        <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
-                                data-id="${estudiante.id_estudiante}">
-                            <i class="fas fa-sync-alt"></i> Reinscribir
-                        </button>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card estudiante-card" data-id="${estudiante.id_estudiante}" 
+                         style="cursor: pointer; border: 1px solid #dee2e6; transition: all 0.3s ease;">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">${estudiante.primer_nombre} ${estudiante.primer_apellido}</h5>
+                        </div>
+                        <div class="card-body estudiante-info">
+                            <p class="mb-1"><strong>Cédula:</strong> ${estudiante.cedula}</p>
+                            <p class="mb-1"><strong>Último Nivel:</strong> ${nivel}${nivelSeccion}</p>
+                            <p class="mb-1"><strong>Período Anterior:</strong> ${periodoAnterior}</p>
+                            <p class="mb-1"><strong>Parentesco:</strong> ${estudiante.parentesco}</p>
+                            <p class="mb-0"><strong>Estado Actual:</strong> 
+                                <span class="badge ${badgeClass}">${estado}</span>
+                            </p>
+                        </div>
+                        <div class="card-footer text-center">
+                            <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
+                                    data-id="${estudiante.id_estudiante}">
+                                <i class="fas fa-sync-alt"></i> Reinscribir
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
             `;
       });
 
       container.innerHTML = html;
+      this.bindEstudianteEvents();
+    }
 
-      // Agregar event listeners a los botones de selección
+    bindEstudianteEvents() {
+      // Event listeners para botones de selección
       document.querySelectorAll('.btn-seleccionar-estudiante').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', (e) => {
           e.stopPropagation();
-          const idEstudiante = this.getAttribute('data-id');
-          console.log("Botón clickeado, ID estudiante:", idEstudiante);
-          seleccionarEstudiante(idEstudiante);
+          const idEstudiante = e.target.getAttribute('data-id');
+          this.seleccionarEstudiante(idEstudiante);
         });
       });
 
-      // También permitir selección haciendo click en toda la card
+      // Event listeners para las cards
       document.querySelectorAll('.estudiante-card').forEach(card => {
-        card.addEventListener('click', function(e) {
+        card.addEventListener('click', (e) => {
           if (!e.target.closest('.btn-seleccionar-estudiante')) {
-            const idEstudiante = this.getAttribute('data-id');
-            console.log("Card clickeada, ID estudiante:", idEstudiante);
-            seleccionarEstudiante(idEstudiante);
+            const idEstudiante = e.currentTarget.getAttribute('data-id');
+            this.seleccionarEstudiante(idEstudiante);
           }
         });
       });
-
-      console.log("Event listeners agregados a", document.querySelectorAll('.estudiante-card').length, "cards");
     }
 
-    function seleccionarEstudiante(idEstudiante) {
-      console.log("Intentando seleccionar estudiante ID:", idEstudiante);
-      console.log("Datos disponibles:", estudiantesData);
+    seleccionarEstudiante(idEstudiante) {
+      const estudiante = this.estudiantesData.find(e => e.id_estudiante == idEstudiante);
 
-      const estudiante = estudiantesData.find(e => e.id_estudiante == idEstudiante);
-
-      if (estudiante) {
-        console.log("Estudiante encontrado:", estudiante);
-
-        // Remover selección anterior
-        document.querySelectorAll('.estudiante-card').forEach(card => {
-          card.classList.remove('selected');
-          card.style.border = '1px solid #dee2e6';
-        });
-
-        // Marcar como seleccionado
-        const cardSeleccionada = document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`);
-        if (cardSeleccionada) {
-          cardSeleccionada.classList.add('selected');
-          cardSeleccionada.style.border = '3px solid #007bff';
-          cardSeleccionada.style.backgroundColor = '#f8f9fa';
-        }
-
-        // Actualizar datos del formulario
-        document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
-        document.getElementById('id_direccion_est').value = estudiante.id_direccion || '';
-        document.getElementById('parentesco').value = estudiante.parentesco;
-
-        // Mostrar información del estudiante seleccionado
-        const nivelAnterior = estudiante.nombre_nivel || 'No asignado';
-        const numNivelAnterior = estudiante.num_nivel;
-        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
-
-        document.getElementById('datos-estudiante-seleccionado').innerHTML = `
-                <strong>Nombre completo:</strong> ${estudiante.primer_nombre} ${estudiante.segundo_nombre || ''} ${estudiante.primer_apellido} ${estudiante.segundo_apellido || ''}<br>
-                <strong>Cédula:</strong> ${estudiante.cedula}<br>
-                <strong>Fecha de nacimiento:</strong> ${estudiante.fecha_nac || 'No registrada'}<br>
-                <strong>Parentesco:</strong> ${estudiante.parentesco}<br>
-                <strong>Último nivel cursado:</strong> ${nivelAnterior} (${periodoAnterior})
-            `;
-
-        // Pre-seleccionar nivel siguiente si existe nivel anterior
-        if (numNivelAnterior) {
-          const siguienteNivel = parseInt(numNivelAnterior) + 1;
-          document.getElementById('id_nivel').value = siguienteNivel;
-          console.log("Nivel siguiente seleccionado:", siguienteNivel);
-        } else {
-          document.getElementById('id_nivel').value = 1;
-          console.log("Nivel por defecto seleccionado: 1");
-        }
-
-        // Mostrar botón para continuar
-        document.getElementById('btn-next-to-step3').style.display = 'inline-block';
-        console.log("Botón siguiente mostrado");
-
-        document.getElementById('btn-next-to-step3').scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-
-      } else {
-        console.error("Estudiante no encontrado en los datos. ID:", idEstudiante);
+      if (!estudiante) {
         alert('Error: No se pudo encontrar la información del estudiante seleccionado.');
-      }
-    }
-  });
-</script>
-
-<!-- <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    let currentStep = 1;
-    const totalSteps = 3;
-    let estudiantesData = [];
-
-    // Función para limpiar mensajes de resultado
-    function limpiarMensajes() {
-      const mensajeDiv = document.getElementById('mensaje-resultado');
-      mensajeDiv.style.display = 'none';
-      mensajeDiv.innerHTML = '';
-    }
-
-    // Funciones para navegación entre pasos
-    function showStep(step) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById(`step${step}`).classList.add('active');
-
-      document.querySelectorAll('#stepIndicator .nav-link').forEach((link, index) => {
-        if (index + 1 === step) {
-          link.classList.add('active');
-        } else if (index + 1 < step) {
-          link.classList.remove('active', 'disabled');
-          link.classList.add('completed');
-        } else {
-          link.classList.remove('active', 'completed');
-          link.classList.add('disabled');
-        }
-      });
-
-      currentStep = step;
-    }
-
-    // Event listeners para botones de navegación
-    document.getElementById('btn-next-to-step2').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(2);
-    });
-
-    document.getElementById('btn-next-to-step3').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(3);
-    });
-
-    document.getElementById('btn-back-to-step1').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(1);
-    });
-
-    document.getElementById('btn-back-to-step2').addEventListener('click', function() {
-      limpiarMensajes();
-      showStep(2);
-    });
-
-    // Event listener para el botón cancelar
-    document.getElementById('btn-cancelar').addEventListener('click', function() {
-      limpiarMensajes();
-
-      // Opcional: Mostrar confirmación antes de cancelar
-      if (confirm('¿Está seguro de que desea cancelar la reinscripción? Los datos no guardados se perderán.')) {
-        window.location.href = 'http://localhost/final/admin/index.php';
-      }
-    });
-
-    // Validar representante
-    document.getElementById('btn-validar-representante').addEventListener('click', function() {
-      const cedula = document.getElementById('cedula_representante').value;
-      if (!cedula) {
-        alert('Por favor ingrese la cédula del representante');
-        return;
-      }
-      validarRepresentante(cedula);
-    });
-
-    function validarRepresentante(cedula) {
-      const formData = new FormData();
-      formData.append('cedula', cedula);
-
-      fetch('/final/app/controllers/representantes/validar2.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          const resultado = document.getElementById('resultado-validacion');
-          const nextButton = document.getElementById('btn-next-to-step2');
-
-          if (data.existe) {
-            resultado.innerHTML = `
-              <div class="alert alert-success">
-                <strong>Representante encontrado:</strong> ${data.nombre_completo}
-                <br>Se encontraron ${data.total_estudiantes || 0} estudiante(s) asociado(s).
-              </div>
-            `;
-
-            // Guardar datos del representante
-            document.getElementById('representante_existente').value = '1';
-            document.getElementById('id_direccion_repre').value = data.id_direccion;
-            document.getElementById('id_representante_existente').value = data.id_representante;
-
-            // Mostrar información del representante en el paso 2
-            document.getElementById('datos-representante').innerHTML = `
-              <strong>Nombre:</strong> ${data.nombre_completo}<br>
-              <strong>Cédula:</strong> ${data.cedula}<br>
-              <strong>Teléfono:</strong> ${data.telefono || 'No registrado'}
-            `;
-            document.getElementById('info-representante').style.display = 'block';
-
-            // Cargar estudiantes del representante
-            cargarEstudiantesRepresentante(data.id_representante);
-
-            nextButton.style.display = 'inline-block';
-
-          } else {
-            resultado.innerHTML = `
-              <div class="alert alert-info">
-                <strong>Representante no encontrado.</strong> Por favor introduzca cédula de identidad válida.
-              </div>
-            `;
-            document.getElementById('representante_existente').value = '0';
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('resultado-validacion').innerHTML = `
-            <div class="alert alert-danger">
-              Error al validar el representante. Intente nuevamente.
-            </div>
-          `;
-        });
-    }
-
-    function cargarEstudiantesRepresentante(idRepresentante) {
-      const formData = new FormData();
-      formData.append('id_representante', idRepresentante);
-
-      fetch('/final/app/controllers/estudiantes/estudiantes_por_representante.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          estudiantesData = data.estudiantes || [];
-          mostrarEstudiantes(estudiantesData);
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          document.getElementById('lista-estudiantes').innerHTML = `
-            <div class="col-12">
-              <div class="alert alert-danger">
-                Error al cargar los estudiantes. Intente nuevamente.
-              </div>
-            </div>
-          `;
-        });
-    }
-
-    function mostrarEstudiantes(estudiantes) {
-      const container = document.getElementById('lista-estudiantes');
-
-      if (estudiantes.length === 0) {
-        container.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-warning">
-                    No se encontraron estudiantes asociados a este representante.
-                </div>
-            </div>
-        `;
         return;
       }
 
-      console.log("Estudiantes para reinscripción:", estudiantes);
-
-      let html = '';
-      estudiantes.forEach(estudiante => {
-        // Manejar datos que pueden ser null/undefined
-        const nivel = estudiante.nombre_nivel || 'No asignado';
-        const seccion = estudiante.nom_seccion || '';
-        const nivelSeccion = seccion ? ` - ${seccion}` : '';
-        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
-
-        // Estado basado en inscripción en período ACTIVO
-        const estado = estudiante.estado_inscripcion || 'No inscrito';
-        const badgeClass = (estado === 'Inscrito') ? 'badge-success' : 'badge-warning';
-
-        html += `
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card estudiante-card" data-id="${estudiante.id_estudiante}" 
-                     style="cursor: pointer; border: 1px solid #dee2e6; transition: all 0.3s ease;">
-                    <div class="card-header bg-light">
-                        <h5 class="card-title mb-0">${estudiante.primer_nombre} ${estudiante.primer_apellido}</h5>
-                    </div>
-                    <div class="card-body estudiante-info">
-                        <p class="mb-1"><strong>Cédula:</strong> ${estudiante.cedula}</p>
-                        <p class="mb-1"><strong>Último Nivel:</strong> ${nivel}${nivelSeccion}</p>
-                        <p class="mb-1"><strong>Período Anterior:</strong> ${periodoAnterior}</p>
-                        <p class="mb-1"><strong>Parentesco:</strong> ${estudiante.parentesco}</p>
-                        <p class="mb-0"><strong>Estado Actual:</strong> 
-                            <span class="badge ${badgeClass}">
-                                ${estado}
-                            </span>
-                        </p>
-                    </div>
-                    <div class="card-footer text-center">
-                        <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
-                                data-id="${estudiante.id_estudiante}">
-                            <i class="fas fa-sync-alt"></i> Reinscribir
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-      });
-
-      container.innerHTML = html;
-
-      // Agregar event listeners a los botones de selección
-      document.querySelectorAll('.btn-seleccionar-estudiante').forEach(button => {
-        button.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const idEstudiante = this.getAttribute('data-id');
-          console.log("Botón clickeado, ID estudiante:", idEstudiante);
-          seleccionarEstudiante(idEstudiante);
-        });
-      });
-
-      // También permitir selección haciendo click en toda la card
+      // Remover selección anterior
       document.querySelectorAll('.estudiante-card').forEach(card => {
-        card.addEventListener('click', function(e) {
-          if (!e.target.closest('.btn-seleccionar-estudiante')) {
-            const idEstudiante = this.getAttribute('data-id');
-            console.log("Card clickeada, ID estudiante:", idEstudiante);
-            seleccionarEstudiante(idEstudiante);
-          }
-        });
+        card.classList.remove('selected');
+        card.style.border = '1px solid #dee2e6';
       });
 
-      console.log("Event listeners agregados a", document.querySelectorAll('.estudiante-card').length, "cards");
+      // Marcar como seleccionado
+      const cardSeleccionada = document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`);
+      if (cardSeleccionada) {
+        cardSeleccionada.classList.add('selected');
+        cardSeleccionada.style.border = '3px solid #007bff';
+        cardSeleccionada.style.backgroundColor = '#f8f9fa';
+      }
+
+      // Actualizar datos del formulario
+      this.actualizarDatosEstudiante(estudiante);
+      this.mostrarInfoEstudianteSeleccionado(estudiante);
+      this.preseleccionarNivel(estudiante);
+
+      // Mostrar botón para continuar
+      document.getElementById('btn-next-to-step3').style.display = 'inline-block';
+      document.getElementById('btn-next-to-step3').scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
     }
 
-    function seleccionarEstudiante(idEstudiante) {
-      console.log("Intentando seleccionar estudiante ID:", idEstudiante);
-      console.log("Datos disponibles:", estudiantesData);
+    actualizarDatosEstudiante(estudiante) {
+      document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
+      document.getElementById('id_direccion_est').value = estudiante.id_direccion || '';
+      document.getElementById('parentesco').value = estudiante.parentesco;
+    }
 
-      const estudiante = estudiantesData.find(e => e.id_estudiante == idEstudiante);
+    mostrarInfoEstudianteSeleccionado(estudiante) {
+      const nivelAnterior = estudiante.nombre_nivel || 'No asignado';
+      const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
 
-      if (estudiante) {
-        console.log("Estudiante encontrado:", estudiante);
-
-        // Remover selección anterior
-        document.querySelectorAll('.estudiante-card').forEach(card => {
-          card.classList.remove('selected');
-          card.style.border = '1px solid #dee2e6';
-        });
-
-        // Marcar como seleccionado
-        const cardSeleccionada = document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`);
-        if (cardSeleccionada) {
-          cardSeleccionada.classList.add('selected');
-          cardSeleccionada.style.border = '3px solid #007bff';
-          cardSeleccionada.style.backgroundColor = '#f8f9fa';
-        }
-
-        // Actualizar datos del formulario
-        document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
-        document.getElementById('id_direccion_est').value = estudiante.id_direccion || '';
-        document.getElementById('parentesco').value = estudiante.parentesco;
-
-        // Mostrar información del estudiante seleccionado
-        const nivelAnterior = estudiante.nombre_nivel || 'No asignado';
-        const numNivelAnterior = estudiante.num_nivel;
-        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
-
-        document.getElementById('datos-estudiante-seleccionado').innerHTML = `
+      document.getElementById('datos-estudiante-seleccionado').innerHTML = `
             <strong>Nombre completo:</strong> ${estudiante.primer_nombre} ${estudiante.segundo_nombre || ''} ${estudiante.primer_apellido} ${estudiante.segundo_apellido || ''}<br>
             <strong>Cédula:</strong> ${estudiante.cedula}<br>
             <strong>Fecha de nacimiento:</strong> ${estudiante.fecha_nac || 'No registrada'}<br>
             <strong>Parentesco:</strong> ${estudiante.parentesco}<br>
             <strong>Último nivel cursado:</strong> ${nivelAnterior} (${periodoAnterior})
         `;
+    }
 
-        // Pre-seleccionar nivel siguiente si existe nivel anterior
-        if (numNivelAnterior) {
-          const siguienteNivel = parseInt(numNivelAnterior) + 1;
-          document.getElementById('id_nivel').value = siguienteNivel;
-          console.log("Nivel siguiente seleccionado:", siguienteNivel);
-        } else {
-          document.getElementById('id_nivel').value = 1;
-          console.log("Nivel por defecto seleccionado: 1");
-        }
-
-        // Mostrar botón para continuar
-        document.getElementById('btn-next-to-step3').style.display = 'inline-block';
-        console.log("Botón siguiente mostrado");
-
-        document.getElementById('btn-next-to-step3').scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-
+    preseleccionarNivel(estudiante) {
+      if (estudiante.num_nivel) {
+        const siguienteNivel = parseInt(estudiante.num_nivel) + 1;
+        document.getElementById('id_nivel').value = siguienteNivel;
       } else {
-        console.error("Estudiante no encontrado en los datos. ID:", idEstudiante);
-        alert('Error: No se pudo encontrar la información del estudiante seleccionado.');
+        document.getElementById('id_nivel').value = 1;
       }
     }
+
+    mostrarErrorCargaEstudiantes() {
+      document.getElementById('lista-estudiantes').innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger">
+                    Error al cargar los estudiantes. Intente nuevamente.
+                </div>
+            </div>
+        `;
+    }
+
+    cancelar() {
+      this.limpiarMensajes();
+      if (confirm('¿Está seguro de que desea cancelar la reinscripción? Los datos no guardados se perderán.')) {
+        window.location.href = 'http://localhost/final/admin/index.php';
+      }
+    }
+
+    async submitForm(e) {
+      e.preventDefault();
+
+      if (!this.validarFormulario()) {
+        alert('Por favor complete todos los campos requeridos');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-submit');
+      if (submitBtn.disabled) {
+        return; // Ya está procesando
+      }
+
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      submitBtn.disabled = true;
+
+      try {
+        const formData = new FormData(e.target);
+        await this.enviarReinscripcion(formData);
+
+      } catch (error) {
+        this.mostrarErrorEnvio(error);
+      } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+
+    validarFormulario() {
+      const requiredFields = document.querySelectorAll('#form-reinscripcion [required]');
+      let valid = true;
+
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          valid = false;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+
+      const idEstudiante = document.getElementById('id_estudiante_existente').value;
+      if (!idEstudiante) {
+        alert('Por favor seleccione un estudiante');
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    async enviarReinscripcion(formData) {
+      // Mostrar datos para depuración
+      console.log("Datos del formulario:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key + ": " + value);
+      }
+
+      const response = await fetch('/final/app/controllers/reinscripciones/reinscripcionController.php', {
+        method: 'POST',
+        body: formData
+      });
+
+      console.log("Status de respuesta:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Contenido del error:", errorText);
+        throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Respuesta no JSON recibida:', text);
+        throw new Error('El servidor devolvió una respuesta no JSON: ' + text.substring(0, 200));
+      }
+
+      const data = await response.json();
+      console.log("Datos JSON recibidos:", data);
+
+      this.mostrarResultadoEnvio(data);
+    }
+
+    mostrarResultadoEnvio(data) {
+      const mensajeDiv = document.getElementById('mensaje-resultado');
+
+      if (data.success) {
+        mensajeDiv.innerHTML = `
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
+                    ${data.message}<br>
+                    <strong>Estudiante:</strong> ${data.estudiante_nombre || ''}<br>
+                    <strong>ID de Reinscripción:</strong> ${data.id_inscripcion}
+                </div>
+            `;
+
+        // Deshabilitar el formulario después del éxito
+        this.deshabilitarFormulario();
+
+        setTimeout(() => {
+          window.location.href = 'http://localhost/final/admin/index.php';
+        }, 3000);
+
+      } else {
+        mensajeDiv.innerHTML = `
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h5><i class="icon fas fa-ban"></i> Error</h5>
+                    ${data.message}
+                </div>
+            `;
+      }
+
+      mensajeDiv.style.display = 'block';
+      mensajeDiv.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }
+
+    deshabilitarFormulario() {
+      document.querySelectorAll('#form-reinscripcion input, #form-reinscripcion select, #form-reinscripcion button')
+        .forEach(element => {
+          if (element.id !== 'btn-cancelar') {
+            element.disabled = true;
+          }
+        });
+    }
+
+    mostrarErrorEnvio(error) {
+      const mensajeDiv = document.getElementById('mensaje-resultado');
+      mensajeDiv.innerHTML = `
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-ban"></i> Error de conexión</h5>
+                No se pudo conectar con el servidor. Intente nuevamente.
+            </div>
+        `;
+      mensajeDiv.style.display = 'block';
+      mensajeDiv.scrollIntoView({
+        behavior: 'smooth'
+      });
+
+      console.error('Error:', error);
+    }
+  }
+
+  // Inicializar la aplicación cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', function() {
+    new ReinscripcionWizard();
   });
-</script> -->
+</script>
 
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
