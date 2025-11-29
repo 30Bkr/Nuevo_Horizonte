@@ -2,13 +2,10 @@
 session_start();
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 
-
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
 include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.php';
 ?>
-
-
 
 <!-- Content Wrapper -->
 <div class="content-wrapper">
@@ -54,15 +51,14 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <!-- -->
                         <div class="card-header">
                             <h3 class="card-title">Listado de Estudiantes</h3>
                             <div class="card-tools">
                                 <!--
-                                        <a href="estudiante_nuevo.php" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-plus"></i> Nuevo Estudiante
-                                        </a>
-                                         -->
+                                <a href="estudiante_nuevo.php" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Nuevo Estudiante
+                                </a>
+                                -->
                             </div>
                         </div>
                         <!-- /.card-header -->
@@ -117,6 +113,15 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                                 <i class="fas fa-check"></i>
                                                             </button>';
 
+                                                // Botón para generar constancia (solo si tiene inscripciones)
+                                                $boton_constancia = $row['inscripciones_count'] > 0 ?
+                                                    '<button type="button" class="btn btn-info btn-sm" title="Generar Constancia" onclick="generarConstancia(' . $row['id_estudiante'] . ')">
+                                                                <i class="fas fa-file-pdf"></i>
+                                                            </button>' :
+                                                    '<button type="button" class="btn btn-info btn-sm" title="Sin inscripciones" disabled>
+                                                                <i class="fas fa-file-pdf"></i>
+                                                            </button>';
+
                                                 echo "<tr>";
                                                 echo "<td>{$row['id_estudiante']}</td>";
                                                 echo "<td>{$row['cedula']}</td>";
@@ -135,6 +140,7 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                                 <a href='estudiante_ver.php?id={$row['id_estudiante']}' class='btn btn-primary btn-sm' title='Ver'>
                                                                     <i class='fas fa-eye'></i>
                                                                 </a>
+                                                                {$boton_constancia}
                                                                 {$boton_estado}
                                                             </div>
                                                         </td>";
@@ -169,8 +175,6 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
     <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
-
-
 
 <!-- jQuery -->
 <script src="/final/public/plugins/jquery/jquery.min.js"></script>
@@ -243,6 +247,44 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
             });
         }
     }
+
+    function generarConstancia(id_estudiante) {
+    // Mostrar mensaje de carga
+    const boton = event.target;
+    const originalHTML = boton.innerHTML;
+    boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    boton.disabled = true;
+
+    // Obtener la última inscripción del estudiante
+    $.ajax({
+        url: 'obtener_ultima_inscripcion.php',
+        type: 'POST',
+        data: {
+            id_estudiante: id_estudiante
+        },
+        dataType: 'json',
+        success: function(response) {
+            // Restaurar botón
+            boton.innerHTML = originalHTML;
+            boton.disabled = false;
+
+            if (response.success && response.id_inscripcion) {
+                // Abrir la constancia en una nueva pestaña
+                window.open('/final/app/controllers/inscripciones/generar_constancia_estudiante.php?id_inscripcion=' + response.id_inscripcion + '&v=' + Date.now(), '_blank');
+            } //else {
+                // SOLO mostrar error si realmente hay un error
+                //alert('Error: ' + (response.message || 'No se pudo obtener la inscripción del estudiante'));
+            //}
+        },
+        error: function(xhr, status, error) {
+            // Restaurar botón
+            boton.innerHTML = originalHTML;
+            boton.disabled = false;
+            
+            alert('Error al procesar la solicitud: ' + error);
+        }
+    });
+}
 </script>
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
