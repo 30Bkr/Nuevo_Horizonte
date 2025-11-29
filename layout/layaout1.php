@@ -172,7 +172,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <li class="nav-item">
                   <a href="<?= URL; ?>/admin/reinscripciones/reinscripcion.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Re-inscripción</p>
+                    <p>Reinscripción</p>
                   </a>
                 </li>
                 <!-- <li class="nav-item">
