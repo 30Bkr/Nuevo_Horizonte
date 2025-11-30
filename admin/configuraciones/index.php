@@ -78,18 +78,19 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
         <!-- Card 4: Quienes pueden inscribir -->
         <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
-          <div class="card card-warning card-outline">
+          <div class="card card-teal card-outline">
             <div class="card-header">
               <h3 class="card-title">
-                <i class="fas fa-user-check mr-2"></i>
-                Inscripciones
+                <i class="fas fa-heartbeat mr-2"></i>
+
+                Discapacidades
               </h3>
             </div>
             <div class="card-body">
-              <p class="card-text">Configura quiénes pueden realizar inscripciones y los permisos necesarios.</p>
+              <p class="card-text">Gestión de discapacidades y condiciones médicas de los estudiantes.</p>
               <div class="d-flex justify-content-between align-items-center">
-                <small class="text-muted">Permisos de usuarios</small>
-                <a href="configuracion/inscripciones.php" class="btn btn-warning btn-sm">
+                <small class="text-muted">Salud Estudiantil</small>
+                <a href="configuracion/discapacidades.php" class="btn btn-teal btn-sm" id="meal">
                   <i class="fas fa-cog mr-1"></i> Configurar
                 </a>
               </div>
