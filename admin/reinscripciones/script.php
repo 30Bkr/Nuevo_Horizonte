@@ -1,0 +1,1271 @@
+<script>
+  // ========== CARGA DE SECCIONES POR NIVEL ==========
+  document.getElementById('id_nivel').addEventListener('change', function() {
+    const nivelId = this.value;
+    const seccionSelect = document.getElementById('id_seccion');
+
+    if (nivelId) {
+      cargarSeccionesPorNivel(nivelId);
+    } else {
+      seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
+      seccionSelect.disabled = true;
+    }
+  });
+
+  function cargarSeccionesPorNivel(nivelId) {
+    const formData = new FormData();
+    formData.append('id_nivel', nivelId);
+
+    // Mostrar loading
+    const seccionSelect = document.getElementById('id_seccion');
+    seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
+    seccionSelect.disabled = true;
+
+    fetch('/final/app/controllers/cupos/cargar_secciones.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.secciones.length > 0) {
+          seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
+
+          data.secciones.forEach(seccion => {
+            seccionSelect.innerHTML += `
+                    <option value="${seccion.id_seccion}" 
+                            data-id-nivel-seccion="${seccion.id_nivel_seccion}">
+                        ${seccion.nom_seccion} (Capacidad: ${seccion.capacidad})
+                    </option>
+                `;
+          });
+
+          seccionSelect.disabled = false;
+
+          // Si hay solo una sección, seleccionarla automáticamente
+          if (data.secciones.length === 1) {
+            seccionSelect.value = data.secciones[0].id_seccion;
+          }
+        } else {
+          seccionSelect.innerHTML = '<option value="">No hay secciones disponibles</option>';
+          seccionSelect.disabled = true;
+        }
+      })
+      .catch(error => {
+        console.error('Error cargando secciones:', error);
+        seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
+        seccionSelect.disabled = true;
+      });
+  }
+
+  // ========== VERIFICACIÓN DE CUPOS ==========
+  document.getElementById('id_seccion').addEventListener('change', function() {
+    const nivelSelect = document.getElementById('id_nivel');
+    const seccionSelect = this;
+    const periodoSelect = document.getElementById('id_periodo');
+
+    if (nivelSelect.value && seccionSelect.value && periodoSelect.value) {
+      verificarCuposDisponibles();
+    }
+  });
+
+  document.getElementById('id_periodo').addEventListener('change', function() {
+    const nivelSelect = document.getElementById('id_nivel');
+    const seccionSelect = document.getElementById('id_seccion');
+
+    if (nivelSelect.value && seccionSelect.value && this.value) {
+      verificarCuposDisponibles();
+    }
+  });
+
+  function verificarCuposDisponibles() {
+    const nivelSelect = document.getElementById('id_nivel');
+    const seccionSelect = document.getElementById('id_seccion');
+    const periodoSelect = document.getElementById('id_periodo');
+    const selectedOption = seccionSelect.options[seccionSelect.selectedIndex];
+    const idNivelSeccion = selectedOption.getAttribute('data-id-nivel-seccion');
+
+    if (!idNivelSeccion) return;
+
+    const formData = new FormData();
+    formData.append('id_nivel_seccion', idNivelSeccion);
+    formData.append('id_periodo', periodoSelect.value);
+
+    fetch('/final/app/controllers/cupos/verificar_cupos.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Mostrar mensaje de disponibilidad (puedes implementar un sistema de notificaciones)
+        if (data.success) {
+          if (data.disponible) {
+            console.log('✅ Cupos disponibles:', data.mensaje);
+            // Puedes mostrar un mensaje al usuario
+            mostrarMensajeCupos(data.mensaje, 'success');
+          } else {
+            console.log('❌ No hay cupos:', data.mensaje);
+            mostrarMensajeCupos(data.mensaje, 'warning');
+          }
+        } else {
+          console.error('Error:', data.message);
+          mostrarMensajeCupos('Error al verificar cupos: ' + data.message, 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error verificando cupos:', error);
+        mostrarMensajeCupos('Error al verificar disponibilidad de cupos', 'error');
+      });
+  }
+
+  function mostrarMensajeCupos(mensaje, tipo) {
+    // Implementa tu sistema de notificaciones aquí
+    // Por ejemplo, usando SweetAlert o un div de mensajes
+
+    const mensajeDiv = document.getElementById('mensaje-cupos') || crearDivMensajeCupos();
+    mensajeDiv.innerHTML = mensaje;
+    mensajeDiv.className = `alert alert-${tipo === 'success' ? 'success' : tipo === 'warning' ? 'warning' : 'danger'} mt-2`;
+    mensajeDiv.style.display = 'block';
+
+    // Auto-ocultar después de 5 segundos
+    setTimeout(() => {
+      mensajeDiv.style.display = 'none';
+    }, 5000);
+  }
+
+  function crearDivMensajeCupos() {
+    const div = document.createElement('div');
+    div.id = 'mensaje-cupos';
+    div.style.display = 'none';
+
+    const seccionContainer = document.getElementById('id_seccion').closest('.form-group');
+    seccionContainer.appendChild(div);
+
+    return div;
+  }
+
+  // ========== INICIALIZACIÓN ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    // Preseleccionar nivel siguiente basado en el estudiante seleccionado
+    // (esto ya lo tienes en llenarDatosEstudiante, pero asegurémonos de que cargue las secciones)
+
+    // Si ya hay un nivel seleccionado al cargar (por ejemplo, desde llenarDatosEstudiante)
+    const nivelSelect = document.getElementById('id_nivel');
+    if (nivelSelect.value) {
+      // Disparar el evento change para cargar las secciones automáticamente
+      setTimeout(() => {
+        nivelSelect.dispatchEvent(new Event('change'));
+      }, 500);
+    }
+  });
+</script>
+
+<script>
+  // Validación manual del formulario
+  document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
+    // DEBUG: Ver qué datos se envían
+    console.log('🔍 DEBUG: Campos de dirección del estudiante:');
+    console.log('- misma_casa:', document.getElementById('misma_casa')?.value);
+    console.log('- juntos:', document.getElementById('juntos')?.value);
+    console.log('- id_direccion_est:', document.getElementById('id_direccion_est')?.value);
+    console.log('- estado_e:', document.getElementById('estado_e')?.value);
+    console.log('- municipio_e:', document.getElementById('municipio_e')?.value);
+    console.log('- parroquia_e:', document.getElementById('parroquia_e')?.value);
+    console.log('- direccion_e:', document.getElementById('direccion_e')?.value);
+    const mismaCasa = document.getElementById('misma_casa').value;
+
+    console.log('🔄 Validando formulario...');
+    console.log('📍 misma_casa:', mismaCasa);
+
+    // Validar campos requeridos básicos
+    const camposRequeridosBasicos = [
+      'id_periodo', 'id_nivel', 'id_seccion'
+    ];
+
+    const camposFaltantesBasicos = [];
+    camposRequeridosBasicos.forEach(campo => {
+      const elemento = document.getElementById(campo);
+      if (!elemento || !elemento.value.trim()) {
+        camposFaltantesBasicos.push(campo);
+        elemento.classList.add('is-invalid');
+      } else {
+        elemento.classList.remove('is-invalid');
+      }
+    });
+
+    if (camposFaltantesBasicos.length > 0) {
+      e.preventDefault();
+      alert('Por favor complete todos los campos requeridos de información académica.');
+      return false;
+    }
+
+    // Validar dirección cuando NO viven juntos
+    if (mismaCasa === 'no') {
+      console.log('📍 Validando dirección del estudiante (NO viven juntos)');
+
+      const camposDireccionRequeridos = [
+        'estado_e', 'municipio_e', 'parroquia_e', 'direccion_e'
+      ];
+
+      const camposFaltantesDireccion = [];
+      const datosDireccion = {};
+
+      camposDireccionRequeridos.forEach(campo => {
+        const elemento = document.getElementById(campo);
+        datosDireccion[campo] = elemento ? elemento.value : 'NO ENCONTRADO';
+
+        if (!elemento || !elemento.value.trim()) {
+          camposFaltantesDireccion.push(campo);
+          elemento.classList.add('is-invalid');
+        } else {
+          elemento.classList.remove('is-invalid');
+        }
+      });
+
+      console.log('📍 Datos de dirección:', datosDireccion);
+
+      if (camposFaltantesDireccion.length > 0) {
+        e.preventDefault();
+        alert('Cuando el estudiante no vive con el representante, debe completar todos los datos de dirección del estudiante.');
+
+        // Mostrar la sección de dirección para que el usuario pueda completarla
+        document.getElementById('direccion_representante').style.display = 'block';
+
+        return false;
+      }
+    } else {
+      console.log('📍 Viven juntos - no se requiere dirección separada');
+      // Si viven juntos, limpiar cualquier validación previa de dirección
+      const camposDireccion = ['estado_e', 'municipio_e', 'parroquia_e', 'direccion_e', 'calle_e', 'casa_e'];
+      camposDireccion.forEach(campo => {
+        const elemento = document.getElementById(campo);
+        if (elemento) {
+          elemento.classList.remove('is-invalid');
+          elemento.required = false;
+        }
+      });
+    }
+
+    // Si llegamos aquí, la validación pasó
+    console.log('✅ Formulario validado correctamente');
+
+    // DEBUG: Mostrar todos los datos que se enviarán
+    console.log('📤 Datos que se enviarán:');
+    const formData = new FormData(this);
+    for (let [key, value] of formData.entries()) {
+      console.log(`- ${key}: ${value}`);
+    }
+  });
+</script>
+
+<script>
+  // ========== SISTEMA DE NAVEGACIÓN ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 4;
+    let estudiantesData = [];
+    let representanteData = null;
+
+    function showStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step${step}`).classList.add('active');
+
+      document.querySelectorAll('#stepIndicator .nav-link').forEach((link, index) => {
+        if (index + 1 === step) {
+          link.classList.add('active');
+        } else if (index + 1 < step) {
+          link.classList.remove('active', 'disabled');
+          link.classList.add('completed');
+        } else {
+          link.classList.remove('active', 'completed');
+          link.classList.add('disabled');
+        }
+      });
+
+      currentStep = step;
+    }
+
+    // Event listeners para navegación
+    document.getElementById('btn-next-to-step2').addEventListener('click', () => showStep(2));
+    document.getElementById('btn-next-to-step3').addEventListener('click', () => {
+      // Validar campos requeridos antes de continuar
+      const requiredFields = document.querySelectorAll('#step2 [required]');
+      let valid = true;
+
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          valid = false;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+
+      if (valid) {
+        showStep(3);
+      } else {
+        alert('Por favor complete todos los campos requeridos del representante.');
+      }
+    });
+
+    document.getElementById('btn-next-to-step4').addEventListener('click', () => showStep(4));
+    document.getElementById('btn-back-to-step1').addEventListener('click', () => showStep(1));
+    document.getElementById('btn-back-to-step2').addEventListener('click', () => showStep(2));
+    document.getElementById('btn-back-to-step3').addEventListener('click', () => showStep(3));
+
+    // ========== VALIDACIÓN DE REPRESENTANTE ==========
+    document.getElementById('btn-validar-representante').addEventListener('click', validarRepresentante);
+
+    // También validar con Enter
+    document.getElementById('cedula_representante').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        e.preventDefault();
+        validarRepresentante();
+      }
+    });
+
+    function validarRepresentante() {
+      const cedula = document.getElementById('cedula_representante').value;
+      if (!cedula) {
+        alert('Por favor ingrese la cédula del representante');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('cedula', cedula);
+
+      // Mostrar loading
+      const btnValidar = document.getElementById('btn-validar-representante');
+      const originalText = btnValidar.innerHTML;
+      btnValidar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validando...';
+      btnValidar.disabled = true;
+
+      fetch('/final/app/controllers/representantes/validar3.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          btnValidar.innerHTML = originalText;
+          btnValidar.disabled = false;
+
+          const resultado = document.getElementById('resultado-validacion');
+          const nextButton = document.getElementById('btn-next-to-step2');
+
+          if (data.existe) {
+            resultado.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Representante encontrado:</strong> ${data.nombre_completo}
+                        <br>Se encontraron ${data.total_estudiantes || 0} estudiante(s) asociado(s).
+                    </div>
+                `;
+
+            // Guardar datos del representante
+            representanteData = data;
+
+            // Llenar datos del representante en el formulario
+            llenarDatosRepresentante(data);
+
+            // Cargar estudiantes del representante
+            cargarEstudiantesRepresentante(data.id_representante);
+
+            nextButton.style.display = 'inline-block';
+
+          } else {
+            resultado.innerHTML = `
+                    <div class="alert alert-info">
+                        <strong>Representante no encontrado.</strong> Por favor verifique la cédula e intente nuevamente.
+                    </div>
+                `;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          btnValidar.innerHTML = originalText;
+          btnValidar.disabled = false;
+
+          document.getElementById('resultado-validacion').innerHTML = `
+                <div class="alert alert-danger">
+                    Error al validar el representante. Intente nuevamente.
+                </div>
+            `;
+        });
+    }
+
+    function llenarDatosRepresentante(data) {
+      // Datos básicos
+      document.getElementById('id_representante_existente').value = data.id_representante;
+      document.getElementById('id_direccion_repre').value = data.id_direccion;
+      document.getElementById('cedula_r').value = data.cedula;
+      document.getElementById('primer_nombre_r').value = data.primer_nombre || '';
+      document.getElementById('segundo_nombre_r').value = data.segundo_nombre || '';
+      document.getElementById('primer_apellido_r').value = data.primer_apellido || '';
+      document.getElementById('segundo_apellido_r').value = data.segundo_apellido || '';
+      document.getElementById('correo_r').value = data.correo || '';
+      document.getElementById('telefono_r').value = data.telefono || '';
+      document.getElementById('telefono_hab_r').value = data.telefono_hab || '';
+      document.getElementById('fecha_nac_r').value = data.fecha_nac || '';
+      document.getElementById('lugar_nac_r').value = data.lugar_nac || '';
+      document.getElementById('sexo_r').value = data.sexo || '';
+      document.getElementById('nacionalidad_r').value = data.nacionalidad || '';
+      document.getElementById('profesion_r').value = data.profesion || '';
+      document.getElementById('ocupacion_r').value = data.ocupacion || '';
+      document.getElementById('lugar_trabajo_r').value = data.lugar_trabajo || '';
+      // document.getElementById('parentesco').value = data.parentesco || '1';
+
+      // Dirección
+      document.getElementById('direccion_r').value = data.direccion || '';
+      document.getElementById('calle_r').value = data.calle || '';
+      document.getElementById('casa_r').value = data.casa || '';
+
+      // Cargar ubicación
+      if (data.id_estado) {
+        document.getElementById('estado_r').value = data.id_estado;
+        cargarMunicipios(data.id_estado).then(() => {
+          if (data.id_municipio) {
+            document.getElementById('municipio_r').value = data.id_municipio;
+            cargarParroquias(data.id_municipio).then(() => {
+              if (data.id_parroquia) {
+                document.getElementById('parroquia_r').value = data.id_parroquia;
+              }
+            });
+          }
+        });
+      }
+
+      // Mostrar info en paso 3
+      document.getElementById('info-representante').style.display = 'block';
+      document.getElementById('datos-representante').innerHTML = `
+        <strong>Nombre:</strong> ${data.nombre_completo}<br>
+        <strong>Cédula:</strong> ${data.cedula}<br>
+        <strong>Teléfono:</strong> ${data.telefono || 'No registrado'}<br>
+        <strong>Correo:</strong> ${data.correo || 'No registrado'}
+    `;
+    }
+
+    // ========== CARGAR ESTUDIANTES ==========
+    function cargarEstudiantesRepresentante(idRepresentante) {
+      const formData = new FormData();
+      formData.append('id_representante', idRepresentante);
+
+      fetch('/final/app/controllers/estudiantes/estudiantes_por_representante2.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          estudiantesData = data.estudiantes || [];
+          mostrarEstudiantes();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          mostrarErrorCargaEstudiantes();
+        });
+    }
+
+    function mostrarEstudiantes() {
+      const container = document.getElementById('lista-estudiantes');
+
+      if (estudiantesData.length === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    No se encontraron estudiantes asociados a este representante.
+                </div>
+            </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      estudiantesData.forEach(estudiante => {
+        const nivel = estudiante.nombre_nivel || 'No asignado';
+        const seccion = estudiante.nom_seccion || '';
+        const nivelSeccion = seccion ? ` - ${seccion}` : '';
+        const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
+        const estado = estudiante.estado_inscripcion || 'No inscrito';
+        const badgeClass = (estado === 'Inscrito') ? 'badge-success' : 'badge-warning';
+
+        // AQUÍ mostramos el parentesco que viene del estudiante
+        const parentesco = estudiante.parentesco || 'No especificado';
+
+        html += `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card estudiante-card" data-id="${estudiante.id_estudiante}">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">${estudiante.primer_nombre} ${estudiante.primer_apellido}</h5>
+                    </div>
+                    <div class="card-body estudiante-info">
+                        <p class="mb-1"><strong>Cédula:</strong> ${estudiante.cedula}</p>
+                        <p class="mb-1"><strong>Último Nivel:</strong> ${nivel}${nivelSeccion}</p>
+                        <p class="mb-1"><strong>Período Anterior:</strong> ${periodoAnterior}</p>
+                        <p class="mb-1"><strong>Parentesco:</strong> ${parentesco}</p>
+                        <p class="mb-0"><strong>Estado Actual:</strong> 
+                            <span class="badge ${badgeClass}">${estado}</span>
+                        </p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
+                                data-id="${estudiante.id_estudiante}">
+                            <i class="fas fa-sync-alt"></i> Seleccionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      bindEstudianteEvents();
+    }
+
+    function bindEstudianteEvents() {
+      document.querySelectorAll('.btn-seleccionar-estudiante').forEach(button => {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idEstudiante = e.target.getAttribute('data-id');
+          seleccionarEstudiante(idEstudiante);
+        });
+      });
+
+      document.querySelectorAll('.estudiante-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('.btn-seleccionar-estudiante')) {
+            const idEstudiante = e.currentTarget.getAttribute('data-id');
+            seleccionarEstudiante(idEstudiante);
+          }
+        });
+      });
+    }
+
+
+
+    function seleccionarEstudiante(idEstudiante) {
+      const estudiante = estudiantesData.find(e => e.id_estudiante == idEstudiante);
+
+      if (!estudiante) {
+        alert('Error: No se pudo encontrar la información del estudiante seleccionado.');
+        return;
+      }
+
+      // Remover selección anterior
+      document.querySelectorAll('.estudiante-card').forEach(card => {
+        card.classList.remove('selected');
+        card.style.border = '1px solid #dee2e6';
+      });
+
+      // Marcar como seleccionado
+      const cardSeleccionada = document.querySelector(`.estudiante-card[data-id="${idEstudiante}"]`);
+      if (cardSeleccionada) {
+        cardSeleccionada.classList.add('selected');
+        cardSeleccionada.style.border = '3px solid #007bff';
+        cardSeleccionada.style.backgroundColor = '#f8f9fa';
+      }
+
+      // Guardar el parentesco del estudiante seleccionado
+      document.getElementById('id_parentesco_estudiante').value = estudiante.id_parentesco || '';
+      document.getElementById('parentesco_estudiante').value = estudiante.parentesco || '';
+
+      // Llenar datos del estudiante
+      llenarDatosEstudiante(estudiante);
+
+      // Mostrar botón para continuar
+      document.getElementById('btn-next-to-step4').style.display = 'inline-block';
+    }
+
+    function llenarDireccionEstudiante(estudiante) {
+      document.getElementById('id_direccion_est').value = estudiante.id_direccion_est || '';
+      document.getElementById('direccion_e').value = estudiante.direccion_est || '';
+      document.getElementById('calle_e').value = estudiante.calle_est || '';
+      document.getElementById('casa_e').value = estudiante.casa_est || '';
+
+      // Cargar ubicación del estudiante
+      if (estudiante.id_estado_est) {
+        document.getElementById('estado_e').value = estudiante.id_estado_est;
+        cargarMunicipiosEstudiante(estudiante.id_estado_est).then(() => {
+          if (estudiante.id_municipio_est) {
+            document.getElementById('municipio_e').value = estudiante.id_municipio_est;
+            cargarParroquiasEstudiante(estudiante.id_municipio_est).then(() => {
+              if (estudiante.id_parroquia_est) {
+                document.getElementById('parroquia_e').value = estudiante.id_parroquia_est;
+              }
+            });
+          }
+        });
+      }
+    }
+
+    function llenarDatosEstudiante(estudiante) {
+
+      if (estudiante.num_nivel) {
+        const siguienteNivel = parseInt(estudiante.num_nivel) + 1;
+        const nivelSelect = document.getElementById('id_nivel');
+
+        for (let i = 0; i < nivelSelect.options.length; i++) {
+          if (nivelSelect.options[i].text.includes(siguienteNivel)) {
+            nivelSelect.value = nivelSelect.options[i].value;
+
+            // Cargar automáticamente las secciones para este nivel
+            setTimeout(() => {
+              nivelSelect.dispatchEvent(new Event('change'));
+            }, 100);
+            break;
+          }
+        }
+      }
+      document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
+      document.getElementById('id_direccion_est').value = estudiante.id_direccion || '';
+
+      // Datos personales
+      document.getElementById('cedula_e').value = estudiante.cedula || '';
+      document.getElementById('primer_nombre_e').value = estudiante.primer_nombre || '';
+      document.getElementById('segundo_nombre_e').value = estudiante.segundo_nombre || '';
+      document.getElementById('primer_apellido_e').value = estudiante.primer_apellido || '';
+      document.getElementById('segundo_apellido_e').value = estudiante.segundo_apellido || '';
+      document.getElementById('correo_e').value = estudiante.correo || '';
+      document.getElementById('telefono_e').value = estudiante.telefono || '';
+      document.getElementById('fecha_nac_e').value = estudiante.fecha_nac || '';
+      document.getElementById('lugar_nac_e').value = estudiante.lugar_nac || '';
+      document.getElementById('sexo_e').value = estudiante.sexo || '';
+      document.getElementById('nacionalidad_e').value = estudiante.nacionalidad || '';
+
+      // Configurar CI - EN REINSCRIPCIÓN
+      if (estudiante.cedula && estudiante.cedula !== '') {
+        // Si el estudiante YA TIENE cédula, asumimos que fue generada automáticamente
+        document.getElementById('ci_si').value = 'no';
+        document.getElementById('cedula_e').readOnly = true;
+        document.getElementById('cedula_e').style.backgroundColor = '#f8f9fa';
+        document.getElementById('cedula_e').style.cursor = 'not-allowed';
+        document.getElementById('cedula_e').placeholder = "Cédula generada automáticamente";
+
+        console.log('✅ Estudiante con cédula existente:', estudiante.cedula);
+      } else {
+        // Caso raro: estudiante existe pero no tiene cédula
+        document.getElementById('ci_si').value = 'no';
+        document.getElementById('cedula_e').readOnly = true;
+        document.getElementById('cedula_e').style.backgroundColor = '#f8f9fa';
+        document.getElementById('cedula_e').style.cursor = 'not-allowed';
+        document.getElementById('cedula_e').placeholder = "Se generará con la fecha";
+
+        console.warn('⚠️ Estudiante encontrado sin cédula registrada');
+
+        // Si hay fecha de nacimiento, generar cédula inicial
+        if (estudiante.fecha_nac) {
+          const anioNacimiento = estudiante.fecha_nac.substring(2, 4);
+          // Generar una cédula básica (año + número aleatorio)
+          const cedulaInicial = anioNacimiento + '1' + Math.floor(10000 + Math.random() * 90000);
+          document.getElementById('cedula_e').value = cedulaInicial;
+          console.log('🔢 Cédula inicial generada:', cedulaInicial);
+        }
+      }
+
+      // Mostrar info del estudiante seleccionado
+      const nivelAnterior = estudiante.nombre_nivel || 'No asignado';
+      const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
+
+      document.getElementById('info-estudiante-seleccionado').style.display = 'block';
+      document.getElementById('datos-estudiante-seleccionado').innerHTML = `
+        <strong>Nombre completo:</strong> ${estudiante.primer_nombre} ${estudiante.segundo_nombre || ''} ${estudiante.primer_apellido} ${estudiante.segundo_apellido || ''}<br>
+        <strong>Cédula:</strong> ${estudiante.cedula || 'No registrada (se generará automáticamente)'}<br>
+        <strong>Fecha de nacimiento:</strong> ${estudiante.fecha_nac || 'No registrada'}<br>
+        <strong>Parentesco:</strong> ${estudiante.parentesco}<br>
+        <strong>Último nivel cursado:</strong> ${nivelAnterior} (${periodoAnterior})
+    `;
+
+      document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
+
+      // IMPORTANTE: Guardar la dirección del representante para cuando vivan juntos
+      document.getElementById('id_direccion_repre_compartida').value = representanteData.id_direccion;
+      document.getElementById('misma_casa').value = 'si';
+      document.getElementById('juntos').value = '1';
+
+      // Cuando viven juntos, establecer id_direccion_est como la del representante
+      document.getElementById('id_direccion_est').value = representanteData.id_direccion;
+
+      // Si el estudiante tiene dirección diferente, detectarlo
+      // Esto depende de cómo vengan los datos de tu API
+      // Manejar dirección - IMPORTANTE: verificar si tienen direcciones diferentes
+      if (estudiante.id_direccion_est && estudiante.id_direccion_repre &&
+        estudiante.id_direccion_est !== estudiante.id_direccion_repre) {
+        // Tienen direcciones diferentes en la base de datos
+        document.getElementById('misma_casa').value = 'no';
+        document.getElementById('juntos').value = '0';
+        document.getElementById('direccion_representante').style.display = 'block';
+
+        // Llenar datos de dirección del estudiante
+        setTimeout(() => {
+          llenarDireccionEstudiante(estudiante);
+        }, 100);
+      } else {
+        // Viven juntos o no hay información de dirección diferente
+        document.getElementById('misma_casa').value = 'si';
+        document.getElementById('juntos').value = '1';
+        document.getElementById('direccion_representante').style.display = 'none';
+      }
+
+      // Preseleccionar nivel siguiente
+      if (estudiante.num_nivel) {
+        const siguienteNivel = parseInt(estudiante.num_nivel) + 1;
+        const nivelSelect = document.getElementById('id_nivel');
+        for (let i = 0; i < nivelSelect.options.length; i++) {
+          if (nivelSelect.options[i].text.includes(siguienteNivel)) {
+            nivelSelect.value = nivelSelect.options[i].value;
+            break;
+          }
+        }
+      }
+
+      // Cargar patologías y discapacidades del estudiante
+      cargarDatosSaludEstudiante(estudiante.id_estudiante);
+    }
+
+    function cargarDatosSaludEstudiante(idEstudiante) {
+      // Cargar patologías del estudiante
+      const formData = new FormData();
+      formData.append('id_estudiante', idEstudiante);
+
+      fetch('/final/app/controllers/estudiantes/obtener_patologias.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          const contenedorPatologias = document.getElementById('contenedor-patologias');
+
+          // Limpiar contenedor pero mantener al menos un select
+          contenedorPatologias.innerHTML = `
+                <div class="mb-2 patologia-item">
+                    <select name="patologias[]" class="form-control select-patologia">
+                        <option value="">Seleccione una patología...</option>
+                        <option value="0">Ninguna</option>
+                        <?php
+                        $patologias = $patologiaController->obtenerPatologiasActivas();
+                        if (!empty($patologias)) {
+                          foreach ($patologias as $patologia) {
+                            echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
+                          }
+                        }
+                        ?>
+                    </select>
+                </div>
+            `;
+
+          // Agregar cada patología del estudiante
+          if (data.success && data.patologias.length > 0) {
+            data.patologias.forEach((patologia, index) => {
+              if (index === 0) {
+                // Primera patología en el select principal
+                document.querySelector('.select-patologia').value = patologia.id_patologia;
+              } else {
+                // Patologías adicionales
+                agregarPatologia(patologia.id_patologia);
+              }
+            });
+          }
+        })
+        .catch(error => console.error('Error cargando patologías:', error));
+
+      // Cargar discapacidades del estudiante
+      fetch('/final/app/controllers/estudiantes/obtener_discapacidades.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          const contenedorDiscapacidades = document.getElementById('contenedor-discapacidades');
+
+          // Limpiar contenedor pero mantener al menos un select
+          contenedorDiscapacidades.innerHTML = `
+                <div class="mb-2 discapacidad-item">
+                    <select name="discapacidades[]" class="form-control select-discapacidad">
+                        <option value="">Seleccione una discapacidad...</option>
+                        <option value="0">Ninguna</option>
+                        <?php
+                        $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas();
+                        if (!empty($discapacidades)) {
+                          foreach ($discapacidades as $discapacidad) {
+                            echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
+                          }
+                        }
+                        ?>
+                    </select>
+                </div>
+            `;
+
+          // Agregar cada discapacidad del estudiante
+          if (data.success && data.discapacidades.length > 0) {
+            data.discapacidades.forEach((discapacidad, index) => {
+              if (index === 0) {
+                // Primera discapacidad en el select principal
+                document.querySelector('.select-discapacidad').value = discapacidad.id_discapacidad;
+              } else {
+                // Discapacidades adicionales
+                agregarDiscapacidad(discapacidad.id_discapacidad);
+              }
+            });
+          }
+        })
+        .catch(error => console.error('Error cargando discapacidades:', error));
+    }
+
+    function mostrarErrorCargaEstudiantes() {
+      document.getElementById('lista-estudiantes').innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger">
+                    Error al cargar los estudiantes. Intente nuevamente.
+                </div>
+            </div>
+        `;
+    }
+
+    // ========== FUNCIONES DE UBICACIÓN ==========
+    function cargarMunicipios(estadoId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('estado_id', estadoId);
+
+        fetch('/final/app/controllers/ubicaciones/municipios.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            const select = document.getElementById('municipio_r');
+            select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+            data.forEach(municipio => {
+              select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+            });
+            select.disabled = false;
+            resolve();
+          })
+          .catch(error => reject(error));
+      });
+    }
+
+    function cargarParroquias(municipioId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('municipio_id', municipioId);
+
+        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            const select = document.getElementById('parroquia_r');
+            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+            data.forEach(parroquia => {
+              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+            });
+            select.disabled = false;
+            resolve();
+          })
+          .catch(error => reject(error));
+      });
+    }
+
+    // Event listeners para ubicación del representante
+    document.getElementById('estado_r').addEventListener('change', function() {
+      const estadoId = this.value;
+      if (estadoId) {
+        cargarMunicipios(estadoId);
+      } else {
+        document.getElementById('municipio_r').disabled = true;
+        document.getElementById('parroquia_r').disabled = true;
+      }
+    });
+
+    document.getElementById('municipio_r').addEventListener('change', function() {
+      const municipioId = this.value;
+      if (municipioId) {
+        cargarParroquias(municipioId);
+      } else {
+        document.getElementById('parroquia_r').disabled = true;
+      }
+    });
+
+    // ========== MANEJO DE DIRECCIÓN DEL ESTUDIANTE ==========
+
+    // Manejo de dirección del estudiante
+    document.getElementById('misma_casa').addEventListener('change', function() {
+      const direccionEstudiante = document.getElementById('direccion_representante');
+      const juntosHidden = document.getElementById('juntos');
+      const idDireccionEst = document.getElementById('id_direccion_est');
+
+      if (this.value === 'no') {
+        juntosHidden.value = '0';
+        direccionEstudiante.style.display = 'block';
+        idDireccionEst.value = '';
+        // Agregar required dinámicamente solo cuando se muestre
+        document.getElementById('estado_e').required = true;
+        document.getElementById('direccion_e').required = true;
+        document.getElementById('parroquia_e').required = true;
+
+        // Cargar ubicación del estudiante si existe
+        if (representanteData && representanteData.id_estado) {
+          cargarMunicipiosEstudiante(representanteData.id_estado);
+        }
+      } else {
+        juntosHidden.value = '1';
+        direccionEstudiante.style.display = 'none';
+        // Remover required cuando se oculte
+        document.getElementById('estado_e').required = false;
+        document.getElementById('direccion_e').required = false;
+        document.getElementById('parroquia_e').required = false;
+
+        // Limpiar validación visual
+        const camposDireccion = ['estado_e', 'municipio_e', 'parroquia_e', 'direccion_e', 'calle_e', 'casa_e'];
+        camposDireccion.forEach(campo => {
+          const elemento = document.getElementById(campo);
+          if (elemento) {
+            elemento.classList.remove('is-invalid');
+          }
+        });
+
+      }
+    });
+
+    function cargarMunicipiosEstudiante(estadoId) {
+      const formData = new FormData();
+      formData.append('estado_id', estadoId);
+
+      fetch('/final/app/controllers/ubicaciones/municipios.php', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          const select = document.getElementById('municipio_e');
+          select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+          data.forEach(municipio => {
+            select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+          });
+          select.disabled = false;
+        });
+    }
+
+    // function cargarParroquiasEstudiante(municipioId) {
+    //   const formData = new FormData();
+    //   formData.append('municipio_id', municipioId);
+
+    //   fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+    //       method: 'POST',
+    //       body: formData
+    //     })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       const select = document.getElementById('parroquia_e');
+    //       select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+    //       data.forEach(parroquia => {
+    //         select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+    //       });
+    //       select.disabled = false;
+    //     });
+    // }
+
+    function cargarParroquiasEstudiante(municipioId) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('municipio_id', municipioId);
+
+        fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            const select = document.getElementById('parroquia_e');
+            select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+            data.forEach(parroquia => {
+              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+            });
+            select.disabled = false;
+            resolve();
+          })
+          .catch(error => reject(error));
+      });
+    }
+
+    // Event listeners para ubicación del estudiante
+    document.getElementById('estado_e').addEventListener('change', function() {
+      const estadoId = this.value;
+      if (estadoId) {
+        cargarMunicipiosEstudiante(estadoId);
+      }
+    });
+
+    document.getElementById('municipio_e').addEventListener('change', function() {
+      const municipioId = this.value;
+      if (municipioId) {
+        cargarParroquiasEstudiante(municipioId);
+      }
+    });
+
+    // ========== MANEJO DE PATOLOGÍAS Y DISCAPACIDADES ==========
+    // Función para agregar patología
+    function agregarPatologia(valorSeleccionado = '') {
+      const contenedor = document.getElementById('contenedor-patologias');
+      const primerSelect = document.querySelector('.select-patologia');
+
+      if (!primerSelect) return;
+
+      // Obtener opciones del primer select
+      const opciones = Array.from(primerSelect.options)
+        .map(option => `<option value="${option.value}" ${option.value === valorSeleccionado ? 'selected' : ''}>${option.text}</option>`)
+        .join('');
+
+      const div = document.createElement('div');
+      div.className = 'mb-2 patologia-item d-flex align-items-center';
+
+      div.innerHTML = `
+            <select name="patologias[]" class="form-control select-patologia me-2">
+                ${opciones}
+            </select>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-patologia">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+      contenedor.appendChild(div);
+
+      // Agregar evento al botón eliminar
+      div.querySelector('.btn-eliminar-patologia').addEventListener('click', function() {
+        div.remove();
+      });
+    }
+
+    // Función para agregar discapacidad
+    function agregarDiscapacidad(valorSeleccionado = '') {
+      const contenedor = document.getElementById('contenedor-discapacidades');
+      const primerSelect = document.querySelector('.select-discapacidad');
+
+      if (!primerSelect) return;
+
+      // Obtener opciones del primer select
+      const opciones = Array.from(primerSelect.options)
+        .map(option => `<option value="${option.value}" ${option.value === valorSeleccionado ? 'selected' : ''}>${option.text}</option>`)
+        .join('');
+
+      const div = document.createElement('div');
+      div.className = 'mb-2 discapacidad-item d-flex align-items-center';
+
+      div.innerHTML = `
+            <select name="discapacidades[]" class="form-control select-discapacidad me-2">
+                ${opciones}
+            </select>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-discapacidad">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+      contenedor.appendChild(div);
+
+      // Agregar evento al botón eliminar
+      div.querySelector('.btn-eliminar-discapacidad').addEventListener('click', function() {
+        div.remove();
+      });
+    }
+
+    // Event listeners para botones de agregar
+    document.getElementById('btn-agregar-patologia').addEventListener('click', () => agregarPatologia());
+    document.getElementById('btn-agregar-discapacidad').addEventListener('click', () => agregarDiscapacidad());
+
+    // ========== MANEJO DE CI DEL ESTUDIANTE - REINSCRIPCIÓN ==========
+    const selectCi = document.getElementById('ci_si');
+    const cedulaEInput = document.getElementById('cedula_e');
+    const fechaNacE = document.getElementById('fecha_nac_e');
+
+    const hoy = new Date();
+    const añoActual = hoy.getFullYear();
+    let añoMinimo = añoActual - 19;
+    let añoMaximo = añoActual - 5;
+
+    async function obtenerEdadesGlobales() {
+      try {
+        console.log('📊 Solicitando edades globales desde la base de datos...');
+
+        const response = await fetch('/final/app/controllers/globales/obtenerEdades.php', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const responseText = await response.text();
+        console.log('📨 Respuesta del servidor (edades):', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Error al parsear JSON:', parseError.message);
+          return {
+            success: false
+          };
+        }
+
+        if (data.success) {
+          console.log('✅ Edades obtenidas:', {
+            edad_min: data.edad_min,
+            edad_max: data.edad_max
+          });
+          return data;
+        } else {
+          console.error('❌ Error al obtener edades:', data.error);
+          return {
+            success: false
+          };
+        }
+
+      } catch (error) {
+        console.error('❌ Error en obtenerEdadesGlobales:', error);
+        return {
+          success: false
+        };
+      }
+    }
+
+    // Función para inicializar los límites de fecha
+    async function inicializarFechas() {
+      const edades = await obtenerEdadesGlobales();
+
+      if (edades.success) {
+        añoMinimo = añoActual - edades.edad_max;
+        añoMaximo = añoActual - edades.edad_min;
+
+        console.log('🎯 Límites calculados:', {
+          añoMinimo: añoMinimo,
+          añoMaximo: añoMaximo,
+          edad_min: edades.edad_min,
+          edad_max: edades.edad_max,
+          explicación: `Estudiantes entre ${edades.edad_min} y ${edades.edad_max} años`
+        });
+      } else {
+        console.warn('⚠️ Usando valores por defecto para las edades');
+        añoMinimo = añoActual - 19;
+        añoMaximo = añoActual - 5;
+      }
+
+      // Establecer los límites en el input de fecha
+      fechaNacE.min = `${añoMinimo}-01-01`;
+      fechaNacE.max = `${añoMaximo}-12-31`;
+
+      console.log('📅 Límites de fecha establecidos:', {
+        min: fechaNacE.min,
+        max: fechaNacE.max,
+        rango_edades: `Nacidos entre ${añoMinimo} y ${añoMaximo}`
+      });
+    }
+
+    // Función para actualizar los primeros 2 dígitos de la cédula
+    function actualizarCedulaPorFecha() {
+      console.log('📅 Evento de cambio de fecha detectado');
+
+      const fecha = fechaNacE.value;
+      const cedulaActual = cedulaEInput.value;
+
+      // Verificar que tenemos todos los datos necesarios
+      if (!fecha) {
+        console.log('❌ No hay fecha seleccionada');
+        return;
+      }
+
+      if (!cedulaActual) {
+        console.log('❌ No hay cédula existente para actualizar');
+        return;
+      }
+
+      // Obtener los 2 últimos dígitos del año
+      const anioNacimiento = fecha.substring(2, 4);
+      console.log('🔢 Año de nacimiento extraído:', anioNacimiento);
+
+      // Mantener el resto de la cédula (desde la posición 2 hasta el final)
+      const restoCedula = cedulaActual.substring(2);
+
+      // Nueva cédula: primeros 2 dígitos del año + resto de la cédula original
+      const nuevaCedula = anioNacimiento + restoCedula;
+
+      console.log('🔄 Actualizando cédula:', {
+        cedula_original: cedulaActual,
+        nuevo_año: anioNacimiento,
+        resto_cedula: restoCedula,
+        nueva_cedula: nuevaCedula
+      });
+
+      cedulaEInput.value = nuevaCedula;
+      console.log('✅ Cédula actualizada:', nuevaCedula);
+    }
+
+    // Manejar cambio en el select de CI
+    selectCi.addEventListener('change', function() {
+      console.log('🔄 Select CI cambiado a:', this.value);
+
+      if (this.value === 'no') {
+        console.log('🎯 Modo: Sin cédula - En reinscripción esto no debería cambiar');
+        cedulaEInput.readOnly = true;
+        cedulaEInput.style.backgroundColor = '#f8f9fa';
+        cedulaEInput.style.cursor = 'not-allowed';
+        cedulaEInput.placeholder = "Cédula existente del estudiante";
+
+      } else if (this.value === 'si') {
+        console.log('🆗 Modo: Con cédula - permitir edición');
+        cedulaEInput.readOnly = false;
+        cedulaEInput.style.backgroundColor = '';
+        cedulaEInput.style.cursor = '';
+        cedulaEInput.placeholder = "Cédula del estudiante";
+      }
+    });
+
+    // Escuchar cambios en la fecha de nacimiento para actualizar cédula
+    fechaNacE.addEventListener('change', function() {
+      // Solo actualizar si estamos en modo "no CI" (cedula generada automáticamente)
+      if (selectCi.value === 'no' && cedulaEInput.value) {
+        console.log('🔄 Cambio de fecha detectado, actualizando cédula...');
+        actualizarCedulaPorFecha();
+      }
+    });
+
+    // Inicializar los límites de fecha al cargar la página
+    inicializarFechas();
+
+    // ========== MANEJO SIMPLIFICADO DE CI PARA REINSCRIPCIÓN ==========
+
+    // En reinscripción, la cédula del estudiante YA EXISTE y es de solo lectura
+    selectCi.addEventListener('change', function() {
+      console.log('🔄 Select CI cambiado a:', this.value);
+
+      if (this.value === 'no') {
+        // En reinscripción, si el estudiante no tiene CI, mantenemos el campo readonly
+        // porque la cédula ya debería estar registrada en el sistema
+        console.log('🎯 Modo: Sin cédula - En reinscripción esto significa usar la cédula existente');
+        cedulaEInput.readOnly = true;
+        cedulaEInput.style.backgroundColor = '#f8f9fa';
+        cedulaEInput.style.cursor = 'not-allowed';
+        cedulaEInput.placeholder = "Cédula existente del estudiante";
+
+      } else if (this.value === 'si') {
+        // Caso raro: estudiante existe pero ahora tiene CI
+        console.log('🆗 Modo: Con cédula - permitir actualización');
+        cedulaEInput.readOnly = false;
+        cedulaEInput.style.backgroundColor = '';
+        cedulaEInput.style.cursor = '';
+        cedulaEInput.placeholder = "Actualizar cédula del estudiante";
+      }
+    });
+
+    // Inicializar: en reinscripción, por defecto el estudiante debería tener CI
+    // pero si no la tiene, el campo será de solo lectura
+    document.addEventListener('DOMContentLoaded', function() {
+      // Esta lógica ya está en llenarDatosEstudiante, pero por si acaso:
+      if (cedulaEInput.value) {
+        // Si ya hay una cédula, asumimos que es la existente
+        selectCi.value = 'no';
+        cedulaEInput.readOnly = true;
+        cedulaEInput.style.backgroundColor = '#f8f9fa';
+        cedulaEInput.style.cursor = 'not-allowed';
+      }
+    });
+
+
+  });
+</script>
