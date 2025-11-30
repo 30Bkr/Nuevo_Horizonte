@@ -3,6 +3,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
 include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
 
+
 // Obtener datos iniciales
 try {
   $conexion = new Conexion();
@@ -130,16 +131,7 @@ try {
                       </td>
                     </tr>
                   <?php else: ?>
-                    <?php foreach ($patologias as $patologia):
-                      // Verificar si la patología está en uso
-                      try {
-                        $en_uso = $patologiaController->patologiaEnUso($patologia['id_patologia']);
-                        $conteo_usos = $patologiaController->obtenerConteoUsosPatologia($patologia['id_patologia']);
-                      } catch (Exception $e) {
-                        $en_uso = false;
-                        $conteo_usos = 0;
-                      }
-                    ?>
+                    <?php foreach ($patologias as $patologia): ?>
                       <tr id="patologia-<?php echo $patologia['id_patologia']; ?>">
                         <td><?php echo $patologia['id_patologia']; ?></td>
                         <td>
@@ -175,19 +167,10 @@ try {
                               <i class="fas fa-edit"></i>
                             </button>
                             <?php if ($patologia['estatus'] == 1): ?>
-                              <?php if ($en_uso): ?>
-                                <button type="button"
-                                  class="btn btn-sm btn-secondary"
-                                  data-toggle="tooltip"
-                                  title="No se puede desactivar porque está en uso en <?php echo $conteo_usos; ?> estudiante(s)">
-                                  <i class="fas fa-lock mr-1"></i> Bloqueado
-                                </button>
-                              <?php else: ?>
-                                <button class="btn btn-sm btn-outline-danger"
-                                  onclick="cambiarEstatus(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 0)">
-                                  <i class="fas fa-pause"></i>
-                                </button>
-                              <?php endif; ?>
+                              <button class="btn btn-sm btn-outline-danger"
+                                onclick="cambiarEstatus(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 0)">
+                                <i class="fas fa-pause"></i>
+                              </button>
                             <?php else: ?>
                               <button class="btn btn-sm btn-outline-success"
                                 onclick="cambiarEstatus(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 1)">
@@ -207,52 +190,6 @@ try {
                 <small class="text-muted">
                   Mostrando <span id="contadorPatologias"><?php echo count($patologias); ?></span> patologías
                 </small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notas importantes -->
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="alert alert-info">
-            <h5><i class="icon fas fa-info"></i> Información Importante</h5>
-            <ul class="mb-0">
-              <li><strong>Patologías en uso:</strong> No se pueden desactivar porque están siendo utilizadas por estudiantes</li>
-              <li><strong>Patologías sin uso:</strong> Se pueden desactivar sin problemas</li>
-              <li><strong>Patologías inactivas:</strong> No aparecerán en los formularios de nuevos registros</li>
-              <li>Los registros existentes que ya usen la patología no se verán afectados al desactivarla</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Leyenda de estados -->
-      <div class="row mt-3">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h6 class="card-title mb-0">Leyenda de Estados</h6>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-3">
-                  <span class="badge badge-success mr-2">Activa</span>
-                  <small>Disponible para nuevos registros</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-danger mr-2">Inactiva</span>
-                  <small>No disponible para nuevos registros</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-info mr-2">En uso</span>
-                  <small>Usada por estudiantes activos</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-secondary mr-2">Sin uso</span>
-                  <small>No usada por estudiantes</small>
-                </div>
               </div>
             </div>
           </div>
@@ -433,6 +370,12 @@ try {
     $('#modalConfirmacion').modal('show');
   }
 
+  function debugFetch(url, data) {
+    console.log('Fetch URL:', url);
+    console.log('Fetch Data:', data);
+  }
+
+
   async function agregarPatologia(event) {
     event.preventDefault();
 
@@ -447,7 +390,10 @@ try {
     const boton = event.target.querySelector('button[type="submit"]');
     boton.disabled = true;
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
+    const url = '../../../app/controllers/patologias/accionesPatologias.php';
+    const body = `action=agregar&nombre=${encodeURIComponent(nombre)}`;
 
+    debugFetch(url, body)
     try {
       const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
         method: 'POST',
@@ -474,6 +420,7 @@ try {
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Patología';
     }
   }
+
 
   async function actualizarPatologia(event) {
     event.preventDefault();
@@ -674,9 +621,6 @@ try {
     $('#modalAgregar').on('hidden.bs.modal', function() {
       document.getElementById('formAgregar').reset();
     });
-
-    // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
 

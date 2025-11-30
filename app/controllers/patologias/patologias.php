@@ -109,4 +109,57 @@ class PatologiaController
       return 0;
     }
   }
+  /**
+   * Verifica si una patología está en uso por estudiantes
+   */
+  public function patologiaEnUso($id_patologia)
+  {
+    try {
+      $sql = "SELECT COUNT(*) as count FROM estudiantes_patologias WHERE id_patologia = ? AND estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_patologia]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      return $result['count'] > 0;
+    } catch (PDOException $e) {
+      error_log("Error en patologiaEnUso: " . $e->getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Obtiene el conteo específico de usos de una patología
+   */
+  public function obtenerConteoUsosPatologia($id_patologia)
+  {
+    try {
+      $sql = "SELECT COUNT(*) as count FROM estudiantes_patologias WHERE id_patologia = ? AND estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_patologia]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      return $result['count'];
+    } catch (PDOException $e) {
+      error_log("Error en obtenerConteoUsosPatologia: " . $e->getMessage());
+      return 0;
+    }
+  }
+
+  /**
+   * Obtiene estadísticas generales de patologías
+   */
+  public function obtenerEstadisticasPatologias()
+  {
+    try {
+      $sql = "SELECT 
+              COUNT(*) as total,
+              SUM(CASE WHEN estatus = 1 THEN 1 ELSE 0 END) as activas,
+              SUM(CASE WHEN estatus = 0 THEN 1 ELSE 0 END) as inactivas
+              FROM patologias";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error en obtenerEstadisticasPatologias: " . $e->getMessage());
+      return ['total' => 0, 'activas' => 0, 'inactivas' => 0];
+    }
+  }
 }
