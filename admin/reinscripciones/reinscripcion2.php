@@ -2186,4 +2186,369 @@ function generarConstanciaInscripcion(idInscripcion) {
 
 //     });
   });
+
 </script>
+
+<!-- ========== CONVERSIÓN AUTOMÁTICA A MAYÚSCULAS ========== -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Función para convertir texto a mayúsculas
+    function convertirMayusculas(elemento) {
+      elemento.value = elemento.value.toUpperCase();
+    }
+
+    // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
+    const inputsTexto = document.querySelectorAll('input[type="text"]:not([readonly])');
+    
+    inputsTexto.forEach(input => {
+      input.addEventListener('input', function() {
+        convertirMayusculas(this);
+      });
+      
+      // También aplicar a los valores existentes al cargar la página
+      if (input.value) {
+        convertirMayusculas(input);
+      }
+    });
+
+    // Aplicar también a textareas
+    const textareas = document.querySelectorAll('textarea:not([readonly])');
+    
+    textareas.forEach(textarea => {
+      textarea.addEventListener('input', function() {
+        convertirMayusculas(this);
+      });
+      
+      // Aplicar a valores existentes
+      if (textarea.value) {
+        convertirMayusculas(textarea);
+      }
+    });
+
+    console.log('✅ Conversión a mayúsculas configurada para todos los campos de texto');
+  });
+</script>
+
+<!-- ========== VALIDACIONES DE FORMULARIO ========== -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // ========== FUNCIONES DE VALIDACIÓN ==========
+    
+    // Función para validar solo letras (incluye espacios y acentos)
+    function validarSoloLetras(event) {
+      const key = event.key;
+      // Permitir teclas de control (backspace, delete, tab, etc.)
+      if (event.ctrlKey || event.altKey ||
+        key === 'Backspace' || key === 'Delete' ||
+        key === 'Tab' || key === 'Escape' ||
+        key === 'Enter' || key === 'ArrowLeft' ||
+        key === 'ArrowRight' || key === 'Home' ||
+        key === 'End') {
+        return true;
+      }
+
+      // Expresión regular que permite letras, espacios y caracteres acentuados
+      const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/;
+
+      if (!regex.test(key)) {
+        event.preventDefault();
+        return false;
+      }
+
+      return true;
+    }
+
+    // Función para validar solo números
+    function validarSoloNumeros(event) {
+      const key = event.key;
+      // Permitir teclas de control
+      if (event.ctrlKey || event.altKey ||
+        key === 'Backspace' || key === 'Delete' ||
+        key === 'Tab' || key === 'Escape' ||
+        key === 'Enter' || key === 'ArrowLeft' ||
+        key === 'ArrowRight' || key === 'Home' ||
+        key === 'End') {
+        return true;
+      }
+
+      // Solo permitir números
+      const regex = /^[0-9]$/;
+
+      if (!regex.test(key)) {
+        event.preventDefault();
+        return false;
+      }
+
+      return true;
+    }
+
+    // Función para validar formato de correo electrónico
+    function validarEmail(email) {
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return regex.test(email);
+    }
+
+    // ========== APLICAR VALIDACIONES A LOS CAMPOS DEL REPRESENTANTE ==========
+
+    // Campos de nombres y apellidos del representante (solo letras)
+    const camposLetrasRepresentante = [
+      'primer_nombre_r', 'segundo_nombre_r',
+      'primer_apellido_r', 'segundo_apellido_r',
+      'lugar_nac_r', 'ocupacion_r', 'lugar_trabajo_r'
+    ];
+
+    camposLetrasRepresentante.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo) {
+        campo.addEventListener('keydown', validarSoloLetras);
+
+        // Validación adicional al perder el foco (para casos de pegado)
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          // Remover caracteres no permitidos (mantener solo letras, espacios y acentos)
+          valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+          // Remover espacios múltiples
+          valor = valor.replace(/\s+/g, ' ').trim();
+          this.value = valor;
+        });
+      }
+    });
+
+    // Campos numéricos del representante
+    const camposNumerosRepresentante = [
+      'cedula_r', 'telefono_r', 'telefono_hab_r'
+    ];
+
+    camposNumerosRepresentante.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo) {
+        campo.addEventListener('keydown', validarSoloNumeros);
+
+        // Validación adicional al perder el foco
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          // Remover caracteres no numéricos
+          valor = valor.replace(/[^0-9]/g, '');
+          this.value = valor;
+        });
+      }
+    });
+
+    // Validación de correo del representante
+    const correoRepresentante = document.getElementById('correo_r');
+    if (correoRepresentante) {
+      correoRepresentante.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !validarEmail(email)) {
+          this.classList.add('is-invalid');
+          mostrarError(this, 'Por favor ingrese un correo electrónico válido (formato: usuario@dominio.com)');
+        } else if (email && validarEmail(email)) {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+          ocultarError(this);
+        } else {
+          // Si está vacío, solo remover clases (será validado como campo requerido)
+          this.classList.remove('is-invalid', 'is-valid');
+          ocultarError(this);
+        }
+      });
+
+      // Remover clases de validación al empezar a escribir
+      correoRepresentante.addEventListener('input', function() {
+        this.classList.remove('is-invalid', 'is-valid');
+        ocultarError(this);
+      });
+    }
+
+    // ========== APLICAR VALIDACIONES A LOS CAMPOS DEL ESTUDIANTE ==========
+
+    // Campos de nombres y apellidos del estudiante (solo letras)
+    const camposLetrasEstudiante = [
+      'primer_nombre_e', 'segundo_nombre_e',
+      'primer_apellido_e', 'segundo_apellido_e',
+      'lugar_nac_e'
+    ];
+
+    camposLetrasEstudiante.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo) {
+        campo.addEventListener('keydown', validarSoloLetras);
+
+        // Validación adicional al perder el foco
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          // Remover caracteres no permitidos
+          valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+          // Remover espacios múltiples
+          valor = valor.replace(/\s+/g, ' ').trim();
+          this.value = valor;
+        });
+      }
+    });
+
+    // Campos numéricos del estudiante
+    const camposNumerosEstudiante = [
+      'cedula_e', 'telefono_e'
+    ];
+
+    camposNumerosEstudiante.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo) {
+        campo.addEventListener('keydown', validarSoloNumeros);
+
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          valor = valor.replace(/[^0-9]/g, '');
+          this.value = valor;
+        });
+      }
+    });
+
+    // Validación de correo del estudiante (OPCIONAL)
+    const correoEstudiante = document.getElementById('correo_e');
+    if (correoEstudiante) {
+      correoEstudiante.addEventListener('blur', function() {
+        const email = this.value.trim();
+        // El correo del estudiante es OPCIONAL, solo valida si se ingresa algo
+        if (email && !validarEmail(email)) {
+          this.classList.add('is-invalid');
+          mostrarError(this, 'Por favor ingrese un correo electrónico válido (formato: usuario@dominio.com) o deje el campo vacío');
+        } else if (email && validarEmail(email)) {
+          this.classList.remove('is-invalid');
+          this.classList.add('is-valid');
+          ocultarError(this);
+        } else {
+          // Si está vacío, es válido (opcional)
+          this.classList.remove('is-invalid', 'is-valid');
+          ocultarError(this);
+        }
+      });
+
+      // Remover clases de validación al empezar a escribir
+      correoEstudiante.addEventListener('input', function() {
+        this.classList.remove('is-invalid', 'is-valid');
+        ocultarError(this);
+      });
+    }
+
+    // ========== VALIDACIÓN DE CAMPOS DE DIRECCIÓN ==========
+
+    // Campos de dirección (permiten letras, números y algunos caracteres especiales)
+    const camposDireccion = [
+      'direccion_r', 'calle_r', 'casa_r',
+      'direccion_e', 'calle_e', 'casa_e'
+    ];
+
+    camposDireccion.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo) {
+        campo.addEventListener('blur', function() {
+          let valor = this.value;
+          // Permitir letras, números, espacios, guiones, # y puntos
+          valor = valor.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-#\.]/g, '');
+          // Remover espacios múltiples
+          valor = valor.replace(/\s+/g, ' ').trim();
+          this.value = valor;
+        });
+      }
+    });
+
+    // ========== VALIDACIÓN AL PASAR DEL PASO 2 AL PASO 3 ==========
+
+    document.getElementById('btn-next-to-step3').addEventListener('click', function() {
+      // Validar campos requeridos primero
+      const requiredFields = document.querySelectorAll('#step2 [required]');
+      let valid = true;
+
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          valid = false;
+          field.classList.add('is-invalid');
+        } else {
+          field.classList.remove('is-invalid');
+        }
+      });
+
+      if (!valid) {
+        alert('Por favor complete todos los campos requeridos del representante.');
+        return;
+      }
+
+      // Validar específicamente el correo del representante
+      if (correoRepresentante) {
+        const emailRepre = correoRepresentante.value.trim();
+        if (emailRepre && !validarEmail(emailRepre)) {
+          correoRepresentante.classList.add('is-invalid');
+          mostrarError(correoRepresentante, 'Por favor ingrese un correo electrónico válido antes de continuar');
+          alert('Por favor corrija el correo electrónico del representante antes de continuar.');
+          return;
+        }
+      }
+
+      // Si todo está bien, avanzar al paso 3
+      showStep(3);
+    });
+
+    // ========== FUNCIONES AUXILIARES ==========
+
+    function mostrarError(campo, mensaje) {
+      // Remover error anterior si existe
+      ocultarError(campo);
+
+      // Crear elemento de error
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'invalid-feedback';
+      errorDiv.style.display = 'block';
+      errorDiv.textContent = mensaje;
+      errorDiv.id = `error-${campo.id}`;
+
+      // Insertar después del campo
+      campo.parentNode.appendChild(errorDiv);
+    }
+
+    function ocultarError(campo) {
+      const errorId = `error-${campo.id}`;
+      const errorExistente = document.getElementById(errorId);
+      if (errorExistente) {
+        errorExistente.remove();
+      }
+    }
+
+    // ========== ESTILOS PARA LOS ESTADOS DE VALIDACIÓN ==========
+    const style = document.createElement('style');
+    style.textContent = `
+        .is-valid {
+            border-color: #28a745 !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .is-invalid {
+            border-color: #dc3545 !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #dc3545;
+        }
+    `;
+    document.head.appendChild(style);
+
+    console.log('✅ Validaciones de formulario cargadas correctamente');
+  });
+</script>
+
+
+<?php
+include_once("/xampp/htdocs/final/layout/layaout2.php");
+include_once("/xampp/htdocs/final/layout/mensajes.php");
+?>

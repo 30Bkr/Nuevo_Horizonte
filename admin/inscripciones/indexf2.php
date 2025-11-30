@@ -2704,6 +2704,46 @@ function generarConstanciaInscripcion(idInscripcion) {
   });
 </script>
 
+<!-- ========== CONVERSIÓN AUTOMÁTICA A MAYÚSCULAS ========== -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Función para convertir texto a mayúsculas
+    function convertirMayusculas(elemento) {
+      elemento.value = elemento.value.toUpperCase();
+    }
+
+    // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
+    const inputsTexto = document.querySelectorAll('input[type="text"]:not([readonly])');
+    
+    inputsTexto.forEach(input => {
+      input.addEventListener('input', function() {
+        convertirMayusculas(this);
+      });
+      
+      // También aplicar a los valores existentes al cargar la página
+      if (input.value) {
+        convertirMayusculas(input);
+      }
+    });
+
+    // Aplicar también a textareas
+    const textareas = document.querySelectorAll('textarea:not([readonly])');
+    
+    textareas.forEach(textarea => {
+      textarea.addEventListener('input', function() {
+        convertirMayusculas(this);
+      });
+      
+      // Aplicar a valores existentes
+      if (textarea.value) {
+        convertirMayusculas(textarea);
+      }
+    });
+
+    console.log('✅ Conversión a mayúsculas configurada para todos los campos de texto');
+  });
+</script>
+
 
 
 <!-- validaciones de inputs y campos  -->
