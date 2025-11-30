@@ -1,18 +1,19 @@
 <?php
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
-include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
+include_once("/xampp/htdocs/final/app/controllers/discapacidades/discapacidades.php");
 
 // Obtener datos iniciales
 try {
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
-  $patologiaController = new PatologiaController($pdo);
+  $discapacidadController = new DiscapacidadController($pdo);
 
-  $patologias = $patologiaController->obtenerPatologias();
-  $totalAsignaciones = $patologiaController->contarAsignacionesEstudiantes();
+  // Usar el nuevo método para obtener todas las discapacidades
+  $discapacidades = $discapacidadController->obtenerTodasLasDiscapacidades();
+  $totalAsignaciones = $discapacidadController->contarAsignacionesEstudiantes();
 } catch (Exception $e) {
-  $patologias = [];
+  $discapacidades = [];
   $totalAsignaciones = 0;
   $_SESSION['mensaje'] = $e->getMessage();
   $_SESSION['tipo_mensaje'] = 'error';
@@ -20,21 +21,21 @@ try {
 ?>
 
 <div class="content-wrapper">
-  <div class="content">
+  <div class="content ">
     <div class="container-fluid">
       <!-- Header -->
-      <div class="row mb-4">
+      <div class="row mb-4 p-2">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h1 class="mb-0">
-                <i class="fas fa-heartbeat mr-2"></i>
-                Gestión de Patologías
+                <i class="fas fa-wheelchair mr-2"></i>
+                Gestión de Discapacidades
               </h1>
-              <p class="text-muted">Administra el catálogo de patologías y condiciones médicas</p>
+              <p class="text-muted">Administra el catálogo de discapacidades y condiciones especiales</p>
             </div>
             <button class="btn btn-primary" onclick="abrirModalAgregar()">
-              <i class="fas fa-plus mr-1"></i> Agregar Patología
+              <i class="fas fa-plus mr-1"></i> Agregar Discapacidad
             </button>
           </div>
         </div>
@@ -45,21 +46,21 @@ try {
         <div class="col-lg-3 col-6">
           <div class="small-box bg-info">
             <div class="inner">
-              <h3 id="totalPatologias"><?php echo count($patologias); ?></h3>
-              <p>Total de Patologías</p>
+              <h3 id="totalDiscapacidades"><?php echo count($discapacidades); ?></h3>
+              <p>Total de Discapacidades</p>
             </div>
             <div class="icon">
-              <i class="fas fa-heartbeat"></i>
+              <i class="fas fa-wheelchair"></i>
             </div>
           </div>
         </div>
         <div class="col-lg-3 col-6">
           <div class="small-box bg-success">
             <div class="inner">
-              <h3 id="patologiasActivas"><?php echo count(array_filter($patologias, function ($p) {
-                                            return $p['estatus'] == 1;
-                                          })); ?></h3>
-              <p>Patologías Activas</p>
+              <h3 id="discapacidadesActivas"><?php echo count(array_filter($discapacidades, function ($d) {
+                                                return $d['estatus'] == 1;
+                                              })); ?></h3>
+              <p>Discapacidades Activas</p>
             </div>
             <div class="icon">
               <i class="fas fa-check-circle"></i>
@@ -69,10 +70,10 @@ try {
         <div class="col-lg-3 col-6">
           <div class="small-box bg-warning">
             <div class="inner">
-              <h3 id="patologiasInactivas"><?php echo count(array_filter($patologias, function ($p) {
-                                              return $p['estatus'] == 0;
-                                            })); ?></h3>
-              <p>Patologías Inactivas</p>
+              <h3 id="discapacidadesInactivas"><?php echo count(array_filter($discapacidades, function ($d) {
+                                                  return $d['estatus'] == 0;
+                                                })); ?></h3>
+              <p>Discapacidades Inactivas</p>
             </div>
             <div class="icon">
               <i class="fas fa-pause-circle"></i>
@@ -86,23 +87,23 @@ try {
               <p>Asignaciones a Estudiantes</p>
             </div>
             <div class="icon">
-              <i class="fas fa-user-injured"></i>
+              <i class="fas fa-user-friends"></i>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Tabla de Patologías -->
+      <!-- Tabla de Discapacidades -->
       <div class="row">
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title">Lista de Patologías Registradas</h3>
+              <h3 class="card-title">Lista de Discapacidades Registradas</h3>
               <div class="card-tools">
                 <div class="input-group input-group-sm" style="width: 150px;">
                   <input type="text" id="searchInput" class="form-control float-right" placeholder="Buscar...">
                   <div class="input-group-append">
-                    <button type="button" class="btn btn-default" onclick="buscarPatologias()">
+                    <button type="button" class="btn btn-default" onclick="buscarDiscapacidades()">
                       <i class="fas fa-search"></i>
                     </button>
                   </div>
@@ -114,55 +115,55 @@ try {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Nombre de la Patología</th>
+                    <th>Nombre de la Discapacidad</th>
                     <th>Estatus</th>
                     <th>Fecha de Creación</th>
                     <th>Última Actualización</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
-                <tbody id="tablaPatologias">
-                  <?php if (empty($patologias)): ?>
+                <tbody id="tablaDiscapacidades">
+                  <?php if (empty($discapacidades)): ?>
                     <tr>
                       <td colspan="6" class="text-center py-4">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No hay patologías registradas</p>
+                        <p class="text-muted">No hay discapacidades registradas</p>
                       </td>
                     </tr>
                   <?php else: ?>
-                    <?php foreach ($patologias as $patologia):
-                      // Verificar si la patología está en uso
+                    <?php foreach ($discapacidades as $discapacidad):
+                      // Verificar si la discapacidad está en uso
                       try {
-                        $en_uso = $patologiaController->patologiaEnUso($patologia['id_patologia']);
-                        $conteo_usos = $patologiaController->obtenerConteoUsosPatologia($patologia['id_patologia']);
+                        $en_uso = $discapacidadController->discapacidadEnUso($discapacidad['id_discapacidad']);
+                        $conteo_usos = $discapacidadController->obtenerConteoUsosDiscapacidad($discapacidad['id_discapacidad']);
                       } catch (Exception $e) {
                         $en_uso = false;
                         $conteo_usos = 0;
                       }
                     ?>
-                      <tr id="patologia-<?php echo $patologia['id_patologia']; ?>">
-                        <td><?php echo $patologia['id_patologia']; ?></td>
+                      <tr id="discapacidad-<?php echo $discapacidad['id_discapacidad']; ?>">
+                        <td><?php echo $discapacidad['id_discapacidad']; ?></td>
                         <td>
                           <div class="d-flex align-items-center">
-                            <i class="fas fa-stethoscope text-primary mr-2"></i>
-                            <span id="nombre-<?php echo $patologia['id_patologia']; ?>">
-                              <?php echo htmlspecialchars($patologia['nom_patologia']); ?>
+                            <i class="fas fa-universal-access text-primary mr-2"></i>
+                            <span id="nombre-<?php echo $discapacidad['id_discapacidad']; ?>">
+                              <?php echo htmlspecialchars($discapacidad['nom_discapacidad']); ?>
                             </span>
                           </div>
                         </td>
                         <td>
-                          <span class="badge badge-<?php echo $patologia['estatus'] == 1 ? 'success' : 'danger'; ?>"
-                            id="estatus-<?php echo $patologia['id_patologia']; ?>">
-                            <?php echo $patologia['estatus'] == 1 ? 'Activa' : 'Inactiva'; ?>
+                          <span class="badge badge-<?php echo $discapacidad['estatus'] == 1 ? 'success' : 'danger'; ?>"
+                            id="estatus-<?php echo $discapacidad['id_discapacidad']; ?>">
+                            <?php echo $discapacidad['estatus'] == 1 ? 'Activa' : 'Inactiva'; ?>
                           </span>
                         </td>
                         <td>
-                          <?php echo date('d/m/Y H:i', strtotime($patologia['creacion'])); ?>
+                          <?php echo date('d/m/Y H:i', strtotime($discapacidad['creacion'])); ?>
                         </td>
                         <td>
                           <?php
-                          if ($patologia['actualizacion']) {
-                            echo date('d/m/Y H:i', strtotime($patologia['actualizacion']));
+                          if ($discapacidad['actualizacion']) {
+                            echo date('d/m/Y H:i', strtotime($discapacidad['actualizacion']));
                           } else {
                             echo '<span class="text-muted">Sin actualizar</span>';
                           }
@@ -171,10 +172,10 @@ try {
                         <td>
                           <div class="btn-group">
                             <button class="btn btn-sm btn-outline-primary"
-                              onclick="editarPatologia(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', <?php echo $patologia['estatus']; ?>)">
+                              onclick="editarDiscapacidad(<?php echo $discapacidad['id_discapacidad']; ?>, '<?php echo htmlspecialchars($discapacidad['nom_discapacidad']); ?>', <?php echo $discapacidad['estatus']; ?>)">
                               <i class="fas fa-edit"></i>
                             </button>
-                            <?php if ($patologia['estatus'] == 1): ?>
+                            <?php if ($discapacidad['estatus'] == 1): ?>
                               <?php if ($en_uso): ?>
                                 <button type="button"
                                   class="btn btn-sm btn-secondary"
@@ -184,13 +185,13 @@ try {
                                 </button>
                               <?php else: ?>
                                 <button class="btn btn-sm btn-outline-danger"
-                                  onclick="cambiarEstatus(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 0)">
+                                  onclick="cambiarEstatus(<?php echo $discapacidad['id_discapacidad']; ?>, '<?php echo htmlspecialchars($discapacidad['nom_discapacidad']); ?>', 0)">
                                   <i class="fas fa-pause"></i>
                                 </button>
                               <?php endif; ?>
                             <?php else: ?>
                               <button class="btn btn-sm btn-outline-success"
-                                onclick="cambiarEstatus(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 1)">
+                                onclick="cambiarEstatus(<?php echo $discapacidad['id_discapacidad']; ?>, '<?php echo htmlspecialchars($discapacidad['nom_discapacidad']); ?>', 1)">
                                 <i class="fas fa-play"></i>
                               </button>
                             <?php endif; ?>
@@ -205,7 +206,7 @@ try {
             <div class="card-footer clearfix">
               <div class="float-right">
                 <small class="text-muted">
-                  Mostrando <span id="contadorPatologias"><?php echo count($patologias); ?></span> patologías
+                  Mostrando <span id="contadorDiscapacidades"><?php echo count($discapacidades); ?></span> discapacidades
                 </small>
               </div>
             </div>
@@ -219,10 +220,10 @@ try {
           <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> Información Importante</h5>
             <ul class="mb-0">
-              <li><strong>Patologías en uso:</strong> No se pueden desactivar porque están siendo utilizadas por estudiantes</li>
-              <li><strong>Patologías sin uso:</strong> Se pueden desactivar sin problemas</li>
-              <li><strong>Patologías inactivas:</strong> No aparecerán en los formularios de nuevos registros</li>
-              <li>Los registros existentes que ya usen la patología no se verán afectados al desactivarla</li>
+              <li><strong>Discapacidades en uso:</strong> No se pueden desactivar porque están siendo utilizadas por estudiantes</li>
+              <li><strong>Discapacidades sin uso:</strong> Se pueden desactivar sin problemas</li>
+              <li><strong>Discapacidades inactivas:</strong> No aparecerán en los formularios de nuevos registros</li>
+              <li>Los registros existentes que ya usen la discapacidad no se verán afectados al desactivarla</li>
             </ul>
           </div>
         </div>
@@ -262,27 +263,27 @@ try {
   </div>
 </div>
 
-<!-- Modal Agregar Patología -->
+<!-- Modal Agregar Discapacidad -->
 <div class="modal fade" id="modalAgregar" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
           <i class="fas fa-plus-circle mr-2"></i>
-          Agregar Nueva Patología
+          Agregar Nueva Discapacidad
         </h5>
         <button type="button" class="close" data-dismiss="modal">
           <span>&times;</span>
         </button>
       </div>
-      <form id="formAgregar" onsubmit="agregarPatologia(event)">
+      <form id="formAgregar" onsubmit="agregarDiscapacidad(event)">
         <div class="modal-body">
           <div class="form-group">
-            <label for="nombre_patologia">Nombre de la Patología:</label>
-            <input type="text" class="form-control" id="nombre_patologia" name="nombre_patologia"
-              placeholder="Ej: Asma, Alergia a lácteos, Diabetes..." required>
+            <label for="nombre_discapacidad">Nombre de la Discapacidad:</label>
+            <input type="text" class="form-control" id="nombre_discapacidad" name="nombre_discapacidad"
+              placeholder="Ej: Discapacidad visual, Discapacidad auditiva, Autismo..." required>
             <small class="form-text text-muted">
-              Ingresa el nombre completo de la patología o condición médica
+              Ingresa el nombre completo de la discapacidad o condición especial
             </small>
           </div>
         </div>
@@ -291,7 +292,7 @@ try {
             <i class="fas fa-times mr-1"></i> Cancelar
           </button>
           <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save mr-1"></i> Guardar Patología
+            <i class="fas fa-save mr-1"></i> Guardar Discapacidad
           </button>
         </div>
       </form>
@@ -299,29 +300,29 @@ try {
   </div>
 </div>
 
-<!-- Modal Editar Patología -->
+<!-- Modal Editar Discapacidad -->
 <div class="modal fade" id="modalEditar" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
           <i class="fas fa-edit mr-2"></i>
-          Editar Patología
+          Editar Discapacidad
         </h5>
         <button type="button" class="close" data-dismiss="modal">
           <span>&times;</span>
         </button>
       </div>
-      <form id="formEditar" onsubmit="actualizarPatologia(event)">
-        <input type="hidden" id="id_patologia_edit" name="id_patologia">
+      <form id="formEditar" onsubmit="actualizarDiscapacidad(event)">
+        <input type="hidden" id="id_discapacidad_edit" name="id_discapacidad">
         <div class="modal-body">
           <div class="form-group">
-            <label for="nombre_patologia_edit">Nombre de la Patología:</label>
-            <input type="text" class="form-control" id="nombre_patologia_edit" name="nombre_patologia" required>
+            <label for="nombre_discapacidad_edit">Nombre de la Discapacidad:</label>
+            <input type="text" class="form-control" id="nombre_discapacidad_edit" name="nombre_discapacidad" required>
           </div>
           <div class="form-group">
-            <label for="estatus_patologia">Estatus:</label>
-            <select class="form-control" id="estatus_patologia" name="estatus">
+            <label for="estatus_discapacidad">Estatus:</label>
+            <select class="form-control" id="estatus_discapacidad" name="estatus">
               <option value="1">Activa</option>
               <option value="0">Inactiva</option>
             </select>
@@ -332,7 +333,7 @@ try {
             <i class="fas fa-times mr-1"></i> Cancelar
           </button>
           <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save mr-1"></i> Actualizar Patología
+            <i class="fas fa-save mr-1"></i> Actualizar Discapacidad
           </button>
         </div>
       </form>
@@ -399,22 +400,22 @@ try {
 
 <script>
   // Variables globales
-  let patologiaSeleccionada = null;
+  let discapacidadSeleccionada = null;
 
   // Funciones para abrir modales
   function abrirModalAgregar() {
     $('#modalAgregar').modal('show');
   }
 
-  function editarPatologia(id, nombre, estatus) {
-    $('#id_patologia_edit').val(id);
-    $('#nombre_patologia_edit').val(nombre);
-    $('#estatus_patologia').val(estatus);
+  function editarDiscapacidad(id, nombre, estatus) {
+    $('#id_discapacidad_edit').val(id);
+    $('#nombre_discapacidad_edit').val(nombre);
+    $('#estatus_discapacidad').val(estatus);
     $('#modalEditar').modal('show');
   }
 
   function cambiarEstatus(id, nombre, nuevoEstatus) {
-    patologiaSeleccionada = {
+    discapacidadSeleccionada = {
       id,
       nombre,
       nuevoEstatus
@@ -422,25 +423,25 @@ try {
 
     const accion = nuevoEstatus == 1 ? 'activar' : 'desactivar';
     const mensaje = nuevoEstatus == 1 ?
-      'Los estudiantes podrán ser asignados a esta patología nuevamente.' :
-      'Los estudiantes ya no podrán ser asignados a esta patología.';
+      'Los estudiantes podrán ser asignados a esta discapacidad nuevamente.' :
+      'Los estudiantes ya no podrán ser asignados a esta discapacidad.';
 
     $('#mensajeConfirmacion').html(
-      `¿Estás seguro de que deseas <strong>${accion}</strong> la patología:<br><strong>"${nombre}"</strong>?<br><br>` +
+      `¿Estás seguro de que deseas <strong>${accion}</strong> la discapacidad:<br><strong>"${nombre}"</strong>?<br><br>` +
       `<small class="text-muted">${mensaje}</small>`
     );
 
     $('#modalConfirmacion').modal('show');
   }
 
-  async function agregarPatologia(event) {
+  async function agregarDiscapacidad(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
-    const nombre = formData.get('nombre_patologia').trim();
+    const nombre = formData.get('nombre_discapacidad').trim();
 
     if (!nombre) {
-      mostrarMensaje('El nombre de la patología es requerido', 'error');
+      mostrarMensaje('El nombre de la discapacidad es requerido', 'error');
       return;
     }
 
@@ -449,42 +450,42 @@ try {
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
 
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: `action=agregar&nombre=${encodeURIComponent(nombre)}`
       });
+
       const result = await response.json();
 
       if (result.success) {
         mostrarMensaje(result.message, 'success');
         $('#modalAgregar').modal('hide');
         event.target.reset();
-        recargarPatologias();
+        recargarDiscapacidades();
       } else {
         mostrarMensaje(result.message, 'error');
       }
     } catch (error) {
       mostrarMensaje('Error de conexión: ' + error.message, 'error');
-
     } finally {
       boton.disabled = false;
-      boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Patología';
+      boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Discapacidad';
     }
   }
 
-  async function actualizarPatologia(event) {
+  async function actualizarDiscapacidad(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
-    const id = formData.get('id_patologia');
-    const nombre = formData.get('nombre_patologia').trim();
+    const id = formData.get('id_discapacidad');
+    const nombre = formData.get('nombre_discapacidad').trim();
     const estatus = formData.get('estatus');
 
     if (!nombre) {
-      mostrarMensaje('El nombre de la patología es requerido', 'error');
+      mostrarMensaje('El nombre de la discapacidad es requerido', 'error');
       return;
     }
 
@@ -493,7 +494,7 @@ try {
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Actualizando...';
 
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -506,30 +507,29 @@ try {
       if (result.success) {
         mostrarMensaje(result.message, 'success');
         $('#modalEditar').modal('hide');
-        recargarPatologias();
+        recargarDiscapacidades();
       } else {
         mostrarMensaje(result.message, 'error');
       }
     } catch (error) {
       mostrarMensaje('Error de conexión: ' + error.message, 'error');
-
     } finally {
       boton.disabled = false;
-      boton.innerHTML = '<i class="fas fa-save mr-1"></i> Actualizar Patología';
+      boton.innerHTML = '<i class="fas fa-save mr-1"></i> Actualizar Discapacidad';
     }
   }
 
   async function confirmarCambioEstatus() {
-    if (!patologiaSeleccionada) return;
+    if (!discapacidadSeleccionada) return;
 
     const {
       id,
       nombre,
       nuevoEstatus
-    } = patologiaSeleccionada;
+    } = discapacidadSeleccionada;
 
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -542,7 +542,7 @@ try {
       if (result.success) {
         mostrarMensaje(result.message, 'success');
         $('#modalConfirmacion').modal('hide');
-        recargarPatologias();
+        recargarDiscapacidades();
       } else {
         mostrarMensaje(result.message, 'error');
       }
@@ -551,9 +551,9 @@ try {
     }
   }
 
-  async function recargarPatologias() {
+  async function recargarDiscapacidades() {
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -566,81 +566,81 @@ try {
         actualizarTabla(result.data);
         actualizarEstadisticas(result.data);
       } else {
-        mostrarMensaje('Error al cargar patologías', 'error');
+        mostrarMensaje('Error al cargar discapacidades', 'error');
       }
     } catch (error) {
       mostrarMensaje('Error de conexión: ' + error.message, 'error');
     }
   }
 
-  function actualizarTabla(patologias) {
-    const tbody = document.getElementById('tablaPatologias');
+  function actualizarTabla(discapacidades) {
+    const tbody = document.getElementById('tablaDiscapacidades');
 
-    if (patologias.length === 0) {
+    if (discapacidades.length === 0) {
       tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center py-4">
-                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">No hay patologías registradas</p>
-                </td>
-            </tr>
-        `;
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No hay discapacidades registradas</p>
+                    </td>
+                </tr>
+            `;
       return;
     }
 
-    tbody.innerHTML = patologias.map(patologia => `
-        <tr id="patologia-${patologia.id_patologia}">
-            <td>${patologia.id_patologia}</td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-stethoscope text-primary mr-2"></i>
-                    <span id="nombre-${patologia.id_patologia}">${escapeHtml(patologia.nom_patologia)}</span>
-                </div>
-            </td>
-            <td>
-                <span class="badge badge-${patologia.estatus == 1 ? 'success' : 'danger'}" 
-                      id="estatus-${patologia.id_patologia}">
-                    ${patologia.estatus == 1 ? 'Activa' : 'Inactiva'}
-                </span>
-            </td>
-            <td>${formatFecha(patologia.creacion)}</td>
-            <td>${patologia.actualizacion ? formatFecha(patologia.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-            <td>
-                <div class="btn-group">
-                    <button class="btn btn-sm btn-outline-primary" 
-                            onclick="editarPatologia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', ${patologia.estatus})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    ${patologia.estatus == 1 ? 
-                        `<button class="btn btn-sm btn-outline-danger"
-                                onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0)">
-                            <i class="fas fa-pause"></i>
-                        </button>` :
-                        `<button class="btn btn-sm btn-outline-success"
-                                onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 1)">
-                            <i class="fas fa-play"></i>
-                        </button>`
-                    }
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = discapacidades.map(discapacidad => `
+            <tr id="discapacidad-${discapacidad.id_discapacidad}">
+                <td>${discapacidad.id_discapacidad}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-universal-access text-primary mr-2"></i>
+                        <span id="nombre-${discapacidad.id_discapacidad}">${escapeHtml(discapacidad.nom_discapacidad)}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge badge-${discapacidad.estatus == 1 ? 'success' : 'danger'}" 
+                          id="estatus-${discapacidad.id_discapacidad}">
+                        ${discapacidad.estatus == 1 ? 'Activa' : 'Inactiva'}
+                    </span>
+                </td>
+                <td>${formatFecha(discapacidad.creacion)}</td>
+                <td>${discapacidad.actualizacion ? formatFecha(discapacidad.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" 
+                                onclick="editarDiscapacidad(${discapacidad.id_discapacidad}, '${escapeHtml(discapacidad.nom_discapacidad)}', ${discapacidad.estatus})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${discapacidad.estatus == 1 ? 
+                            `<button class="btn btn-sm btn-outline-danger"
+                                    onclick="cambiarEstatus(${discapacidad.id_discapacidad}, '${escapeHtml(discapacidad.nom_discapacidad)}', 0)">
+                                <i class="fas fa-pause"></i>
+                            </button>` :
+                            `<button class="btn btn-sm btn-outline-success"
+                                    onclick="cambiarEstatus(${discapacidad.id_discapacidad}, '${escapeHtml(discapacidad.nom_discapacidad)}', 1)">
+                                <i class="fas fa-play"></i>
+                            </button>`
+                        }
+                    </div>
+                </td>
+            </tr>
+        `).join('');
 
-    document.getElementById('contadorPatologias').textContent = patologias.length;
+    document.getElementById('contadorDiscapacidades').textContent = discapacidades.length;
   }
 
-  function actualizarEstadisticas(patologias) {
-    const activas = patologias.filter(p => p.estatus == 1).length;
-    const inactivas = patologias.filter(p => p.estatus == 0).length;
+  function actualizarEstadisticas(discapacidades) {
+    const activas = discapacidades.filter(d => d.estatus == 1).length;
+    const inactivas = discapacidades.filter(d => d.estatus == 0).length;
 
-    document.getElementById('totalPatologias').textContent = patologias.length;
-    document.getElementById('patologiasActivas').textContent = activas;
-    document.getElementById('patologiasInactivas').textContent = inactivas;
+    document.getElementById('totalDiscapacidades').textContent = discapacidades.length;
+    document.getElementById('discapacidadesActivas').textContent = activas;
+    document.getElementById('discapacidadesInactivas').textContent = inactivas;
   }
 
-  function buscarPatologias() {
+  function buscarDiscapacidades() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('#tablaPatologias tr');
+    const rows = document.querySelectorAll('#tablaDiscapacidades tr');
 
     rows.forEach(row => {
       const text = row.textContent.toLowerCase();
@@ -667,16 +667,13 @@ try {
 
   // Event Listeners
   document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('searchInput').addEventListener('input', buscarPatologias);
+    document.getElementById('searchInput').addEventListener('input', buscarDiscapacidades);
     document.getElementById('btnConfirmarCambio').addEventListener('click', confirmarCambioEstatus);
 
     // Limpiar formulario al cerrar modal
     $('#modalAgregar').on('hidden.bs.modal', function() {
       document.getElementById('formAgregar').reset();
     });
-
-    // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
 
