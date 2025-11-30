@@ -197,12 +197,6 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
         </div>
     </section>
 </div>
-
-<!-- Footer -->
-<footer class="main-footer">
-    <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
-    Todos los derechos reservados.
-</footer>
 </div>
 
 <!-- Modal para Ficha del Estudiante -->

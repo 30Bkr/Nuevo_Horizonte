@@ -438,12 +438,6 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 </div>
             </section>
         </div>
-
-        <!-- Footer -->
-        <footer class="main-footer">
-            <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
-            Todos los derechos reservados.
-        </footer>
     </div>
 
     <!-- jQuery -->
