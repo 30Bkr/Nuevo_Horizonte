@@ -280,6 +280,41 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <?php
           }
           ?>
+
+          <?php if (true) { ?>
+
+            <li class="nav-item ">
+              <a href="#" class="nav-link">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-person-rolodex">
+                  <img src="<?= URL; ?>/public/images/profesor.svg" alt="Inscripcion">
+                </i>
+
+                <p>
+                  Representantes
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/representantes/representantes_list.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Listado</p>
+                  </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a href="/project/admin/roles/index.php" class="nav-link active">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Asignar materias</p>
+                    </a>
+                  </li> -->
+              </ul>
+            </li>
+
+          <?php
+          }
+          ?>
+
           <li class="nav-item">
             <a href="<?= URL; ?>/login/logout.php" class="nav-link active" style="background-color: #c40c0cff;">
               <!-- <img src="../../public/images/door-open.svg" alt="" class="nav-icon"> -->
