@@ -725,7 +725,15 @@ try {
                             <label for="id_nivel">Grado/Año<span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                             <select name="id_nivel" id="id_nivel" class="form-control" required>
                               <option value="">Seleccionar Nivel</option>
-                              <!-- Los niveles se cargarán dinámicamente via JavaScript -->
+                              <?php
+                              $cuposController = new CuposController($pdo);
+                              $todosLosNiveles = $cuposController->obtenerTodosLosNiveles();
+                              if ($todosLosNiveles['success']) {
+                                foreach ($todosLosNiveles['niveles'] as $nivel) {
+                                  echo "<option value='{$nivel['id_nivel']}'>{$nivel['nom_nivel']}</option>";
+                                }
+                              }
+                              ?>
                             </select>
                           </div>
                         </div>
@@ -1145,20 +1153,20 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
     }
 
     function llenarDatosEstudiante(estudiante) {
+      if (estudiante.num_nivel) {
+        const siguienteNivel = parseInt(estudiante.num_nivel) + 1;
+        const nivelSelect = document.getElementById('id_nivel');
 
-      console.log('🎯 DATOS ESTUDIANTE PARA DEBUG:', {
-        'Todos los campos disponibles': Object.keys(estudiante),
-        'Datos específicos de nivel': {
-          'nombre_nivel': estudiante.nombre_nivel,
-          'nom_nivel': estudiante.nom_nivel,
-          'periodo_anterior_desc': estudiante.periodo_anterior_desc,
-          'descripcion_periodo': estudiante.descripcion_periodo
-        },
-        'Estudiante completo': estudiante
-      });
-      // ELIMINAR la lógica antigua de siguiente nivel y usar la nueva
-      // Cargar niveles disponibles para reinscripción
-      cargarNivelesReinscripcion(estudiante.id_estudiante);
+        for (let i = 0; i < nivelSelect.options.length; i++) {
+          if (nivelSelect.options[i].text.includes(siguienteNivel)) {
+            nivelSelect.value = nivelSelect.options[i].value;
+            setTimeout(() => {
+              nivelSelect.dispatchEvent(new Event('change'));
+            }, 100);
+            break;
+          }
+        }
+      }
 
       document.getElementById('id_estudiante_existente').value = estudiante.id_estudiante;
 
@@ -1199,21 +1207,16 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
         }
       }
 
-      const nivelAnterior = estudiante.nombre_nivel ||
-        estudiante.nom_nivel_anterior ||
-        estudiante.ultimo_nivel_cursado ||
-        'No asignado';
-      const periodoAnterior = estudiante.periodo_anterior_desc ||
-        estudiante.descripcion_periodo ||
-        estudiante.periodo_anterior ||
-        'Sin historial';
+      const nivelAnterior = estudiante.nombre_nivel || 'No asignado';
+      const periodoAnterior = estudiante.periodo_anterior_desc || 'Sin historial';
 
       document.getElementById('info-estudiante-seleccionado').style.display = 'block';
       document.getElementById('datos-estudiante-seleccionado').innerHTML = `
             <strong>Nombre completo:</strong> ${estudiante.primer_nombre} ${estudiante.segundo_nombre || ''} ${estudiante.primer_apellido} ${estudiante.segundo_apellido || ''}<br>
             <strong>Cédula:</strong> ${estudiante.cedula || 'No registrada (se generará automáticamente)'}<br>
             <strong>Fecha de nacimiento:</strong> ${estudiante.fecha_nac || 'No registrada'}<br>
-            <strong>Último nivel cursado:</strong> ${nivelAnterior}
+            <strong>Parentesco:</strong> ${estudiante.parentesco}<br>
+            <strong>Último nivel cursado:</strong> ${nivelAnterior} (${periodoAnterior})
         `;
 
       // POR DEFECTO: VIVEN JUNTOS
@@ -1236,57 +1239,6 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
       }
 
       cargarDatosSaludEstudiante(estudiante.id_estudiante);
-    }
-
-    function cargarNivelesReinscripcion(idEstudiante) {
-      const formData = new FormData();
-      formData.append('id_estudiante', idEstudiante);
-
-      const nivelSelect = document.getElementById('id_nivel');
-      nivelSelect.innerHTML = '<option value="">Cargando niveles disponibles...</option>';
-      nivelSelect.disabled = true;
-
-      fetch('/final/app/controllers/cupos/cargar_niveles_reinscripcion.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.niveles.length > 0) {
-            nivelSelect.innerHTML = '<option value="">Seleccionar Nivel</option>';
-            data.niveles.forEach(nivel => {
-              nivelSelect.innerHTML += `<option value="${nivel.id_nivel}">${nivel.nom_nivel}</option>`;
-            });
-            nivelSelect.disabled = false;
-
-            // Seleccionar automáticamente el último nivel cursado (primer elemento del array)
-            if (data.niveles.length > 0) {
-              nivelSelect.value = data.niveles[0].id_nivel;
-              // Disparar evento change para cargar las secciones
-              setTimeout(() => {
-                nivelSelect.dispatchEvent(new Event('change'));
-              }, 100);
-            }
-
-            console.log('✅ Niveles de reinscripción cargados:', data.niveles);
-            if (data.ultimo_nivel) {
-              console.log('📚 Último nivel cursado:', data.ultimo_nivel.nom_nivel);
-            }
-            // Debug info
-            if (data.debug) {
-              console.log('🐛 Debug info:', data.debug);
-            }
-          } else {
-            nivelSelect.innerHTML = '<option value="">No hay niveles disponibles para reinscripción</option>';
-            nivelSelect.disabled = true;
-            console.error('❌ Error cargando niveles:', data.message);
-          }
-        })
-        .catch(error => {
-          console.error('❌ Error cargando niveles de reinscripción:', error);
-          nivelSelect.innerHTML = '<option value="">Error al cargar niveles</option>';
-          nivelSelect.disabled = true;
-        });
     }
 
     function llenarDireccionEstudiante(estudiante) {
@@ -1675,27 +1627,18 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
           if (data.success && data.secciones.length > 0) {
             seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
             data.secciones.forEach(seccion => {
-              const cuposDisponibles = seccion.capacidad - (seccion.inscritos || 0);
-              const textoCupos = cuposDisponibles > 0 ?
-                ` (${cuposDisponibles} cupos)` :
-                ' (Sin cupos)';
               seccionSelect.innerHTML += `
                     <option value="${seccion.id_nivel_seccion}" 
-                            data-id-seccion="${seccion.id_seccion}"
-                            ${cuposDisponibles <= 0 ? 'disabled' : ''}>
-                        ${seccion.nom_seccion}${textoCupos}
+                            data-id-seccion="${seccion.id_seccion}">
+                        ${seccion.nom_seccion} (Capacidad: ${seccion.capacidad})
                     </option>
                 `;
             });
 
             seccionSelect.disabled = false;
 
-            // Si solo hay una sección disponible, seleccionarla automáticamente
-            const opcionesDisponibles = Array.from(seccionSelect.options)
-              .filter(opt => !opt.disabled && opt.value !== '');
-
-            if (opcionesDisponibles.length === 1) {
-              seccionSelect.value = opcionesDisponibles[0].value;
+            if (data.secciones.length === 1) {
+              seccionSelect.value = data.secciones[0].id_seccion;
             }
           } else {
             seccionSelect.innerHTML = '<option value="">No hay secciones disponibles</option>';
