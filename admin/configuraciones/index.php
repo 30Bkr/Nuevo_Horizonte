@@ -111,9 +111,9 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
               </h3>
             </div>
             <div class="card-body">
-              <p class="card-text">Administra los niveles educativos, grados y secciones disponibles.</p>
+              <p class="card-text">Administra los niveles educativos y secciones disponibles.</p>
               <div class="d-flex justify-content-between align-items-center">
-                <small class="text-muted">Grados y secciones</small>
+                <small class="text-muted">Grados, años y secciones</small>
                 <a href="../../views/grados/grados_list.php" class="btn btn-danger btn-sm">
                   <i class="fas fa-cog mr-1"></i> Configurar
                 </a>
