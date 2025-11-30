@@ -94,7 +94,7 @@ try {
     $mes_inscripcion_espanol = obtener_nombre_mes_espanol($mes_numero);
     
     // Determinar tipo de nivel
-    $tipo_nivel = (stripos($datos['nivel_nombre'], 'GRADO') !== false) ? 'Primaria' : 'Inicial';
+    $tipo_nivel = (stripos($datos['nivel_nombre'], 'GRADO') !== false) ? 'Primaria' : 'Secundaria';
 
     // Datos estáticos de la institución
     $NOMBRE_INSTITUCION = 'U.E.N NUEVO HORIZONTE';
@@ -252,7 +252,7 @@ try {
                 Cédula Escolar Nº, Cédula de Identidad Nº o Pasaporte Nº <strong>' . $datos['cedula_estudiante'] . '</strong>,
                 nacido (a) en <strong>' . $datos['lugar_nacimiento'] . '</strong> en fecha <strong>' . $datos['fecha_nacimiento'] . '</strong>, 
                 ha sido inscrito en esta institución para cursar el <strong>' . $datos['nivel_seccion'] . '</strong> 
-                del Nivel de Educación ' . $tipo_nivel . ' durante el período escolar <strong>' . $datos['periodo_escolar'] . '</strong>, 
+                de Educación ' . $tipo_nivel . ' durante el período escolar <strong>' . $datos['periodo_escolar'] . '</strong>, 
                 previo cumplimiento de los requisitos exigidos en la normativa legal vigente.
                 <br><br>
                 Constancia que se expide en <strong>' . $CIUDAD_EXPEDICION . '</strong>, a los <strong>' . $datos['dia_inscripcion'] . '</strong> 
