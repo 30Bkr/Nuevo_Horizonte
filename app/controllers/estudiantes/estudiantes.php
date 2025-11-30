@@ -119,38 +119,54 @@ class EstudianteController
       return false;
     }
   }
+
   public function obtenerEstudiantesPorRepresentante($id_representante)
   {
-    $sql = "SELECT e.*, p.*, er.id_parentesco, par.parentesco,
-                   (SELECT ns.id_nivel FROM inscripciones i 
-                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
-                    INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
-                    WHERE i.id_estudiante = e.id_estudiante 
-                    ORDER BY i.id_inscripcion DESC LIMIT 1) as ultimo_nivel_id,
-                   (SELECT n.nom_nivel FROM inscripciones i 
-                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
-                    INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
-                    WHERE i.id_estudiante = e.id_estudiante 
-                    ORDER BY i.id_inscripcion DESC LIMIT 1) as nombre_nivel,
-                   (SELECT n.num_nivel FROM inscripciones i 
-                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
-                    INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
-                    WHERE i.id_estudiante = e.id_estudiante 
-                    ORDER BY i.id_inscripcion DESC LIMIT 1) as num_nivel,
-                   (SELECT s.nom_seccion FROM inscripciones i 
-                    INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
-                    INNER JOIN secciones s ON ns.id_seccion = s.id_seccion 
-                    WHERE i.id_estudiante = e.id_estudiante 
-                    ORDER BY i.id_inscripcion DESC LIMIT 1) as nom_seccion,
-                   (SELECT per.descripcion_periodo FROM inscripciones i 
-                    INNER JOIN periodos per ON i.id_periodo = per.id_periodo 
-                    WHERE i.id_estudiante = e.id_estudiante 
-                    ORDER BY i.id_inscripcion DESC LIMIT 1) as periodo_anterior_desc,
-                   (SELECT CASE WHEN MAX(i.id_periodo) = (SELECT MAX(id_periodo) FROM periodos WHERE estatus = 1) 
-                    THEN 'Inscrito' ELSE 'No inscrito' END 
-                    FROM inscripciones i WHERE i.id_estudiante = e.id_estudiante) as estado_inscripcion
+    $sql = "SELECT 
+                e.*, 
+                p.*,
+                d_est.id_direccion as id_direccion_est,
+                d_est.direccion as direccion_est,
+                d_est.calle as calle_est,
+                d_est.casa as casa_est,
+                par_est.id_parroquia as id_parroquia_est,
+                mun_est.id_municipio as id_municipio_est,
+                est_est.id_estado as id_estado_est,
+                er.id_parentesco, 
+                par.parentesco,
+                (SELECT ns.id_nivel FROM inscripciones i 
+                 INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                 INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
+                 WHERE i.id_estudiante = e.id_estudiante 
+                 ORDER BY i.id_inscripcion DESC LIMIT 1) as ultimo_nivel_id,
+                (SELECT n.nom_nivel FROM inscripciones i 
+                 INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                 INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
+                 WHERE i.id_estudiante = e.id_estudiante 
+                 ORDER BY i.id_inscripcion DESC LIMIT 1) as nombre_nivel,
+                (SELECT n.num_nivel FROM inscripciones i 
+                 INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                 INNER JOIN niveles n ON ns.id_nivel = n.id_nivel 
+                 WHERE i.id_estudiante = e.id_estudiante 
+                 ORDER BY i.id_inscripcion DESC LIMIT 1) as num_nivel,
+                (SELECT s.nom_seccion FROM inscripciones i 
+                 INNER JOIN niveles_secciones ns ON i.id_nivel_seccion = ns.id_nivel_seccion 
+                 INNER JOIN secciones s ON ns.id_seccion = s.id_seccion 
+                 WHERE i.id_estudiante = e.id_estudiante 
+                 ORDER BY i.id_inscripcion DESC LIMIT 1) as nom_seccion,
+                (SELECT per.descripcion_periodo FROM inscripciones i 
+                 INNER JOIN periodos per ON i.id_periodo = per.id_periodo 
+                 WHERE i.id_estudiante = e.id_estudiante 
+                 ORDER BY i.id_inscripcion DESC LIMIT 1) as periodo_anterior_desc,
+                (SELECT CASE WHEN MAX(i.id_periodo) = (SELECT MAX(id_periodo) FROM periodos WHERE estatus = 1) 
+                 THEN 'Inscrito' ELSE 'No inscrito' END 
+                 FROM inscripciones i WHERE i.id_estudiante = e.id_estudiante) as estado_inscripcion
             FROM estudiantes e
             INNER JOIN personas p ON e.id_persona = p.id_persona
+            INNER JOIN direcciones d_est ON p.id_direccion = d_est.id_direccion
+            INNER JOIN parroquias par_est ON d_est.id_parroquia = par_est.id_parroquia
+            INNER JOIN municipios mun_est ON par_est.id_municipio = mun_est.id_municipio
+            INNER JOIN estados est_est ON mun_est.id_estado = est_est.id_estado
             INNER JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
             INNER JOIN parentesco par ON er.id_parentesco = par.id_parentesco
             WHERE er.id_representante = ? AND e.estatus = 1";
