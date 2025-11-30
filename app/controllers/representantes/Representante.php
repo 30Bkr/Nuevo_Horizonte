@@ -29,6 +29,8 @@ class Representante {
     // Datos de dirección
     public $id_direccion;
     public $id_parroquia;
+    public $id_municipio;
+    public $id_estado;
     public $direccion;
     public $calle;
     public $casa;
@@ -70,10 +72,14 @@ class Representante {
     // Obtener representante por ID
     public function obtenerPorId($id) {
         $query = "SELECT 
-                    r.*, p.*, dir.*
+                    r.*, p.*, dir.*,
+                    parr.id_municipio,
+                    m.id_estado
                   FROM " . $this->table_name . " r
                   INNER JOIN personas p ON r.id_persona = p.id_persona
                   INNER JOIN direcciones dir ON p.id_direccion = dir.id_direccion
+                  INNER JOIN parroquias parr ON dir.id_parroquia = parr.id_parroquia
+                  INNER JOIN municipios m ON parr.id_municipio = m.id_municipio
                   WHERE r.id_representante = ?";
 
         $stmt = $this->conn->prepare($query);
@@ -108,6 +114,8 @@ class Representante {
             // Datos de dirección
             $this->id_direccion = $row['id_direccion'];
             $this->id_parroquia = $row['id_parroquia'];
+            $this->id_municipio = $row['id_municipio'];
+            $this->id_estado = $row['id_estado'];
             $this->direccion = $row['direccion'];
             $this->calle = $row['calle'];
             $this->casa = $row['casa'];
@@ -288,8 +296,16 @@ class Representante {
             throw new Exception("El sexo es obligatorio");
         }
 
+        if (empty($this->lugar_nac)) {
+            throw new Exception("El lugar de nacimiento es obligatorio");
+        }
+
         if (empty($this->telefono)) {
             throw new Exception("El teléfono móvil es obligatorio");
+        }
+
+        if (empty($this->correo)) {
+            throw new Exception("El correo electrónico es obligatorio");
         }
 
         if (empty($this->id_profesion)) {
@@ -298,6 +314,14 @@ class Representante {
 
         if (empty($this->ocupacion)) {
             throw new Exception("La ocupación es obligatoria");
+        }
+
+        if (empty($this->id_parroquia)) {
+            throw new Exception("La parroquia es obligatoria");
+        }
+
+        if (empty($this->direccion)) {
+            throw new Exception("La dirección completa es obligatoria");
         }
 
         // Validar formato de correo
@@ -361,6 +385,44 @@ class Representante {
         if (!empty($this->ocupacion) && !preg_match('/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/', $this->ocupacion)) {
             throw new Exception("La ocupación solo puede contener letras y espacios");
         }
+
+        if (!empty($this->direccion) && !preg_match('/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-\#\,\.]+$/', $this->direccion)) {
+            throw new Exception("La dirección contiene caracteres no válidos");
+        }
+
+        if (!empty($this->calle) && !preg_match('/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-\#]+$/', $this->calle)) {
+            throw new Exception("La calle contiene caracteres no válidos");
+        }
+
+        if (!empty($this->casa) && !preg_match('/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-\#]+$/', $this->casa)) {
+            throw new Exception("La casa/apto contiene caracteres no válidos");
+        }
+    }
+
+    // Obtener lista de estados
+    public function obtenerEstados() {
+        $query = "SELECT id_estado, nom_estado FROM estados WHERE estatus = 1 ORDER BY nom_estado";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // Obtener municipios por estado
+    public function obtenerMunicipiosPorEstado($id_estado) {
+        $query = "SELECT id_municipio, nom_municipio FROM municipios WHERE id_estado = ? AND estatus = 1 ORDER BY nom_municipio";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $id_estado);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // Obtener parroquias por municipio
+    public function obtenerParroquiasPorMunicipio($id_municipio) {
+        $query = "SELECT id_parroquia, nom_parroquia FROM parroquias WHERE id_municipio = ? AND estatus = 1 ORDER BY nom_parroquia";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $id_municipio);
+        $stmt->execute();
+        return $stmt;
     }
 
     // Obtener lista de profesiones

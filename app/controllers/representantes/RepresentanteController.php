@@ -51,6 +51,18 @@ class RepresentanteController {
         return $this->representante->cambiarEstado($id, $estado);
     }
 
+    public function obtenerEstados() {
+        return $this->representante->obtenerEstados();
+    }
+
+    public function obtenerMunicipiosPorEstado($id_estado) {
+        return $this->representante->obtenerMunicipiosPorEstado($id_estado);
+    }
+
+    public function obtenerParroquiasPorMunicipio($id_municipio) {
+        return $this->representante->obtenerParroquiasPorMunicipio($id_municipio);
+    }
+
     public function obtenerProfesiones() {
         return $this->representante->obtenerProfesiones();
     }
@@ -75,6 +87,8 @@ class RepresentanteController {
         $this->representante->nacionalidad = $data['nacionalidad'] ?? '';
 
         // Datos de dirección
+        $this->representante->id_estado = $data['id_estado'] ?? '';
+        $this->representante->id_municipio = $data['id_municipio'] ?? '';
         $this->representante->id_parroquia = $data['id_parroquia'] ?? '';
         $this->representante->direccion = $data['direccion'] ?? '';
         $this->representante->calle = $data['calle'] ?? '';
