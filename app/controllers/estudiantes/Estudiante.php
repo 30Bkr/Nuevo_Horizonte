@@ -311,17 +311,17 @@ class Estudiante {
             throw new Exception("El primer nombre es obligatorio");
         }
         
-        if (empty($this->segundo_nombre)) {
-            throw new Exception("El segundo nombre es obligatorio");
-        }
+        // if (empty($this->segundo_nombre)) {
+        //     throw new Exception("El segundo nombre es obligatorio");
+        // }
         
         if (empty($this->primer_apellido)) {
             throw new Exception("El primer apellido es obligatorio");
         }
         
-        if (empty($this->segundo_apellido)) {
-            throw new Exception("El segundo apellido es obligatorio");
-        }
+        // if (empty($this->segundo_apellido)) {
+        //     throw new Exception("El segundo apellido es obligatorio");
+        // }
         
         if (empty($this->sexo)) {
             throw new Exception("El sexo es obligatorio");
@@ -331,9 +331,9 @@ class Estudiante {
             throw new Exception("El lugar de nacimiento es obligatorio");
         }
         
-        if (empty($this->telefono)) {
-            throw new Exception("El teléfono móvil es obligatorio");
-        }
+        // if (empty($this->telefono)) {
+        //     throw new Exception("El teléfono móvil es obligatorio");
+        // }
 
         // Validar formato de correo
         if (!empty($this->correo) && !filter_var($this->correo, FILTER_VALIDATE_EMAIL)) {
@@ -400,17 +400,17 @@ class Estudiante {
             throw new Exception("El primer nombre del representante es obligatorio");
         }
         
-        if (empty($this->segundo_nombre_rep)) {
-            throw new Exception("El segundo nombre del representante es obligatorio");
-        }
+        // if (empty($this->segundo_nombre_rep)) {
+        //     throw new Exception("El segundo nombre del representante es obligatorio");
+        // }
         
         if (empty($this->primer_apellido_rep)) {
             throw new Exception("El primer apellido del representante es obligatorio");
         }
         
-        if (empty($this->segundo_apellido_rep)) {
-            throw new Exception("El segundo apellido del representante es obligatorio");
-        }
+        // if (empty($this->segundo_apellido_rep)) {
+        //     throw new Exception("El segundo apellido del representante es obligatorio");
+        // }
         
         if (empty($this->cedula_rep)) {
             throw new Exception("La cédula del representante es obligatoria");
@@ -422,6 +422,19 @@ class Estudiante {
         
         if (empty($this->telefono_rep)) {
             throw new Exception("El teléfono móvil del representante es obligatorio");
+        }
+
+        // NUEVOS CAMPOS OBLIGATORIOS DEL REPRESENTANTE
+        if (empty($this->correo_rep)) {
+            throw new Exception("El correo electrónico del representante es obligatorio");
+        }
+
+        if (empty($this->id_profesion_rep)) {
+            throw new Exception("La profesión del representante es obligatoria");
+        }
+
+        if (empty($this->ocupacion_rep)) {
+            throw new Exception("La ocupación del representante es obligatoria");
         }
 
         // Validar formato de correo del representante

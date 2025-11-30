@@ -166,13 +166,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <li class="nav-item">
                   <a href="<?= URL; ?>/admin/inscripciones/indexf2.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Inscribir</p>
+                    <p>Inscripción</p>
                   </a>
                 </li>
                 <li class="nav-item">
                   <a href="<?= URL; ?>/admin/reinscripciones/reinscripcion2.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Re-inscripcion</p>
+                    <p>Reinscripción</p>
                   </a>
                 </li>
                 <!-- <li class="nav-item">
@@ -211,7 +211,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <li class="nav-item">
                   <a href="<?= URL; ?>/views/docentes/docentes_list.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Listado de docentes</p>
+                    <p>Listado</p>
                   </a>
                 </li>
                 <!-- <li class="nav-item">
@@ -236,7 +236,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                 </i>
                 <p>
-                  Cursos
+                  Niveles
                   <i class="right fas fa-angle-left"></i>
                 </p>
               </a>
@@ -263,7 +263,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                 </i>
                 <p>
-                  Alumnos
+                  Estudiantes
                   <i class="right fas fa-angle-left"></i>
                 </p>
               </a>
