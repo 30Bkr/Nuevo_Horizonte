@@ -143,7 +143,73 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
+            <!-- // Docentes  -->
 
+            <?php if (true) { ?>
+
+            <li class="nav-item ">
+              <a href="#" class="nav-link">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-person-rolodex">
+                  <img src="<?= URL; ?>/public/images/profesor.svg" alt="Inscripcion">
+                </i>
+
+                <p>
+                  Docentes
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/views/docentes/docentes_list.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Listado</p>
+                  </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a href="/project/admin/roles/index.php" class="nav-link active">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Asignar materias</p>
+                    </a>
+                  </li> -->
+              </ul>
+            </li>
+
+          <?php
+          }
+          ?>
+
+          <!-- Estudiantes -->
+
+          <?php if (true) { ?>
+            <li class="nav-item ">
+              <a href="#" class="nav-link">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-card-list">
+                  <img src="<?= URL; ?>/public/images/secciones.svg" alt="Inscripcion">
+
+                </i>
+                <p>
+                  Estudiantes
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/estudiantes/estudiantes_list.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Listado</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+          <?php
+          }
+          ?>
+
+          
+          <!-- Inscripciones -->
 
           <?php
           if (true) { ?>
@@ -190,39 +256,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-          <?php if (true) { ?>
-
-            <li class="nav-item ">
-              <a href="#" class="nav-link">
-                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
-                <i class="nav-icon fas bi bi-person-rolodex">
-                  <img src="<?= URL; ?>/public/images/profesor.svg" alt="Inscripcion">
-                </i>
-
-                <p>
-                  Docentes
-                  <i class="right fas fa-angle-left"></i>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="<?= URL; ?>/views/docentes/docentes_list.php" class="nav-link">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Listado</p>
-                  </a>
-                </li>
-                <!-- <li class="nav-item">
-                    <a href="/project/admin/roles/index.php" class="nav-link active">
-                      <i class="far fa-circle nav-icon"></i>
-                      <p>Asignar materias</p>
-                    </a>
-                  </li> -->
-              </ul>
-            </li>
-
-          <?php
-          }
-          ?>
+          
 
           <?php if (true) { ?>
             <li class="nav-item ">
@@ -251,33 +285,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-          <?php if (true) { ?>
-            <li class="nav-item ">
-              <a href="#" class="nav-link">
-                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
-                <i class="nav-icon fas bi bi-card-list">
-                  <img src="<?= URL; ?>/public/images/secciones.svg" alt="Inscripcion">
-
-                </i>
-                <p>
-                  Estudiantes
-                  <i class="right fas fa-angle-left"></i>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="<?= URL; ?>/admin/estudiantes/estudiantes_list.php" class="nav-link">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Listado</p>
-                  </a>
-                </li>
-              </ul>
-            </li>
-
-          <?php
-          }
-          ?>
-
+          
           <?php if (true) { ?>
 
             <li class="nav-item ">
