@@ -187,7 +187,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="9" class="text-center">No hay estudiantes inscritos en este grado/sección</td>
+                                    <td colspan="9" class="text-center">No hay estudiantes inscritos en este grado/año/sección</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
