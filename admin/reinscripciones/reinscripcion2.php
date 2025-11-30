@@ -19,7 +19,8 @@ try {
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
   $inscripcionesController = new InscripcionController($pdo);
-  $periodos = $inscripcionesController->obtenerPeriodosActivos();
+  $periodos_vigentes = $inscripcionesController->obtenerPeriodosVigentes();
+  $periodos = $periodos_vigentes['periodos'] ?? [];
   $profesionesController = new RepresentanteController($pdo);
   $profesiones = $profesionesController->obtenerProfesiones();
   $ubicacionController = new UbicacionController($pdo);
@@ -702,7 +703,7 @@ try {
                     </div>
                     <div class="card-body">
                       <div class="row">
-                        <div class="col-md-4">
+                        <!-- <div class="col-md-4">
                           <div class="form-group">
                             <label for="id_periodo">Período Académico <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                             <select name="id_periodo" id="id_periodo" class="form-control" required>
@@ -718,6 +719,37 @@ try {
                               }
                               ?>
                             </select>
+                          </div>
+                        </div> -->
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="id_periodo">Período Académico <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                            <select name="id_periodo" id="id_periodo" class="form-control" required>
+                              <option value="">Seleccionar Período</option>
+                              <?php
+                              if (!empty($periodos)) {
+                                foreach ($periodos as $periodo) {
+                                  $fecha_ini = date('d/m/Y', strtotime($periodo['fecha_ini']));
+                                  $fecha_fin = date('d/m/Y', strtotime($periodo['fecha_fin']));
+                                  echo "<option value='{$periodo['id_periodo']}' data-fecha-ini='{$periodo['fecha_ini']}' data-fecha-fin='{$periodo['fecha_fin']}'>
+                            {$periodo['descripcion_periodo']} ({$fecha_ini} al {$fecha_fin})
+                          </option>";
+                                }
+                              } else {
+                                echo "<option value=''>No hay períodos vigentes</option>";
+                              }
+                              ?>
+                            </select>
+                            <small class="form-text text-muted">
+                              <?php
+                              $fecha_hoy = date('d/m/Y');
+                              if (!empty($periodos)) {
+                                echo "Fecha actual: {$fecha_hoy} - Períodos dentro del rango de fechas";
+                              } else {
+                                echo "⚠️ No hay períodos académicos vigentes. Fecha actual: {$fecha_hoy}";
+                              }
+                              ?>
+                            </small>
                           </div>
                         </div>
                         <div class="col-md-4">
@@ -1738,6 +1770,8 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
         return false;
       }
 
+
+
       // Validar dirección según si viven juntos o no
       if (mismaCasa === 'no') {
         console.log('📍 Validando dirección del estudiante (NO viven juntos)');
@@ -1815,6 +1849,50 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
         e.preventDefault();
         alert('Por favor complete todos los campos requeridos del estudiante.');
         return false;
+      }
+
+      // NUEVA VALIDACIÓN: Verificar que el período esté vigente
+      const periodoSelect = document.getElementById('id_periodo');
+      const selectedOption = periodoSelect.options[periodoSelect.selectedIndex];
+
+      if (selectedOption.value) {
+        const fechaIni = selectedOption.getAttribute('data-fecha-ini');
+        const fechaFin = selectedOption.getAttribute('data-fecha-fin');
+        const fechaActual = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+        console.log('📅 Validación de fechas:', {
+          fechaIni,
+          fechaFin,
+          fechaActual
+        });
+
+        if (fechaActual < fechaIni) {
+          e.preventDefault();
+          alert('❌ El período académico seleccionado no ha iniciado.\n\n' +
+            `Fecha de inicio: ${formatFecha(fechaIni)}\n` +
+            `Fecha actual: ${formatFecha(fechaActual)}`);
+          periodoSelect.focus();
+          return false;
+        }
+
+        if (fechaActual > fechaFin) {
+          e.preventDefault();
+          alert('❌ El período académico seleccionado ha finalizado.\n\n' +
+            `Fecha de finalización: ${formatFecha(fechaFin)}\n` +
+            `Fecha actual: ${formatFecha(fechaActual)}`);
+          periodoSelect.focus();
+          return false;
+        }
+      }
+
+      // Función auxiliar para formatear fechas
+      function formatFecha(fechaISO) {
+        const fecha = new Date(fechaISO);
+        return fecha.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
       }
 
       // Validar que se haya seleccionado un estudiante

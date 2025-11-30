@@ -7,7 +7,44 @@ class InscripcionController
   {
     $this->pdo = $pdo;
   }
+  /**
+   * Obtiene períodos académicos que están actualmente activos (fecha actual entre fecha_ini y fecha_fin)
+   */
+  public function obtenerPeriodosVigentes()
+  {
+    try {
+      $fecha_actual = date('Y-m-d');
 
+      $sql = "
+            SELECT 
+                id_periodo,
+                descripcion_periodo,
+                fecha_ini,
+                fecha_fin
+            FROM periodos 
+            WHERE estatus = 1
+            AND ? BETWEEN fecha_ini AND fecha_fin
+            ORDER BY fecha_ini DESC
+        ";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$fecha_actual]);
+      $periodos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+      return [
+        'success' => true,
+        'periodos' => $periodos,
+        'fecha_actual' => $fecha_actual
+      ];
+    } catch (PDOException $e) {
+      error_log("Error en obtenerPeriodosVigentes: " . $e->getMessage());
+      return [
+        'success' => false,
+        'message' => 'Error al obtener períodos vigentes',
+        'periodos' => []
+      ];
+    }
+  }
   //crear inscripcion nueva
   // En InscripcionController
   public function crearInscripcionConNivelSeccion($id_estudiante, $id_periodo, $id_nivel, $id_seccion, $id_usuario, $observaciones = '')

@@ -37,6 +37,33 @@ class ReinscripcionController
     try {
       $this->pdo->beginTransaction();
 
+      // ========== NUEVA VALIDACIÓN: VERIFICAR PERÍODO VIGENTE ==========
+      if (isset($datos['id_periodo'])) {
+        $id_periodo = $datos['id_periodo'];
+
+        // Verificar que el período esté vigente
+        $sql_periodo = "SELECT fecha_ini, fecha_fin FROM periodos WHERE id_periodo = ? AND estatus = 1";
+        $stmt_periodo = $this->pdo->prepare($sql_periodo);
+        $stmt_periodo->execute([$id_periodo]);
+        $periodo = $stmt_periodo->fetch(PDO::FETCH_ASSOC);
+
+        if ($periodo) {
+          $fecha_actual = date('Y-m-d');
+          $fecha_ini = $periodo['fecha_ini'];
+          $fecha_fin = $periodo['fecha_fin'];
+
+          if ($fecha_actual < $fecha_ini) {
+            throw new Exception("El período académico no ha iniciado. Inicia el: " . date('d/m/Y', strtotime($fecha_ini)));
+          }
+
+          if ($fecha_actual > $fecha_fin) {
+            throw new Exception("El período académico ha finalizado. Finalizó el: " . date('d/m/Y', strtotime($fecha_fin)));
+          }
+        } else {
+          throw new Exception("El período académico seleccionado no existe o no está activo");
+        }
+      }
+
       // 1. Verificar si el estudiante ya está inscrito en el período
       if ($this->estudianteInscritoEnPeriodoActivo($datos['id_estudiante_existente'], $datos['id_periodo'])) {
         throw new Exception("El estudiante ya está inscrito en este período académico.");
