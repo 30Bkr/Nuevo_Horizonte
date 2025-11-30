@@ -45,6 +45,9 @@ class Estudiante {
     public $ocupacion_rep;
     public $lugar_trabajo_rep;
 
+    // Nueva propiedad para control de dirección compartida
+    public $comparte_direccion;
+
     public function __construct($db) {
         $this->conn = $db;
     }
@@ -221,14 +224,57 @@ class Estudiante {
     }
 
     // Actualizar estudiante
-    public function actualizar() {
-        try {
-            // Validar datos antes de actualizar
-            $this->validarDatosEstudiante();
+   // Actualizar estudiante
+public function actualizar() {
+    try {
+        // Validar datos antes de actualizar
+        $this->validarDatosEstudiante();
 
-            $this->conn->beginTransaction();
+        $this->conn->beginTransaction();
 
-            // 1. Actualizar dirección
+        // 1. Verificar si necesita dirección independiente
+        $comparteDireccion = $_POST['comparte_direccion'] ?? '1';
+        
+        if ($comparteDireccion === '0') {
+            // Crear nueva dirección para el estudiante
+            $queryDireccion = "INSERT INTO direcciones 
+                              (id_parroquia, direccion, calle, casa, creacion, estatus) 
+                              VALUES (?, ?, ?, ?, NOW(), 1)";
+            
+            $stmtDireccion = $this->conn->prepare($queryDireccion);
+            $stmtDireccion->bindParam(1, $this->id_parroquia);
+            $stmtDireccion->bindParam(2, $this->direccion);
+            $stmtDireccion->bindParam(3, $this->calle);
+            $stmtDireccion->bindParam(4, $this->casa);
+            $stmtDireccion->execute();
+            
+            $nuevaIdDireccion = $this->conn->lastInsertId();
+
+            // 2. Actualizar persona con nueva dirección
+            $queryPersona = "UPDATE personas 
+                            SET id_direccion = ?, primer_nombre = UPPER(?), segundo_nombre = UPPER(?), primer_apellido = UPPER(?), segundo_apellido = UPPER(?),
+                                cedula = ?, telefono = ?, telefono_hab = ?, correo = LOWER(?), lugar_nac = UPPER(?), 
+                                fecha_nac = ?, sexo = UPPER(?), nacionalidad = UPPER(?), actualizacion = NOW()
+                            WHERE id_persona = ?";
+            
+            $stmtPersona = $this->conn->prepare($queryPersona);
+            $stmtPersona->bindParam(1, $nuevaIdDireccion);
+            $stmtPersona->bindParam(2, $this->primer_nombre);
+            $stmtPersona->bindParam(3, $this->segundo_nombre);
+            $stmtPersona->bindParam(4, $this->primer_apellido);
+            $stmtPersona->bindParam(5, $this->segundo_apellido);
+            $stmtPersona->bindParam(6, $this->cedula);
+            $stmtPersona->bindParam(7, $this->telefono);
+            $stmtPersona->bindParam(8, $this->telefono_hab);
+            $stmtPersona->bindParam(9, $this->correo);
+            $stmtPersona->bindParam(10, $this->lugar_nac);
+            $stmtPersona->bindParam(11, $this->fecha_nac);
+            $stmtPersona->bindParam(12, $this->sexo);
+            $stmtPersona->bindParam(13, $this->nacionalidad);
+            $stmtPersona->bindParam(14, $this->id_persona);
+            $stmtPersona->execute();
+        } else {
+            // 1. Actualizar dirección existente (compartida con representante)
             $queryDireccion = "UPDATE direcciones 
                               SET id_parroquia = ?, direccion = ?, calle = ?, casa = ?, actualizacion = NOW() 
                               WHERE id_direccion = ?";
@@ -241,7 +287,7 @@ class Estudiante {
             $stmtDireccion->bindParam(5, $this->id_direccion);
             $stmtDireccion->execute();
 
-            // 2. Actualizar persona (INCLUYENDO LA CÉDULA)
+            // 2. Actualizar persona (manteniendo misma dirección)
             $queryPersona = "UPDATE personas 
                             SET primer_nombre = UPPER(?), segundo_nombre = UPPER(?), primer_apellido = UPPER(?), segundo_apellido = UPPER(?),
                                 cedula = ?, telefono = ?, telefono_hab = ?, correo = LOWER(?), lugar_nac = UPPER(?), 
@@ -263,18 +309,19 @@ class Estudiante {
             $stmtPersona->bindParam(12, $this->nacionalidad);
             $stmtPersona->bindParam(13, $this->id_persona);
             $stmtPersona->execute();
-
-            // 3. Actualizar representante
-            $this->actualizarRepresentante();
-
-            $this->conn->commit();
-            return true;
-
-        } catch (Exception $e) {
-            $this->conn->rollBack();
-            throw $e;
         }
+
+        // 3. Actualizar representante
+        $this->actualizarRepresentante();
+
+        $this->conn->commit();
+        return true;
+
+    } catch (Exception $e) {
+        $this->conn->rollBack();
+        throw $e;
     }
+}
 
     // Cambiar estado del estudiante
     public function cambiarEstado($id, $estado) {

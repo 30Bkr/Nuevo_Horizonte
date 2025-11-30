@@ -336,11 +336,32 @@ try {
                                             </div>
                                         </div>
 
-                                        <!-- Dirección del Estudiante -->
+                                        <!-- Dirección del Estudiante CORREGIDA -->
                                         <h5 class="text-primary mb-3 mt-4">
                                             <i class="fas fa-map-marker-alt"></i> Dirección del Estudiante
                                         </h5>
+
+                                        <!-- Campo oculto para controlar si comparte dirección con el representante -->
+                                        <input type="hidden" name="comparte_direccion" id="comparte_direccion" value="1">
+
                                         <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="misma_direccion_rep" name="misma_direccion_rep" checked>
+                                                        <label class="form-check-label" for="misma_direccion_rep">
+                                                            <strong>¿El estudiante vive en la misma dirección del representante?</strong>
+                                                        </label>
+                                                        <small class="form-text text-muted d-block">
+                                                            Si desmarca esta opción, podrá ingresar una dirección diferente para el estudiante.
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <!-- SOLO UN INPUT DE PARROQUIA - ELIMINADO EL DUPLICADO -->
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label for="id_parroquia">Parroquia</label>
@@ -384,7 +405,7 @@ try {
                                             </div>
                                         </div>
 
-                                        <!-- Sección de Salud del Estudiante -->
+                                        <!-- Sección de Salud del Estudiante CORREGIDA -->
                                         <h5 class="text-primary mb-3 mt-4">
                                             <i class="fas fa-heartbeat"></i> Información de Salud del Estudiante
                                         </h5>
@@ -640,8 +661,15 @@ try {
             });
 
             // Solo letras (para nombres, apellidos, lugar de nacimiento, dirección, calle, casa, ocupación, lugar de trabajo)
-            $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion, #calle, #casa, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
-                this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+           $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion, #calle, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
+            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            convertirMayusculas(this);
+        });
+
+            // Validación específica para casa/apto (permite letras, números y caracteres especiales comunes)
+            $('#casa').on('input', function() {
+                // Permitir letras, números, guiones, #, y espacios
+                this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-#]/g, '');
                 convertirMayusculas(this);
             });
 
@@ -968,6 +996,48 @@ try {
             }, 100);
         <?php endif; ?>
     });
+
+    // Manejo de direcciones independientes
+$(document).ready(function() {
+    const mismaDireccionCheckbox = $('#misma_direccion_rep');
+    const camposDireccion = [
+        'id_parroquia', 'direccion', 'calle', 'casa'
+    ];
+
+    function toggleCamposDireccion() {
+        const compartirDireccion = mismaDireccionCheckbox.is(':checked');
+        $('#comparte_direccion').val(compartirDireccion ? '1' : '0');
+        
+        camposDireccion.forEach(campoId => {
+            const campo = $('#' + campoId);
+            if (campo.length) {
+                campo.prop('disabled', compartirDireccion);
+                if (compartirDireccion) {
+                    campo.addClass('bg-light');
+                } else {
+                    campo.removeClass('bg-light');
+                }
+            }
+        });
+
+        // Actualizar placeholder para indicar estado
+        const direccionInput = $('#direccion');
+        if (direccionInput.length) {
+            if (compartirDireccion) {
+                direccionInput.attr('placeholder', "Usando dirección del representante");
+            } else {
+                direccionInput.attr('placeholder', "Ingrese dirección del estudiante");
+            }
+        }
+    }
+
+    // Event listener para el checkbox
+    if (mismaDireccionCheckbox.length) {
+        mismaDireccionCheckbox.on('change', toggleCamposDireccion);
+        // Inicializar estado
+        toggleCamposDireccion();
+    }
+});
     </script>
 </body>
 </html>
