@@ -321,12 +321,20 @@ if ($_POST) {
     $reinscripcionController = new ReinscripcionController($pdo);
 
     $resultado = $reinscripcionController->realizarReinscripcion($_POST);
-
-    echo json_encode($resultado);
+    if ($resultado['success']) {
+      // REDIRIGIR AL ADMIN DESPUÉS DE ÉXITO
+      $_SESSION['mensaje_exito'] = $resultado['message'];
+      header("Location: /final/admin/index.php");
+      exit();
+    } else {
+      // Redirigir de vuelta con error
+      $_SESSION['mensaje_error'] = $resultado['message'];
+      header("Location: " . $_SERVER['HTTP_REFERER']);
+      exit();
+    }
   } catch (Exception $e) {
-    echo json_encode([
-      'success' => false,
-      'message' => 'Error: ' . $e->getMessage()
-    ]);
+    $_SESSION['mensaje_error'] = 'Error: ' . $e->getMessage();
+    header("Location: " . $_SERVER['HTTP_REFERER']);
+    exit();
   }
 }

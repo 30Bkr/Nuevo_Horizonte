@@ -1031,7 +1031,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
         const botonHTML = puedeReinscribir ?
           `<button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
             data-id="${estudiante.id_estudiante}">
-        <i class="fas fa-sync-alt"></i> Reinscribir
+        <i class="fas fa-sync-alt"></i> Seleccionar
     </button>` :
           `<button type="button" class="btn btn-secondary btn-sm" disabled>
         <i class="fas fa-check"></i> Ya Inscrito
