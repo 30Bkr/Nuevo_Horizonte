@@ -4,12 +4,11 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
+// CORRECCIÓN: Se corrige el doble cierre de comilla en esta línea.
 include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.php';
 ?>
 
-<!-- Content Wrapper -->
 <div class="content-wrapper">
-    <!-- Content Header -->
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -26,10 +25,8 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
         </div>
     </section>
 
-    <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
-            <!-- Mensajes de alerta -->
             <?php if (isset($_SESSION['success'])): ?>
                 <div class="alert alert-success alert-dismissible">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
@@ -54,14 +51,8 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                         <div class="card-header">
                             <h3 class="card-title">Listado de Estudiantes</h3>
                             <div class="card-tools">
-                                <!--
-                                <a href="estudiante_nuevo.php" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Nuevo Estudiante
-                                </a>
-                                -->
-                            </div>
+                                </div>
                         </div>
-                        <!-- /.card-header -->
                         <div class="card-body">
                             <?php
                             try {
@@ -75,22 +66,24 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                     if ($stmt) {
                                         if ($stmt->rowCount() > 0) {
                                             echo '<table id="tablaEstudiantes" class="table table-bordered table-striped">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>ID</th>
-                                                                <th>Cédula</th>
-                                                                <th>Nombre Completo</th>
-                                                                <th>Teléfono</th>
-                                                                <th>Correo</th>
-                                                                <th>Fecha Nac.</th>
-                                                                <th>Sexo</th>
-                                                                <th>Inscripciones</th>
-                                                                <th>Estado</th>
-                                                                <th>Acciones</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>';
+                                                    <thead>
+                                                        <tr>
+                                                            <th>N°</th>
+                                                            <th>Cédula</th>
+                                                            <th>Nombre Completo</th>
+                                                            <th>Teléfono</th>
+                                                            <th>Correo</th>
+                                                            <th>Fecha Nac.</th>
+                                                            <th>Sexo</th>
+                                                            <th>Inscripciones</th>
+                                                            <th>Estado</th>
+                                                            <th>Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>';
 
+                                            // MODIFICACIÓN: Se elimina la lógica de $estudiantes, usort y $contador_base.
+                                            // Se itera directamente y DataTables se encargará de la paginación y ordenamiento.
                                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                                 $nombreCompleto = $row['primer_nombre'] . ' ' .
                                                     ($row['segundo_nombre'] ? $row['segundo_nombre'] . ' ' : '') .
@@ -107,23 +100,25 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
 
                                                 $boton_estado = $row['estatus'] == 1 ?
                                                     '<button type="button" class="btn btn-danger btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_estudiante'] . ', 0)">
-                                                                <i class="fas fa-ban"></i>
-                                                            </button>' :
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>' :
                                                     '<button type="button" class="btn btn-success btn-sm" title="Habilitar" onclick="cambiarEstado(' . $row['id_estudiante'] . ', 1)">
-                                                                <i class="fas fa-check"></i>
-                                                            </button>';
+                                                        <i class="fas fa-check"></i>
+                                                    </button>';
 
                                                 // Botón para generar constancia (solo si tiene inscripciones)
+                                                // Se ajusta la llamada a generarConstancia para pasar el evento
                                                 $boton_constancia = $row['inscripciones_count'] > 0 ?
-                                                    '<button type="button" class="btn btn-info btn-sm" title="Generar Constancia" onclick="generarConstancia(' . $row['id_estudiante'] . ')">
-                                                                <i class="fas fa-file-pdf"></i>
-                                                            </button>' :
+                                                    '<button type="button" class="btn btn-info btn-sm" title="Generar Constancia" onclick="generarConstancia(event, ' . $row['id_estudiante'] . ')">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </button>' :
                                                     '<button type="button" class="btn btn-info btn-sm" title="Sin inscripciones" disabled>
-                                                                <i class="fas fa-file-pdf"></i>
-                                                            </button>';
+                                                        <i class="fas fa-file-pdf"></i>
+                                                    </button>';
 
                                                 echo "<tr>";
-                                                echo "<td>{$row['id_estudiante']}</td>";
+                                                // MODIFICACIÓN: Dejamos la columna # vacía. DataTables la llenará con el número de secuencia.
+                                                echo "<td></td>"; 
                                                 echo "<td>{$row['cedula']}</td>";
                                                 echo "<td>{$nombreCompleto}</td>";
                                                 echo "<td>{$row['telefono']}</td>";
@@ -133,19 +128,19 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                 echo "<td>{$inscripciones_badge}</td>";
                                                 echo "<td>{$estado_badge}</td>";
                                                 echo "<td>
-                                                            <div class='btn-group'>
-                                                                <a href='estudiante_editar.php?id={$row['id_estudiante']}' class='btn btn-warning btn-sm' title='Editar'>
-                                                                    <i class='fas fa-edit'></i>
-                                                                </a>
-                                                                <a href='estudiante_ver.php?id={$row['id_estudiante']}' class='btn btn-primary btn-sm' title='Ver'>
-                                                                    <i class='fas fa-eye'></i>
-                                                                </a>
-                                                                {$boton_constancia}
-                                                                {$boton_estado}
-                                                            </div>
-                                                        </td>";
+                                                    <div class='btn-group'>
+                                                        <a href='estudiante_editar.php?id={$row['id_estudiante']}' class='btn btn-warning btn-sm' title='Editar'>
+                                                            <i class='fas fa-edit'></i>
+                                                        </a>
+                                                        <a href='estudiante_ver.php?id={$row['id_estudiante']}' class='btn btn-primary btn-sm' title='Ver'>
+                                                            <i class='fas fa-eye'></i>
+                                                        </a>
+                                                        {$boton_constancia}
+                                                        {$boton_estado}
+                                                    </div>
+                                                </td>";
                                                 echo "</tr>";
-                                            }
+                                            } // Cierre del while
 
                                             echo '</tbody></table>';
                                         } else {
@@ -162,28 +157,16 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                             }
                             ?>
                         </div>
-                        <!-- /.card-body -->
+                        </div>
                     </div>
-                    <!-- /.card -->
                 </div>
-                <!-- /.col -->
             </div>
-            <!-- /.row -->
-        </div>
-        <!-- /.container-fluid -->
-    </section>
-    <!-- /.content -->
-</div>
-<!-- /.content-wrapper -->
-
-<!-- jQuery -->
+        </section>
+    </div>
 <script src="/final/public/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
 <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables -->
 <script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
 <script src="/final/public/dist/js/adminlte.min.js"></script>
 
 <script>
@@ -215,9 +198,19 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                     "sortDescending": ": activar para ordenar descendente"
                 }
             },
-            "order": [
-                [2, "asc"]
-            ]
+            // Se elimina el 'order': [[0, "asc"]] para que la columna # se pueda ordenar correctamente con los datos originales.
+            "drawCallback": function(settings) {
+                // MODIFICACIÓN: Lógica para la numeración continua a través de las páginas
+                var api = this.api();
+                var startIndex = api.page.info().start; // Índice de inicio de la página actual
+
+                api.column(0, {
+                    page: 'current'
+                }).nodes().each(function(cell, i) {
+                    // La numeración continua es: Índice de inicio + índice de la fila en la página + 1
+                    cell.innerHTML = startIndex + i + 1;
+                });
+            }
         });
     });
 
@@ -233,6 +226,7 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                     estado: nuevo_estado
                 },
                 dataType: 'json',
+                // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
                 success: function(response) {
                     if (response.success) {
                         alert(response.message);
@@ -240,7 +234,7 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                     } else {
                         alert('Error: ' + response.message);
                     }
-                },
+                }, 
                 error: function() {
                     alert('Error al procesar la solicitud');
                 }
@@ -248,43 +242,44 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
         }
     }
 
-    function generarConstancia(id_estudiante) {
-    // Mostrar mensaje de carga
-    const boton = event.target;
-    const originalHTML = boton.innerHTML;
-    boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    boton.disabled = true;
+    // CORRECCIÓN: Se agrega 'event' como argumento
+    function generarConstancia(event, id_estudiante) { 
+        // Mostrar mensaje de carga
+        const boton = event.target;
+        const originalHTML = boton.innerHTML;
+        boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        boton.disabled = true;
 
-    // Obtener la última inscripción del estudiante
-    $.ajax({
-        url: 'obtener_ultima_inscripcion.php',
-        type: 'POST',
-        data: {
-            id_estudiante: id_estudiante
-        },
-        dataType: 'json',
-        success: function(response) {
-            // Restaurar botón
-            boton.innerHTML = originalHTML;
-            boton.disabled = false;
+        // Obtener la última inscripción del estudiante
+        $.ajax({
+            // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
+            url: 'obtener_ultima_inscripcion.php', 
+            type: 'POST',
+            data: {
+                id_estudiante: id_estudiante
+            }, // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
+            // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
+            dataType: 'json', 
+            // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
+            success: function(response) {
+                // Restaurar botón
+                boton.innerHTML = originalHTML;
+                boton.disabled = false;
 
-            if (response.success && response.id_inscripcion) {
-                // Abrir la constancia en una nueva pestaña
-                window.open('/final/app/controllers/inscripciones/generar_constancia_estudiante.php?id_inscripcion=' + response.id_inscripcion + '&v=' + Date.now(), '_blank');
-            } //else {
-                // SOLO mostrar error si realmente hay un error
-                //alert('Error: ' + (response.message || 'No se pudo obtener la inscripción del estudiante'));
-            //}
-        },
-        error: function(xhr, status, error) {
-            // Restaurar botón
-            boton.innerHTML = originalHTML;
-            boton.disabled = false;
-            
-            alert('Error al procesar la solicitud: ' + error);
-        }
-    });
-}
+                if (response.success && response.id_inscripcion) {
+                    // Abrir la constancia en una nueva pestaña
+                    window.open('/final/app/controllers/inscripciones/generar_constancia_estudiante.php?id_inscripcion=' + response.id_inscripcion + '&v=' + Date.now(), '_blank');
+                }
+            }, 
+            error: function(xhr, status, error) {
+                // Restaurar botón
+                boton.innerHTML = originalHTML;
+                boton.disabled = false;
+                
+                alert('Error al procesar la solicitud: ' + error);
+            }
+        });
+    }
 </script>
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");

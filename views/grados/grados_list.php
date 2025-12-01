@@ -73,22 +73,23 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                             try {
                                 if ($stmt->rowCount() > 0) {
                                     echo '<table id="tablaGrados" class="table table-bordered table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th>ID</th>
-                                                        <th>Grado/Año</th>
-                                                        <th>Sección</th>
-                                                        <th>Capacidad</th>
-                                                        <th>Alumnos Registrados</th>
-                                                        <th>Disponibilidad</th>
-                                                        <th>Estado</th>
-                                                        <th>Acciones</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>';
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Grado/Año</th>
+                                                    <th>Sección</th>
+                                                    <th>Capacidad</th>
+                                                    <th>Alumnos Registrados</th>
+                                                    <th>Disponibilidad</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>';
 
                                     $totalCapacidad = 0;
                                     $totalAlumnos = 0;
+                                    // La numeración se manejará completamente por DataTables.
 
                                     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                         $porcentaje = $row['capacidad'] > 0 ? ($row['total_alumnos'] / $row['capacidad']) * 100 : 0;
@@ -105,7 +106,8 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                         $estado_icono = $estado_grado ? 'check' : 'times';
 
                                         echo "<tr>";
-                                        echo "<td>{$row['id_nivel_seccion']}</td>";
+                                        // Dejamos el ID aquí, DataTables lo reemplazará con el índice de fila.
+                                        echo "<td>{$row['id_nivel_seccion']}</td>"; 
                                         echo "<td>{$row['nombre_grado']}</td>";
                                         echo "<td>{$row['seccion']}</td>";
                                         echo "<td>{$row['capacidad']}</td>";
@@ -124,11 +126,11 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                         echo "<td>
                                                     <div class='btn-group'>
                                                         <a href='estudiantes_por_grado.php?id_nivel_seccion={$row['id_nivel_seccion']}' 
-                                                           class='btn btn-info btn-sm' title='Ver Estudiantes'>
+                                                            class='btn btn-info btn-sm' title='Ver Estudiantes'>
                                                             <i class='fas fa-users'></i>
                                                         </a>
                                                         <a href='grado_editar.php?id={$row['id_nivel_seccion']}' 
-                                                           class='btn btn-warning btn-sm' title='Editar'>
+                                                            class='btn btn-warning btn-sm' title='Editar'>
                                                             <i class='fas fa-edit'></i>
                                                         </a>";
 
@@ -136,17 +138,17 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                         if ($estado_grado) {
                                             // Si está activo, mostrar botón para inhabilitar
                                             echo "<button type='button' class='btn btn-danger btn-sm' 
-                                                    title='Inhabilitar Grado' 
-                                                    onclick='confirmarCambioEstado({$row['id_nivel_seccion']}, false)'>
-                                                    <i class='fas fa-ban'></i>
-                                                </button>";
+                                                        title='Inhabilitar Grado' 
+                                                        onclick='confirmarCambioEstado({$row['id_nivel_seccion']}, false)'>
+                                                        <i class='fas fa-ban'></i>
+                                                    </button>";
                                         } else {
                                             // Si está inactivo, mostrar botón para habilitar
                                             echo "<button type='button' class='btn btn-success btn-sm' 
-                                                    title='Habilitar Grado' 
-                                                    onclick='confirmarCambioEstado({$row['id_nivel_seccion']}, true)'>
-                                                    <i class='fas fa-check'></i>
-                                                </button>";
+                                                        title='Habilitar Grado' 
+                                                        onclick='confirmarCambioEstado({$row['id_nivel_seccion']}, true)'>
+                                                        <i class='fas fa-check'></i>
+                                                    </button>";
                                         }
 
                                         echo "</div>
@@ -164,7 +166,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                         <strong>' . ($totalCapacidad - $totalAlumnos) . ' cupos disponibles totales</strong>
                                                     </th>
                                                 </tr>
-                                              </tfoot>';
+                                            </tfoot>';
                                     echo '</table>';
                                 } else {
                                     echo "<div class='alert alert-info'>No hay grados/secciones registrados en el sistema.</div>";
@@ -181,8 +183,6 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
     </section>
 </div>
 
-</div>
-
 <?php
 include_once('../../layout/layaout2.php');
 include_once('../../layout/mensajes.php');
@@ -194,9 +194,23 @@ include_once('../../layout/mensajes.php');
 
 <script>
     $(function() {
-        $('#tablaGrados').DataTable({
+        // Inicialización de DataTables
+        var table = $('#tablaGrados').DataTable({
             "responsive": true,
             "autoWidth": false,
+            // Definición de columnas y sus propiedades
+            "columnDefs": [
+                { 
+                    "targets": 0, // La columna # (índice 0)
+                    "orderable": false, // No permitir la ordenación en esta columna
+                    "searchable": false, // No permitir la búsqueda en esta columna
+                    // Usamos la función render para obtener el índice de la fila.
+                    "render": function (data, type, row, meta) {
+                        return meta.row + 1;
+                    }
+                },
+                { "orderable": false, "targets": [7] } // Columna Acciones (índice 7)
+            ],
             "language": {
                 "decimal": "",
                 "emptyTable": "No hay datos disponibles en la tabla",
@@ -221,11 +235,22 @@ include_once('../../layout/mensajes.php');
                     "sortDescending": ": activar para ordenar descendente"
                 }
             },
+            // Ordenación inicial: Grado/Año (columna 1, ascendente), Sección (columna 2, ascendente)
             "order": [
-                [1, "asc"],
+                [1, "asc"], 
                 [2, "asc"]
             ]
         });
+
+        // Solución Definitiva: Forzar el re-indexado de la columna # después de cada acción
+        // Esto garantiza la numeración secuencial (1, 2, 3...) sin importar el ordenamiento o filtro.
+        table.on( 'draw.dt', function () {
+            // Busca la columna 0 (el '#') y actualiza el contenido de cada celda
+            // basándose en el índice actual de la fila (i + 1).
+            table.column(0, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
+                cell.innerHTML = i + 1;
+            } );
+        } ).draw(); // El .draw() final asegura que se aplique inmediatamente después de la inicialización.
     });
 
     function confirmarCambioEstado(id, habilitar) {
@@ -234,7 +259,8 @@ include_once('../../layout/mensajes.php');
             '¿Está seguro de que desea habilitar este grado/sección?' :
             '¿Está seguro de que desea inhabilitar este grado/sección?\n\nNota: No se podrán realizar nuevas inscripciones en grados inhabilitados.';
 
-        if (confirm(mensaje)) {
+        // Usar window.confirm para este tipo de interacciones
+        if (window.confirm(mensaje)) {
             window.location.href = 'grado_cambiar_estado.php?id=' + id + '&accion=' + accion;
         }
     }
