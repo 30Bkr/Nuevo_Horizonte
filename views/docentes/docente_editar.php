@@ -23,24 +23,13 @@ if (!$docente_encontrado) {
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 
 ?>
-<!-- <!DOCTYPE html>
-<html lang="es"> -->
-
-<!-- <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Editar Docente - Nuevo Horizonte</title>
-
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <link rel="stylesheet" href="/final/public/plugins/fontawesome-free/css/all.min.css">
-    <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
-    <link rel="stylesheet" href="/final/public/plugins/select2/css/select2.min.css">
-    <link rel="stylesheet" href="/final/public/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css"> -->
-
-<!-- Estilos CSS para campos inválidos -->
 <style>
     .is-invalid {
         border-color: #dc3545 !important;
+    }
+    
+    .is-valid {
+        border-color: #28a745 !important;
     }
 
     .text-danger {
@@ -56,58 +45,17 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
         border-left: 3px solid #dc3545;
         padding-left: 10px;
     }
+    
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
+    }
 </style>
 </head>
 
-<!-- <body class="hold-transition sidebar-mini">
-    <div class="wrapper"> -->
-
-<!-- Navbar -->
-<!-- <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/final/index.php" class="nav-link">Inicio</a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="docentes_list.php" class="nav-link">Docentes</a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="#" class="nav-link">Editar Docente</a>
-                </li>
-            </ul>
-        </nav> -->
-
-<!-- Sidebar -->
-<!-- <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="/final/index.php" class="brand-link">
-                <span class="brand-text font-weight-light">Nuevo Horizonte</span>
-            </a>
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item">
-                            <a href="/final/index.php" class="nav-link">
-                                <i class="nav-icon fas fa-home"></i>
-                                <p>Inicio</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="docentes_list.php" class="nav-link">
-                                <i class="nav-icon fas fa-chalkboard-teacher"></i>
-                                <p>Docentes</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </aside> -->
-
-<!-- Content Wrapper -->
 <div class="content-wrapper">
     <section class="content-header">
         <div class="container-fluid">
@@ -339,149 +287,226 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
     </section>
 </div>
 
-<!-- <footer class="main-footer">
-            <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
-        </footer> -->
-
 </div>
 
-
-
 <script>
-    $(function() {
-        // Inicializar Select2
-        $('.select2').select2({
-            theme: 'bootstrap4'
-        });
-
-        // Función para convertir texto a mayúsculas
-        function convertirMayusculas(elemento) {
-            elemento.value = elemento.value.toUpperCase();
-        }
-
-        // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
-        $('input[type="text"]:not([readonly])').on('input', function() {
-            convertirMayusculas(this);
-        });
-
-        // Solo letras (para lugar de nacimiento, dirección, calle, casa)
-        $('#lugar_nac, #direccion, #calle, #casa').on('input', function() {
-            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9.,#\-]/g, '');
-            convertirMayusculas(this);
-        });
-
-        // Solo números (para teléfonos)
-        $('#telefono, #telefono_hab').on('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
-
-        // Validación de correo electrónico
-        $('#correo').on('blur', function() {
-            const email = this.value;
-            if (email && !isValidEmail(email)) {
-                alert('Por favor, ingrese un correo electrónico válido (debe contener @ y dominio)');
-                this.focus();
-                $(this).addClass('is-invalid');
-            } else {
-                $(this).removeClass('is-invalid');
-            }
-        });
-
-        // Función para validar formato de email
-        function isValidEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-
-        // Validación en tiempo real para campos obligatorios
-        $('input[required], select[required]').on('blur', function() {
-            const valor = $(this).val();
-            if (!valor) {
-                $(this).addClass('is-invalid');
-            } else {
-                $(this).removeClass('is-invalid');
-            }
-        });
-
-        // Validación del formulario antes de enviar
-        $('#formEditar').on('submit', function(e) {
-            let isValid = true;
-            let mensajesError = [];
-
-            // Campos obligatorios
-            const camposObligatorios = {
-                'nacionalidad': 'Nacionalidad',
-                'sexo': 'Sexo',
-                'fecha_nac': 'Fecha de Nacimiento',
-                'telefono': 'Teléfono Móvil',
-                'id_profesion': 'Profesión'
-            };
-
-            // Validar campos obligatorios
-            for (const [campo, nombre] of Object.entries(camposObligatorios)) {
-                const valor = campo.startsWith('id_') ?
-                    $(`#${campo}`).val() :
-                    $(`#${campo}`).val().trim();
-
-                if (!valor) {
-                    mensajesError.push(`El campo "${nombre}" es obligatorio`);
-                    $(`#${campo}`).addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    $(`#${campo}`).removeClass('is-invalid');
-                }
-            }
-
-            // Validar teléfonos (solo números)
-            const telefono = $('#telefono').val();
-            const telefonoHab = $('#telefono_hab').val();
-
-            if (telefono && !/^\d+$/.test(telefono)) {
-                mensajesError.push('El teléfono móvil debe contener solo números');
-                isValid = false;
-            }
-
-            if (telefonoHab && !/^\d+$/.test(telefonoHab)) {
-                mensajesError.push('El teléfono de habitación debe contener solo números');
-                isValid = false;
-            }
-
-            // Validar correo electrónico
-            const correo = $('#correo').val();
-            if (correo && !isValidEmail(correo)) {
-                mensajesError.push('Por favor, ingrese un correo electrónico válido (formato: usuario@dominio.com)');
-                isValid = false;
-            }
-
-            // Validar fecha de nacimiento (no puede ser futura)
-            const fechaNac = $('#fecha_nac').val();
-            if (fechaNac) {
-                const hoy = new Date().toISOString().split('T')[0];
-                if (fechaNac > hoy) {
-                    mensajesError.push('La fecha de nacimiento no puede ser futura');
-                    isValid = false;
-                }
-            }
-
-            // Mostrar errores si los hay
-            if (!isValid) {
-                e.preventDefault();
-                alert('Por favor, corrija los siguientes errores:\n\n• ' + mensajesError.join('\n• '));
-
-                // Scroll al primer error
-                $('.is-invalid').first().focus();
-            }
-        });
-
-        // Limpiar validación cuando el usuario empiece a escribir
-        $('input, select').on('input change', function() {
-            $(this).removeClass('is-invalid');
-        });
+$(function() {
+    // Inicializar Select2
+    $('.select2').select2({
+        theme: 'bootstrap4'
     });
-</script>
-<!-- </body>
 
-</html> -->
+    // ========== FUNCIONES DE VALIDACIÓN ==========
+    
+    // Función para convertir texto a mayúsculas
+    function convertirMayusculas(elemento) {
+        elemento.value = elemento.value.toUpperCase();
+    }
+
+    // Función para validar solo letras
+    function validarSoloLetras(event) {
+        const key = event.key;
+        // Permitir teclas de control
+        if (event.ctrlKey || event.altKey ||
+            key === 'Backspace' || key === 'Delete' ||
+            key === 'Tab' || key === 'Escape' ||
+            key === 'Enter' || key === 'ArrowLeft' ||
+            key === 'ArrowRight' || key === 'Home' ||
+            key === 'End') {
+            return true;
+        }
+
+        const regex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/;
+        if (!regex.test(key)) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar solo números
+    function validarSoloNumeros(event) {
+        const key = event.key;
+        // Permitir teclas de control
+        if (event.ctrlKey || event.altKey ||
+            key === 'Backspace' || key === 'Delete' ||
+            key === 'Tab' || key === 'Escape' ||
+            key === 'Enter' || key === 'ArrowLeft' ||
+            key === 'ArrowRight' || key === 'Home' ||
+            key === 'End') {
+            return true;
+        }
+
+        const regex = /^[0-9]$/;
+        if (!regex.test(key)) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    // Función para validar email
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // ========== APLICAR VALIDACIONES A CAMPOS EDITABLES ==========
+
+    // 1. CONVERSIÓN A MAYÚSCULAS para todos los campos de texto editables
+    $('input[type="text"]:not([readonly])').on('input', function() {
+        convertirMayusculas(this);
+    });
+
+    // 2. VALIDACIÓN DE LUGAR DE NACIMIENTO
+    $('#lugar_nac').on('keypress', validarSoloLetras);
+    $('#lugar_nac').on('blur', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+        valor = valor.replace(/\s+/g, ' ').trim();
+        this.value = valor;
+        convertirMayusculas(this);
+    });
+
+    // 3. VALIDACIÓN DE TELÉFONOS
+    $('#telefono, #telefono_hab').on('keypress', validarSoloNumeros);
+    $('#telefono, #telefono_hab').on('blur', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^0-9]/g, '');
+        this.value = valor;
+        
+        // Validar longitud
+        if (this.id === 'telefono' && valor && valor.length < 10) {
+            mostrarError(this, 'El teléfono móvil debe tener al menos 10 dígitos');
+            $(this).addClass('is-invalid');
+        } else {
+            ocultarError(this);
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // 4. VALIDACIÓN DE CAMPOS DE DIRECCIÓN
+    $('#direccion, #calle, #casa').on('blur', function() {
+        let valor = this.value;
+        valor = valor.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\-#\.]/g, '');
+        valor = valor.replace(/\s+/g, ' ').trim();
+        this.value = valor;
+        convertirMayusculas(this);
+    });
+
+    // 5. VALIDACIÓN DE CORREO ELECTRÓNICO
+    $('#correo').on('blur', function() {
+        const email = this.value.trim();
+        if (email && !isValidEmail(email)) {
+            $(this).addClass('is-invalid');
+            mostrarError(this, 'Formato de correo inválido: usuario@dominio.com');
+        } else if (email) {
+            $(this).removeClass('is-invalid');
+            $(this).addClass('is-valid');
+            ocultarError(this);
+        } else {
+            $(this).removeClass('is-invalid is-valid');
+            ocultarError(this);
+        }
+    });
+
+    // 6. VALIDACIÓN DE CAMPOS OBLIGATORIOS
+    $('select[required]').on('change', function() {
+        if (!this.value) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).addClass('is-valid');
+        }
+    });
+
+    // ========== FUNCIONES AUXILIARES ==========
+
+    function mostrarError(campo, mensaje) {
+        ocultarError(campo);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback d-block';
+        errorDiv.textContent = mensaje;
+        errorDiv.id = `error-${campo.id}`;
+        campo.parentNode.appendChild(errorDiv);
+    }
+
+    function ocultarError(campo) {
+        const errorId = `error-${campo.id}`;
+        const errorExistente = document.getElementById(errorId);
+        if (errorExistente) {
+            errorExistente.remove();
+        }
+    }
+
+    // ========== VALIDACIÓN DEL FORMULARIO AL ENVIAR ==========
+
+    $('#formEditar').on('submit', function(e) {
+        let isValid = true;
+        let mensajesError = [];
+
+        // Validar campos obligatorios
+        const camposObligatorios = {
+            'nacionalidad': 'Nacionalidad',
+            'sexo': 'Sexo', 
+            'fecha_nac': 'Fecha de Nacimiento',
+            'telefono': 'Teléfono Móvil',
+            'id_profesion': 'Profesión'
+        };
+
+        for (const [campo, nombre] of Object.entries(camposObligatorios)) {
+            const elemento = document.getElementById(campo);
+            const valor = elemento.value.trim();
+            
+            if (!valor) {
+                mensajesError.push(`"${nombre}" es obligatorio`);
+                $(elemento).addClass('is-invalid');
+                isValid = false;
+            } else {
+                $(elemento).removeClass('is-invalid');
+            }
+        }
+
+        // Validar teléfono móvil
+        const telefono = $('#telefono').val().trim();
+        if (telefono && !/^\d{10,11}$/.test(telefono)) {
+            mensajesError.push('El teléfono móvil debe tener 10-11 dígitos');
+            isValid = false;
+        }
+
+        // Validar correo
+        const correo = $('#correo').val().trim();
+        if (correo && !isValidEmail(correo)) {
+            mensajesError.push('El correo electrónico no tiene un formato válido');
+            isValid = false;
+        }
+
+        // Validar fecha de nacimiento (no puede ser futura)
+        const fechaNac = $('#fecha_nac').val();
+        if (fechaNac) {
+            const hoy = new Date().toISOString().split('T')[0];
+            if (fechaNac > hoy) {
+                mensajesError.push('La fecha de nacimiento no puede ser futura');
+                isValid = false;
+            }
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            alert('ERRORES EN EL FORMULARIO:\n\n• ' + mensajesError.join('\n• '));
+            $('.is-invalid').first().focus();
+        }
+    });
+
+    // Limpiar validación al interactuar
+    $('input, select').on('input change', function() {
+        $(this).removeClass('is-invalid');
+    });
+
+    console.log('✅ Validaciones de formulario cargadas correctamente');
+});
+</script>
+
 <?php
 include_once('../../layout/layaout2.php');
 include_once('../../layout/mensajes.php');

@@ -82,6 +82,34 @@ class EstudianteController {
         return $this->estudiante->obtenerDiscapacidades();
     }
 
+    // Nuevo método para obtener estados
+    public function obtenerEstados() {
+        $query = "SELECT id_estado, nom_estado FROM estados WHERE estatus = 1 ORDER BY nom_estado";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // Nuevo método para obtener municipios por estado
+    public function obtenerMunicipiosPorEstado($id_estado) {
+        $query = "SELECT id_municipio, nom_municipio FROM municipios 
+                  WHERE id_estado = ? AND estatus = 1 ORDER BY nom_municipio";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(1, $id_estado);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // Nuevo método para obtener parroquias por municipio
+    public function obtenerParroquiasPorMunicipio($id_municipio) {
+        $query = "SELECT id_parroquia, nom_parroquia FROM parroquias 
+                  WHERE id_municipio = ? AND estatus = 1 ORDER BY nom_parroquia";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(1, $id_municipio);
+        $stmt->execute();
+        return $stmt;
+    }
+
     private function asignarDatosEstudiante($data) {
         // Datos del estudiante
         $this->estudiante->primer_nombre = $data['primer_nombre'] ?? '';
@@ -116,6 +144,9 @@ class EstudianteController {
         $this->estudiante->ocupacion_rep = $data['ocupacion_rep'] ?? '';
         $this->estudiante->lugar_trabajo_rep = $data['lugar_trabajo_rep'] ?? '';
         $this->estudiante->id_parentesco = $data['id_parentesco'] ?? '';
+
+        // Nueva propiedad para control de dirección compartida
+        $this->estudiante->comparte_direccion = $data['comparte_direccion'] ?? '1';
     }
 
     private function procesarSaludEstudiante($id_estudiante, $data) {

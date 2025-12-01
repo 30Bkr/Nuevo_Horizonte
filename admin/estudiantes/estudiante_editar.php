@@ -56,6 +56,9 @@ try {
     if ($db) {
         $controller_data = new EstudianteController($db);
         
+        // Obtener estados
+        $estados = $controller_data->obtenerEstados();
+        
         // Obtener parroquias
         $parroquias = $controller_data->obtenerParroquias();
         
@@ -73,6 +76,35 @@ try {
     }
 } catch (Exception $e) {
     // Error al cargar datos adicionales, pero continuamos
+}
+
+// Obtener datos de ubicación para el estudiante
+$id_estado_estudiante = null;
+$id_municipio_estudiante = null;
+if ($estudiante->id_parroquia) {
+    try {
+        $query_ubicacion = "SELECT p.id_parroquia, p.id_municipio, m.id_estado 
+                           FROM parroquias p 
+                           INNER JOIN municipios m ON p.id_municipio = m.id_municipio 
+                           WHERE p.id_parroquia = ?";
+        $stmt_ubicacion = $db->prepare($query_ubicacion);
+        $stmt_ubicacion->bindParam(1, $estudiante->id_parroquia);
+        $stmt_ubicacion->execute();
+        
+        if ($stmt_ubicacion->rowCount() > 0) {
+            $ubicacion = $stmt_ubicacion->fetch(PDO::FETCH_ASSOC);
+            $id_estado_estudiante = $ubicacion['id_estado'];
+            $id_municipio_estudiante = $ubicacion['id_municipio'];
+            
+            // Obtener municipios para el estado del estudiante
+            $municipios_estudiante = $controller_data->obtenerMunicipiosPorEstado($id_estado_estudiante);
+            
+            // Obtener parroquias para el municipio del estudiante
+            $parroquias_estudiante = $controller_data->obtenerParroquiasPorMunicipio($id_municipio_estudiante);
+        }
+    } catch (Exception $e) {
+        // Error al obtener datos de ubicación
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -123,6 +155,50 @@ try {
         }
         .select-patologia, .select-discapacidad {
             min-width: 200px;
+        }
+        .bg-light {
+            background-color: #f8f9fa !important;
+
+             /* Estilos mejorados para selects */
+    .select2-container--bootstrap4 .select2-selection {
+        height: 38px !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 0.25rem !important;
+    }
+    
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+        line-height: 36px !important;
+        padding-left: 12px !important;
+    }
+    
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+    
+    .select2-container--bootstrap4 .select2-dropdown {
+        border: 1px solid #ced4da !important;
+        border-radius: 0.25rem !important;
+    }
+    
+    .select2-container--bootstrap4 .select2-results__option {
+        padding: 8px 12px !important;
+    }
+    
+    .select2-container--bootstrap4 .select2-results__option--highlighted {
+        background-color: #007bff !important;
+        color: white !important;
+    }
+    
+    /* Asegurar que el dropdown se muestre correctamente */
+    .select2-container--open .select2-dropdown {
+        z-index: 9999 !important;
+    }
+    
+    /* Estilos para selects deshabilitados */
+    .select2-container--bootstrap4 .select2-selection--single[aria-disabled="true"] {
+        background-color: #e9ecef !important;
+        opacity: 1 !important;
+    }
         }
     </style>
 </head>
@@ -336,76 +412,109 @@ try {
                                             </div>
                                         </div>
 
-                                        <!-- Dirección del Estudiante CORREGIDA -->
+                                        <!-- Dirección del Estudiante - NUEVO DISEÑO -->
                                         <h5 class="text-primary mb-3 mt-4">
                                             <i class="fas fa-map-marker-alt"></i> Dirección del Estudiante
                                         </h5>
 
-                                        <!-- Campo oculto para controlar si comparte dirección con el representante -->
-                                        <input type="hidden" name="comparte_direccion" id="comparte_direccion" value="1">
-
+                                        <!-- Campo para controlar si comparte dirección con el representante -->
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="misma_direccion_rep" name="misma_direccion_rep" checked>
-                                                        <label class="form-check-label" for="misma_direccion_rep">
-                                                            <strong>¿El estudiante vive en la misma dirección del representante?</strong>
-                                                        </label>
-                                                        <small class="form-text text-muted d-block">
-                                                            Si desmarca esta opción, podrá ingresar una dirección diferente para el estudiante.
-                                                        </small>
+                                                    <label for="comparte_direccion">¿El estudiante vive en la misma dirección del representante? <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <select class="form-control" id="comparte_direccion" name="comparte_direccion" required>
+                                                        <option value="">Seleccione...</option>
+                                                        <option value="1" <?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'selected' : ''; ?>>Sí</option>
+                                                        <option value="0" <?php echo ($estudiante->comparte_direccion ?? '1') == '0' ? 'selected' : ''; ?>>No</option>
+                                                    </select>
+                                                    <small class="form-text text-muted">
+                                                        Si selecciona "No", podrá ingresar una dirección diferente para el estudiante.
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Campos de dirección del estudiante -->
+                                        <div id="direccion_estudiante" style="<?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'display: none;' : ''; ?>">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="estado_e">Estado</label>
+                                                        <select class="form-control select2" id="estado_e" name="estado_e" style="width: 100%;">
+                                                            <option value="">Seleccione un estado...</option>
+                                                            <?php
+                                                            if (isset($estados) && $estados) {
+                                                                while ($estado = $estados->fetch(PDO::FETCH_ASSOC)) {
+                                                                    $selected = ($id_estado_estudiante ?? '') == $estado['id_estado'] ? 'selected' : '';
+                                                                    echo "<option value='{$estado['id_estado']}' {$selected}>{$estado['nom_estado']}</option>";
+                                                                }
+                                                            } else {
+                                                                echo "<option value=''>Error al cargar estados</option>";
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="municipio_e">Municipio</label>
+                                                        <select class="form-control select2" id="municipio_e" name="municipio_e" style="width: 100%;" disabled>
+                                                            <option value="">Primero seleccione un estado</option>
+                                                            <?php
+                                                            if (isset($municipios_estudiante) && $municipios_estudiante) {
+                                                                while ($municipio = $municipios_estudiante->fetch(PDO::FETCH_ASSOC)) {
+                                                                    $selected = ($id_municipio_estudiante ?? '') == $municipio['id_municipio'] ? 'selected' : '';
+                                                                    echo "<option value='{$municipio['id_municipio']}' {$selected}>{$municipio['nom_municipio']}</option>";
+                                                                }
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label for="parroquia_e">Parroquia</label>
+                                                        <select class="form-control select2" id="parroquia_e" name="id_parroquia" style="width: 100%;" disabled>
+                                                            <option value="">Primero seleccione un municipio</option>
+                                                            <?php
+                                                            if (isset($parroquias_estudiante) && $parroquias_estudiante) {
+                                                                while ($parroquia = $parroquias_estudiante->fetch(PDO::FETCH_ASSOC)) {
+                                                                    $selected = ($estudiante->id_parroquia ?? '') == $parroquia['id_parroquia'] ? 'selected' : '';
+                                                                    echo "<option value='{$parroquia['id_parroquia']}' {$selected}>{$parroquia['nom_parroquia']}</option>";
+                                                                }
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="direccion_e">Dirección Completa</label>
+                                                        <input type="text" class="form-control" id="direccion_e" name="direccion"
+                                                               value="<?php echo htmlspecialchars($estudiante->direccion ?? ''); ?>">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="calle_e">Calle/Avenida</label>
+                                                        <input type="text" class="form-control" id="calle_e" name="calle"
+                                                               value="<?php echo htmlspecialchars($estudiante->calle ?? ''); ?>">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-group">
+                                                        <label for="casa_e">Casa/Edificio</label>
+                                                        <input type="text" class="form-control" id="casa_e" name="casa"
+                                                               value="<?php echo htmlspecialchars($estudiante->casa ?? ''); ?>">
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div class="row">
-                                            <!-- SOLO UN INPUT DE PARROQUIA - ELIMINADO EL DUPLICADO -->
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="id_parroquia">Parroquia</label>
-                                                    <select class="form-control select2" id="id_parroquia" name="id_parroquia" style="width: 100%;">
-                                                        <option value="">Seleccione una parroquia...</option>
-                                                        <?php
-                                                        if (isset($parroquias) && $parroquias) {
-                                                            while ($parroquia = $parroquias->fetch(PDO::FETCH_ASSOC)) {
-                                                                $selected = ($estudiante->id_parroquia ?? '') == $parroquia['id_parroquia'] ? 'selected' : '';
-                                                                echo "<option value='{$parroquia['id_parroquia']}' {$selected}>
-                                                                        {$parroquia['nom_parroquia']} - {$parroquia['nom_municipio']} - {$parroquia['nom_estado']}
-                                                                      </option>";
-                                                            }
-                                                        } else {
-                                                            echo "<option value=''>Error al cargar parroquias</option>";
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="direccion">Dirección Principal</label>
-                                                    <input type="text" class="form-control" id="direccion" name="direccion"
-                                                           value="<?php echo htmlspecialchars($estudiante->direccion ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label for="calle">Calle</label>
-                                                    <input type="text" class="form-control" id="calle" name="calle"
-                                                           value="<?php echo htmlspecialchars($estudiante->calle ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <div class="form-group">
-                                                    <label for="casa">Casa/Apto</label>
-                                                    <input type="text" class="form-control" id="casa" name="casa"
-                                                           value="<?php echo htmlspecialchars($estudiante->casa ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Sección de Salud del Estudiante CORREGIDA -->
+                                        <!-- Sección de Salud del Estudiante -->
                                         <h5 class="text-primary mb-3 mt-4">
                                             <i class="fas fa-heartbeat"></i> Información de Salud del Estudiante
                                         </h5>
@@ -424,9 +533,10 @@ try {
                                                                 <?php
                                                                 // Cargar patologías desde la base de datos
                                                                 if (isset($patologias) && $patologias) {
-                                                                    $patologias->execute(); // Asegurar que el cursor esté al inicio
+                                                                    $patologias->execute();
                                                                     while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
-                                                                        echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
+                                                                        $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
+                                                                        echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
                                                                     }
                                                                 } else {
                                                                     echo "<option value=''>No hay patologías registradas</option>";
@@ -459,9 +569,10 @@ try {
                                                                 <?php
                                                                 // Cargar discapacidades desde la base de datos
                                                                 if (isset($discapacidades) && $discapacidades) {
-                                                                    $discapacidades->execute(); // Asegurar que el cursor esté al inicio
+                                                                    $discapacidades->execute();
                                                                     while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
-                                                                        echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
+                                                                        $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
+                                                                        echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
                                                                     }
                                                                 } else {
                                                                     echo "<option value=''>No hay discapacidades registradas</option>";
@@ -578,6 +689,8 @@ try {
                                                         <option value="">Seleccione una profesión...</option>
                                                         <?php
                                                         if (isset($profesiones) && $profesiones) {
+                                                            // Reiniciar el puntero del resultado si es necesario
+                                                            $profesiones->execute(); // Asegurar que se ejecute la consulta
                                                             while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
                                                                 $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
                                                                 echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
@@ -645,10 +758,23 @@ try {
     <script>
         $(function () {
             // Inicializar Select2 para todos los selects
-            $('.select2').select2({
-                theme: 'bootstrap4',
-                width: 'resolve'
-            });
+          $('.select2').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('body'), // Esto asegura que el dropdown no se corte
+            placeholder: function() {
+                return $(this).data('placeholder') || 'Seleccione...';
+            },
+            allowClear: true
+        });
+
+        // Inicializar específicamente los selects de dirección que podrían estar deshabilitados inicialmente
+        $('#estado_e, #municipio_e, #parroquia_e').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('body'),
+            disabled: $(this).prop('disabled')
+        });
 
             // Función para convertir texto a mayúsculas
             function convertirMayusculas(elemento) {
@@ -661,13 +787,13 @@ try {
             });
 
             // Solo letras (para nombres, apellidos, lugar de nacimiento, dirección, calle, casa, ocupación, lugar de trabajo)
-           $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion, #calle, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
-            this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-            convertirMayusculas(this);
-        });
+            $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion_e, #calle_e, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
+                this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+                convertirMayusculas(this);
+            });
 
             // Validación específica para casa/apto (permite letras, números y caracteres especiales comunes)
-            $('#casa').on('input', function() {
+            $('#casa_e').on('input', function() {
                 // Permitir letras, números, guiones, #, y espacios
                 this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-#]/g, '');
                 convertirMayusculas(this);
@@ -706,6 +832,108 @@ try {
                 }
             });
 
+            // Manejo de dirección compartida
+            $('#comparte_direccion').on('change', function() {
+                const comparteDireccion = $(this).val();
+                const direccionEstudiante = $('#direccion_estudiante');
+                
+                if (comparteDireccion === '0') {
+                    direccionEstudiante.show();
+                    // Hacer campos requeridos
+                    $('#estado_e, #municipio_e, #parroquia_e, #direccion_e').prop('required', true);
+                } else {
+                    direccionEstudiante.hide();
+                    // Quitar requerido
+                    $('#estado_e, #municipio_e, #parroquia_e, #direccion_e').prop('required', false);
+                    // Limpiar campos
+                    $('#estado_e').val('').trigger('change');
+                    $('#municipio_e').val('').trigger('change');
+                    $('#parroquia_e').val('').trigger('change');
+                    $('#direccion_e, #calle_e, #casa_e').val('');
+                }
+            });
+
+            // Cargar municipios cuando cambie el estado
+           $('#estado_e').on('change', function() {
+            const estadoId = $(this).val();
+            const municipioSelect = $('#municipio_e');
+            const parroquiaSelect = $('#parroquia_e');
+
+            if (estadoId) {
+                municipioSelect.prop('disabled', false);
+                parroquiaSelect.prop('disabled', true);
+                parroquiaSelect.html('<option value="">Primero seleccione un municipio</option>').trigger('change');
+                
+                // Re-inicializar Select2 después de habilitar
+                municipioSelect.select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    dropdownParent: $('body')
+                });
+                
+                // Cargar municipios via AJAX
+                $.ajax({
+                    url: '/final/app/controllers/ubicaciones/municipios.php',
+                    method: 'POST',
+                    data: { estado_id: estadoId },
+                    dataType: 'json',
+                    success: function(data) {
+                        municipioSelect.html('<option value="">Seleccionar Municipio</option>');
+                        $.each(data, function(index, municipio) {
+                            municipioSelect.append('<option value="' + municipio.id_municipio + '">' + municipio.nom_municipio + '</option>');
+                        });
+                        municipioSelect.trigger('change');
+                    },
+                    error: function() {
+                        alert('Error al cargar municipios');
+                    }
+                });
+            } else {
+                municipioSelect.prop('disabled', true);
+                parroquiaSelect.prop('disabled', true);
+                municipioSelect.html('<option value="">Primero seleccione un estado</option>').trigger('change');
+                parroquiaSelect.html('<option value="">Primero seleccione un municipio</option>').trigger('change');
+            }
+        });
+
+           // Cargar parroquias cuando cambie el municipio - MEJORADO
+        $('#municipio_e').on('change', function() {
+            const municipioId = $(this).val();
+            const parroquiaSelect = $('#parroquia_e');
+
+            if (municipioId) {
+                parroquiaSelect.prop('disabled', false);
+                
+                // Re-inicializar Select2 después de habilitar
+                parroquiaSelect.select2({
+                    theme: 'bootstrap4',
+                    width: '100%',
+                    dropdownParent: $('body')
+                });
+                
+                // Cargar parroquias via AJAX
+                $.ajax({
+                    url: '/final/app/controllers/ubicaciones/parroquias.php',
+                    method: 'POST',
+                    data: { municipio_id: municipioId },
+                    dataType: 'json',
+                    success: function(data) {
+                        parroquiaSelect.html('<option value="">Seleccionar Parroquia</option>');
+                        $.each(data, function(index, parroquia) {
+                            parroquiaSelect.append('<option value="' + parroquia.id_parroquia + '">' + parroquia.nom_parroquia + '</option>');
+                        });
+                        parroquiaSelect.trigger('change');
+                    },
+                    error: function() {
+                        alert('Error al cargar parroquias');
+                    }
+                });
+            } else {
+                parroquiaSelect.prop('disabled', true);
+                parroquiaSelect.html('<option value="">Primero seleccione un municipio</option>').trigger('change');
+            }
+        });
+
             // Validación del formulario antes de enviar
             $('#formEstudiante').on('submit', function(e) {
                 let isValid = true;
@@ -719,7 +947,8 @@ try {
                     'primer_nombre': 'Primer Nombre',
                     'primer_apellido': 'Primer Apellido',
                     'sexo': 'Sexo',
-                    'lugar_nac': 'Lugar de Nacimiento'
+                    'lugar_nac': 'Lugar de Nacimiento',
+                    'comparte_direccion': 'Comparte dirección con representante'
                 };
 
                 // Campos obligatorios del representante
@@ -955,89 +1184,6 @@ try {
           }
         });
       });
-    </script>
-
-    <!-- Cargar patologías y discapacidades seleccionadas -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cargar patologías seleccionadas
-        <?php if (!empty($patologias_seleccionadas)): ?>
-            setTimeout(() => {
-                const patologiasSelects = document.querySelectorAll('.select-patologia');
-                if (patologiasSelects.length > 0) {
-                    const primerSelect = patologiasSelects[0];
-                    <?php foreach ($patologias_seleccionadas as $id_patologia): ?>
-                        if (<?php echo $id_patologia; ?> !== 0) {
-                            const option = primerSelect.querySelector(`option[value="<?php echo $id_patologia; ?>"]`);
-                            if (option) {
-                                option.selected = true;
-                            }
-                        }
-                    <?php endforeach; ?>
-                }
-            }, 100);
-        <?php endif; ?>
-
-        // Cargar discapacidades seleccionadas
-        <?php if (!empty($discapacidades_seleccionadas)): ?>
-            setTimeout(() => {
-                const discapacidadesSelects = document.querySelectorAll('.select-discapacidad');
-                if (discapacidadesSelects.length > 0) {
-                    const primerSelect = discapacidadesSelects[0];
-                    <?php foreach ($discapacidades_seleccionadas as $id_discapacidad): ?>
-                        if (<?php echo $id_discapacidad; ?> !== 0) {
-                            const option = primerSelect.querySelector(`option[value="<?php echo $id_discapacidad; ?>"]`);
-                            if (option) {
-                                option.selected = true;
-                            }
-                        }
-                    <?php endforeach; ?>
-                }
-            }, 100);
-        <?php endif; ?>
-    });
-
-    // Manejo de direcciones independientes
-$(document).ready(function() {
-    const mismaDireccionCheckbox = $('#misma_direccion_rep');
-    const camposDireccion = [
-        'id_parroquia', 'direccion', 'calle', 'casa'
-    ];
-
-    function toggleCamposDireccion() {
-        const compartirDireccion = mismaDireccionCheckbox.is(':checked');
-        $('#comparte_direccion').val(compartirDireccion ? '1' : '0');
-        
-        camposDireccion.forEach(campoId => {
-            const campo = $('#' + campoId);
-            if (campo.length) {
-                campo.prop('disabled', compartirDireccion);
-                if (compartirDireccion) {
-                    campo.addClass('bg-light');
-                } else {
-                    campo.removeClass('bg-light');
-                }
-            }
-        });
-
-        // Actualizar placeholder para indicar estado
-        const direccionInput = $('#direccion');
-        if (direccionInput.length) {
-            if (compartirDireccion) {
-                direccionInput.attr('placeholder', "Usando dirección del representante");
-            } else {
-                direccionInput.attr('placeholder', "Ingrese dirección del estudiante");
-            }
-        }
-    }
-
-    // Event listener para el checkbox
-    if (mismaDireccionCheckbox.length) {
-        mismaDireccionCheckbox.on('change', toggleCamposDireccion);
-        // Inicializar estado
-        toggleCamposDireccion();
-    }
-});
     </script>
 </body>
 </html>

@@ -140,22 +140,52 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                             </div>
 
                             <!-- Dirección -->
-                            <div class="row mb-4">
-                                <div class="col-md-12">
-                                    <h5 class="text-primary">
-                                        <i class="fas fa-map-marker-alt"></i> Dirección
-                                    </h5>
-                                    <hr>
-                                </div>
-                                <div class="col-md-12">
-                                    <strong>Dirección Completa:</strong><br>
-                                    <?php
-                                    echo htmlspecialchars($estudiante->direccion);
-                                    if ($estudiante->calle) echo ', Calle: ' . htmlspecialchars($estudiante->calle);
-                                    if ($estudiante->casa) echo ', Casa/Apto: ' . htmlspecialchars($estudiante->casa);
-                                    ?>
-                                </div>
-                            </div>
+                            <!-- En la sección de Dirección del archivo estudiante_ver.php -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h5 class="text-primary">
+            <i class="fas fa-map-marker-alt"></i> Dirección
+        </h5>
+        <hr>
+    </div>
+    <div class="col-md-12">
+        <strong>Dirección Completa:</strong><br>
+        <?php
+        // Obtener datos completos de la ubicación
+        try {
+            $database = new Conexion();
+            $db = $database->conectar();
+            if ($db && $estudiante->id_parroquia) {
+                $query_ubicacion = "SELECT 
+                    p.nom_parroquia, 
+                    m.nom_municipio, 
+                    e.nom_estado 
+                FROM parroquias p 
+                INNER JOIN municipios m ON p.id_municipio = m.id_municipio 
+                INNER JOIN estados e ON m.id_estado = e.id_estado 
+                WHERE p.id_parroquia = ?";
+                $stmt_ubicacion = $db->prepare($query_ubicacion);
+                $stmt_ubicacion->bindParam(1, $estudiante->id_parroquia);
+                $stmt_ubicacion->execute();
+                
+                if ($stmt_ubicacion->rowCount() > 0) {
+                    $ubicacion = $stmt_ubicacion->fetch(PDO::FETCH_ASSOC);
+                    echo htmlspecialchars($ubicacion['nom_estado']) . ', ' . 
+                         htmlspecialchars($ubicacion['nom_municipio']) . ', ' . 
+                         htmlspecialchars($ubicacion['nom_parroquia']) . '<br>';
+                }
+            }
+        } catch (Exception $e) {
+            // Error silencioso
+        }
+        
+        // Mostrar detalles de la dirección
+        echo htmlspecialchars($estudiante->direccion ?? 'No especificada');
+        if ($estudiante->calle) echo ', Calle: ' . htmlspecialchars($estudiante->calle);
+        if ($estudiante->casa) echo ', Casa/Apto: ' . htmlspecialchars($estudiante->casa);
+        ?>
+    </div>
+</div>
 
                             <!-- Sección de Salud -->
                             <div class="row mb-4">
