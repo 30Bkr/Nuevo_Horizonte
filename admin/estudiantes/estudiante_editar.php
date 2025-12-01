@@ -160,7 +160,7 @@ if ($estudiante->id_parroquia) {
             background-color: #f8f9fa !important;
         }
 
-        /* Estilos mejorados para selects */
+        /* Estilos mejorados para selects CON SCROLL */
         .select2-container--bootstrap4 .select2-selection {
             height: 38px !important;
             border: 1px solid #ced4da !important;
@@ -201,9 +201,58 @@ if ($estudiante->id_parroquia) {
             opacity: 1 !important;
         }
 
-        /* Mejoras para selects de dirección */
-        .select-direccion {
-            min-width: 100% !important;
+        /* SCROLL PERSONALIZADO PARA SELECTS GRANDES */
+        .select2-container--bootstrap4 .select2-results {
+            max-height: 200px !important;
+            overflow-y: auto !important;
+        }
+        
+        /* Scroll personalizado para Webkit (Chrome, Safari, Edge) */
+        .select2-container--bootstrap4 .select2-results::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .select2-container--bootstrap4 .select2-results::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .select2-container--bootstrap4 .select2-results::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .select2-container--bootstrap4 .select2-results::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Scroll para Firefox */
+        .select2-container--bootstrap4 .select2-results {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+        
+        /* Estilos específicos para selects de dirección y profesiones con más altura */
+        .select-direccion .select2-results,
+        .select-profesion .select2-results {
+            max-height: 250px !important;
+        }
+        
+        /* Búsqueda en selects grandes */
+        .select2-container--bootstrap4 .select2-search--dropdown .select2-search__field {
+            border: 1px solid #ced4da !important;
+            border-radius: 0.25rem !important;
+            padding: 6px 12px !important;
+        }
+        
+        /* Mejorar el contenedor del dropdown para selects grandes */
+        .select2-container--bootstrap4 .select2-dropdown {
+            min-width: 300px !important;
+        }
+
+        /* Estilos para selects con muchos elementos */
+        .large-select .select2-results {
+            max-height: 300px !important;
         }
     </style>
 </head>
@@ -417,7 +466,7 @@ if ($estudiante->id_parroquia) {
                                             </div>
                                         </div>
 
-                                        <!-- Dirección del Estudiante - CORREGIDO -->
+                                        <!-- Dirección del Estudiante - CON SCROLL -->
                                         <h5 class="text-primary mb-3 mt-4">
                                             <i class="fas fa-map-marker-alt"></i> Dirección del Estudiante
                                         </h5>
@@ -439,13 +488,13 @@ if ($estudiante->id_parroquia) {
                                             </div>
                                         </div>
 
-                                        <!-- Campos de dirección del estudiante - CORREGIDO -->
+                                        <!-- Campos de dirección del estudiante - CON SCROLL -->
                                         <div id="direccion_estudiante" style="<?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'display: none;' : ''; ?>">
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="estado_e">Estado</label>
-                                                        <select class="form-control select2 select-direccion" id="estado_e" name="estado_e" style="width: 100%;" 
+                                                        <select class="form-control select2 select-direccion large-select" id="estado_e" name="estado_e" style="width: 100%;" 
                                                                 data-placeholder="Seleccione un estado...">
                                                             <option value=""></option>
                                                             <?php
@@ -469,7 +518,7 @@ if ($estudiante->id_parroquia) {
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="municipio_e">Municipio</label>
-                                                        <select class="form-control select2 select-direccion" id="municipio_e" name="municipio_e" style="width: 100%;" 
+                                                        <select class="form-control select2 select-direccion large-select" id="municipio_e" name="municipio_e" style="width: 100%;" 
                                                                 data-placeholder="Primero seleccione un estado" <?php echo !$id_estado_estudiante ? 'disabled' : ''; ?>>
                                                             <option value=""></option>
                                                             <?php
@@ -486,7 +535,7 @@ if ($estudiante->id_parroquia) {
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="parroquia_e">Parroquia</label>
-                                                        <select class="form-control select2 select-direccion" id="parroquia_e" name="id_parroquia" style="width: 100%;" 
+                                                        <select class="form-control select2 select-direccion large-select" id="parroquia_e" name="id_parroquia" style="width: 100%;" 
                                                                 data-placeholder="Primero seleccione un municipio" <?php echo !$id_municipio_estudiante ? 'disabled' : ''; ?>>
                                                             <option value=""></option>
                                                             <?php
@@ -702,7 +751,7 @@ if ($estudiante->id_parroquia) {
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="id_profesion_rep">Profesión <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control select2" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;" required
+                                                    <select class="form-control select2 select-profesion large-select" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;" required
                                                             data-placeholder="Seleccione una profesión...">
                                                         <option value=""></option>
                                                         <?php
@@ -783,7 +832,7 @@ if ($estudiante->id_parroquia) {
 
     <script>
         $(function () {
-            // Inicializar Select2 para todos los selects - CORREGIDO
+            // Inicializar Select2 para todos los selects CON SCROLL MEJORADO
             $('.select2').select2({
                 theme: 'bootstrap4',
                 width: '100%',
@@ -795,19 +844,40 @@ if ($estudiante->id_parroquia) {
                 language: {
                     noResults: function() {
                         return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
                     }
-                }
+                },
+                // Configuración para mejorar el scroll
+                dropdownCssClass: "scrollable-dropdown",
+                scrollAfterSelect: true
             });
 
-            // Inicializar específicamente los selects de dirección
-            $('.select-direccion').select2({
+            // Configuración ESPECÍFICA para selects grandes (dirección y profesiones)
+            $('.large-select').select2({
                 theme: 'bootstrap4',
                 width: '100%',
                 dropdownParent: $('body'),
                 placeholder: function() {
                     return $(this).data('placeholder') || 'Seleccione...';
                 },
-                allowClear: true
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                },
+                // Configuraciones específicas para lists grandes
+                dropdownCssClass: "large-dropdown",
+                scrollAfterSelect: true,
+                // Limitar altura máxima del dropdown
+                dropdownAutoWidth: false,
+                // Habilitar búsqueda para mejor manejo de muchas opciones
+                minimumResultsForSearch: 3
             });
 
             // Función para convertir texto a mayúsculas
@@ -866,7 +936,7 @@ if ($estudiante->id_parroquia) {
                 }
             });
 
-            // Manejo de dirección compartida - CORREGIDO
+            // Manejo de dirección compartida
             $('#comparte_direccion').on('change', function() {
                 const comparteDireccion = $(this).val();
                 const direccionEstudiante = $('#direccion_estudiante');
@@ -893,7 +963,7 @@ if ($estudiante->id_parroquia) {
                 }
             });
 
-            // Cargar municipios cuando cambie el estado - CORREGIDO
+            // Cargar municipios cuando cambie el estado
             $('#estado_e').on('change', function() {
                 const estadoId = $(this).val();
                 const municipioSelect = $('#municipio_e');
@@ -942,7 +1012,7 @@ if ($estudiante->id_parroquia) {
                 }
             });
 
-            // Cargar parroquias cuando cambie el municipio - CORREGIDO
+            // Cargar parroquias cuando cambie el municipio
             $('#municipio_e').on('change', function() {
                 const municipioId = $(this).val();
                 const parroquiaSelect = $('#parroquia_e');
