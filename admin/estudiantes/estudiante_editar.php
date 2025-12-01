@@ -71,7 +71,7 @@ try {
         // Obtener parentescos
         $parentescos = $controller_data->obtenerParentescos();
         
-        // Obtener profesiones
+        // Obtener profesiones - CORREGIDO: asegurar que se ejecute la consulta
         $profesiones = $controller_data->obtenerProfesiones();
     }
 } catch (Exception $e) {
@@ -158,47 +158,52 @@ if ($estudiante->id_parroquia) {
         }
         .bg-light {
             background-color: #f8f9fa !important;
+        }
 
-             /* Estilos mejorados para selects */
-    .select2-container--bootstrap4 .select2-selection {
-        height: 38px !important;
-        border: 1px solid #ced4da !important;
-        border-radius: 0.25rem !important;
-    }
-    
-    .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
-        line-height: 36px !important;
-        padding-left: 12px !important;
-    }
-    
-    .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
-        height: 36px !important;
-    }
-    
-    .select2-container--bootstrap4 .select2-dropdown {
-        border: 1px solid #ced4da !important;
-        border-radius: 0.25rem !important;
-    }
-    
-    .select2-container--bootstrap4 .select2-results__option {
-        padding: 8px 12px !important;
-    }
-    
-    .select2-container--bootstrap4 .select2-results__option--highlighted {
-        background-color: #007bff !important;
-        color: white !important;
-    }
-    
-    /* Asegurar que el dropdown se muestre correctamente */
-    .select2-container--open .select2-dropdown {
-        z-index: 9999 !important;
-    }
-    
-    /* Estilos para selects deshabilitados */
-    .select2-container--bootstrap4 .select2-selection--single[aria-disabled="true"] {
-        background-color: #e9ecef !important;
-        opacity: 1 !important;
-    }
+        /* Estilos mejorados para selects */
+        .select2-container--bootstrap4 .select2-selection {
+            height: 38px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.25rem !important;
+        }
+        
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            line-height: 36px !important;
+            padding-left: 12px !important;
+        }
+        
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
+        }
+        
+        .select2-container--bootstrap4 .select2-dropdown {
+            border: 1px solid #ced4da !important;
+            border-radius: 0.25rem !important;
+        }
+        
+        .select2-container--bootstrap4 .select2-results__option {
+            padding: 8px 12px !important;
+        }
+        
+        .select2-container--bootstrap4 .select2-results__option--highlighted {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+        
+        /* Asegurar que el dropdown se muestre correctamente */
+        .select2-container--open .select2-dropdown {
+            z-index: 9999 !important;
+        }
+        
+        /* Estilos para selects deshabilitados */
+        .select2-container--bootstrap4 .select2-selection--single[aria-disabled="true"] {
+            background-color: #e9ecef !important;
+            opacity: 1 !important;
+        }
+
+        /* Mejoras para selects de dirección */
+        .select-direccion {
+            min-width: 100% !important;
         }
     </style>
 </head>
@@ -412,7 +417,7 @@ if ($estudiante->id_parroquia) {
                                             </div>
                                         </div>
 
-                                        <!-- Dirección del Estudiante - NUEVO DISEÑO -->
+                                        <!-- Dirección del Estudiante - CORREGIDO -->
                                         <h5 class="text-primary mb-3 mt-4">
                                             <i class="fas fa-map-marker-alt"></i> Dirección del Estudiante
                                         </h5>
@@ -434,22 +439,28 @@ if ($estudiante->id_parroquia) {
                                             </div>
                                         </div>
 
-                                        <!-- Campos de dirección del estudiante -->
+                                        <!-- Campos de dirección del estudiante - CORREGIDO -->
                                         <div id="direccion_estudiante" style="<?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'display: none;' : ''; ?>">
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="estado_e">Estado</label>
-                                                        <select class="form-control select2" id="estado_e" name="estado_e" style="width: 100%;">
-                                                            <option value="">Seleccione un estado...</option>
+                                                        <select class="form-control select2 select-direccion" id="estado_e" name="estado_e" style="width: 100%;" 
+                                                                data-placeholder="Seleccione un estado...">
+                                                            <option value=""></option>
                                                             <?php
                                                             if (isset($estados) && $estados) {
-                                                                while ($estado = $estados->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = ($id_estado_estudiante ?? '') == $estado['id_estado'] ? 'selected' : '';
-                                                                    echo "<option value='{$estado['id_estado']}' {$selected}>{$estado['nom_estado']}</option>";
+                                                                // Reiniciar el puntero si es necesario
+                                                                if (method_exists($estados, 'fetch')) {
+                                                                    while ($estado = $estados->fetch(PDO::FETCH_ASSOC)) {
+                                                                        $selected = ($id_estado_estudiante ?? '') == $estado['id_estado'] ? 'selected' : '';
+                                                                        echo "<option value='{$estado['id_estado']}' {$selected}>{$estado['nom_estado']}</option>";
+                                                                    }
+                                                                } else {
+                                                                    echo "<option value=''>Error: No se pudieron cargar los estados</option>";
                                                                 }
                                                             } else {
-                                                                echo "<option value=''>Error al cargar estados</option>";
+                                                                echo "<option value=''>No hay estados disponibles</option>";
                                                             }
                                                             ?>
                                                         </select>
@@ -458,8 +469,9 @@ if ($estudiante->id_parroquia) {
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="municipio_e">Municipio</label>
-                                                        <select class="form-control select2" id="municipio_e" name="municipio_e" style="width: 100%;" disabled>
-                                                            <option value="">Primero seleccione un estado</option>
+                                                        <select class="form-control select2 select-direccion" id="municipio_e" name="municipio_e" style="width: 100%;" 
+                                                                data-placeholder="Primero seleccione un estado" <?php echo !$id_estado_estudiante ? 'disabled' : ''; ?>>
+                                                            <option value=""></option>
                                                             <?php
                                                             if (isset($municipios_estudiante) && $municipios_estudiante) {
                                                                 while ($municipio = $municipios_estudiante->fetch(PDO::FETCH_ASSOC)) {
@@ -474,8 +486,9 @@ if ($estudiante->id_parroquia) {
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label for="parroquia_e">Parroquia</label>
-                                                        <select class="form-control select2" id="parroquia_e" name="id_parroquia" style="width: 100%;" disabled>
-                                                            <option value="">Primero seleccione un municipio</option>
+                                                        <select class="form-control select2 select-direccion" id="parroquia_e" name="id_parroquia" style="width: 100%;" 
+                                                                data-placeholder="Primero seleccione un municipio" <?php echo !$id_municipio_estudiante ? 'disabled' : ''; ?>>
+                                                            <option value=""></option>
                                                             <?php
                                                             if (isset($parroquias_estudiante) && $parroquias_estudiante) {
                                                                 while ($parroquia = $parroquias_estudiante->fetch(PDO::FETCH_ASSOC)) {
@@ -533,10 +546,11 @@ if ($estudiante->id_parroquia) {
                                                                 <?php
                                                                 // Cargar patologías desde la base de datos
                                                                 if (isset($patologias) && $patologias) {
-                                                                    $patologias->execute();
-                                                                    while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
-                                                                        $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
-                                                                        echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
+                                                                    if (method_exists($patologias, 'fetch')) {
+                                                                        while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
+                                                                            $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
+                                                                            echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
+                                                                        }
                                                                     }
                                                                 } else {
                                                                     echo "<option value=''>No hay patologías registradas</option>";
@@ -569,10 +583,11 @@ if ($estudiante->id_parroquia) {
                                                                 <?php
                                                                 // Cargar discapacidades desde la base de datos
                                                                 if (isset($discapacidades) && $discapacidades) {
-                                                                    $discapacidades->execute();
-                                                                    while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
-                                                                        $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
-                                                                        echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
+                                                                    if (method_exists($discapacidades, 'fetch')) {
+                                                                        while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
+                                                                            $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
+                                                                            echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
+                                                                        }
                                                                     }
                                                                 } else {
                                                                     echo "<option value=''>No hay discapacidades registradas</option>";
@@ -644,9 +659,11 @@ if ($estudiante->id_parroquia) {
                                                         <option value="">Seleccione...</option>
                                                         <?php
                                                         if (isset($parentescos) && $parentescos) {
-                                                            while ($parentesco = $parentescos->fetch(PDO::FETCH_ASSOC)) {
-                                                                $selected = ($estudiante->id_parentesco ?? '') == $parentesco['id_parentesco'] ? 'selected' : '';
-                                                                echo "<option value='{$parentesco['id_parentesco']}' {$selected}>{$parentesco['parentesco']}</option>";
+                                                            if (method_exists($parentescos, 'fetch')) {
+                                                                while ($parentesco = $parentescos->fetch(PDO::FETCH_ASSOC)) {
+                                                                    $selected = ($estudiante->id_parentesco ?? '') == $parentesco['id_parentesco'] ? 'selected' : '';
+                                                                    echo "<option value='{$parentesco['id_parentesco']}' {$selected}>{$parentesco['parentesco']}</option>";
+                                                                }
                                                             }
                                                         } else {
                                                             echo "<option value=''>Error al cargar parentescos</option>";
@@ -685,18 +702,27 @@ if ($estudiante->id_parroquia) {
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
                                                     <label for="id_profesion_rep">Profesión <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control select2" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;" required>
-                                                        <option value="">Seleccione una profesión...</option>
+                                                    <select class="form-control select2" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;" required
+                                                            data-placeholder="Seleccione una profesión...">
+                                                        <option value=""></option>
                                                         <?php
                                                         if (isset($profesiones) && $profesiones) {
-                                                            // Reiniciar el puntero del resultado si es necesario
-                                                            $profesiones->execute(); // Asegurar que se ejecute la consulta
-                                                            while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
-                                                                $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
-                                                                echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
+                                                            // Asegurar que las profesiones sean un array o objeto iterable
+                                                            if (is_object($profesiones) && method_exists($profesiones, 'fetch')) {
+                                                                while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
+                                                                    $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
+                                                                    echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
+                                                                }
+                                                            } elseif (is_array($profesiones)) {
+                                                                foreach ($profesiones as $profesion) {
+                                                                    $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
+                                                                    echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
+                                                                }
+                                                            } else {
+                                                                echo "<option value=''>No se pudieron cargar las profesiones</option>";
                                                             }
                                                         } else {
-                                                            echo "<option value=''>Error al cargar profesiones</option>";
+                                                            echo "<option value=''>No hay profesiones disponibles</option>";
                                                         }
                                                         ?>
                                                     </select>
@@ -757,24 +783,32 @@ if ($estudiante->id_parroquia) {
 
     <script>
         $(function () {
-            // Inicializar Select2 para todos los selects
-          $('.select2').select2({
-            theme: 'bootstrap4',
-            width: '100%',
-            dropdownParent: $('body'), // Esto asegura que el dropdown no se corte
-            placeholder: function() {
-                return $(this).data('placeholder') || 'Seleccione...';
-            },
-            allowClear: true
-        });
+            // Inicializar Select2 para todos los selects - CORREGIDO
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                dropdownParent: $('body'),
+                placeholder: function() {
+                    return $(this).data('placeholder') || 'Seleccione...';
+                },
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "No se encontraron resultados";
+                    }
+                }
+            });
 
-        // Inicializar específicamente los selects de dirección que podrían estar deshabilitados inicialmente
-        $('#estado_e, #municipio_e, #parroquia_e').select2({
-            theme: 'bootstrap4',
-            width: '100%',
-            dropdownParent: $('body'),
-            disabled: $(this).prop('disabled')
-        });
+            // Inicializar específicamente los selects de dirección
+            $('.select-direccion').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                dropdownParent: $('body'),
+                placeholder: function() {
+                    return $(this).data('placeholder') || 'Seleccione...';
+                },
+                allowClear: true
+            });
 
             // Función para convertir texto a mayúsculas
             function convertirMayusculas(elemento) {
@@ -832,19 +866,25 @@ if ($estudiante->id_parroquia) {
                 }
             });
 
-            // Manejo de dirección compartida
+            // Manejo de dirección compartida - CORREGIDO
             $('#comparte_direccion').on('change', function() {
                 const comparteDireccion = $(this).val();
                 const direccionEstudiante = $('#direccion_estudiante');
                 
                 if (comparteDireccion === '0') {
-                    direccionEstudiante.show();
-                    // Hacer campos requeridos
-                    $('#estado_e, #municipio_e, #parroquia_e, #direccion_e').prop('required', true);
+                    direccionEstudiante.slideDown();
+                    // Habilitar selects de dirección
+                    $('#estado_e, #municipio_e, #parroquia_e').prop('disabled', false).trigger('change');
+                    // Re-inicializar Select2 después de habilitar
+                    $('#estado_e, #municipio_e, #parroquia_e').select2({
+                        theme: 'bootstrap4',
+                        width: '100%',
+                        dropdownParent: $('body')
+                    });
                 } else {
-                    direccionEstudiante.hide();
-                    // Quitar requerido
-                    $('#estado_e, #municipio_e, #parroquia_e, #direccion_e').prop('required', false);
+                    direccionEstudiante.slideUp();
+                    // Deshabilitar selects de dirección
+                    $('#estado_e, #municipio_e, #parroquia_e').prop('disabled', true).trigger('change');
                     // Limpiar campos
                     $('#estado_e').val('').trigger('change');
                     $('#municipio_e').val('').trigger('change');
@@ -853,86 +893,98 @@ if ($estudiante->id_parroquia) {
                 }
             });
 
-            // Cargar municipios cuando cambie el estado
-           $('#estado_e').on('change', function() {
-            const estadoId = $(this).val();
-            const municipioSelect = $('#municipio_e');
-            const parroquiaSelect = $('#parroquia_e');
+            // Cargar municipios cuando cambie el estado - CORREGIDO
+            $('#estado_e').on('change', function() {
+                const estadoId = $(this).val();
+                const municipioSelect = $('#municipio_e');
+                const parroquiaSelect = $('#parroquia_e');
 
-            if (estadoId) {
-                municipioSelect.prop('disabled', false);
-                parroquiaSelect.prop('disabled', true);
-                parroquiaSelect.html('<option value="">Primero seleccione un municipio</option>').trigger('change');
-                
-                // Re-inicializar Select2 después de habilitar
-                municipioSelect.select2({
-                    theme: 'bootstrap4',
-                    width: '100%',
-                    dropdownParent: $('body')
-                });
-                
-                // Cargar municipios via AJAX
-                $.ajax({
-                    url: '/final/app/controllers/ubicaciones/municipios.php',
-                    method: 'POST',
-                    data: { estado_id: estadoId },
-                    dataType: 'json',
-                    success: function(data) {
-                        municipioSelect.html('<option value="">Seleccionar Municipio</option>');
-                        $.each(data, function(index, municipio) {
-                            municipioSelect.append('<option value="' + municipio.id_municipio + '">' + municipio.nom_municipio + '</option>');
-                        });
-                        municipioSelect.trigger('change');
-                    },
-                    error: function() {
-                        alert('Error al cargar municipios');
-                    }
-                });
-            } else {
-                municipioSelect.prop('disabled', true);
-                parroquiaSelect.prop('disabled', true);
-                municipioSelect.html('<option value="">Primero seleccione un estado</option>').trigger('change');
-                parroquiaSelect.html('<option value="">Primero seleccione un municipio</option>').trigger('change');
-            }
-        });
+                if (estadoId) {
+                    municipioSelect.prop('disabled', false);
+                    parroquiaSelect.prop('disabled', true);
+                    parroquiaSelect.html('<option value=""></option>').trigger('change');
+                    
+                    // Re-inicializar Select2 después de habilitar
+                    municipioSelect.select2({
+                        theme: 'bootstrap4',
+                        width: '100%',
+                        dropdownParent: $('body'),
+                        placeholder: 'Seleccionar Municipio'
+                    });
+                    
+                    // Cargar municipios via AJAX
+                    $.ajax({
+                        url: '/final/app/controllers/ubicaciones/municipios.php',
+                        method: 'POST',
+                        data: { estado_id: estadoId },
+                        dataType: 'json',
+                        success: function(data) {
+                            municipioSelect.html('<option value=""></option>');
+                            if (data && data.length > 0) {
+                                $.each(data, function(index, municipio) {
+                                    municipioSelect.append('<option value="' + municipio.id_municipio + '">' + municipio.nom_municipio + '</option>');
+                                });
+                            } else {
+                                municipioSelect.append('<option value="">No hay municipios disponibles</option>');
+                            }
+                            municipioSelect.trigger('change');
+                        },
+                        error: function() {
+                            alert('Error al cargar municipios');
+                            municipioSelect.html('<option value="">Error al cargar</option>').trigger('change');
+                        }
+                    });
+                } else {
+                    municipioSelect.prop('disabled', true);
+                    parroquiaSelect.prop('disabled', true);
+                    municipioSelect.html('<option value=""></option>').trigger('change');
+                    parroquiaSelect.html('<option value=""></option>').trigger('change');
+                }
+            });
 
-           // Cargar parroquias cuando cambie el municipio - MEJORADO
-        $('#municipio_e').on('change', function() {
-            const municipioId = $(this).val();
-            const parroquiaSelect = $('#parroquia_e');
+            // Cargar parroquias cuando cambie el municipio - CORREGIDO
+            $('#municipio_e').on('change', function() {
+                const municipioId = $(this).val();
+                const parroquiaSelect = $('#parroquia_e');
 
-            if (municipioId) {
-                parroquiaSelect.prop('disabled', false);
-                
-                // Re-inicializar Select2 después de habilitar
-                parroquiaSelect.select2({
-                    theme: 'bootstrap4',
-                    width: '100%',
-                    dropdownParent: $('body')
-                });
-                
-                // Cargar parroquias via AJAX
-                $.ajax({
-                    url: '/final/app/controllers/ubicaciones/parroquias.php',
-                    method: 'POST',
-                    data: { municipio_id: municipioId },
-                    dataType: 'json',
-                    success: function(data) {
-                        parroquiaSelect.html('<option value="">Seleccionar Parroquia</option>');
-                        $.each(data, function(index, parroquia) {
-                            parroquiaSelect.append('<option value="' + parroquia.id_parroquia + '">' + parroquia.nom_parroquia + '</option>');
-                        });
-                        parroquiaSelect.trigger('change');
-                    },
-                    error: function() {
-                        alert('Error al cargar parroquias');
-                    }
-                });
-            } else {
-                parroquiaSelect.prop('disabled', true);
-                parroquiaSelect.html('<option value="">Primero seleccione un municipio</option>').trigger('change');
-            }
-        });
+                if (municipioId) {
+                    parroquiaSelect.prop('disabled', false);
+                    
+                    // Re-inicializar Select2 después de habilitar
+                    parroquiaSelect.select2({
+                        theme: 'bootstrap4',
+                        width: '100%',
+                        dropdownParent: $('body'),
+                        placeholder: 'Seleccionar Parroquia'
+                    });
+                    
+                    // Cargar parroquias via AJAX
+                    $.ajax({
+                        url: '/final/app/controllers/ubicaciones/parroquias.php',
+                        method: 'POST',
+                        data: { municipio_id: municipioId },
+                        dataType: 'json',
+                        success: function(data) {
+                            parroquiaSelect.html('<option value=""></option>');
+                            if (data && data.length > 0) {
+                                $.each(data, function(index, parroquia) {
+                                    parroquiaSelect.append('<option value="' + parroquia.id_parroquia + '">' + parroquia.nom_parroquia + '</option>');
+                                });
+                            } else {
+                                parroquiaSelect.append('<option value="">No hay parroquias disponibles</option>');
+                            }
+                            parroquiaSelect.trigger('change');
+                        },
+                        error: function() {
+                            alert('Error al cargar parroquias');
+                            parroquiaSelect.html('<option value="">Error al cargar</option>').trigger('change');
+                        }
+                    });
+                } else {
+                    parroquiaSelect.prop('disabled', true);
+                    parroquiaSelect.html('<option value=""></option>').trigger('change');
+                }
+            });
 
             // Validación del formulario antes de enviar
             $('#formEstudiante').on('submit', function(e) {
