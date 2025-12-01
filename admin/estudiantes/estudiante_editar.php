@@ -1,6 +1,5 @@
 <?php
 session_start();
-include_once("/xampp/htdocs/final/layout/layaout1.php");
 
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
@@ -106,6 +105,8 @@ if ($estudiante->id_parroquia) {
         // Error al obtener datos de ubicación
     }
 }
+include_once("/xampp/htdocs/final/layout/layaout1.php");
+
 ?>
 
 <style>
