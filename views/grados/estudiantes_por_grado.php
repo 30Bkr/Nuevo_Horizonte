@@ -19,11 +19,17 @@ if ($id_nivel_seccion == 0) {
     exit();
 }
 
+// Detectar desde qué módulo se está accediendo
+$volver_a = 'grados_list.php'; // Por defecto (módulo completo)
+if (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'grados_list_solo_lectura') !== false) {
+    $volver_a = 'grados_list_solo_lectura.php';
+}
+
 $info_grado = $grado->obtenerGradoPorId($id_nivel_seccion);
 
 if (!$info_grado) {
     $_SESSION['error'] = "Grado/Sección no encontrado";
-    header("Location: grados_list.php");
+    header("Location: " . $volver_a);
     exit();
 }
 
@@ -42,7 +48,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                        <li class="breadcrumb-item"><a href="grados_list.php">Grados</a></li>
+                        <li class="breadcrumb-item"><a href="<?php echo $volver_a; ?>">Grados</a></li>
                         <li class="breadcrumb-item active">Estudiantes</li>
                     </ol>
                 </div>
@@ -82,7 +88,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                             class="btn btn-success btn-sm" target="_blank">
                             <i class="fas fa-print"></i> Imprimir Lista
                         </a>
-                        <a href="grados_list.php" class="btn btn-default btn-sm">
+                        <a href="<?php echo $volver_a; ?>" class="btn btn-default btn-sm">
                             <i class="fas fa-arrow-left"></i> Volver
                         </a>
                     </div>
@@ -215,7 +221,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
             </div>
-        </div>
+                        </div>
     </div>
 </div>
 
