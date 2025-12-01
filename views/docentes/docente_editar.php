@@ -21,6 +21,30 @@ if (!$docente_encontrado) {
     exit();
 }
 
+// Obtener datos de ubicación para los selects
+include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
+$ubicacionController = new UbicacionController($db);
+$estados = $ubicacionController->obtenerEstados();
+
+// Obtener municipios y parroquias si ya tiene dirección
+$municipios = [];
+$parroquias = [];
+if ($docente->id_parroquia) {
+    // Obtener municipio y estado actual del docente
+    $query = "SELECT m.id_municipio, m.id_estado 
+              FROM parroquias p 
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio 
+              WHERE p.id_parroquia = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$docente->id_parroquia]);
+    $ubicacion_actual = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($ubicacion_actual) {
+        $municipios = $ubicacionController->obtenerMunicipiosPorEstado($ubicacion_actual['id_estado']);
+        $parroquias = $ubicacionController->obtenerParroquiasPorMunicipio($ubicacion_actual['id_municipio']);
+    }
+}
+
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 ?>
 
@@ -158,7 +182,9 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                 <option value="Femenino" <?php echo ($docente->sexo == 'Femenino') ? 'selected' : ''; ?>>Femenino</option>
                                             </select>
                                         </div>
+                                    </div>
 
+                                    <div class="col-md-6">
                                         <!-- Fecha de nacimiento -->
                                         <div class="form-group campo-obligatorio">
                                             <label for="fecha_nac">Fecha de Nacimiento <span class="text-danger">*</span></label>
@@ -173,9 +199,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                 value="<?php echo htmlspecialchars($docente->lugar_nac); ?>"
                                                 placeholder="Solo letras y espacios">
                                         </div>
-                                    </div>
 
-                                    <div class="col-md-6">
                                         <h5>Información de Contacto</h5>
 
                                         <!-- Teléfono móvil -->
@@ -222,47 +246,85 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                 </div>
 
                                 <div class="row mt-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-12">
                                         <h5>Información de Dirección</h5>
-
-                                        <!-- Parroquia -->
-                                        <div class="form-group">
-                                            <label for="id_parroquia">Parroquia</label>
-                                            <select class="form-control select2" id="id_parroquia" name="id_parroquia" style="width: 100%;">
-                                                <option value="">Seleccionar parroquia...</option>
-                                                <?php
-                                                $parroquias = $docente->obtenerParroquias();
-                                                while ($row = $parroquias->fetch(PDO::FETCH_ASSOC)) {
-                                                    $selected = ($docente->id_parroquia == $row['id_parroquia']) ? 'selected' : '';
-                                                    $texto = $row['nom_parroquia'] . ' - ' . $row['nom_municipio'] . ' - ' . $row['nom_estado'];
-                                                    echo "<option value='{$row['id_parroquia']}' $selected>{$texto}</option>";
-                                                }
-                                                ?>
-                                            </select>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="estado">Estado</label>
+                                                    <select name="estado" id="estado" class="form-control" required>
+                                                        <option value="">Seleccionar Estado</option>
+                                                        <?php
+                                                        foreach ($estados as $estado) {
+                                                            $selected = (isset($ubicacion_actual['id_estado']) && $ubicacion_actual['id_estado'] == $estado['id_estado']) ? 'selected' : '';
+                                                            echo "<option value='{$estado['id_estado']}' $selected>{$estado['nom_estado']}</option>";
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="municipio">Municipio</label>
+                                                    <select name="municipio" id="municipio" class="form-control" required <?php echo empty($municipios) ? 'disabled' : ''; ?>>
+                                                        <option value="">Primero seleccione un estado</option>
+                                                        <?php
+                                                        if (!empty($municipios)) {
+                                                            foreach ($municipios as $municipio) {
+                                                                $selected = (isset($ubicacion_actual['id_municipio']) && $ubicacion_actual['id_municipio'] == $municipio['id_municipio']) ? 'selected' : '';
+                                                                echo "<option value='{$municipio['id_municipio']}' $selected>{$municipio['nom_municipio']}</option>";
+                                                            }
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="parroquia">Parroquia</label>
+                                                    <select name="parroquia" id="parroquia" class="form-control" required <?php echo empty($parroquias) ? 'disabled' : ''; ?>>
+                                                        <option value="">Primero seleccione un municipio</option>
+                                                        <?php
+                                                        if (!empty($parroquias)) {
+                                                            foreach ($parroquias as $parroquia) {
+                                                                $selected = ($docente->id_parroquia == $parroquia['id_parroquia']) ? 'selected' : '';
+                                                                echo "<option value='{$parroquia['id_parroquia']}' $selected>{$parroquia['nom_parroquia']}</option>";
+                                                            }
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <!-- Dirección -->
-                                        <div class="form-group">
-                                            <label for="direccion">Dirección</label>
-                                            <input type="text" class="form-control mayusculas" id="direccion" name="direccion"
-                                                value="<?php echo htmlspecialchars($docente->direccion); ?>">
-                                        </div>
-
-                                        <!-- Calle -->
-                                        <div class="form-group">
-                                            <label for="calle">Calle</label>
-                                            <input type="text" class="form-control mayusculas" id="calle" name="calle"
-                                                value="<?php echo htmlspecialchars($docente->calle); ?>">
-                                        </div>
-
-                                        <!-- Casa -->
-                                        <div class="form-group">
-                                            <label for="casa">Casa/Edificio</label>
-                                            <input type="text" class="form-control mayusculas" id="casa" name="casa"
-                                                value="<?php echo htmlspecialchars($docente->casa); ?>">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="direccion">Dirección Completa</label>
+                                                    <input type="text" class="form-control mayusculas" id="direccion" name="direccion"
+                                                        value="<?php echo htmlspecialchars($docente->direccion); ?>">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="calle">Calle/Avenida</label>
+                                                    <input type="text" class="form-control mayusculas" id="calle" name="calle"
+                                                        value="<?php echo htmlspecialchars($docente->calle); ?>">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label for="casa">Casa/Edificio</label>
+                                                    <input type="text" class="form-control mayusculas" id="casa" name="casa"
+                                                        value="<?php echo htmlspecialchars($docente->casa); ?>">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
 
+                                <div class="row mt-3">
                                     <div class="col-md-6">
                                         <h5>Información del Usuario</h5>
 
@@ -278,7 +340,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                             <h6><i class="icon fas fa-info"></i> Información</h6>
                                             <p class="mb-1">• Campos marcados con <span class="text-danger">*</span> son obligatorios</p>
                                             <p class="mb-1">• Los nombres, apellidos y cédula no se pueden editar</p>
-                                            <p class="mb-0">• El texto se convierte automáticamente a mayúsculas</p>
+                    
                                         </div>
                                     </div>
                                 </div>
@@ -412,7 +474,105 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 5. VALIDACIÓN AL ENVIAR FORMULARIO
+    // ========== SISTEMA DE DIRECCIÓN (ESTADO, MUNICIPIO, PARROQUIA) ==========
+    
+    // Cargar municipios cuando cambie el estado
+    document.getElementById('estado').addEventListener('change', function() {
+        const estadoId = this.value;
+        const municipioSelect = document.getElementById('municipio');
+        const parroquiaSelect = document.getElementById('parroquia');
+
+        if (estadoId) {
+            municipioSelect.disabled = false;
+            parroquiaSelect.disabled = true;
+            parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+            cargarMunicipios(estadoId);
+        } else {
+            municipioSelect.disabled = true;
+            parroquiaSelect.disabled = true;
+            municipioSelect.innerHTML = '<option value="">Primero seleccione un estado</option>';
+            parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        }
+    });
+
+    // Cargar parroquias cuando cambie el municipio
+    document.getElementById('municipio').addEventListener('change', function() {
+        const municipioId = this.value;
+        const parroquiaSelect = document.getElementById('parroquia');
+
+        if (municipioId) {
+            parroquiaSelect.disabled = false;
+            cargarParroquias(municipioId);
+        } else {
+            parroquiaSelect.disabled = true;
+            parroquiaSelect.innerHTML = '<option value="">Primero seleccione un municipio</option>';
+        }
+    });
+
+    function cargarMunicipios(estadoId) {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('estado_id', estadoId);
+
+            fetch('/final/app/controllers/ubicaciones/municipios.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const select = document.getElementById('municipio');
+                select.innerHTML = '<option value="">Seleccionar Municipio</option>';
+
+                data.forEach(municipio => {
+                    select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+                });
+                resolve();
+            })
+            .catch(error => {
+                console.error('Error al cargar municipios:', error);
+                reject(error);
+            });
+        });
+    }
+
+    function cargarParroquias(municipioId) {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('municipio_id', municipioId);
+
+            fetch('/final/app/controllers/ubicaciones/parroquias.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const select = document.getElementById('parroquia');
+                select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
+
+                data.forEach(parroquia => {
+                    select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+                });
+                resolve();
+            })
+            .catch(error => {
+                console.error('Error al cargar parroquias:', error);
+                reject(error);
+            });
+        });
+    }
+    
+    // ========== VALIDACIÓN AL ENVIAR FORMULARIO ==========
+    
     var formulario = document.getElementById('formEditarDocente');
     formulario.addEventListener('submit', function(e) {
         console.log('🔍 Validando formulario...');
@@ -425,7 +585,10 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'sexo', nombre: 'Sexo' },
             { id: 'fecha_nac', nombre: 'Fecha de nacimiento' },
             { id: 'telefono', nombre: 'Teléfono móvil' },
-            { id: 'id_profesion', nombre: 'Profesión' }
+            { id: 'id_profesion', nombre: 'Profesión' },
+            { id: 'estado', nombre: 'Estado' },
+            { id: 'municipio', nombre: 'Municipio' },
+            { id: 'parroquia', nombre: 'Parroquia' }
         ];
         
         camposObligatorios.forEach(function(campo) {
@@ -471,6 +634,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.log('✅ Formulario válido, enviando...');
         }
+    });
+    
+    // Limpiar validación al interactuar
+    $('input, select').on('input change', function() {
+        $(this).removeClass('is-invalid');
     });
     
     console.log('✅ Todas las validaciones configuradas correctamente');
