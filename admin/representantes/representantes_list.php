@@ -54,7 +54,7 @@ include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteContr
                         <div class="card-header">
                             <h3 class="card-title">Listado de Representantes</h3>
                             <div class="card-tools">
-                                <!--
+                                <!-- Botón de Nuevo Representante comentado en el original
                                 <a href="representante_nuevo.php" class="btn btn-primary btn-sm">
                                     <i class="fas fa-plus"></i> Nuevo Representante
                                 </a>
@@ -75,21 +75,24 @@ include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteContr
                                     if ($stmt) {
                                         if ($stmt->rowCount() > 0) {
                                             echo '<table id="tablaRepresentantes" class="table table-bordered table-striped">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>ID</th>
-                                                                <th>Cédula</th>
-                                                                <th>Nombre Completo</th>
-                                                                <th>Teléfono</th>
-                                                                <th>Correo</th>
-                                                                <th>Profesión</th>
-                                                                <th>Ocupación</th>
-                                                                <th>Estudiantes</th>
-                                                                <th>Estado</th>
-                                                                <th>Acciones</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>';
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nº</th> <!-- Corregido para usar numeración secuencial -->
+                                                            <th>Cédula</th>
+                                                            <th>Nombre Completo</th>
+                                                            <th>Teléfono</th>
+                                                            <th>Correo</th>
+                                                            <th>Profesión</th>
+                                                            <th>Ocupación</th>
+                                                            <th>Estudiantes</th>
+                                                            <th>Estado</th>
+                                                            <th>Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>';
+
+                                            // INICIAMOS EL CONTADOR DE NUMERACIÓN
+                                            $contador = 1;
 
                                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                                 $nombreCompleto = $row['primer_nombre'] . ' ' .
@@ -114,7 +117,8 @@ include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteContr
                                                             </button>';
 
                                                 echo "<tr>";
-                                                echo "<td>{$row['id_representante']}</td>";
+                                                // MOSTRAMOS EL CONTADOR
+                                                echo "<td>{$contador}</td>";
                                                 echo "<td>{$row['cedula']}</td>";
                                                 echo "<td>{$nombreCompleto}</td>";
                                                 echo "<td>{$row['telefono']}</td>";
@@ -122,7 +126,7 @@ include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteContr
                                                 echo "<td>{$row['profesion']}</td>";
                                                 echo "<td>{$row['ocupacion']}</td>";
                                                 echo "<td>{$estudiantes_badge}</td>";
-                                                echo "<td>{$estado_badge}</td>";
+                                                echo "<td>{$estado_badge}</td>"; // El estado de Activo/Inactivo se movió aquí
                                                 echo "<td>
                                                             <div class='btn-group'>
                                                                 <a href='representante_editar.php?id={$row['id_representante']}' class='btn btn-warning btn-sm' title='Editar'>
@@ -135,6 +139,9 @@ include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteContr
                                                             </div>
                                                         </td>";
                                                 echo "</tr>";
+
+                                                // INCREMENTAMOS EL CONTADOR
+                                                $contador++;
                                             }
 
                                             echo '</tbody></table>';
@@ -205,6 +212,7 @@ include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteContr
                     "sortDescending": ": activar para ordenar descendente"
                 }
             },
+            // Ordena por el Nombre Completo (índice de columna 2)
             "order": [
                 [2, "asc"]
             ]
@@ -212,6 +220,7 @@ include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteContr
     });
 
     function cambiarEstado(id_representante, nuevo_estado) {
+        // Nota: En un entorno de Canvas, se recomienda reemplazar 'confirm()' y 'alert()' por modales de UI.
         const accion = nuevo_estado ? 'habilitar' : 'inhabilitar';
 
         if (confirm(`¿Está seguro de que desea ${accion} este representante?`)) {

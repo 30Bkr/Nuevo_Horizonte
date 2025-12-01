@@ -7,69 +7,6 @@ include_once __DIR__ . '/../../models/Docente.php';
 include_once __DIR__ . '/../../models/Docente.php';
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 ?>
-<!-- <!DOCTYPE html>
-<html lang="es"> -->
-<!-- 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Listado de Docentes - Nuevo Horizonte</title>
-
-    Google Font: Source Sans Pro
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    Font Awesome
-    <link rel="stylesheet" href="/final/public/plugins/fontawesome-free/css/all.min.css">
-    Theme style
-    <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
-    DataTables
-    <link rel="stylesheet" href="/final/public/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-</head>
-
-<body class="hold-transition sidebar-mini">
-    <div class="wrapper">
-
-        Navbar simplificado
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/final/index.php" class="nav-link">Inicio</a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="docentes_list.php" class="nav-link">Docentes</a>
-                </li>
-            </ul>
-        </nav>
-
-        Sidebar simplificado
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="/final/index.php" class="brand-link">
-                <span class="brand-text font-weight-light">Nuevo Horizonte</span>
-            </a>
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item">
-                            <a href="/final/index.php" class="nav-link">
-                                <i class="nav-icon fas fa-home"></i>
-                                <p>Inicio</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="docentes_list.php" class="nav-link active">
-                                <i class="nav-icon fas fa-chalkboard-teacher"></i>
-                                <p>Docentes</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </aside> -->
-
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -136,20 +73,23 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                     if ($stmt) {
                                         if ($stmt->rowCount() > 0) {
                                             echo '<table id="tablaDocentes" class="table table-bordered table-striped">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>ID</th>
-                                                                <th>Cédula</th>
-                                                                <th>Nombre Completo</th>
-                                                                <th>Profesión</th>
-                                                                <th>Teléfono</th>
-                                                                <th>Correo</th>
-                                                                <th>Usuario</th>
-                                                                <th>Estado</th>
-                                                                <th>Acciones</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>';
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nº</th> <!-- Columna de numeración secuencial -->
+                                                            <th>Cédula</th>
+                                                            <th>Nombre Completo</th>
+                                                            <th>Profesión</th>
+                                                            <th>Teléfono</th>
+                                                            <th>Correo</th>
+                                                            <th>Usuario</th>
+                                                            <th>Estado</th>
+                                                            <th>Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>';
+
+                                            // INICIAMOS EL CONTADOR DE NUMERACIÓN
+                                            $contador = 1;
 
                                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                                 $nombreCompleto = $row['primer_nombre'] . ' ' .
@@ -164,14 +104,15 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                 // Botones con los nuevos colores solicitados
                                                 $boton_estado = $row['estatus'] == 1 ?
                                                     '<button type="button" class="btn btn-danger btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_docente'] . ', 0)">
-                                                            <i class="fas fa-ban"></i>
-                                                        </button>' :
+                                                                <i class="fas fa-ban"></i>
+                                                            </button>' :
                                                     '<button type="button" class="btn btn-success btn-sm" title="Habilitar" onclick="cambiarEstado(' . $row['id_docente'] . ', 1)">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>';
+                                                                <i class="fas fa-check"></i>
+                                                            </button>';
 
                                                 echo "<tr>";
-                                                echo "<td>{$row['id_docente']}</td>";
+                                                // MOSTRAMOS EL CONTADOR EN LUGAR DEL ID DE LA BD
+                                                echo "<td>{$contador}</td>"; 
                                                 echo "<td>{$row['cedula']}</td>";
                                                 echo "<td>{$nombreCompleto}</td>";
                                                 echo "<td>{$row['profesion']}</td>";
@@ -191,6 +132,9 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                             </div>
                                                         </td>";
                                                 echo "</tr>";
+
+                                                // INCREMENTAMOS EL CONTADOR
+                                                $contador++;
                                             }
 
                                             echo '</tbody></table>';
@@ -222,24 +166,6 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 </div>
 <!-- /.content-wrapper -->
 
-<!-- Footer -->
-<!-- <footer class="main-footer">
-    <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
-    Todos los derechos reservados.
-</footer> -->
-
-<!-- </div> -->
-<!-- ./wrapper -->
-
-<!-- jQuery -->
-<!-- <script src="/final/public/plugins/jquery/jquery.min.js"></script> -->
-<!-- Bootstrap 4 -->
-<!-- <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script> -->
-<!-- DataTables -->
-<!-- <script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script> -->
-<!-- <script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script> -->
-<!-- AdminLTE App -->
-<!-- <script src="/final/public/dist/js/adminlte.min.js"></script> -->
 <script>
     $(function() {
         $('#tablaDocentes').DataTable({
@@ -269,6 +195,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                     "sortDescending": ": activar para ordenar descendente"
                 }
             },
+            // Ordena por el Nombre Completo (índice de columna 2)
             "order": [
                 [2, "asc"]
             ]
@@ -276,6 +203,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
     });
 
     function cambiarEstado(id_docente, nuevo_estado) {
+        // Nota: En un entorno de Canvas, se recomienda reemplazar 'confirm()' y 'alert()' por modales de UI.
         const accion = nuevo_estado ? 'habilitar' : 'inhabilitar';
 
         if (confirm(`¿Está seguro de que desea ${accion} este docente?`)) {
@@ -289,10 +217,10 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        alert(response.message);
+                        alert(response.message); 
                         location.reload();
                     } else {
-                        alert('Error: ' + response.message);
+                        alert('Error: ' + response.message); 
                     }
                 },
                 error: function() {

@@ -69,19 +69,19 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                             try {
                                 if ($stmt->rowCount() > 0) {
                                     echo '<table id="tablaGrados" class="table table-bordered table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th>ID</th>
-                                                        <th>Grado/Año</th>
-                                                        <th>Sección</th>
-                                                        <th>Capacidad</th>
-                                                        <th>Alumnos Registrados</th>
-                                                        <th>Disponibilidad</th>
-                                                        <th>Estado</th>
-                                                        <th>Acciones</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>';
+                                            <thead>
+                                                <tr>
+                                                    <th>N°</th>
+                                                    <th>Grado/Año</th>
+                                                    <th>Sección</th>
+                                                    <th>Capacidad</th>
+                                                    <th>Alumnos Registrados</th>
+                                                    <th>Disponibilidad</th>
+                                                    <th>Estado</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>';
 
                                     $totalCapacidad = 0;
                                     $totalAlumnos = 0;
@@ -101,44 +101,45 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                         $estado_icono = $estado_grado ? 'check' : 'times';
 
                                         echo "<tr>";
-                                        echo "<td>{$row['id_nivel_seccion']}</td>";
+                                        // MODIFICACIÓN: Celda vacía para que DataTables inserte el número de fila.
+                                        echo "<td></td>"; 
                                         echo "<td>{$row['nombre_grado']}</td>";
                                         echo "<td>{$row['seccion']}</td>";
                                         echo "<td>{$row['capacidad']}</td>";
                                         echo "<td>{$row['total_alumnos']}</td>";
                                         echo "<td>
-                                                    <div class='progress progress-sm'>
-                                                        <div class='progress-bar {$clase_progress}' style='width: {$porcentaje}%'></div>
-                                                    </div>
-                                                    <small>{$cuposDisponibles} cupos disponibles (" . number_format($porcentaje, 1) . "%)</small>
-                                                </td>";
+                                            <div class='progress progress-sm'>
+                                                <div class='progress-bar {$clase_progress}' style='width: {$porcentaje}%'></div>
+                                            </div>
+                                            <small>{$cuposDisponibles} cupos disponibles (" . number_format($porcentaje, 1) . "%)</small>
+                                        </td>";
                                         echo "<td>
-                                                    <span class='badge badge-{$estado_clase}'>
-                                                        <i class='fas fa-{$estado_icono}'></i> {$estado_texto}
-                                                    </span>
-                                                </td>";
+                                            <span class='badge badge-{$estado_clase}'>
+                                                <i class='fas fa-{$estado_icono}'></i> {$estado_texto}
+                                            </span>
+                                        </td>";
                                         echo "<td>
-                                                    <div class='btn-group'>
-                                                        <a href='estudiantes_por_grado.php?id_nivel_seccion={$row['id_nivel_seccion']}' 
-                                                           class='btn btn-info btn-sm' title='Ver Estudiantes'>
-                                                            <i class='fas fa-users'></i> Ver Estudiantes
-                                                        </a>
-                                                    </div>
-                                                </td>";
+                                            <div class='btn-group'>
+                                                <a href='estudiantes_por_grado.php?id_nivel_seccion={$row['id_nivel_seccion']}' 
+                                                    class='btn btn-info btn-sm' title='Ver Estudiantes'>
+                                                    <i class='fas fa-users'></i> Ver Estudiantes
+                                                </a>
+                                            </div>
+                                        </td>";
                                         echo "</tr>";
                                     }
 
                                     echo '</tbody>';
                                     echo '<tfoot>
-                                                <tr>
-                                                    <th colspan="3" class="text-right"><strong>TOTALES:</strong></th>
-                                                    <th><strong>' . $totalCapacidad . '</strong></th>
-                                                    <th><strong>' . $totalAlumnos . '</strong></th>
-                                                    <th colspan="3">
-                                                        <strong>' . ($totalCapacidad - $totalAlumnos) . ' cupos disponibles totales</strong>
-                                                    </th>
-                                                </tr>
-                                              </tfoot>';
+                                            <tr>
+                                                <th colspan="3" class="text-right"><strong>TOTALES:</strong></th>
+                                                <th><strong>' . $totalCapacidad . '</strong></th>
+                                                <th><strong>' . $totalAlumnos . '</strong></th>
+                                                <th colspan="3">
+                                                    <strong>' . ($totalCapacidad - $totalAlumnos) . ' cupos disponibles totales</strong>
+                                                </th>
+                                            </tr>
+                                        </tfoot>';
                                     echo '</table>';
                                 } else {
                                     echo "<div class='alert alert-info'>No hay grados/secciones registrados en el sistema.</div>";
@@ -198,7 +199,21 @@ include_once('../../layout/mensajes.php');
             "order": [
                 [1, "asc"],
                 [2, "asc"]
-            ]
+            ],
+            // MODIFICACIÓN: Implementación de la numeración continua
+            "drawCallback": function(settings) {
+                var api = this.api();
+                // Obtiene el índice de inicio de la página actual
+                var startIndex = api.page.info().start; 
+
+                // Recorre las celdas de la columna 0 (#) en la página actual
+                api.column(0, {
+                    page: 'current'
+                }).nodes().each(function(cell, i) {
+                    // Calcula la numeración continua (índice base + índice de fila + 1)
+                    cell.innerHTML = startIndex + i + 1;
+                });
+            }
         });
     });
 </script>
