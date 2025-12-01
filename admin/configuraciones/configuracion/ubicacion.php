@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_estado']))
     $_SESSION['tipo_mensaje'] = "error";
   }
 
-  header("Location: ubicacion.php");
+  echo '<script>window.location.href = "' . $_SERVER['PHP_SELF'] . '";</script>';
   exit();
 }
 
