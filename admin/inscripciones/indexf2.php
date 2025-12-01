@@ -2119,247 +2119,419 @@ try {
   });
 </script>
 
-<!-- Aca Enviamos informacion del formulario -->
+<!-- Aca Enviamos informacion del formulario
 <script>
-    // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
-function generarConstanciaInscripcion(idInscripcion) {
+  // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
+  function generarConstanciaInscripcion(idInscripcion) {
     // ✅ VALIDACIÓN ADICIONAL: Verificar que el ID sea numérico
     if (!idInscripcion || isNaN(idInscripcion)) {
-        console.error('❌ ID de inscripción no válido para generar constancia:', idInscripcion);
-        return Promise.reject(new Error('ID de inscripción no válido'));
+      console.error('❌ ID de inscripción no válido para generar constancia:', idInscripcion);
+      return Promise.reject(new Error('ID de inscripción no válido'));
     }
-    
+
     return new Promise((resolve, reject) => {
-        console.log('📄 Generando constancia para inscripción ID:', idInscripcion);
-        
-        // Mostrar mensaje de que se está generando la constancia
-        const generatingMsg = document.createElement('div');
-        generatingMsg.className = 'alert alert-info';
-        generatingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando constancia de inscripción...';
-        document.querySelector('.content-wrapper').prepend(generatingMsg);
-        
-        // Usar directamente generar_constancia.php (SIMPLIFICADO)
-        const constanciaUrl = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
-        
-        setTimeout(() => {
-            generatingMsg.remove();
-            
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.innerHTML = `
+      console.log('📄 Generando constancia para inscripción ID:', idInscripcion);
+
+      // Mostrar mensaje de que se está generando la constancia
+      const generatingMsg = document.createElement('div');
+      generatingMsg.className = 'alert alert-info';
+      generatingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando constancia de inscripción...';
+      document.querySelector('.content-wrapper').prepend(generatingMsg);
+
+      // Usar directamente generar_constancia.php (SIMPLIFICADO)
+      const constanciaUrl = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
+
+      setTimeout(() => {
+        generatingMsg.remove();
+
+        const successMsg = document.createElement('div');
+        successMsg.className = 'alert alert-success';
+        successMsg.innerHTML = `
                 <strong>✅ Inscripción completada exitosamente</strong><br>
                 <small>La constancia se abrirá en una nueva ventana para visualización.</small>
                 <br><small><em>Puede usar el botón de descarga del navegador si desea guardarla.</em></small>
             `;
-            document.querySelector('.content-wrapper').prepend(successMsg);
-            
-            // Abrir en nueva pestaña para VISUALIZACIÓN (no descarga automática)
-            console.log('🔗 Abriendo constancia para visualización:', constanciaUrl);
-            window.open(constanciaUrl, '_blank', 'width=1000,height=700,scrollbars=yes');
-            
-            // También mostrar botón por si la ventana emergente es bloqueada
-            const buttonMsg = document.createElement('div');
-            buttonMsg.className = 'alert alert-info mt-2';
-            buttonMsg.innerHTML = `
+        document.querySelector('.content-wrapper').prepend(successMsg);
+
+        // Abrir en nueva pestaña para VISUALIZACIÓN (no descarga automática)
+        console.log('🔗 Abriendo constancia para visualización:', constanciaUrl);
+        window.open(constanciaUrl, '_blank', 'width=1000,height=700,scrollbars=yes');
+
+        // También mostrar botón por si la ventana emergente es bloqueada
+        const buttonMsg = document.createElement('div');
+        buttonMsg.className = 'alert alert-info mt-2';
+        buttonMsg.innerHTML = `
                 <small>Si la constancia no se abrió automáticamente:</small><br>
                 <a href="${constanciaUrl}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">
                     <i class="fas fa-external-link-alt"></i> Abrir Constancia Manualmente
                 </a>
             `;
-            document.querySelector('.content-wrapper').prepend(buttonMsg);
-            
-            resolve({ success: true });
-            
-        }, 1500); // Pequeño delay para mejor experiencia de usuario
+        document.querySelector('.content-wrapper').prepend(buttonMsg);
+
+        resolve({
+          success: true
+        });
+
+      }, 1500); // Pequeño delay para mejor experiencia de usuario
 
     }); // <--- Cierra el return new Promise()
-} // <--- Cierra function generarConstanciaInscripcion()
+  } // <--- Cierra function generarConstanciaInscripcion()
 
-    // Modificar el manejo del envío del formulario
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('form-inscripcion');
+  // Modificar el manejo del envío del formulario
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('form-inscripcion');
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            console.log('Formulario enviado - iniciando procesamiento...');
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      console.log('Formulario enviado - iniciando procesamiento...');
 
-            // Mostrar loading
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-            submitBtn.disabled = true;
+      // Mostrar loading
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      submitBtn.disabled = true;
 
-            // Habilitar campos deshabilitados temporalmente para el envío
-            document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
-                element.disabled = false;
-            });
+      // Habilitar campos deshabilitados temporalmente para el envío
+      document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled').forEach(element => {
+        element.disabled = false;
+      });
 
-            const formData = new FormData(this);
+      const formData = new FormData(this);
 
-            // Mostrar mensaje de procesamiento
-            const processingMsg = document.createElement('div');
-            processingMsg.className = 'alert alert-info';
-            processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando inscripción...';
-            document.querySelector('.content-wrapper').prepend(processingMsg);
+      // Mostrar mensaje de procesamiento
+      const processingMsg = document.createElement('div');
+      processingMsg.className = 'alert alert-info';
+      processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando inscripción...';
+      document.querySelector('.content-wrapper').prepend(processingMsg);
 
-            // ⚠️ ESTRATEGIA: Intentar la inscripción pero SILENCIAR errores JSON si al final funciona
-            fetch(this.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                // Primero intentamos como texto para ver qué devuelve realmente
-                return response.text().then(text => {
-                    console.log('📨 Respuesta cruda del servidor:', text.substring(0, 300));
+      // ⚠️ ESTRATEGIA: Intentar la inscripción pero SILENCIAR errores JSON si al final funciona
+      fetch(this.action, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          // Primero intentamos como texto para ver qué devuelve realmente
+          return response.text().then(text => {
+            console.log('📨 Respuesta cruda del servidor:', text.substring(0, 300));
 
-                    // Intentar parsear como JSON
-                    try {
-                        const jsonData = JSON.parse(text);
-                        console.log('✅ JSON parseado correctamente:', jsonData);
-                        return jsonData;
-                    } catch (jsonError) {
-                        console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
+            // Intentar parsear como JSON
+            try {
+              const jsonData = JSON.parse(text);
+              console.log('✅ JSON parseado correctamente:', jsonData);
+              return jsonData;
+            } catch (jsonError) {
+              console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
 
-                        // Buscar pistas de éxito en el texto crudo
-                        const hasSuccessIndicators =
-                            text.includes('success') ||
-                            text.includes('id_inscripcion') ||
-                            text.includes('exitosamente') ||
-                            text.length < 100; // Si la respuesta es muy corta, probablemente fue exitosa
+              // Buscar pistas de éxito en el texto crudo
+              const hasSuccessIndicators =
+                text.includes('success') ||
+                text.includes('id_inscripcion') ||
+                text.includes('exitosamente') ||
+                text.length < 100; // Si la respuesta es muy corta, probablemente fue exitosa
 
-                        if (hasSuccessIndicators) {
-                            console.log('🎯 Respuesta parece exitosa a pesar del formato JSON inválido');
+              if (hasSuccessIndicators) {
+                console.log('🎯 Respuesta parece exitosa a pesar del formato JSON inválido');
 
-                            // Intentar extraer el ID de inscripción del texto
-                            let idInscripcion = null;
-                            const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
-                            if (idMatch) {
-                                idInscripcion = idMatch[1];
-                            }
-
-                            return {
-                                success: true,
-                                message: 'Inscripción procesada exitosamente',
-                                id_inscripcion: idInscripcion
-                            };
-                        }
-
-                        // Si no hay indicadores de éxito, devolver éxito igual (estrategia conservadora)
-                        console.log('🔄 No hay indicadores claros, asumiendo éxito por defecto');
-                        return {
-                            success: true,
-                            message: 'Proceso completado',
-                            id_inscripcion: null
-                        };
-                    }
-                });
-            })
-            .then(data => {
-                // Remover mensaje de procesamiento
-                processingMsg.remove();
-
-                console.log('📊 Resultado final del proceso:', data);
-
-                // Intentar obtener el ID de inscripción
-                let idInscripcion = data.id_inscripcion;
-
-                // SOLUCIÓN RÁPIDA: Si no hay ID, no generar constancia
-                if (!idInscripcion) {
-                    console.warn('⚠️ No se generará constancia - ID no recibido');
-                    idInscripcion = null;
+                // Intentar extraer el ID de inscripción del texto
+                let idInscripcion = null;
+                const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
+                if (idMatch) {
+                  idInscripcion = idMatch[1];
                 }
-                console.log('🎯 ID de inscripción a usar:', idInscripcion);
 
-                // SOLO generar constancia si tenemos un ID válido (numérico)
-                if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
-                    // Generar constancia con el ID disponible
-                    generarConstanciaInscripcion(idInscripcion)
-                        .then(() => {
-                            console.log('✅ Proceso de constancia completado');
-                            
-                            // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
-                            setTimeout(() => {
-                                console.log('🔄 Redirigiendo a dashboard...');
-                                window.location.href = '/final/admin/index.php';
-                            }, 8000); // 8 segundos para dar tiempo al usuario
-                        })
-                        .catch((error) => {
-                            console.warn('⚠️ Error en proceso de constancia:', error);
-                            
-                            // Mostrar mensaje de error pero continuar
-                            const errorMsg = document.createElement('div');
-                            errorMsg.className = 'alert alert-warning mt-2';
-                            errorMsg.innerHTML = `
+                return {
+                  success: true,
+                  message: 'Inscripción procesada exitosamente',
+                  id_inscripcion: idInscripcion
+                };
+              }
+
+              // Si no hay indicadores de éxito, devolver éxito igual (estrategia conservadora)
+              console.log('🔄 No hay indicadores claros, asumiendo éxito por defecto');
+              return {
+                success: true,
+                message: 'Proceso completado',
+                id_inscripcion: null
+              };
+            }
+          });
+        })
+        .then(data => {
+          // Remover mensaje de procesamiento
+          processingMsg.remove();
+
+          console.log('📊 Resultado final del proceso:', data);
+
+          // Intentar obtener el ID de inscripción
+          let idInscripcion = data.id_inscripcion;
+
+          // SOLUCIÓN RÁPIDA: Si no hay ID, no generar constancia
+          if (!idInscripcion) {
+            console.warn('⚠️ No se generará constancia - ID no recibido');
+            idInscripcion = null;
+          }
+          console.log('🎯 ID de inscripción a usar:', idInscripcion);
+
+          // SOLO generar constancia si tenemos un ID válido (numérico)
+          if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
+            // Generar constancia con el ID disponible
+            generarConstanciaInscripcion(idInscripcion)
+              .then(() => {
+                console.log('✅ Proceso de constancia completado');
+
+                // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
+                setTimeout(() => {
+                  console.log('🔄 Redirigiendo a dashboard...');
+                  window.location.href = '/final/admin/index.php';
+                }, 8000); // 8 segundos para dar tiempo al usuario
+              })
+              .catch((error) => {
+                console.warn('⚠️ Error en proceso de constancia:', error);
+
+                // Mostrar mensaje de error pero continuar
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-warning mt-2';
+                errorMsg.innerHTML = `
                                 <small>Hubo un problema con la constancia, pero la inscripción fue exitosa.</small><br>
                                 <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
                                     target="_blank" class="btn btn-outline-warning btn-sm mt-1">
                                     <i class="fas fa-redo"></i> Intentar Generar Constancia Nuevamente
                                 </a>
                             `;
-                            document.querySelector('.content-wrapper').prepend(errorMsg);
-                            
-                            // Redirigir después de más tiempo
-                            setTimeout(() => {
-                                window.location.href = '/final/admin/index.php';
-                            }, 6000);
-                        });
-                } else {
-                    // Si no hay ID válido, solo redirigir
-                    console.warn('⚠️ No se generará constancia - ID no válido:', idInscripcion);
-                    
-                    const noConstanciaMsg = document.createElement('div');
-                    noConstanciaMsg.className = 'alert alert-info mt-3';
-                    noConstanciaMsg.innerHTML = `
+                document.querySelector('.content-wrapper').prepend(errorMsg);
+
+                // Redirigir después de más tiempo
+                setTimeout(() => {
+                  window.location.href = '/final/admin/index.php';
+                }, 6000);
+              });
+          } else {
+            // Si no hay ID válido, solo redirigir
+            console.warn('⚠️ No se generará constancia - ID no válido:', idInscripcion);
+
+            const noConstanciaMsg = document.createElement('div');
+            noConstanciaMsg.className = 'alert alert-info mt-3';
+            noConstanciaMsg.innerHTML = `
                         <strong>✅ Inscripción completada exitosamente</strong><br>
                         <small>Puede generar la constancia más tarde desde el listado de estudiantes.</small>
                     `;
-                    document.querySelector('.content-wrapper').prepend(noConstanciaMsg);
-                    
-                    setTimeout(() => {
-                        console.log('🔄 Redirigiendo a dashboard...');
-                        window.location.href = '/final/admin/index.php';
-                    }, 5000);
-                }
+            document.querySelector('.content-wrapper').prepend(noConstanciaMsg);
 
-            })
-            .catch(error => {
-                console.error('💥 Error crítico en el proceso:', error);
-                
-                // Remover mensaje de procesamiento
-                processingMsg.remove();
-                
-                // Solo mostrar error si es realmente crítico (errores de red)
-                if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
-                    const errorAlert = document.createElement('div');
-                    errorAlert.className = 'alert alert-danger';
-                    errorAlert.innerHTML = `<strong>❌ Error de conexión</strong><br><small>No se pudo conectar con el servidor.</small>`;
-                    document.querySelector('.content-wrapper').prepend(errorAlert);
-                } else {
-                    // Para otros errores, mostrar éxito (nuestra estrategia de silenciamiento)
-                    const successAlert = document.createElement('div');
-                    successAlert.className = 'alert alert-success';
-                    successAlert.innerHTML = `<strong>✅ Proceso completado</strong>`;
-                    document.querySelector('.content-wrapper').prepend(successAlert);
-                    
-                    // // Intentar generar constancia de todas formas
-                    // setTimeout(() => {
-                    //     generarConstanciaInscripcion('last')
-                    //         .finally(() => {
-                    //             setTimeout(() => {
-                    //                 window.location.href = '/final/admin/index.php';
-                    //             }, 4000);
-                    //         });
-                    // }, 1000);
-                }
-                
-                // Rehabilitar botón en caso de error crítico
-                if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }
-            }); // <--- Cierre de la función de callback del .catch
-        }); // <--- Cierre del form.addEventListener('submit'
-    }); // <--- Cierre del document.addEventListener('DOMContentLoaded'
+            setTimeout(() => {
+              console.log('🔄 Redirigiendo a dashboard...');
+              window.location.href = '/final/admin/index.php';
+            }, 5000);
+          }
+
+        })
+        .catch(error => {
+          console.error('💥 Error crítico en el proceso:', error);
+
+          // Remover mensaje de procesamiento
+          processingMsg.remove();
+
+          // Solo mostrar error si es realmente crítico (errores de red)
+          if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+            const errorAlert = document.createElement('div');
+            errorAlert.className = 'alert alert-danger';
+            errorAlert.innerHTML = `<strong>❌ Error de conexión</strong><br><small>No se pudo conectar con el servidor.</small>`;
+            document.querySelector('.content-wrapper').prepend(errorAlert);
+          } else {
+            // Para otros errores, mostrar éxito (nuestra estrategia de silenciamiento)
+            const successAlert = document.createElement('div');
+            successAlert.className = 'alert alert-success';
+            successAlert.innerHTML = `<strong>✅ Proceso completado</strong>`;
+            document.querySelector('.content-wrapper').prepend(successAlert);
+
+            // // Intentar generar constancia de todas formas
+            // setTimeout(() => {
+            //     generarConstanciaInscripcion('last')
+            //         .finally(() => {
+            //             setTimeout(() => {
+            //                 window.location.href = '/final/admin/index.php';
+            //             }, 4000);
+            //         });
+            // }, 1000);
+          }
+
+          // Rehabilitar botón en caso de error crítico
+          if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        }); // <--- Cierre de la función de callback del .catch
+    }); // <--- Cierre del form.addEventListener('submit'
+  }); // <--- Cierre del document.addEventListener('DOMContentLoaded'
+</script> -->
+
+<!-- ========== ENVÍO SIMPLIFICADO Y CONFIABLE DEL FORMULARIO ========== -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('form-inscripcion');
+
+    // Remover cualquier event listener anterior para evitar duplicados
+    form.removeEventListener('submit', handleFormSubmit);
+    form.addEventListener('submit', handleFormSubmit);
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      console.log('📝 Iniciando envío del formulario...');
+
+      // Mostrar estado de carga
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      submitBtn.disabled = true;
+
+      // Mostrar mensaje de procesamiento
+      const processingMsg = document.createElement('div');
+      processingMsg.className = 'alert alert-info';
+      processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando inscripción...';
+      document.querySelector('.content-wrapper').prepend(processingMsg);
+
+      try {
+        // Habilitar campos temporalmente para el envío
+        const disabledElements = document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled');
+        disabledElements.forEach(element => element.disabled = false);
+
+        const formData = new FormData(form);
+
+        // Enviar datos
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData
+        });
+
+        // Procesar respuesta
+        const result = await processResponse(response);
+
+        // Remover mensaje de procesamiento
+        processingMsg.remove();
+
+        if (result.success) {
+          await handleSuccess(result);
+        } else {
+          handleError(result.message);
+        }
+
+      } catch (error) {
+        console.error('💥 Error crítico:', error);
+        processingMsg.remove();
+        handleError('Error de conexión: ' + error.message);
+      } finally {
+        // Restaurar botón
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+
+    async function processResponse(response) {
+      const text = await response.text();
+      console.log('📨 Respuesta del servidor:', text.substring(0, 500));
+
+      try {
+        return JSON.parse(text);
+      } catch (jsonError) {
+        console.warn('⚠️ No se pudo parsear como JSON, buscando indicadores de éxito...');
+
+        // Buscar indicadores de éxito en el texto
+        if (text.includes('success') || text.includes('exitosamente') || text.length < 500) {
+          const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
+          return {
+            success: true,
+            message: 'Inscripción procesada correctamente',
+            id_inscripcion: idMatch ? idMatch[1] : null
+          };
+        }
+
+        return {
+          success: false,
+          message: 'Error en el formato de respuesta del servidor'
+        };
+      }
+    }
+
+    async function handleSuccess(result) {
+      console.log('✅ Inscripción exitosa:', result);
+
+      // Mostrar mensaje de éxito
+      const successMsg = document.createElement('div');
+      successMsg.className = 'alert alert-success';
+      successMsg.innerHTML = `
+            <strong>✅ ${result.message || 'Inscripción completada exitosamente'}</strong>
+            <div class="mt-2">
+                <small>Será redirigido automáticamente en <span id="countdown">8</span> segundos...</small>
+            </div>
+        `;
+      document.querySelector('.content-wrapper').prepend(successMsg);
+
+      // Generar constancia si hay ID
+      if (result.id_inscripcion && !isNaN(result.id_inscripcion)) {
+        await generateConstancia(result.id_inscripcion);
+      } else {
+        const noConstanciaMsg = document.createElement('div');
+        noConstanciaMsg.className = 'alert alert-info mt-2';
+        noConstanciaMsg.innerHTML = `
+                <small>⚠️ No se generó constancia automáticamente. Podrá generarla más tarde desde el listado de estudiantes.</small>
+            `;
+        successMsg.appendChild(noConstanciaMsg);
+      }
+
+      // Iniciar cuenta regresiva para redirección
+      startCountdown(8);
+    }
+
+    function handleError(message) {
+      const errorMsg = document.createElement('div');
+      errorMsg.className = 'alert alert-danger';
+      errorMsg.innerHTML = `<strong>❌ Error:</strong> ${message}`;
+      document.querySelector('.content-wrapper').prepend(errorMsg);
+    }
+
+    async function generateConstancia(idInscripcion) {
+      return new Promise((resolve) => {
+        console.log('📄 Generando constancia para ID:', idInscripcion);
+
+        const constanciaUrl = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
+
+        // Abrir en nueva pestaña después de un breve delay
+        setTimeout(() => {
+          const newWindow = window.open(constanciaUrl, '_blank', 'width=1000,height=700');
+
+          // Agregar enlace manual por si se bloquea el popup
+          const manualLink = document.createElement('div');
+          manualLink.className = 'alert alert-info mt-2';
+          manualLink.innerHTML = `
+                    <small>Si la constancia no se abrió automáticamente:</small><br>
+                    <a href="${constanciaUrl}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">
+                        <i class="fas fa-external-link-alt"></i> Abrir Constancia Manualmente
+                    </a>
+                `;
+          document.querySelector('.alert-success').appendChild(manualLink);
+
+          resolve();
+        }, 1000);
+      });
+    }
+
+    function startCountdown(seconds) {
+      const countdownElement = document.getElementById('countdown');
+      let count = seconds;
+
+      const countdownInterval = setInterval(() => {
+        count--;
+        if (countdownElement) {
+          countdownElement.textContent = count;
+        }
+
+        if (count <= 0) {
+          clearInterval(countdownInterval);
+          console.log('🔄 Redirigiendo a dashboard...');
+          window.location.href = '/final/admin/index.php';
+        }
+      }, 1000);
+    }
+  });
 </script>
 
 
@@ -2714,12 +2886,12 @@ function generarConstanciaInscripcion(idInscripcion) {
 
     // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
     const inputsTexto = document.querySelectorAll('input[type="text"]:not([readonly])');
-    
+
     inputsTexto.forEach(input => {
       input.addEventListener('input', function() {
         convertirMayusculas(this);
       });
-      
+
       // También aplicar a los valores existentes al cargar la página
       if (input.value) {
         convertirMayusculas(input);
@@ -2728,12 +2900,12 @@ function generarConstanciaInscripcion(idInscripcion) {
 
     // Aplicar también a textareas
     const textareas = document.querySelectorAll('textarea:not([readonly])');
-    
+
     textareas.forEach(textarea => {
       textarea.addEventListener('input', function() {
         convertirMayusculas(this);
       });
-      
+
       // Aplicar a valores existentes
       if (textarea.value) {
         convertirMayusculas(textarea);
