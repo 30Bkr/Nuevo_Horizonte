@@ -35,15 +35,29 @@ if ($docente->id_profesion) {
     }
 }
 
-// Obtener nombre de la parroquia
-$parroquia_completa = 'No especificado';
+// Obtener información completa de la ubicación
+$estado_nombre = 'No especificado';
+$municipio_nombre = 'No especificado';
+$parroquia_nombre = 'No especificado';
+
 if ($docente->id_parroquia) {
-    $parroquias = $docente->obtenerParroquias();
-    while ($row = $parroquias->fetch(PDO::FETCH_ASSOC)) {
-        if ($row['id_parroquia'] == $docente->id_parroquia) {
-            $parroquia_completa = $row['nom_parroquia'] . ' - ' . $row['nom_municipio'] . ' - ' . $row['nom_estado'];
-            break;
-        }
+    $query = "SELECT 
+                e.nom_estado,
+                m.nom_municipio, 
+                p.nom_parroquia
+              FROM parroquias p
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio
+              INNER JOIN estados e ON m.id_estado = e.id_estado
+              WHERE p.id_parroquia = ?";
+    
+    $stmt = $db->prepare($query);
+    $stmt->execute([$docente->id_parroquia]);
+    $ubicacion = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($ubicacion) {
+        $estado_nombre = $ubicacion['nom_estado'];
+        $municipio_nombre = $ubicacion['nom_municipio'];
+        $parroquia_nombre = $ubicacion['nom_parroquia'];
     }
 }
 
@@ -62,16 +76,6 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
     return !empty($valor) ? htmlspecialchars($valor) : $textoDefecto;
 }
 ?>
-<!-- <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ver Docente - Nuevo Horizonte</title>
-    
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <link rel="stylesheet" href="/final/public/plugins/fontawesome-free/css/all.min.css">
-    <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css"> -->
 
 <style>
     .info-section {
@@ -116,6 +120,25 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
         font-size: 0.85rem;
     }
 
+    .ubicacion-completa {
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 10px;
+    }
+
+    .ubicacion-item {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .ubicacion-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
     @media (max-width: 768px) {
         .info-group {
             flex-direction: column;
@@ -128,56 +151,7 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
         }
     }
 </style>
-<!-- </head>
-<body class="hold-transition sidebar-mini">
-<div class="wrapper">
 
-    <!-- Navbar -->
-<!-- <nav class="main-header navbar navbar-expand navbar-white navbar-light"> -->
-<!-- <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                    <i class="fas fa-bars"></i>
-                </a>
-            </li>
-            <li class="nav-item d-none d-sm-inline-block">
-                <a href="/final/index.php" class="nav-link">Inicio</a>
-            </li>
-            <li class="nav-item d-none d-sm-inline-block">
-                <a href="docentes_list.php" class="nav-link">Docentes</a>
-            </li>
-            <li class="nav-item d-none d-sm-inline-block">
-                <a href="#" class="nav-link">Ver Docente</a>
-            </li>
-        </ul>
-    </nav> -->
-
-<!-- Sidebar -->
-<!-- <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="/final/index.php" class="brand-link">
-            <span class="brand-text font-weight-light">Nuevo Horizonte</span>
-        </a>
-        <div class="sidebar">
-            <nav class="mt-2">
-                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                    <li class="nav-item">
-                        <a href="/final/index.php" class="nav-link">
-                            <i class="nav-icon fas fa-home"></i>
-                            <p>Inicio</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="docentes_list.php" class="nav-link">
-                            <i class="nav-icon fas fa-chalkboard-teacher"></i>
-                            <p>Docentes</p>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </aside>  -->
-
-<!-- Content Wrapper -->
 <div class="content-wrapper">
     <section class="content-header">
         <div class="container-fluid">
@@ -223,11 +197,11 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
                                 <h3 class="card-title mb-0">
                                     <i class="fas fa-user-tie mr-2"></i><?php echo htmlspecialchars($nombre_completo); ?>
                                 </h3>
-                                <div class="card-tools">
+                                <!-- <div class="card-tools">
                                     <a href="docente_editar.php?id=<?php echo $docente->id_docente; ?>" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Editar
                                     </a>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                         <div class="card-body">
@@ -294,21 +268,26 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
                                         <h5 class="section-title">
                                             <i class="fas fa-map-marker-alt mr-1"></i> Información de Dirección
                                         </h5>
-                                        <div class="info-group">
-                                            <span class="info-label">Parroquia:</span>
-                                            <span class="info-value"><?php echo $parroquia_completa; ?></span>
-                                        </div>
-                                        <div class="info-group">
-                                            <span class="info-label">Dirección:</span>
-                                            <span class="info-value"><?php echo mostrarValor($docente->direccion); ?></span>
-                                        </div>
-                                        <div class="info-group">
-                                            <span class="info-label">Calle:</span>
-                                            <span class="info-value"><?php echo mostrarValor($docente->calle); ?></span>
-                                        </div>
-                                        <div class="info-group">
-                                            <span class="info-label">Casa/Edificio:</span>
-                                            <span class="info-value"><?php echo mostrarValor($docente->casa); ?></span>
+                                        
+                                        <div class="ubicacion-completa">
+                                            <div class="ubicacion-item">
+                                                <strong>Estado:</strong> <?php echo $estado_nombre; ?>
+                                            </div>
+                                            <div class="ubicacion-item">
+                                                <strong>Municipio:</strong> <?php echo $municipio_nombre; ?>
+                                            </div>
+                                            <div class="ubicacion-item">
+                                                <strong>Parroquia:</strong> <?php echo $parroquia_nombre; ?>
+                                            </div>
+                                            <div class="ubicacion-item">
+                                                <strong>Dirección Completa:</strong> <?php echo mostrarValor($docente->direccion); ?>
+                                            </div>
+                                            <div class="ubicacion-item">
+                                                <strong>Calle/Avenida:</strong> <?php echo mostrarValor($docente->calle); ?>
+                                            </div>
+                                            <div class="ubicacion-item">
+                                                <strong>Casa/Edificio:</strong> <?php echo mostrarValor($docente->casa); ?>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -328,9 +307,27 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
                                         <div class="info-group">
                                             <span class="info-label">Estado:</span>
                                             <span class="info-value">
-                                                <span class="badge badge-success badge-estado">Activo</span>
+                                                <?php if ($docente->estatus == 1): ?>
+                                                    <span class="badge badge-success badge-estado">Activo</span>
+                                                <?php else: ?>
+                                                    <span class="badge badge-danger badge-estado">Inactivo</span>
+                                                <?php endif; ?>
                                             </span>
                                         </div>
+                                        <div class="info-group">
+                                            <span class="info-label">Fecha Registro:</span>
+                                            <span class="info-value">
+                                                <?php echo $docente->creacion ? date('d/m/Y H:i', strtotime($docente->creacion)) : 'No especificado'; ?>
+                                            </span>
+                                        </div>
+                                        <?php if ($docente->actualizacion): ?>
+                                        <div class="info-group">
+                                            <span class="info-label">Última Actualización:</span>
+                                            <span class="info-value">
+                                                <?php echo date('d/m/Y H:i', strtotime($docente->actualizacion)); ?>
+                                            </span>
+                                        </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -340,9 +337,20 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
                                 <a href="docentes_list.php" class="btn btn-default">
                                     <i class="fas fa-arrow-left mr-1"></i> Volver al Listado
                                 </a>
-                                <a href="docente_editar.php?id=<?php echo $docente->id_docente; ?>" class="btn btn-primary">
-                                    <i class="fas fa-edit mr-1"></i> Editar Información
-                                </a>
+                                <div>
+                                    <a href="docente_editar.php?id=<?php echo $docente->id_docente; ?>" class="btn btn-primary">
+                                        <i class="fas fa-edit mr-1"></i> Editar Información
+                                    </a>
+                                    <!-- <?php if ($docente->estatus == 1): ?>  -->
+                                        <!-- <a href="docente_desactivar.php?id=<?php echo $docente->id_docente; ?>" class="btn btn-warning" onclick="return confirm('¿Está seguro de que desea desactivar este docente?')">
+                                            <i class="fas fa-user-slash mr-1"></i> Desactivar
+                                        </a> -->
+                                    <!-- <?php else: ?> -->
+                                        <!-- <a href="docente_activar.php?id=<?php echo $docente->id_docente; ?>" class="btn btn-success" onclick="return confirm('¿Está seguro de que desea activar este docente?')">
+                                            <i class="fas fa-user-check mr-1"></i> Activar
+                                        </a> -->
+                                    <!-- <?php endif; ?> -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -351,12 +359,6 @@ function mostrarValor($valor, $textoDefecto = 'No especificado')
         </div>
     </section>
 </div>
-
-<!-- <footer class="main-footer">
-    <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
-</footer>
-
-</div> -->
 
 <?php
 include_once('../../layout/layaout2.php');
