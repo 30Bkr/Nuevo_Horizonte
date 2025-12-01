@@ -1000,7 +1000,7 @@ try {
 
       console.log(`🔍 Analizando nivel: "${nombreNivel}" - Grado:${esGrado} Año:${esAnio} Número:${numero}`);
 
-      if (edad >= 4 && edad <= 10) {
+      if (edad >= 3 && edad <= 10) {
         // 4-10 años: solo grados (desde 1° hasta 6° grado)
         return esGrado && numero >= 1 && numero <= 6;
       } else if (edad >= 11 && edad <= 12) {
