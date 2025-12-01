@@ -52,31 +52,37 @@ class Estudiante {
         $this->conn = $db;
     }
 
-    // Listar todos los estudiantes
-    public function listarEstudiantes() {
-        $query = "SELECT 
-                    e.id_estudiante,
-                    e.estatus,
-                    p.primer_nombre,
-                    p.segundo_nombre,
-                    p.primer_apellido,
-                    p.segundo_apellido,
-                    p.cedula,
-                    p.telefono,
-                    p.correo,
-                    p.fecha_nac,
-                    p.sexo,
-                    e.creacion,
-                    (SELECT COUNT(*) FROM inscripciones i WHERE i.id_estudiante = e.id_estudiante AND i.estatus = 1) as inscripciones_count
-                  FROM " . $this->table_name . " e
-                  INNER JOIN personas p ON e.id_persona = p.id_persona
-                  ORDER BY e.estatus DESC, p.primer_apellido, p.primer_nombre";
+   // Listar todos los estudiantes
+public function listarEstudiantes() {
+    $query = "SELECT 
+                e.id_estudiante,
+                e.estatus,
+                p.primer_nombre,
+                p.segundo_nombre,
+                p.primer_apellido,
+                p.segundo_apellido,
+                p.cedula,
+                p.telefono,
+                p.correo,
+                p.fecha_nac,
+                p.sexo,
+                e.creacion,
+                (SELECT COUNT(*) FROM inscripciones i WHERE i.id_estudiante = e.id_estudiante AND i.estatus = 1) as inscripciones_count
+              FROM " . $this->table_name . " e
+              INNER JOIN personas p ON e.id_persona = p.id_persona
+              WHERE e.id_estudiante IN (
+                  SELECT i.id_estudiante 
+                  FROM inscripciones i 
+                  INNER JOIN periodos per ON i.id_periodo = per.id_periodo 
+                  WHERE per.estatus = 1 AND i.estatus = 1
+              )
+              ORDER BY e.estatus DESC, p.primer_apellido, p.primer_nombre";
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
 
-        return $stmt;
-    }
+    return $stmt;
+}
 
     // Obtener estudiante por ID
     public function obtenerPorId($id) {
