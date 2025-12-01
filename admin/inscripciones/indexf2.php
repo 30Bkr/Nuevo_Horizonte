@@ -447,10 +447,20 @@ try {
                         </select>
                       </div>
                     </div>
-                    <div class="col-md-3">
+                    <!-- <div class="col-md-3">
                       <div class="form-group">
                         <label for="fecha_nac_e">Fecha de Nacimiento </label>
                         <input type="date" name="fecha_nac_e" id="fecha_nac_e" class="form-control" required>
+                      </div>
+                    </div> -->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="fecha_nac_e">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nac_e" id="fecha_nac_e" class="form-control" required>
+                        <small class="form-text text-muted" id="rango-fecha-help">
+                          <!-- Este mensaje se actualizará con JavaScript -->
+                          Cargando rango de edades permitidas...
+                        </small>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -998,7 +1008,7 @@ try {
         if (esGrado) return numero >= 4 && numero <= 6;
         if (esAnio) return numero >= 1 && numero <= 3;
         return false;
-      } else if (edad >= 13 && edad <= 18) {
+      } else if (edad >= 13 && edad <= 22) {
         // 13-18 años: solo años (desde 1° año hasta donde corresponda)
         return esAnio;
       }
@@ -1322,7 +1332,7 @@ try {
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
 
-<script>
+<!-- <script>
   document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_nac_e');
     const cedulaEInput = document.getElementById('cedula_e');
@@ -1564,6 +1574,368 @@ try {
         return 0;
       }
     }
+
+    // Debug inicial
+    console.log('🔍 Estado inicial:', {
+      fechaInput: fechaInput ? 'Encontrado' : 'No encontrado',
+      cedulaRInput: cedulaRInput ? 'Encontrado' : 'No encontrado',
+      cedulaEInput: cedulaEInput ? 'Encontrado' : 'No encontrado',
+      selectCi: selectCi ? 'Encontrado' : 'No encontrado',
+      selectCiValue: selectCi ? selectCi.value : 'N/A'
+    });
+  });
+</script> -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const fechaInput = document.getElementById('fecha_nac_e');
+    const cedulaEInput = document.getElementById('cedula_e');
+    const cedulaRInput = document.getElementById('cedula_r');
+    const id_representante_esc = document.getElementById('id_representante_existente');
+    const tipo = document.getElementById('tipo_persona');
+    const selectCi = document.getElementById('ci_si');
+    const rangoFechaHelp = document.getElementById('rango-fecha-help');
+
+    // Variables globales
+    const hoy = new Date();
+    const añoActual = hoy.getFullYear();
+    let añoMinimo = añoActual - 19;
+    let añoMaximo = añoActual - 5;
+    let edad_min_global = 5;
+    let edad_max_global = 19;
+
+    // ==================== FUNCIONES AUXILIARES ====================
+
+    // Función para mostrar errores en el formulario
+    function mostrarErrorFecha(mensaje) {
+      // Crear o actualizar elemento de error
+      let errorElement = fechaInput.parentElement.querySelector('.error-fecha');
+
+      if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'error-fecha text-danger mt-1 small';
+        fechaInput.parentElement.appendChild(errorElement);
+      }
+
+      errorElement.textContent = mensaje;
+      fechaInput.classList.add('is-invalid');
+
+      // Remover el error después de 5 segundos o al cambiar la fecha
+      setTimeout(() => {
+        if (errorElement.parentElement) {
+          errorElement.remove();
+          fechaInput.classList.remove('is-invalid');
+        }
+      }, 5000);
+    }
+
+    // Función para validar rango de fechas
+    function validarRangoFecha() {
+      if (!fechaInput.value) return true;
+
+      const fechaSeleccionada = new Date(fechaInput.value);
+      const fechaMin = new Date(añoMinimo, 0, 1); // 1 de enero del año mínimo
+      const fechaMax = new Date(añoMaximo, 11, 31); // 31 de diciembre del año máximo
+
+      if (fechaSeleccionada < fechaMin || fechaSeleccionada > fechaMax) {
+        const mensaje = `❌ Fecha fuera del rango permitido\n` +
+          `Edad permitida: ${edad_min_global} a ${edad_max_global} años\n` +
+          `Nacidos entre: ${añoMinimo} y ${añoMaximo}`;
+
+        mostrarErrorFecha(mensaje);
+
+        // Opcional: puedes descomentar la siguiente línea para usar alert
+        // alert(mensaje);
+
+        fechaInput.value = '';
+        fechaInput.focus();
+        return false;
+      }
+
+      // Si es válida, remover cualquier error previo
+      const errorElement = fechaInput.parentElement.querySelector('.error-fecha');
+      if (errorElement) {
+        errorElement.remove();
+        fechaInput.classList.remove('is-invalid');
+      }
+
+      return true;
+    }
+
+    // ==================== FUNCIONES PRINCIPALES ====================
+
+    // Función para obtener edades desde la base de datos
+    async function obtenerEdadesGlobales() {
+      try {
+        console.log('📊 Solicitando edades globales desde la base de datos...');
+
+        const response = await fetch('/final/app/controllers/globales/obtenerEdades.php', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const responseText = await response.text();
+        console.log('📨 Respuesta del servidor (edades):', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Error al parsear JSON:', parseError.message);
+          return {
+            success: false
+          };
+        }
+
+        if (data.success) {
+          console.log('✅ Edades obtenidas:', {
+            edad_min: data.edad_min,
+            edad_max: data.edad_max
+          });
+          return data;
+        } else {
+          console.error('❌ Error al obtener edades:', data.error);
+          return {
+            success: false
+          };
+        }
+
+      } catch (error) {
+        console.error('❌ Error en obtenerEdadesGlobales:', error);
+        return {
+          success: false
+        };
+      }
+    }
+
+    // Función para inicializar los límites de fecha
+    async function inicializarFechas() {
+      const edades = await obtenerEdadesGlobales();
+
+      if (edades.success) {
+        // Invertir el cálculo
+        añoMinimo = añoActual - edades.edad_max; // Para edad MÁXIMA
+        añoMaximo = añoActual - edades.edad_min; // Para edad MÍNIMA
+        edad_min_global = edades.edad_min;
+        edad_max_global = edades.edad_max;
+
+        console.log('🎯 Límites calculados:', {
+          añoMinimo: añoMinimo,
+          añoMaximo: añoMaximo,
+          edad_min: edad_min_global,
+          edad_max: edad_max_global,
+          explicación: `Estudiantes entre ${edad_min_global} y ${edad_max_global} años`
+        });
+      } else {
+        console.warn('⚠️ Usando valores por defecto para las edades');
+        añoMinimo = añoActual - 19;
+        añoMaximo = añoActual - 5;
+        edad_min_global = 5;
+        edad_max_global = 19;
+      }
+
+      // Establecer los límites en el input de fecha
+      fechaInput.min = `${añoMinimo}-01-01`;
+      fechaInput.max = `${añoMaximo}-12-31`;
+
+      // Actualizar el mensaje de ayuda
+      if (rangoFechaHelp) {
+        rangoFechaHelp.textContent = `Nacidos entre ${añoMinimo} y ${añoMaximo} (${edad_min_global} a ${edad_max_global} años)`;
+      }
+
+      console.log('📅 Límites de fecha establecidos:', {
+        min: fechaInput.min,
+        max: fechaInput.max,
+        rango_edades: `Nacidos entre ${añoMinimo} y ${añoMaximo}`
+      });
+    }
+
+    // Función para validar y generar cédula
+    async function validarRegistro() {
+      console.log('📅 Evento de cambio de fecha detectado');
+
+      // Primero validar la fecha
+      if (!validarRangoFecha()) {
+        console.log('❌ Fecha fuera del rango permitido');
+        return;
+      }
+
+      const fecha = fechaInput.value;
+      const idR = id_representante_esc.value;
+      const tp = tipo.value;
+      const cedulaRActual = cedulaRInput.value;
+
+      console.log('Datos obtenidos:', {
+        fecha: fecha,
+        cedulaRActual: cedulaRActual,
+        idR: idR,
+        tp: tp
+      });
+
+      // Verificar que tenemos todos los datos necesarios
+      if (!fecha) {
+        console.log('❌ No hay fecha seleccionada');
+        return;
+      }
+
+      if (!cedulaRActual) {
+        console.log('❌ No hay cédula de representante');
+        return;
+      }
+
+      const anioNacimiento = fecha.substring(2, 4);
+      console.log('🔢 Año de nacimiento extraído:', anioNacimiento);
+
+      if (tp === 'representante') {
+        console.log('👨‍👦 Tipo: representante - generando cédula escolar');
+        try {
+          cedulaRInput.disabled = true;
+          const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaRActual);
+          if (numeroDEstudiantes) {
+            cedulaEInput.value = numeroDEstudiantes;
+            cedulaEInput.readOnly = true;
+            cedulaEInput.style.backgroundColor = '#f8f9fa';
+            cedulaEInput.style.cursor = 'not-allowed';
+            console.log('✅ Cédula escolar generada:', numeroDEstudiantes);
+          }
+        } catch (error) {
+          console.error('❌ Error:', error);
+        }
+      } else {
+        console.log('👤 Tipo: otro - generando cédula simple');
+        const c_esc = anioNacimiento + '1' + cedulaRActual;
+        cedulaEInput.value = c_esc;
+        cedulaEInput.readOnly = true;
+        cedulaEInput.style.backgroundColor = '#f8f9fa';
+        cedulaEInput.style.cursor = 'not-allowed';
+        console.log('✅ Cédula escolar generada:', c_esc);
+      }
+    }
+
+    // Función para contar estudiantes
+    async function validarYGenerarCedula(idRepre, a, c) {
+      try {
+        console.log('📊 Solicitando cuenta de alumnos para ID:', idRepre);
+
+        const response = await fetch('/final/app/controllers/representantes/cuentaDeAlumnos.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `id=${encodeURIComponent(idRepre)}`
+        });
+
+        const responseText = await response.text();
+        console.log('📨 Respuesta del servidor:', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Error al parsear JSON:', parseError.message);
+          throw new Error(`Error de formato JSON: ${parseError.message}`);
+        }
+
+        if (!data.success) {
+          throw new Error(data.error || 'Error del servidor');
+        }
+
+        console.log('✅ Total estudiantes:', data.total_estudiantes);
+        const cedulaEsc = a + (data.total_estudiantes + 1) + c;
+        console.log('🔢 Cédula escolar compuesta:', cedulaEsc);
+        return cedulaEsc;
+
+      } catch (error) {
+        console.error('❌ Error en validarYGenerarCedula:', error);
+        return 0;
+      }
+    }
+
+    // ==================== EVENT LISTENERS ====================
+
+    // Validar fecha en tiempo real
+    fechaInput.addEventListener('change', function() {
+      validarRangoFecha();
+      // Si la fecha es válida, proceder con la generación de cédula
+      if (fechaInput.value && validarRangoFecha() && selectCi.value === 'no') {
+        validarRegistro();
+      }
+    });
+
+    fechaInput.addEventListener('blur', function() {
+      validarRangoFecha();
+    });
+
+    fechaInput.addEventListener('input', function() {
+      // Validar mientras el usuario escribe (para entrada manual)
+      if (this.value.length === 10) { // Fecha completa en formato YYYY-MM-DD
+        setTimeout(() => validarRangoFecha(), 100);
+      }
+    });
+
+    // Manejar cambio en el select de CI
+    selectCi.addEventListener('change', function() {
+      console.log('🔄 Select CI cambiado a:', this.value);
+
+      if (this.value === 'no') {
+        console.log('🎯 Modo: Sin cédula - activando generación automática');
+        cedulaEInput.placeholder = "Se generará automáticamente";
+
+        // Ejecutar validación si ya hay fecha seleccionada
+        if (fechaInput.value) {
+          console.log('📋 Fecha ya seleccionada, ejecutando validación...');
+          if (validarRangoFecha()) {
+            validarRegistro();
+          }
+        } else {
+          console.log('⏳ Esperando selección de fecha...');
+        }
+
+      } else if (this.value === 'si') {
+        console.log('🆗 Modo: Con cédula - desactivando generación automática');
+        cedulaEInput.value = '';
+        cedulaEInput.readOnly = false;
+        cedulaEInput.style.backgroundColor = '';
+        cedulaEInput.style.cursor = '';
+        cedulaEInput.placeholder = "Ingrese la cédula de identidad";
+      }
+    });
+
+    // Escuchar cambios en la cédula del representante
+    cedulaRInput.addEventListener('input', function() {
+      console.log('✏️ Cédula representante cambiada:', this.value);
+      if (selectCi.value === 'no' && fechaInput.value && validarRangoFecha()) {
+        console.log('🔄 Regenerando cédula escolar por cambio en cédula representante');
+        validarRegistro();
+      }
+    });
+
+    // Validar fecha antes de enviar el formulario
+    const form = fechaInput.closest('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (fechaInput.value && !validarRangoFecha()) {
+          e.preventDefault();
+          fechaInput.focus();
+        }
+      });
+    }
+
+    // ==================== INICIALIZACIÓN ====================
+
+    // Inicializar los límites de fecha al cargar la página
+    inicializarFechas();
+
+    // Validar si ya hay una fecha seleccionada al cargar la página
+    setTimeout(() => {
+      if (fechaInput.value) {
+        console.log('🔍 Validando fecha pre-seleccionada al cargar...');
+        validarRangoFecha();
+      }
+    }, 500);
 
     // Debug inicial
     console.log('🔍 Estado inicial:', {
