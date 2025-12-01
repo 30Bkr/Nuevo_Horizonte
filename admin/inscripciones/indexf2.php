@@ -2119,7 +2119,7 @@ try {
   });
 </script>
 
-<!-- Aca Enviamos informacion del formulario
+<!-- Aca Enviamos informacion del formulario -->
 <script>
   // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
   function generarConstanciaInscripcion(idInscripcion) {
@@ -2167,12 +2167,14 @@ try {
                 </a>
             `;
         document.querySelector('.content-wrapper').prepend(buttonMsg);
+        window.location.href = '/final/admin/index.php';
 
         resolve({
           success: true
         });
 
       }, 1500); // Pequeño delay para mejor experiencia de usuario
+      window.location.href = '/final/admin/index.php';
 
     }); // <--- Cierra el return new Promise()
   } // <--- Cierra function generarConstanciaInscripcion()
@@ -2218,7 +2220,14 @@ try {
             try {
               const jsonData = JSON.parse(text);
               console.log('✅ JSON parseado correctamente:', jsonData);
+              setTimeout(() => {
+                location.href = '/final/admin/index.php';
+
+              }, 3000);
+
+
               return jsonData;
+
             } catch (jsonError) {
               console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
 
@@ -2362,177 +2371,10 @@ try {
         }); // <--- Cierre de la función de callback del .catch
     }); // <--- Cierre del form.addEventListener('submit'
   }); // <--- Cierre del document.addEventListener('DOMContentLoaded'
-</script> -->
-
-<!-- ========== ENVÍO SIMPLIFICADO Y CONFIABLE DEL FORMULARIO ========== -->
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('form-inscripcion');
-
-    // Remover cualquier event listener anterior para evitar duplicados
-    form.removeEventListener('submit', handleFormSubmit);
-    form.addEventListener('submit', handleFormSubmit);
-
-    async function handleFormSubmit(e) {
-      e.preventDefault();
-      console.log('📝 Iniciando envío del formulario...');
-
-      // Mostrar estado de carga
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-      submitBtn.disabled = true;
-
-      // Mostrar mensaje de procesamiento
-      const processingMsg = document.createElement('div');
-      processingMsg.className = 'alert alert-info';
-      processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando inscripción...';
-      document.querySelector('.content-wrapper').prepend(processingMsg);
-
-      try {
-        // Habilitar campos temporalmente para el envío
-        const disabledElements = document.querySelectorAll('#form-inscripcion input:disabled, #form-inscripcion select:disabled');
-        disabledElements.forEach(element => element.disabled = false);
-
-        const formData = new FormData(form);
-
-        // Enviar datos
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData
-        });
-
-        // Procesar respuesta
-        const result = await processResponse(response);
-
-        // Remover mensaje de procesamiento
-        processingMsg.remove();
-
-        if (result.success) {
-          await handleSuccess(result);
-        } else {
-          handleError(result.message);
-        }
-
-      } catch (error) {
-        console.error('💥 Error crítico:', error);
-        processingMsg.remove();
-        handleError('Error de conexión: ' + error.message);
-      } finally {
-        // Restaurar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-      }
-    }
-
-    async function processResponse(response) {
-      const text = await response.text();
-      console.log('📨 Respuesta del servidor:', text.substring(0, 500));
-
-      try {
-        return JSON.parse(text);
-      } catch (jsonError) {
-        console.warn('⚠️ No se pudo parsear como JSON, buscando indicadores de éxito...');
-
-        // Buscar indicadores de éxito en el texto
-        if (text.includes('success') || text.includes('exitosamente') || text.length < 500) {
-          const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
-          return {
-            success: true,
-            message: 'Inscripción procesada correctamente',
-            id_inscripcion: idMatch ? idMatch[1] : null
-          };
-        }
-
-        return {
-          success: false,
-          message: 'Error en el formato de respuesta del servidor'
-        };
-      }
-    }
-
-    async function handleSuccess(result) {
-      console.log('✅ Inscripción exitosa:', result);
-
-      // Mostrar mensaje de éxito
-      const successMsg = document.createElement('div');
-      successMsg.className = 'alert alert-success';
-      successMsg.innerHTML = `
-            <strong>✅ ${result.message || 'Inscripción completada exitosamente'}</strong>
-            <div class="mt-2">
-                <small>Será redirigido automáticamente en <span id="countdown">8</span> segundos...</small>
-            </div>
-        `;
-      document.querySelector('.content-wrapper').prepend(successMsg);
-
-      // Generar constancia si hay ID
-      if (result.id_inscripcion && !isNaN(result.id_inscripcion)) {
-        await generateConstancia(result.id_inscripcion);
-      } else {
-        const noConstanciaMsg = document.createElement('div');
-        noConstanciaMsg.className = 'alert alert-info mt-2';
-        noConstanciaMsg.innerHTML = `
-                <small>⚠️ No se generó constancia automáticamente. Podrá generarla más tarde desde el listado de estudiantes.</small>
-            `;
-        successMsg.appendChild(noConstanciaMsg);
-      }
-
-      // Iniciar cuenta regresiva para redirección
-      startCountdown(8);
-    }
-
-    function handleError(message) {
-      const errorMsg = document.createElement('div');
-      errorMsg.className = 'alert alert-danger';
-      errorMsg.innerHTML = `<strong>❌ Error:</strong> ${message}`;
-      document.querySelector('.content-wrapper').prepend(errorMsg);
-    }
-
-    async function generateConstancia(idInscripcion) {
-      return new Promise((resolve) => {
-        console.log('📄 Generando constancia para ID:', idInscripcion);
-
-        const constanciaUrl = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
-
-        // Abrir en nueva pestaña después de un breve delay
-        setTimeout(() => {
-          const newWindow = window.open(constanciaUrl, '_blank', 'width=1000,height=700');
-
-          // Agregar enlace manual por si se bloquea el popup
-          const manualLink = document.createElement('div');
-          manualLink.className = 'alert alert-info mt-2';
-          manualLink.innerHTML = `
-                    <small>Si la constancia no se abrió automáticamente:</small><br>
-                    <a href="${constanciaUrl}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">
-                        <i class="fas fa-external-link-alt"></i> Abrir Constancia Manualmente
-                    </a>
-                `;
-          document.querySelector('.alert-success').appendChild(manualLink);
-
-          resolve();
-        }, 1000);
-      });
-    }
-
-    function startCountdown(seconds) {
-      const countdownElement = document.getElementById('countdown');
-      let count = seconds;
-
-      const countdownInterval = setInterval(() => {
-        count--;
-        if (countdownElement) {
-          countdownElement.textContent = count;
-        }
-
-        if (count <= 0) {
-          clearInterval(countdownInterval);
-          console.log('🔄 Redirigiendo a dashboard...');
-          window.location.href = '/final/admin/index.php';
-        }
-      }, 1000);
-    }
-  });
 </script>
+
+
+
 
 
 <!-- Carga de estados, municipios, parroquias del representante -->
