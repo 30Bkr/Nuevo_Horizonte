@@ -247,12 +247,12 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
                                 <div class="row mt-3">
                                     <div class="col-md-12">
-                                        <h5>Información de Dirección</h5>
+                                        <h5>Información de Dirección <span class="text-danger">* (Todos los campos son obligatorios)</span></h5>
                                         
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="estado">Estado</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="estado">Estado <span class="text-danger">*</span></label>
                                                     <select name="estado" id="estado" class="form-control" required>
                                                         <option value="">Seleccionar Estado</option>
                                                         <?php
@@ -265,8 +265,8 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="municipio">Municipio</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="municipio">Municipio <span class="text-danger">*</span></label>
                                                     <select name="municipio" id="municipio" class="form-control" required <?php echo empty($municipios) ? 'disabled' : ''; ?>>
                                                         <option value="">Primero seleccione un estado</option>
                                                         <?php
@@ -281,8 +281,8 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="parroquia">Parroquia</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="parroquia">Parroquia <span class="text-danger">*</span></label>
                                                     <select name="parroquia" id="parroquia" class="form-control" required <?php echo empty($parroquias) ? 'disabled' : ''; ?>>
                                                         <option value="">Primero seleccione un municipio</option>
                                                         <?php
@@ -300,24 +300,27 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
                                         <div class="row">
                                             <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="direccion">Dirección Completa</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="direccion">Dirección Completa <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control mayusculas" id="direccion" name="direccion"
-                                                        value="<?php echo htmlspecialchars($docente->direccion); ?>">
+                                                        value="<?php echo htmlspecialchars($docente->direccion); ?>" required
+                                                        placeholder="Dirección completa">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="calle">Calle/Avenida</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="calle">Calle/Avenida <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control mayusculas" id="calle" name="calle"
-                                                        value="<?php echo htmlspecialchars($docente->calle); ?>">
+                                                        value="<?php echo htmlspecialchars($docente->calle); ?>" required
+                                                        placeholder="Calle o avenida">
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="casa">Casa/Edificio</label>
+                                                <div class="form-group campo-obligatorio">
+                                                    <label for="casa">Casa/Edificio <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control mayusculas" id="casa" name="casa"
-                                                        value="<?php echo htmlspecialchars($docente->casa); ?>">
+                                                        value="<?php echo htmlspecialchars($docente->casa); ?>" required
+                                                        placeholder="Casa o edificio">
                                                 </div>
                                             </div>
                                         </div>
@@ -340,7 +343,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                             <h6><i class="icon fas fa-info"></i> Información</h6>
                                             <p class="mb-1">• Campos marcados con <span class="text-danger">*</span> son obligatorios</p>
                                             <p class="mb-1">• Los nombres, apellidos y cédula no se pueden editar</p>
-                    
+                                
                                         </div>
                                     </div>
                                 </div>
@@ -588,7 +591,10 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'id_profesion', nombre: 'Profesión' },
             { id: 'estado', nombre: 'Estado' },
             { id: 'municipio', nombre: 'Municipio' },
-            { id: 'parroquia', nombre: 'Parroquia' }
+            { id: 'parroquia', nombre: 'Parroquia' },
+            { id: 'direccion', nombre: 'Dirección completa' },
+            { id: 'calle', nombre: 'Calle/Avenida' },
+            { id: 'casa', nombre: 'Casa/Edificio' }
         ];
         
         camposObligatorios.forEach(function(campo) {
