@@ -109,7 +109,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </div>
 
         <!-- <!-- Sidebar Menu --90i        <nav class="mt-2"> -->
-        <ul class=" mt-2 nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <ul class=" mt-2 nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="true">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
 
@@ -143,9 +143,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-            <!-- // Docentes  -->
+          <!-- // Docentes  -->
 
-            <?php if (true) { ?>
+          <?php if (true) { ?>
 
             <li class="nav-item ">
               <a href="#" class="nav-link">
@@ -208,7 +208,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-          
+
           <!-- Inscripciones -->
 
           <?php
@@ -256,7 +256,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-          
+
 
           <?php if (true) { ?>
             <li class="nav-item ">
@@ -285,7 +285,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-          
+
           <?php if (true) { ?>
 
             <li class="nav-item ">
