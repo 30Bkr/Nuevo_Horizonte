@@ -3,7 +3,7 @@ session_start();
 
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
-include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteController.php';
+include_once __DIR__ . '/../../app/controllers/personas/personas2.php';
 
 $id_representante = $_GET['id'] ?? '';
 
@@ -21,21 +21,68 @@ try {
         throw new Exception("Error de conexión a la base de datos");
     }
 
-    $controller = new RepresentanteController($db);
+    // Instanciar el controlador
+    $personasController = new PersonasController($db);
 
     // Obtener datos del representante
-    if (!$controller->obtener($id_representante)) {
+    $representante = $personasController->obtenerRepresentantePorId($id_representante);
+
+    if (!$representante) {
         throw new Exception("Representante no encontrado");
     }
 
-    $representante = $controller->representante;
+    // DEPURACIÓN: Ver qué datos se están obteniendo
+    error_log("=== DATOS DEL REPRESENTANTE EN VISTA ===");
+    error_log("Nacionalidad: " . ($representante['nacionalidad'] ?? 'NO ENCONTRADO'));
+    error_log("Sexo: " . ($representante['sexo'] ?? 'NO ENCONTRADO'));
+    error_log("Datos completos: " . print_r($representante, true));
 
     // Procesar formulario de actualización
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if ($controller->actualizar($id_representante, $_POST)) {
-            $_SESSION['success'] = "Representante actualizado exitosamente";
-            header("Location: representantes_list.php");
-            exit();
+        // Validar datos antes de procesar
+        $errores = [];
+
+        // Validar cédula única (excepto para el mismo)
+        if (!$personasController->validarCedulaUnica($_POST['cedula'], $representante['id_persona'])) {
+            $errores[] = "La cédula ya está registrada para otra persona";
+        }
+
+        // Validar correo único (excepto para el mismo)
+        if (!$personasController->validarCorreoUnico($_POST['correo'], $representante['id_persona'])) {
+            $errores[] = "El correo electrónico ya está registrado para otra persona";
+        }
+
+        // Validar formato de email
+        if (!filter_var($_POST['correo'], FILTER_VALIDATE_EMAIL)) {
+            $errores[] = "El correo electrónico no tiene un formato válido";
+        }
+
+        // Validar teléfono
+        if (!preg_match('/^\d+$/', $_POST['telefono'])) {
+            $errores[] = "El teléfono móvil debe contener solo números";
+        }
+
+        if (!empty($_POST['telefono_hab']) && !preg_match('/^\d+$/', $_POST['telefono_hab'])) {
+            $errores[] = "El teléfono de habitación debe contener solo números";
+        }
+
+        // Validar fecha de nacimiento (no futura)
+        if (!empty($_POST['fecha_nac']) && $_POST['fecha_nac'] > date('Y-m-d')) {
+            $errores[] = "La fecha de nacimiento no puede ser futura";
+        }
+
+        if (empty($errores)) {
+            $resultado = $personasController->actualizarRepresentante($id_representante, $_POST);
+
+            if ($resultado['success']) {
+                $_SESSION['success'] = "Representante actualizado exitosamente";
+                header("Location: representantes_list.php");
+                exit();
+            } else {
+                $_SESSION['error'] = $resultado['message'] ?? "Error al actualizar el representante";
+            }
+        } else {
+            $_SESSION['error'] = implode("<br>", $errores);
         }
     }
 } catch (Exception $e) {
@@ -46,21 +93,31 @@ try {
 
 // Obtener datos para los selects
 try {
-    $database = new Conexion();
-    $db = $database->conectar();
     if ($db) {
-        $controller_data = new RepresentanteController($db);
-
         // Obtener estados
-        $estados = $controller_data->obtenerEstados();
+        $estados = $personasController->obtenerEstados();
 
         // Obtener profesiones
-        $profesiones = $controller_data->obtenerProfesiones();
+        $profesiones = $personasController->obtenerProfesiones();
     }
 } catch (Exception $e) {
-    // Error al cargar datos adicionales, pero continuamos
+    // Error al cargar datos adicionales
+    $errorDatos = $e->getMessage();
 }
 
+// DEPURACIÓN EN PANTALLA (solo para desarrollo)
+if (isset($_GET['debug']) && $_GET['debug'] == '1') {
+    echo "<pre>";
+    echo "=== DATOS DEL REPRESENTANTE ===\n";
+    echo "ID Representante: " . ($representante['id_representante'] ?? '') . "\n";
+    echo "Nacionalidad: " . ($representante['nacionalidad'] ?? 'NO ENCONTRADO') . "\n";
+    echo "Sexo: " . ($representante['sexo'] ?? 'NO ENCONTRADO') . "\n";
+    echo "Prueba isset(nacionalidad): " . (isset($representante['nacionalidad']) ? 'TRUE' : 'FALSE') . "\n";
+    echo "Prueba isset(sexo): " . (isset($representante['sexo']) ? 'TRUE' : 'FALSE') . "\n";
+    echo "Valor nacionalidad: '" . ($representante['nacionalidad'] ?? '') . "'\n";
+    echo "Valor sexo: '" . ($representante['sexo'] ?? '') . "'\n";
+    echo "</pre>";
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -69,16 +126,11 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Editar Representante - Nuevo Horizonte</title>
-
-    <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="/final/public/plugins/fontawesome-free/css/all.min.css">
-    <!-- Theme style -->
     <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
-    <!-- Select2 -->
     <link rel="stylesheet" href="/final/public/plugins/select2/css/select2.min.css">
     <link rel="stylesheet" href="/final/public/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
 
-    <!-- Estilos CSS para campos inválidos -->
     <style>
         .is-invalid {
             border-color: #dc3545 !important;
@@ -86,11 +138,6 @@ try {
 
         .text-danger {
             color: #dc3545 !important;
-            font-weight: bold;
-        }
-
-        .form-group label {
-            font-weight: 500;
         }
 
         .campo-obligatorio {
@@ -98,106 +145,47 @@ try {
             padding-left: 10px;
         }
 
-        .select2-container--bootstrap4 .select2-selection--multiple {
-            min-height: 38px;
+        .form-group label {
+            font-weight: 500;
         }
 
-        .select2-container--bootstrap4 .select2-selection--single {
-            height: 38px;
+        /* Estilo para depuración */
+        .debug-info {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
         }
     </style>
 </head>
 
 <body class="hold-transition sidebar-mini">
     <div class="wrapper">
+        <!-- Navbar y Sidebar (igual que antes) -->
 
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/final/index.php" class="nav-link">Inicio</a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="representantes_list.php" class="nav-link">Representantes</a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="#" class="nav-link">Editar Representante</a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- Sidebar -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="/final/index.php" class="brand-link">
-                <span class="brand-text font-weight-light">Nuevo Horizonte</span>
-            </a>
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item">
-                            <a href="/final/index.php" class="nav-link">
-                                <i class="nav-icon fas fa-home"></i>
-                                <p>Inicio</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="docentes_list.php" class="nav-link">
-                                <i class="nav-icon fas fa-chalkboard-teacher"></i>
-                                <p>Docentes</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="estudiantes_list.php" class="nav-link">
-                                <i class="nav-icon fas fa-user-graduate"></i>
-                                <p>Estudiantes</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="representantes_list.php" class="nav-link active">
-                                <i class="nav-icon fas fa-user-tie"></i>
-                                <p>Representantes</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </aside>
-
-        <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Content Header -->
-            <section class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1>Editar Representante</h1>
-                        </div>
-                        <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                                <li class="breadcrumb-item"><a href="representantes_list.php">Representantes</a></li>
-                                <li class="breadcrumb-item active">Editar</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Mensajes de alerta -->
                     <?php if (isset($_SESSION['error'])): ?>
                         <div class="alert alert-danger alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <button type="button" class="close" data-dismiss="alert">×</button>
                             <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
                             <?php echo $_SESSION['error'];
                             unset($_SESSION['error']); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- DEPURACIÓN (solo para desarrollo) -->
+                    <?php if (isset($_GET['debug']) && $_GET['debug'] == '1'): ?>
+                        <div class="debug-info">
+                            <strong>DEBUG:</strong><br>
+                            Nacionalidad: <?php echo htmlspecialchars($representante['nacionalidad'] ?? 'NO ENCONTRADO'); ?><br>
+                            Sexo: <?php echo htmlspecialchars($representante['sexo'] ?? 'NO ENCONTRADO'); ?><br>
+                            Nacionalidad == 'Venezolano': <?php echo ($representante['nacionalidad'] ?? '') == 'Venezolano' ? 'TRUE' : 'FALSE'; ?><br>
+                            Sexo == 'Masculino': <?php echo ($representante['sexo'] ?? '') == 'Masculino' ? 'TRUE' : 'FALSE'; ?>
                         </div>
                     <?php endif; ?>
 
@@ -205,41 +193,45 @@ try {
                         <div class="col-12">
                             <div class="card card-warning">
                                 <div class="card-header">
-                                    <h3 class="card-title">Editar Datos del Representante</h3>
+                                    <h3 class="card-title">Editar Representante: <?php echo htmlspecialchars($representante['primer_nombre'] . ' ' . $representante['primer_apellido']); ?></h3>
                                 </div>
                                 <form method="POST" id="formRepresentante">
                                     <div class="card-body">
-                                        <!-- Datos Personales del Representante -->
-                                        <h5 class="text-primary mb-3">
-                                            <i class="fas fa-user-tie"></i> Información Personal del Representante
-                                        </h5>
+                                        <!-- Datos Personales -->
+                                        <h5 class="text-primary mb-3"><i class="fas fa-user-tie"></i> Información Personal</h5>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="nacionalidad">Nacionalidad <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <label for="nacionalidad">Nacionalidad <span class="text-danger">*</span></label>
                                                     <select class="form-control" id="nacionalidad" name="nacionalidad" required>
                                                         <option value="">Seleccione...</option>
-                                                        <option value="Venezolano" <?php echo ($representante->nacionalidad ?? '') == 'Venezolano' ? 'selected' : ''; ?>>Venezolano</option>
-                                                        <option value="Extranjero" <?php echo ($representante->nacionalidad ?? '') == 'Extranjero' ? 'selected' : ''; ?>>Extranjero</option>
+                                                        <!-- VERSION DEPURADA -->
+                                                        <option value="Venezolano" <?php
+                                                                                    $nacionalidad = $representante['nacionalidad'] ?? '';
+                                                                                    echo ($nacionalidad == 'Venezolano') ? 'selected' : '';
+                                                                                    ?>>Venezolano</option>
+                                                        <option value="Extranjero" <?php
+                                                                                    $nacionalidad = $representante['nacionalidad'] ?? '';
+                                                                                    echo ($nacionalidad == 'Extranjero') ? 'selected' : '';
+                                                                                    ?>>Extranjero</option>
                                                     </select>
+                                                    <!-- DEBUG -->
+                                                    <?php if (isset($_GET['debug'])): ?>
+                                                        <small class="text-muted">Valor actual: <?php echo htmlspecialchars($representante['nacionalidad'] ?? 'Vacío'); ?></small>
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
-
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="cedula" name="cedula"
-                                                        value="<?php echo htmlspecialchars($representante->cedula ?? ''); ?>" required
-                                                        maxlength="20">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
+                                                    <label>Cédula <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="cedula" value="<?php echo htmlspecialchars($representante['cedula'] ?? ''); ?>" required maxlength="20">
+                                                    <small class="text-muted">Solo números</small>
                                                 </div>
                                             </div>
-
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="fecha_nac">Fecha de Nacimiento</label>
-                                                    <input type="date" class="form-control" id="fecha_nac" name="fecha_nac"
-                                                        value="<?php echo $representante->fecha_nac ?? ''; ?>">
+                                                    <label>Fecha de Nacimiento</label>
+                                                    <input type="date" class="form-control" name="fecha_nac" value="<?php echo $representante['fecha_nac'] ?? ''; ?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -247,30 +239,26 @@ try {
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="primer_nombre" name="primer_nombre"
-                                                        value="<?php echo htmlspecialchars($representante->primer_nombre ?? ''); ?>" required>
+                                                    <label>Primer Nombre <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="primer_nombre" value="<?php echo htmlspecialchars($representante['primer_nombre'] ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label for="segundo_nombre">Segundo Nombre</label>
-                                                    <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre"
-                                                        value="<?php echo htmlspecialchars($representante->segundo_nombre ?? ''); ?>">
+                                                    <label>Segundo Nombre</label>
+                                                    <input type="text" class="form-control" name="segundo_nombre" value="<?php echo htmlspecialchars($representante['segundo_nombre'] ?? ''); ?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="primer_apellido">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="primer_apellido" name="primer_apellido"
-                                                        value="<?php echo htmlspecialchars($representante->primer_apellido ?? ''); ?>" required>
+                                                    <label>Primer Apellido <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="primer_apellido" value="<?php echo htmlspecialchars($representante['primer_apellido'] ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label for="segundo_apellido">Segundo Apellido</label>
-                                                    <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido"
-                                                        value="<?php echo htmlspecialchars($representante->segundo_apellido ?? ''); ?>">
+                                                    <label>Segundo Apellido</label>
+                                                    <input type="text" class="form-control" name="segundo_apellido" value="<?php echo htmlspecialchars($representante['segundo_apellido'] ?? ''); ?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -278,27 +266,36 @@ try {
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="sexo">Sexo <span class="text-danger">* (Obligatorio)</span></label>
+                                                    <label for="sexo">Sexo <span class="text-danger">*</span></label>
                                                     <select class="form-control" id="sexo" name="sexo" required>
                                                         <option value="">Seleccione...</option>
-                                                        <option value="Masculino" <?php echo ($representante->sexo ?? '') == 'Masculino' ? 'selected' : ''; ?>>Masculino</option>
-                                                        <option value="Femenino" <?php echo ($representante->sexo ?? '') == 'Femenino' ? 'selected' : ''; ?>>Femenino</option>
+                                                        <!-- VERSION DEPURADA -->
+                                                        <option value="Masculino" <?php
+                                                                                    $sexo = $representante['sexo'] ?? '';
+                                                                                    echo ($sexo == 'Masculino') ? 'selected' : '';
+                                                                                    ?>>Masculino</option>
+                                                        <option value="Femenino" <?php
+                                                                                    $sexo = $representante['sexo'] ?? '';
+                                                                                    echo ($sexo == 'Femenino') ? 'selected' : '';
+                                                                                    ?>>Femenino</option>
                                                     </select>
+                                                    <!-- DEBUG -->
+                                                    <?php if (isset($_GET['debug'])): ?>
+                                                        <small class="text-muted">Valor actual: <?php echo htmlspecialchars($representante['sexo'] ?? 'Vacío'); ?></small>
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="lugar_nac">Lugar de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="lugar_nac" name="lugar_nac"
-                                                        value="<?php echo htmlspecialchars($representante->lugar_nac ?? ''); ?>" required>
+                                                    <label>Lugar de Nacimiento <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="lugar_nac" value="<?php echo htmlspecialchars($representante['lugar_nac'] ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="telefono">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="telefono" name="telefono"
-                                                        value="<?php echo htmlspecialchars($representante->telefono ?? ''); ?>" required maxlength="11">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
+                                                    <label>Teléfono Móvil <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="telefono" value="<?php echo htmlspecialchars($representante['telefono'] ?? ''); ?>" required maxlength="11">
+                                                    <small class="text-muted">Solo números</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -306,97 +303,97 @@ try {
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="telefono_hab">Teléfono Habitación</label>
-                                                    <input type="text" class="form-control" id="telefono_hab" name="telefono_hab"
-                                                        value="<?php echo htmlspecialchars($representante->telefono_hab ?? ''); ?>" maxlength="11">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
+                                                    <label>Teléfono Habitación</label>
+                                                    <input type="text" class="form-control" name="telefono_hab" value="<?php echo htmlspecialchars($representante['telefono_hab'] ?? ''); ?>" maxlength="11">
+                                                    <small class="text-muted">Solo números</small>
                                                 </div>
                                             </div>
                                             <div class="col-md-8">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="correo">Correo Electrónico <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="email" class="form-control" id="correo" name="correo"
-                                                        value="<?php echo htmlspecialchars($representante->correo ?? ''); ?>" required>
-                                                    <small class="form-text text-muted">Formato: usuario@dominio.com</small>
+                                                    <label>Correo Electrónico <span class="text-danger">*</span></label>
+                                                    <input type="email" class="form-control" name="correo" value="<?php echo htmlspecialchars($representante['correo'] ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                         </div>
 
+
                                         <!-- Información Profesional -->
-                                        <h5 class="text-primary mb-3 mt-4">
-                                            <i class="fas fa-briefcase"></i> Información Profesional
-                                        </h5>
+                                        <h5 class="text-primary mb-3 mt-4"><i class="fas fa-briefcase"></i> Información Profesional</h5>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="id_profesion">Profesión <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control select2" id="id_profesion" name="id_profesion" style="width: 100%;" required>
-                                                        <option value="">Seleccione una profesión...</option>
-                                                        <?php
-                                                        if (isset($profesiones) && $profesiones) {
-                                                            while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
-                                                                $selected = ($representante->id_profesion ?? '') == $profesion['id_profesion'] ? 'selected' : '';
-                                                                echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
-                                                            }
-                                                        } else {
-                                                            echo "<option value=''>Error al cargar profesiones</option>";
-                                                        }
-                                                        ?>
+                                                    <label>Profesión <span class="text-danger">*</span></label>
+                                                    <select class="form-control select2" name="id_profesion" required>
+                                                        <option value="">Seleccione...</option>
+                                                        <?php foreach ($profesiones as $profesion): ?>
+                                                            <option value="<?php echo $profesion['id_profesion']; ?>" <?php echo ($representante['id_profesion'] ?? '') == $profesion['id_profesion'] ? 'selected' : ''; ?>>
+                                                                <?php echo htmlspecialchars($profesion['profesion']); ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="ocupacion">Ocupación <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="ocupacion" name="ocupacion"
-                                                        value="<?php echo htmlspecialchars($representante->ocupacion ?? ''); ?>" required>
+                                                    <label>Ocupación <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="ocupacion" value="<?php echo htmlspecialchars($representante['ocupacion'] ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="lugar_trabajo">Lugar de Trabajo</label>
-                                                    <input type="text" class="form-control" id="lugar_trabajo" name="lugar_trabajo"
-                                                        value="<?php echo htmlspecialchars($representante->lugar_trabajo ?? ''); ?>">
+                                                    <label>Lugar de Trabajo</label>
+                                                    <input type="text" class="form-control" name="lugar_trabajo" value="<?php echo htmlspecialchars($representante['lugar_trabajo'] ?? ''); ?>">
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Dirección del Representante -->
-                                        <h5 class="text-primary mb-3 mt-4">
-                                            <i class="fas fa-map-marker-alt"></i> Dirección del Representante
-                                        </h5>
+                                        <!-- Dirección -->
+                                        <h5 class="text-primary mb-3 mt-4"><i class="fas fa-map-marker-alt"></i> Dirección</h5>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="id_estado">Estado <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control select2" id="id_estado" name="id_estado" style="width: 100%;" required>
-                                                        <option value="">Seleccione un estado...</option>
-                                                        <?php
-                                                        if (isset($estados) && $estados) {
-                                                            while ($estado = $estados->fetch(PDO::FETCH_ASSOC)) {
-                                                                $selected = ($representante->id_estado ?? '') == $estado['id_estado'] ? 'selected' : '';
-                                                                echo "<option value='{$estado['id_estado']}' {$selected}>{$estado['nom_estado']}</option>";
-                                                            }
-                                                        } else {
-                                                            echo "<option value=''>Error al cargar estados</option>";
-                                                        }
-                                                        ?>
+                                                    <label>Estado <span class="text-danger">*</span></label>
+                                                    <select class="form-control select2" id="id_estado" name="id_estado" required>
+                                                        <option value="">Seleccione...</option>
+                                                        <?php foreach ($estados as $estado): ?>
+                                                            <option value="<?php echo $estado['id_estado']; ?>" <?php echo ($representante['id_estado'] ?? '') == $estado['id_estado'] ? 'selected' : ''; ?>>
+                                                                <?php echo htmlspecialchars($estado['nom_estado']); ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="id_municipio">Municipio <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control select2" id="id_municipio" name="id_municipio" style="width: 100%;" required disabled>
-                                                        <option value="">Primero seleccione un estado</option>
+                                                    <label>Municipio <span class="text-danger">*</span></label>
+                                                    <select class="form-control select2" id="id_municipio" name="id_municipio" required>
+                                                        <option value="">Seleccione...</option>
+                                                        <?php if (isset($representante['id_estado']) && $representante['id_estado']): ?>
+                                                            <?php
+                                                            $municipios = $personasController->obtenerMunicipiosPorEstado($representante['id_estado']);
+                                                            foreach ($municipios as $municipio): ?>
+                                                                <option value="<?php echo $municipio['id_municipio']; ?>" <?php echo ($representante['id_municipio'] ?? '') == $municipio['id_municipio'] ? 'selected' : ''; ?>>
+                                                                    <?php echo htmlspecialchars($municipio['nom_municipio']); ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="id_parroquia">Parroquia <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control select2" id="id_parroquia" name="id_parroquia" style="width: 100%;" required disabled>
-                                                        <option value="">Primero seleccione un municipio</option>
+                                                    <label>Parroquia <span class="text-danger">*</span></label>
+                                                    <select class="form-control select2" id="id_parroquia" name="id_parroquia" required>
+                                                        <option value="">Seleccione...</option>
+                                                        <?php if (isset($representante['id_municipio']) && $representante['id_municipio']): ?>
+                                                            <?php
+                                                            $parroquias = $personasController->obtenerParroquiasPorMunicipio($representante['id_municipio']);
+                                                            foreach ($parroquias as $parroquia): ?>
+                                                                <option value="<?php echo $parroquia['id_parroquia']; ?>" <?php echo ($representante['id_parroquia'] ?? '') == $parroquia['id_parroquia'] ? 'selected' : ''; ?>>
+                                                                    <?php echo htmlspecialchars($parroquia['nom_parroquia']); ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
                                                     </select>
                                                 </div>
                                             </div>
@@ -405,29 +402,24 @@ try {
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group campo-obligatorio">
-                                                    <label for="direccion">Dirección Completa <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="direccion" name="direccion"
-                                                        value="<?php echo htmlspecialchars($representante->direccion ?? ''); ?>" required>
+                                                    <label>Dirección Completa <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control" name="direccion" value="<?php echo htmlspecialchars($representante['direccion'] ?? ''); ?>" required>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label for="calle">Calle</label>
-                                                    <input type="text" class="form-control" id="calle" name="calle"
-                                                        value="<?php echo htmlspecialchars($representante->calle ?? ''); ?>">
+                                                    <label>Calle</label>
+                                                    <input type="text" class="form-control" name="calle" value="<?php echo htmlspecialchars($representante['calle'] ?? ''); ?>">
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label for="casa">Casa/Apto</label>
-                                                    <input type="text" class="form-control" id="casa" name="casa"
-                                                        value="<?php echo htmlspecialchars($representante->casa ?? ''); ?>">
-                                                    <small class="form-text text-muted">Letras y números permitidos</small>
+                                                    <label>Casa/Apto</label>
+                                                    <input type="text" class="form-control" name="casa" value="<?php echo htmlspecialchars($representante['casa'] ?? ''); ?>">
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- /.card-body -->
 
                                     <div class="card-footer">
                                         <button type="submit" class="btn btn-warning">
@@ -446,293 +438,518 @@ try {
         </div>
     </div>
 
-    <!-- jQuery -->
+    <!-- Scripts -->
     <script src="/final/public/plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap 4 -->
     <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- Select2 -->
     <script src="/final/public/plugins/select2/js/select2.full.min.js"></script>
-    <!-- AdminLTE App -->
     <script src="/final/public/dist/js/adminlte.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            // Verificar que Select2 esté cargado
-            if (typeof $.fn.select2 === 'undefined') {
-                console.error('Select2 no está cargado correctamente');
-                // Cargar Select2 desde CDN como fallback
-                $.getScript('https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js', function() {
-                    initializeSelect2();
-                });
-            } else {
-                initializeSelect2();
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: 'resolve'
+            });
 
-            function initializeSelect2() {
-                // Inicializar Select2 para todos los selects
-                $('.select2').select2({
-                    theme: 'bootstrap4',
-                    width: 'resolve'
-                });
+            // Variables para guardar selecciones
+            let estadoSeleccionado = '<?php echo $representante['id_estado'] ?? ""; ?>';
+            let municipioSeleccionado = '<?php echo $representante['id_municipio'] ?? ""; ?>';
+            let parroquiaSeleccionada = '<?php echo $representante['id_parroquia'] ?? ""; ?>';
 
-                // Función para convertir texto a mayúsculas
-                function convertirMayusculas(elemento) {
-                    elemento.value = elemento.value.toUpperCase();
+            // Función para cargar municipios con Fetch API - CORREGIDA
+            async function cargarMunicipios(idEstado) {
+                const selectMunicipio = document.getElementById('id_municipio');
+                const selectParroquia = document.getElementById('id_parroquia');
+
+                if (!idEstado || idEstado === '') {
+                    selectMunicipio.innerHTML = '<option value="">Seleccione un municipio...</option>';
+                    selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+                    selectMunicipio.disabled = true;
+                    selectParroquia.disabled = true;
+                    $(selectMunicipio).trigger('change.select2');
+                    $(selectParroquia).trigger('change.select2');
+                    return;
                 }
 
-                // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
-                $('input[type="text"]:not([readonly])').on('input', function() {
-                    convertirMayusculas(this);
-                });
+                // Mostrar loading
+                selectMunicipio.disabled = true;
+                selectMunicipio.innerHTML = '<option value="">Cargando municipios...</option>';
 
-                // Solo letras (para nombres, apellidos, lugar de nacimiento, dirección, calle, ocupación, lugar de trabajo)
-                $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion, #calle, #ocupacion, #lugar_trabajo').on('input', function() {
-                    this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-                    convertirMayusculas(this);
-                });
+                // Limpiar y deshabilitar parroquia
+                selectParroquia.disabled = true;
+                selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+                $(selectParroquia).trigger('change.select2');
 
-                // Solo números (para teléfonos y cédulas)
-                $('#cedula, #telefono, #telefono_hab').on('input', function() {
-                    this.value = this.value.replace(/\D/g, '');
-                });
+                try {
+                    const formData = new FormData();
+                    formData.append('id_estado', idEstado);
 
-                // Casa/Apto - permite letras y números
-                $('#casa').on('input', function() {
-                    this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-#]/g, '');
-                    convertirMayusculas(this);
-                });
+                    console.log('Enviando solicitud para municipios del estado:', idEstado);
 
-                // Validación de correo electrónico
-                $('#correo').on('blur', function() {
-                    const email = this.value;
-                    if (email && !isValidEmail(email)) {
-                        alert('Por favor, ingrese un correo electrónico válido (debe contener @ y dominio)');
-                        this.focus();
-                        $(this).addClass('is-invalid');
-                    } else {
-                        $(this).removeClass('is-invalid');
+                    const response = await fetch('obtener_municipios.php', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                        body: formData
+                    });
+
+                    console.log('Respuesta recibida, status:', response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
                     }
-                });
 
-                // Función para validar formato de email
-                function isValidEmail(email) {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    return emailRegex.test(email);
+                    const data = await response.json();
+                    console.log('Datos recibidos:', data);
+
+                    if (data.success && Array.isArray(data.municipios)) {
+                        // Limpiar select
+                        selectMunicipio.innerHTML = '<option value="">Seleccione un municipio...</option>';
+
+                        // Agregar municipios
+                        data.municipios.forEach(municipio => {
+                            const option = document.createElement('option');
+                            option.value = municipio.id_municipio;
+                            option.textContent = municipio.nom_municipio;
+
+                            // Seleccionar si es el municipio guardado
+                            if (parseInt(municipio.id_municipio) === parseInt(municipioSeleccionado)) {
+                                option.selected = true;
+                                console.log('Municipio seleccionado automáticamente:', municipio.nom_municipio);
+                            }
+
+                            selectMunicipio.appendChild(option);
+                        });
+
+                        // Habilitar y actualizar select
+                        selectMunicipio.disabled = false;
+                        $(selectMunicipio).trigger('change.select2');
+
+                        // Si hay municipio seleccionado, cargar parroquias automáticamente
+                        if (municipioSeleccionado && selectMunicipio.value === municipioSeleccionado) {
+                            console.log('Cargando parroquias para municipio:', municipioSeleccionado);
+                            await cargarParroquias(municipioSeleccionado);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Error en la estructura de datos');
+                    }
+                } catch (error) {
+                    console.error('Error al cargar municipios:', error);
+                    selectMunicipio.innerHTML = '<option value="">Error al cargar municipios</option>';
+                    selectMunicipio.disabled = false;
+                    $(selectMunicipio).trigger('change.select2');
+                }
+            }
+
+            // Función para cargar parroquias con Fetch API - CORREGIDA
+            async function cargarParroquias(idMunicipio) {
+                const selectParroquia = document.getElementById('id_parroquia');
+
+                if (!idMunicipio || idMunicipio === '') {
+                    selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+                    selectParroquia.disabled = true;
+                    $(selectParroquia).trigger('change.select2');
+                    return;
                 }
 
-                // Cargar municipios según estado seleccionado
-                $('#id_estado').on('change', function() {
-                    const idEstado = $(this).val();
-                    const municipioSelect = $('#id_municipio');
-                    const parroquiaSelect = $('#id_parroquia');
+                // Mostrar loading
+                selectParroquia.disabled = true;
+                selectParroquia.innerHTML = '<option value="">Cargando parroquias...</option>';
 
-                    console.log('Estado seleccionado:', idEstado);
+                try {
+                    const formData = new FormData();
+                    formData.append('id_municipio', idMunicipio);
 
-                    if (idEstado) {
-                        municipioSelect.prop('disabled', false);
-                        parroquiaSelect.prop('disabled', true).html('<option value="">Primero seleccione un municipio</option>');
+                    console.log('Enviando solicitud para parroquias del municipio:', idMunicipio);
 
-                        $.ajax({
-                            url: 'obtener_municipios.php',
-                            type: 'POST',
-                            data: {
-                                id_estado: idEstado
-                            },
-                            dataType: 'json',
-                            success: function(response) {
-                                console.log('Respuesta municipios:', response);
-                                if (response.success) {
-                                    municipioSelect.html('<option value="">Seleccione un municipio...</option>');
-                                    response.municipios.forEach(function(municipio) {
-                                        municipioSelect.append(new Option(municipio.nom_municipio, municipio.id_municipio));
-                                    });
-                                    // Re-inicializar Select2
-                                    municipioSelect.select2({
-                                        theme: 'bootstrap4',
-                                        width: 'resolve'
-                                    });
-                                } else {
-                                    municipioSelect.html('<option value="">Error al cargar municipios</option>');
-                                    console.error('Error en respuesta:', response.message);
-                                }
-                            },
-                            error: function(xhr, status, error) {
-                                municipioSelect.html('<option value="">Error al cargar municipios</option>');
-                                console.error('Error AJAX:', error);
-                                console.error('Status:', status);
-                                console.error('Response:', xhr.responseText);
+                    const response = await fetch('obtener_parroquias.php', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                        body: formData
+                    });
+
+                    console.log('Respuesta recibida, status:', response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Datos recibidos:', data);
+
+                    if (data.success && Array.isArray(data.parroquias)) {
+                        // Limpiar select
+                        selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+
+                        // Agregar parroquias
+                        data.parroquias.forEach(parroquia => {
+                            const option = document.createElement('option');
+                            option.value = parroquia.id_parroquia;
+                            option.textContent = parroquia.nom_parroquia;
+
+                            // Seleccionar si es la parroquia guardada
+                            if (parseInt(parroquia.id_parroquia) === parseInt(parroquiaSeleccionada)) {
+                                option.selected = true;
+                                console.log('Parroquia seleccionada automáticamente:', parroquia.nom_parroquia);
                             }
+
+                            selectParroquia.appendChild(option);
                         });
+
+                        // Habilitar y actualizar select
+                        selectParroquia.disabled = false;
+                        $(selectParroquia).trigger('change.select2');
                     } else {
-                        municipioSelect.prop('disabled', true).html('<option value="">Primero seleccione un estado</option>');
-                        parroquiaSelect.prop('disabled', true).html('<option value="">Primero seleccione un municipio</option>');
+                        throw new Error(data.message || 'Error en la estructura de datos');
                     }
-                });
-
-                // Cargar parroquias según municipio seleccionado
-                $('#id_municipio').on('change', function() {
-                    const idMunicipio = $(this).val();
-                    const parroquiaSelect = $('#id_parroquia');
-
-                    console.log('Municipio seleccionado:', idMunicipio);
-
-                    if (idMunicipio) {
-                        parroquiaSelect.prop('disabled', false);
-
-                        $.ajax({
-                            url: 'obtener_parroquias.php',
-                            type: 'POST',
-                            data: {
-                                id_municipio: idMunicipio
-                            },
-                            dataType: 'json',
-                            success: function(response) {
-                                console.log('Respuesta parroquias:', response);
-                                if (response.success) {
-                                    parroquiaSelect.html('<option value="">Seleccione una parroquia...</option>');
-                                    response.parroquias.forEach(function(parroquia) {
-                                        parroquiaSelect.append(new Option(parroquia.nom_parroquia, parroquia.id_parroquia));
-                                    });
-                                    // Re-inicializar Select2
-                                    parroquiaSelect.select2({
-                                        theme: 'bootstrap4',
-                                        width: 'resolve'
-                                    });
-                                } else {
-                                    parroquiaSelect.html('<option value="">Error al cargar parroquias</option>');
-                                    console.error('Error en respuesta:', response.message);
-                                }
-                            },
-                            error: function(xhr, status, error) {
-                                parroquiaSelect.html('<option value="">Error al cargar parroquias</option>');
-                                console.error('Error AJAX:', error);
-                                console.error('Status:', status);
-                                console.error('Response:', xhr.responseText);
-                            }
-                        });
-                    } else {
-                        parroquiaSelect.prop('disabled', true).html('<option value="">Primero seleccione un municipio</option>');
-                    }
-                });
-
-                // Validación en tiempo real para campos obligatorios
-                $('input[required], select[required]').on('blur', function() {
-                    const valor = $(this).val();
-                    if (!valor) {
-                        $(this).addClass('is-invalid');
-                    } else {
-                        $(this).removeClass('is-invalid');
-                    }
-                });
-
-                // Validación del formulario antes de enviar
-                $('#formRepresentante').on('submit', function(e) {
-                    let isValid = true;
-                    let mensajesError = [];
-
-                    // Campos obligatorios
-                    const camposObligatorios = {
-                        'nacionalidad': 'Nacionalidad',
-                        'cedula': 'Cédula',
-                        'primer_nombre': 'Primer Nombre',
-                        'primer_apellido': 'Primer Apellido',
-                        'sexo': 'Sexo',
-                        'lugar_nac': 'Lugar de Nacimiento',
-                        'telefono': 'Teléfono Móvil',
-                        'correo': 'Correo Electrónico',
-                        'id_profesion': 'Profesión',
-                        'ocupacion': 'Ocupación',
-                        'id_estado': 'Estado',
-                        'id_municipio': 'Municipio',
-                        'id_parroquia': 'Parroquia',
-                        'direccion': 'Dirección Completa'
-                    };
-
-                    // Validar campos obligatorios
-                    for (const [campo, nombre] of Object.entries(camposObligatorios)) {
-                        const valor = campo.startsWith('id_') ?
-                            $(`#${campo}`).val() :
-                            $(`#${campo}`).val().trim();
-
-                        if (!valor) {
-                            mensajesError.push(`El campo "${nombre}" es obligatorio`);
-                            $(`#${campo}`).addClass('is-invalid');
-                            isValid = false;
-                        } else {
-                            $(`#${campo}`).removeClass('is-invalid');
-                        }
-                    }
-
-                    // Validar teléfonos (solo números)
-                    const telefono = $('#telefono').val();
-                    const telefonoHab = $('#telefono_hab').val();
-
-                    if (telefono && !/^\d+$/.test(telefono)) {
-                        mensajesError.push('El teléfono móvil debe contener solo números');
-                        isValid = false;
-                    }
-
-                    if (telefonoHab && !/^\d+$/.test(telefonoHab)) {
-                        mensajesError.push('El teléfono de habitación debe contener solo números');
-                        isValid = false;
-                    }
-
-                    // Validar correo electrónico
-                    const correo = $('#correo').val();
-
-                    if (correo && !isValidEmail(correo)) {
-                        mensajesError.push('Por favor, ingrese un correo electrónico válido (formato: usuario@dominio.com)');
-                        isValid = false;
-                    }
-
-                    // Validar fecha de nacimiento (no puede ser futura)
-                    const fechaNac = $('#fecha_nac').val();
-                    if (fechaNac) {
-                        const hoy = new Date().toISOString().split('T')[0];
-                        if (fechaNac > hoy) {
-                            mensajesError.push('La fecha de nacimiento no puede ser futura');
-                            isValid = false;
-                        }
-                    }
-
-                    // Mostrar errores si los hay
-                    if (!isValid) {
-                        e.preventDefault();
-                        alert('Por favor, corrija los siguientes errores:\n\n• ' + mensajesError.join('\n• '));
-
-                        // Scroll al primer error
-                        $('.is-invalid').first().focus();
-                    }
-                });
-
-                // Limpiar validación cuando el usuario empiece a escribir
-                $('input, select').on('input change', function() {
-                    $(this).removeClass('is-invalid');
-                });
-
-                // Cargar datos de dirección si ya existen
-                <?php if ($representante->id_estado): ?>
-                    setTimeout(() => {
-                        $('#id_estado').val('<?php echo $representante->id_estado; ?>').trigger('change');
-
-                        // Esperar a que carguen los municipios y luego seleccionar el municipio
-                        setTimeout(() => {
-                            $('#id_municipio').val('<?php echo $representante->id_municipio; ?>').trigger('change');
-
-                            // Esperar a que carguen las parroquias y luego seleccionar la parroquia
-                            setTimeout(() => {
-                                $('#id_parroquia').val('<?php echo $representante->id_parroquia; ?>').trigger('change');
-                            }, 500);
-                        }, 500);
-                    }, 100);
-                <?php endif; ?>
+                } catch (error) {
+                    console.error('Error al cargar parroquias:', error);
+                    selectParroquia.innerHTML = '<option value="">Error al cargar parroquias</option>';
+                    selectParroquia.disabled = false;
+                    $(selectParroquia).trigger('change.select2');
+                }
             }
+
+            // Evento cambio de estado - CORREGIDO
+            document.getElementById('id_estado').addEventListener('change', function() {
+                estadoSeleccionado = this.value;
+                municipioSeleccionado = ''; // Reset municipio
+                parroquiaSeleccionada = ''; // Reset parroquia
+
+                console.log('Estado cambiado a:', estadoSeleccionado);
+
+                // Actualizar select de municipio visualmente
+                const selectMunicipio = document.getElementById('id_municipio');
+                selectMunicipio.innerHTML = '<option value="">Cargando...</option>';
+                selectMunicipio.disabled = true;
+
+                // Limpiar parroquia
+                const selectParroquia = document.getElementById('id_parroquia');
+                selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+                selectParroquia.disabled = true;
+
+                $(selectMunicipio).trigger('change.select2');
+                $(selectParroquia).trigger('change.select2');
+
+                // Cargar municipios
+                if (estadoSeleccionado) {
+                    cargarMunicipios(estadoSeleccionado);
+                }
+            });
+
+            // Evento cambio de municipio - CORREGIDO
+            document.getElementById('id_municipio').addEventListener('change', function() {
+                municipioSeleccionado = this.value;
+                parroquiaSeleccionada = ''; // Reset parroquia
+
+                console.log('Municipio cambiado a:', municipioSeleccionado);
+
+                // Actualizar select de parroquia visualmente
+                const selectParroquia = document.getElementById('id_parroquia');
+                selectParroquia.innerHTML = '<option value="">Cargando...</option>';
+                selectParroquia.disabled = true;
+
+                $(selectParroquia).trigger('change.select2');
+
+                // Cargar parroquias
+                if (municipioSeleccionado) {
+                    cargarParroquias(municipioSeleccionado);
+                }
+            });
+
+            // Evento cambio de parroquia
+            document.getElementById('id_parroquia').addEventListener('change', function() {
+                parroquiaSeleccionada = this.value;
+                console.log('Parroquia cambiada a:', parroquiaSeleccionada);
+            });
+
+            // Cargar municipios si ya hay estado seleccionado al cargar la página
+            if (estadoSeleccionado) {
+                console.log('Cargando municipios iniciales para estado:', estadoSeleccionado);
+                // Pequeño delay para asegurar que Select2 se inicializó
+                setTimeout(() => {
+                    cargarMunicipios(estadoSeleccionado);
+                }, 300);
+            }
+
+            // Validaciones del formulario (mantener igual)
+            document.getElementById('formRepresentante').addEventListener('submit', function(e) {
+                let valid = true;
+                const mensajes = [];
+
+                // Validar campos obligatorios
+                const camposObligatorios = [
+                    'nacionalidad', 'cedula', 'primer_nombre', 'primer_apellido',
+                    'sexo', 'lugar_nac', 'telefono', 'correo',
+                    'id_profesion', 'ocupacion', 'id_estado', 'id_municipio',
+                    'id_parroquia', 'direccion'
+                ];
+
+                camposObligatorios.forEach(campo => {
+                    const elemento = document.querySelector(`[name="${campo}"]`);
+                    if (!elemento.value.trim()) {
+                        elemento.classList.add('is-invalid');
+                        mensajes.push(`El campo ${campo.replace('_', ' ')} es obligatorio`);
+                        valid = false;
+                    } else {
+                        elemento.classList.remove('is-invalid');
+                    }
+                });
+
+                // Validar cédula (solo números)
+                const cedula = document.querySelector('[name="cedula"]');
+                if (cedula.value && !/^\d+$/.test(cedula.value)) {
+                    cedula.classList.add('is-invalid');
+                    mensajes.push('La cédula debe contener solo números');
+                    valid = false;
+                }
+
+                // Validar teléfonos (solo números)
+                const telefono = document.querySelector('[name="telefono"]');
+                const telefonoHab = document.querySelector('[name="telefono_hab"]');
+
+                if (telefono.value && !/^\d+$/.test(telefono.value)) {
+                    telefono.classList.add('is-invalid');
+                    mensajes.push('El teléfono móvil debe contener solo números');
+                    valid = false;
+                }
+
+                if (telefonoHab.value && !/^\d+$/.test(telefonoHab.value)) {
+                    telefonoHab.classList.add('is-invalid');
+                    mensajes.push('El teléfono de habitación debe contener solo números');
+                    valid = false;
+                }
+
+                // Validar email
+                const correo = document.querySelector('[name="correo"]');
+                if (correo.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value)) {
+                    correo.classList.add('is-invalid');
+                    mensajes.push('El correo electrónico no es válido');
+                    valid = false;
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                    alert('Por favor corrija los siguientes errores:\n\n• ' + mensajes.join('\n• '));
+                    document.querySelector('.is-invalid').focus();
+                }
+            });
+
+            // Remover error al escribir
+            document.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('input', function() {
+                    this.classList.remove('is-invalid');
+                });
+            });
         });
     </script>
+
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar Select2
+            $('.select2').select2({
+                theme: 'bootstrap4',
+                width: 'resolve'
+            });
+
+            // Variables para guardar selecciones
+            let estadoSeleccionado = '<?php echo $representante['id_estado'] ?? ""; ?>';
+            let municipioSeleccionado = '<?php echo $representante['id_municipio'] ?? ""; ?>';
+
+            // Función para cargar municipios con Fetch
+            async function cargarMunicipios(idEstado) {
+                const selectMunicipio = document.getElementById('id_municipio');
+                const selectParroquia = document.getElementById('id_parroquia');
+
+                if (!idEstado) {
+                    selectMunicipio.innerHTML = '<option value="">Seleccione un municipio...</option>';
+                    selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+                    return;
+                }
+
+                // Mostrar loading
+                selectMunicipio.disabled = true;
+                selectMunicipio.innerHTML = '<option value="">Cargando municipios...</option>';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('id_estado', idEstado);
+
+                    const response = await fetch('obtener_municipios.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error('Error en la respuesta');
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        selectMunicipio.innerHTML = '<option value="">Seleccione un municipio...</option>';
+                        data.municipios.forEach(municipio => {
+                            const option = new Option(municipio.nom_municipio, municipio.id_municipio);
+                            if (municipio.id_municipio == municipioSeleccionado) {
+                                option.selected = true;
+                            }
+                            selectMunicipio.appendChild(option);
+                        });
+
+                        selectMunicipio.disabled = false;
+                        $(selectMunicipio).trigger('change.select2');
+
+                        // Si hay municipio seleccionado, cargar parroquias
+                        if (municipioSeleccionado) {
+                            await cargarParroquias(municipioSeleccionado);
+                        }
+                    } else {
+                        throw new Error(data.message || 'Error al cargar municipios');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    selectMunicipio.innerHTML = '<option value="">Error al cargar</option>';
+                }
+            }
+
+            // Función para cargar parroquias con Fetch
+            async function cargarParroquias(idMunicipio) {
+                const selectParroquia = document.getElementById('id_parroquia');
+
+                if (!idMunicipio) {
+                    selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+                    return;
+                }
+
+                // Mostrar loading
+                selectParroquia.disabled = true;
+                selectParroquia.innerHTML = '<option value="">Cargando parroquias...</option>';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('id_municipio', idMunicipio);
+
+                    const response = await fetch('obtener_parroquias.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error('Error en la respuesta');
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        selectParroquia.innerHTML = '<option value="">Seleccione una parroquia...</option>';
+                        data.parroquias.forEach(parroquia => {
+                            const option = new Option(parroquia.nom_parroquia, parroquia.id_parroquia);
+                            if (parroquia.id_parroquia == '<?php echo $representante['id_parroquia'] ?? ""; ?>') {
+                                option.selected = true;
+                            }
+                            selectParroquia.appendChild(option);
+                        });
+
+                        selectParroquia.disabled = false;
+                        $(selectParroquia).trigger('change.select2');
+                    } else {
+                        throw new Error(data.message || 'Error al cargar parroquias');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    selectParroquia.innerHTML = '<option value="">Error al cargar</option>';
+                }
+            }
+
+            // Evento cambio de estado
+            document.getElementById('id_estado').addEventListener('change', function() {
+                estadoSeleccionado = this.value;
+                municipioSeleccionado = ''; // Reset municipio
+                cargarMunicipios(estadoSeleccionado);
+            });
+
+            // Evento cambio de municipio
+            document.getElementById('id_municipio').addEventListener('change', function() {
+                municipioSeleccionado = this.value;
+                cargarParroquias(municipioSeleccionado);
+            });
+
+            // Cargar municipios si ya hay estado seleccionado
+            if (estadoSeleccionado) {
+                setTimeout(() => cargarMunicipios(estadoSeleccionado), 100);
+            }
+
+            // Validaciones
+            document.getElementById('formRepresentante').addEventListener('submit', function(e) {
+                let valid = true;
+                const mensajes = [];
+
+                // Validar campos obligatorios
+                const camposObligatorios = [
+                    'nacionalidad', 'cedula', 'primer_nombre', 'primer_apellido',
+                    'sexo', 'lugar_nac', 'telefono', 'correo',
+                    'id_profesion', 'ocupacion', 'id_estado', 'id_municipio',
+                    'id_parroquia', 'direccion'
+                ];
+
+                camposObligatorios.forEach(campo => {
+                    const elemento = document.querySelector(`[name="${campo}"]`);
+                    if (!elemento.value.trim()) {
+                        elemento.classList.add('is-invalid');
+                        mensajes.push(`El campo ${campo.replace('_', ' ')} es obligatorio`);
+                        valid = false;
+                    } else {
+                        elemento.classList.remove('is-invalid');
+                    }
+                });
+
+                // Validar cédula (solo números)
+                const cedula = document.querySelector('[name="cedula"]');
+                if (cedula.value && !/^\d+$/.test(cedula.value)) {
+                    cedula.classList.add('is-invalid');
+                    mensajes.push('La cédula debe contener solo números');
+                    valid = false;
+                }
+
+                // Validar teléfonos (solo números)
+                const telefono = document.querySelector('[name="telefono"]');
+                const telefonoHab = document.querySelector('[name="telefono_hab"]');
+
+                if (telefono.value && !/^\d+$/.test(telefono.value)) {
+                    telefono.classList.add('is-invalid');
+                    mensajes.push('El teléfono móvil debe contener solo números');
+                    valid = false;
+                }
+
+                if (telefonoHab.value && !/^\d+$/.test(telefonoHab.value)) {
+                    telefonoHab.classList.add('is-invalid');
+                    mensajes.push('El teléfono de habitación debe contener solo números');
+                    valid = false;
+                }
+
+                // Validar email
+                const correo = document.querySelector('[name="correo"]');
+                if (correo.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value)) {
+                    correo.classList.add('is-invalid');
+                    mensajes.push('El correo electrónico no es válido');
+                    valid = false;
+                }
+
+                if (!valid) {
+                    e.preventDefault();
+                    alert('Por favor corrija los siguientes errores:\n\n• ' + mensajes.join('\n• '));
+                    document.querySelector('.is-invalid').focus();
+                }
+            });
+
+            // Remover error al escribir
+            document.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('input', function() {
+                    this.classList.remove('is-invalid');
+                });
+            });
+        });
+    </script> -->
 </body>
 
 </html>
-<?php
-include_once("/xampp/htdocs/final/layout/layaout2.php");
-include_once("/xampp/htdocs/final/layout/mensajes.php");
-?>
