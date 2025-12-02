@@ -2539,14 +2539,14 @@ try {
                 </a>
             `;
         document.querySelector('.content-wrapper').prepend(buttonMsg);
-        window.location.href = '/final/admin/index.php';
+        window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
 
         resolve({
           success: true
         });
 
       }, 1500); // Pequeño delay para mejor experiencia de usuario
-      window.location.href = '/final/admin/index.php';
+      window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
 
     }); // <--- Cierra el return new Promise()
   } // <--- Cierra function generarConstanciaInscripcion()
@@ -2663,7 +2663,7 @@ try {
                 // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
                 setTimeout(() => {
                   console.log('🔄 Redirigiendo a dashboard...');
-                  window.location.href = '/final/admin/index.php';
+                  window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
                 }, 8000); // 8 segundos para dar tiempo al usuario
               })
               .catch((error) => {
@@ -2683,7 +2683,7 @@ try {
 
                 // Redirigir después de más tiempo
                 setTimeout(() => {
-                  window.location.href = '/final/admin/index.php';
+                  window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
                 }, 6000);
               });
           } else {
@@ -2700,7 +2700,7 @@ try {
 
             setTimeout(() => {
               console.log('🔄 Redirigiendo a dashboard...');
-              window.location.href = '/final/admin/index.php';
+              window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
             }, 5000);
           }
 
@@ -3522,7 +3522,7 @@ try {
 
             // Redirigir después de 3 segundos
             setTimeout(() => {
-              window.location.href = '/final/admin/index.php';
+              window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
             }, 3000);
 
           } else {
