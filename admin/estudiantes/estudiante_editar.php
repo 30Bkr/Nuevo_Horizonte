@@ -108,21 +108,30 @@ if ($estudiante->id_parroquia) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Editar Estudiante - Nuevo Horizonte</title>
+<!--
+This is a starter template page. Use this page to start your new project from
+scratch. This page gets rid of all links and provides the needed markup only.
+-->
+<html lang="en">
 
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="/final/public/plugins/fontawesome-free/css/all.min.css">
-    <!-- Theme style -->
-    <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
-    <!-- Select2 -->
-    <link rel="stylesheet" href="/final/public/plugins/select2/css/select2.min.css">
-    
-    <!-- Estilos CSS para campos inválidos -->
-    <style>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editar Estudiante - Nuevo Horizonte</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"> -->
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="/final/public/plugins/fontawesome-free/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/final/public/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+  <link rel="stylesheet" href="/final/public/plugins/select2/css/select2.min.css">
+
+  <link rel="stylesheet" href="/final/public/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="/final/public/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+  
+  <!-- Estilos CSS para campos inválidos -->
+  <style>
         .is-invalid {
             border-color: #dc3545 !important;
         }
@@ -256,1056 +265,1226 @@ if ($estudiante->id_parroquia) {
         }
     </style>
 </head>
+
 <body class="hold-transition sidebar-mini">
-    <div class="wrapper">
+  <div class="wrapper">
 
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button">
-                        <i class="fas fa-bars"></i>
-                    </a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/final/index.php" class="nav-link">Inicio</a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="estudiantes_list.php" class="nav-link">Estudiantes</a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="#" class="nav-link">Editar Estudiante</a>
-                </li>
-            </ul>
-        </nav>
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+      <!-- Left navbar links -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a href="/final/index.php" class="nav-link">Inicio</a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a href="estudiantes_list.php" class="nav-link">Estudiantes</a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a href="#" class="nav-link active">Editar Estudiante</a>
+        </li>
+      </ul>
 
-        <!-- Sidebar -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="/final/index.php" class="brand-link">
-                <span class="brand-text font-weight-light">Nuevo Horizonte</span>
-            </a>
-            <div class="sidebar">
-                <nav class="mt-2">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-                        <li class="nav-item">
-                            <a href="/final/index.php" class="nav-link">
-                                <i class="nav-icon fas fa-home"></i>
-                                <p>Inicio</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="docentes_list.php" class="nav-link">
-                                <i class="nav-icon fas fa-chalkboard-teacher"></i>
-                                <p>Docentes</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="estudiantes_list.php" class="nav-link active">
-                                <i class="nav-icon fas fa-user-graduate"></i>
-                                <p>Estudiantes</p>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </aside>
+      <!-- Right navbar links -->
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+            <i class="fas fa-expand-arrows-alt"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <!-- /.navbar -->
 
-        <!-- Content Wrapper -->
-        <div class="content-wrapper">
-            <!-- Content Header -->
-            <section class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1>Editar Estudiante</h1>
-                        </div>
-                        <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                                <li class="breadcrumb-item"><a href="estudiantes_list.php">Estudiantes</a></li>
-                                <li class="breadcrumb-item active">Editar</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </section>
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+      <!-- Brand Logo -->
+      <a href="index3.html" class="brand-link">
+        <img src="/final/public/images/perfil.svg" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light">Nuevo Horizonte</span>
+      </a>
 
-            <!-- Main content -->
-            <section class="content">
-                <div class="container-fluid">
-                    <!-- Mensajes de alerta -->
-                    <?php if (isset($_SESSION['error'])): ?>
-                        <div class="alert alert-danger alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
-                            <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card card-warning">
-                                <div class="card-header">
-                                    <h3 class="card-title">Editar Datos del Estudiante</h3>
-                                </div>
-                                <form method="POST" id="formEstudiante">
-                                    <div class="card-body">
-                                        <!-- Datos Personales del Estudiante -->
-                                        <h5 class="text-primary mb-3">
-                                            <i class="fas fa-user-graduate"></i> Información Personal del Estudiante
-                                        </h5>
-                                        <div class="row">
-                                            <!-- Nacionalidad como lista desplegable -->
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="nacionalidad">Nacionalidad <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control" id="nacionalidad" name="nacionalidad" required>
-                                                        <option value="">Seleccione...</option>
-                                                        <option value="Venezolano" <?php echo ($estudiante->nacionalidad ?? '') == 'Venezolano' ? 'selected' : ''; ?>>Venezolano</option>
-                                                        <option value="Extranjero" <?php echo ($estudiante->nacionalidad ?? '') == 'Extranjero' ? 'selected' : ''; ?>>Extranjero</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Cédula editable -->
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="cedula" name="cedula" 
-                                                           value="<?php echo htmlspecialchars($estudiante->cedula ?? ''); ?>" required
-                                                           maxlength="20">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Fecha de nacimiento -->
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="fecha_nac">Fecha de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="date" class="form-control" id="fecha_nac" name="fecha_nac"
-                                                           value="<?php echo $estudiante->fecha_nac ?? ''; ?>" required>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" 
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_nombre ?? ''); ?>" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_nombre">Segundo Nombre</label>
-                                                    <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_nombre ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="primer_apellido">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="primer_apellido" name="primer_apellido"
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_apellido ?? ''); ?>" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_apellido">Segundo Apellido</label>
-                                                    <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_apellido ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="sexo">Sexo <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control" id="sexo" name="sexo" required>
-                                                        <option value="">Seleccione...</option>
-                                                        <option value="Masculino" <?php echo ($estudiante->sexo ?? '') == 'Masculino' ? 'selected' : ''; ?>>Masculino</option>
-                                                        <option value="Femenino" <?php echo ($estudiante->sexo ?? '') == 'Femenino' ? 'selected' : ''; ?>>Femenino</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="lugar_nac">Lugar de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="lugar_nac" name="lugar_nac"
-                                                           value="<?php echo htmlspecialchars($estudiante->lugar_nac ?? ''); ?>" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="telefono">Teléfono Móvil</label>
-                                                    <input type="text" class="form-control" id="telefono" name="telefono"
-                                                           value="<?php echo htmlspecialchars($estudiante->telefono ?? ''); ?>" maxlength="11">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label for="telefono_hab">Teléfono Habitación</label>
-                                                    <input type="text" class="form-control" id="telefono_hab" name="telefono_hab"
-                                                           value="<?php echo htmlspecialchars($estudiante->telefono_hab ?? ''); ?>" maxlength="11">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-8">
-                                                <div class="form-group">
-                                                    <label for="correo">Correo Electrónico</label>
-                                                    <input type="email" class="form-control" id="correo" name="correo"
-                                                           value="<?php echo htmlspecialchars($estudiante->correo ?? ''); ?>">
-                                                    <small class="form-text text-muted">Formato: usuario@dominio.com</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Dirección del Estudiante - CON SCROLL -->
-                                        <h5 class="text-primary mb-3 mt-4">
-                                            <i class="fas fa-map-marker-alt"></i> Dirección del Estudiante
-                                        </h5>
-
-                                        <!-- Campo para controlar si comparte dirección con el representante -->
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label for="comparte_direccion">¿El estudiante vive en la misma dirección del representante? <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control" id="comparte_direccion" name="comparte_direccion" required>
-                                                        <option value="">Seleccione...</option>
-                                                        <option value="1" <?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'selected' : ''; ?>>Sí</option>
-                                                        <option value="0" <?php echo ($estudiante->comparte_direccion ?? '1') == '0' ? 'selected' : ''; ?>>No</option>
-                                                    </select>
-                                                    <small class="form-text text-muted">
-                                                        Si selecciona "No", podrá ingresar una dirección diferente para el estudiante.
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Campos de dirección del estudiante - CON SCROLL -->
-                                        <div id="direccion_estudiante" style="<?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'display: none;' : ''; ?>">
-                                            <div class="row">
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label for="estado_e">Estado</label>
-                                                        <select class="form-control select2 select-direccion large-select" id="estado_e" name="estado_e" style="width: 100%;" 
-                                                                data-placeholder="Seleccione un estado...">
-                                                            <option value=""></option>
-                                                            <?php
-                                                            if (isset($estados) && $estados) {
-                                                                // Reiniciar el puntero si es necesario
-                                                                if (method_exists($estados, 'fetch')) {
-                                                                    while ($estado = $estados->fetch(PDO::FETCH_ASSOC)) {
-                                                                        $selected = ($id_estado_estudiante ?? '') == $estado['id_estado'] ? 'selected' : '';
-                                                                        echo "<option value='{$estado['id_estado']}' {$selected}>{$estado['nom_estado']}</option>";
-                                                                    }
-                                                                } else {
-                                                                    echo "<option value=''>Error: No se pudieron cargar los estados</option>";
-                                                                }
-                                                            } else {
-                                                                echo "<option value=''>No hay estados disponibles</option>";
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label for="municipio_e">Municipio</label>
-                                                        <select class="form-control select2 select-direccion large-select" id="municipio_e" name="municipio_e" style="width: 100%;" 
-                                                                data-placeholder="Primero seleccione un estado" <?php echo !$id_estado_estudiante ? 'disabled' : ''; ?>>
-                                                            <option value=""></option>
-                                                            <?php
-                                                            if (isset($municipios_estudiante) && $municipios_estudiante) {
-                                                                while ($municipio = $municipios_estudiante->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = ($id_municipio_estudiante ?? '') == $municipio['id_municipio'] ? 'selected' : '';
-                                                                    echo "<option value='{$municipio['id_municipio']}' {$selected}>{$municipio['nom_municipio']}</option>";
-                                                                }
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label for="parroquia_e">Parroquia</label>
-                                                        <select class="form-control select2 select-direccion large-select" id="parroquia_e" name="id_parroquia" style="width: 100%;" 
-                                                                data-placeholder="Primero seleccione un municipio" <?php echo !$id_municipio_estudiante ? 'disabled' : ''; ?>>
-                                                            <option value=""></option>
-                                                            <?php
-                                                            if (isset($parroquias_estudiante) && $parroquias_estudiante) {
-                                                                while ($parroquia = $parroquias_estudiante->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = ($estudiante->id_parroquia ?? '') == $parroquia['id_parroquia'] ? 'selected' : '';
-                                                                    echo "<option value='{$parroquia['id_parroquia']}' {$selected}>{$parroquia['nom_parroquia']}</option>";
-                                                                }
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="direccion_e">Dirección Completa</label>
-                                                        <input type="text" class="form-control" id="direccion_e" name="direccion"
-                                                               value="<?php echo htmlspecialchars($estudiante->direccion ?? ''); ?>">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label for="calle_e">Calle/Avenida</label>
-                                                        <input type="text" class="form-control" id="calle_e" name="calle"
-                                                               value="<?php echo htmlspecialchars($estudiante->calle ?? ''); ?>">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="form-group">
-                                                        <label for="casa_e">Casa/Edificio</label>
-                                                        <input type="text" class="form-control" id="casa_e" name="casa"
-                                                               value="<?php echo htmlspecialchars($estudiante->casa ?? ''); ?>">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Sección de Salud del Estudiante -->
-                                        <h5 class="text-primary mb-3 mt-4">
-                                            <i class="fas fa-heartbeat"></i> Información de Salud del Estudiante
-                                        </h5>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Patologías/Alergias</label>
-
-                                                    <!-- Contenedor para los selects dinámicos -->
-                                                    <div id="contenedor-patologias">
-                                                        <!-- Select Principal -->
-                                                        <div class="mb-2 patologia-item">
-                                                            <select name="patologias[]" class="form-control select-patologia">
-                                                                <option value="">Seleccione una patología...</option>
-                                                                <option value="0">Ninguna</option>
-                                                                <?php
-                                                                // Cargar patologías desde la base de datos
-                                                                if (isset($patologias) && $patologias) {
-                                                                    if (method_exists($patologias, 'fetch')) {
-                                                                        while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
-                                                                            $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
-                                                                            echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
-                                                                        }
-                                                                    }
-                                                                } else {
-                                                                    echo "<option value=''>No hay patologías registradas</option>";
-                                                                }
-                                                                ?>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Botón para agregar más patologías -->
-                                                    <div class="mt-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
-                                                            <i class="fas fa-plus"></i> Agregar otra patología
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>Discapacidades</label>
-
-                                                    <!-- Contenedor para los selects dinámicos -->
-                                                    <div id="contenedor-discapacidades">
-                                                        <!-- Select Principal -->
-                                                        <div class="mb-2 discapacidad-item">
-                                                            <select name="discapacidades[]" class="form-control select-discapacidad">
-                                                                <option value="">Seleccione una discapacidad...</option>
-                                                                <option value="0">Ninguna</option>
-                                                                <?php
-                                                                // Cargar discapacidades desde la base de datos
-                                                                if (isset($discapacidades) && $discapacidades) {
-                                                                    if (method_exists($discapacidades, 'fetch')) {
-                                                                        while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
-                                                                            $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
-                                                                            echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
-                                                                        }
-                                                                    }
-                                                                } else {
-                                                                    echo "<option value=''>No hay discapacidades registradas</option>";
-                                                                }
-                                                                ?>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Botón para agregar más discapacidades -->
-                                                    <div class="mt-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-discapacidad">
-                                                            <i class="fas fa-plus"></i> Agregar otra discapacidad
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Datos del Representante -->
-                                        <h5 class="text-primary mb-3 mt-4">
-                                            <i class="fas fa-user-tie"></i> Datos del Representante
-                                        </h5>
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="primer_nombre_rep">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="primer_nombre_rep" name="primer_nombre_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_nombre_rep ?? ''); ?>" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_nombre_rep">Segundo Nombre</label>
-                                                    <input type="text" class="form-control" id="segundo_nombre_rep" name="segundo_nombre_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_nombre_rep ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="primer_apellido_rep">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="primer_apellido_rep" name="primer_apellido_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->primer_apellido_rep ?? ''); ?>" required>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="segundo_apellido_rep">Segundo Apellido</label>
-                                                    <input type="text" class="form-control" id="segundo_apellido_rep" name="segundo_apellido_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->segundo_apellido_rep ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="cedula_rep">Cédula del Representante <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="cedula_rep" name="cedula_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->cedula_rep ?? ''); ?>" required
-                                                           maxlength="20">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="id_parentesco">Parentesco <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control" id="id_parentesco" name="id_parentesco" required>
-                                                        <option value="">Seleccione...</option>
-                                                        <?php
-                                                        if (isset($parentescos) && $parentescos) {
-                                                            if (method_exists($parentescos, 'fetch')) {
-                                                                while ($parentesco = $parentescos->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = ($estudiante->id_parentesco ?? '') == $parentesco['id_parentesco'] ? 'selected' : '';
-                                                                    echo "<option value='{$parentesco['id_parentesco']}' {$selected}>{$parentesco['parentesco']}</option>";
-                                                                }
-                                                            }
-                                                        } else {
-                                                            echo "<option value=''>Error al cargar parentescos</option>";
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="telefono_rep">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="telefono_rep" name="telefono_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->telefono_rep ?? ''); ?>" required maxlength="11">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="form-group">
-                                                    <label for="telefono_hab_rep">Teléfono Habitación</label>
-                                                    <input type="text" class="form-control" id="telefono_hab_rep" name="telefono_hab_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->telefono_hab_rep ?? ''); ?>" maxlength="11">
-                                                    <small class="form-text text-muted">Solo se permiten números</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="correo_rep">Correo Electrónico <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="email" class="form-control" id="correo_rep" name="correo_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->correo_rep ?? ''); ?>" required>
-                                                    <small class="form-text text-muted">Formato: usuario@dominio.com</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="id_profesion_rep">Profesión <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <select class="form-control select2 select-profesion large-select" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;" required
-                                                            data-placeholder="Seleccione una profesión...">
-                                                        <option value=""></option>
-                                                        <?php
-                                                        if (isset($profesiones) && $profesiones) {
-                                                            // Asegurar que las profesiones sean un array o objeto iterable
-                                                            if (is_object($profesiones) && method_exists($profesiones, 'fetch')) {
-                                                                while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
-                                                                    $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
-                                                                    echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
-                                                                }
-                                                            } elseif (is_array($profesiones)) {
-                                                                foreach ($profesiones as $profesion) {
-                                                                    $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
-                                                                    echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
-                                                                }
-                                                            } else {
-                                                                echo "<option value=''>No se pudieron cargar las profesiones</option>";
-                                                            }
-                                                        } else {
-                                                            echo "<option value=''>No hay profesiones disponibles</option>";
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group campo-obligatorio">
-                                                    <label for="ocupacion_rep">Ocupación <span class="text-danger">* (Obligatorio)</span></label>
-                                                    <input type="text" class="form-control" id="ocupacion_rep" name="ocupacion_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->ocupacion_rep ?? ''); ?>" required>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label for="lugar_trabajo_rep">Lugar de Trabajo</label>
-                                                    <input type="text" class="form-control" id="lugar_trabajo_rep" name="lugar_trabajo_rep"
-                                                           value="<?php echo htmlspecialchars($estudiante->lugar_trabajo_rep ?? ''); ?>">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- /.card-body -->
-
-                                    <div class="card-footer">
-                                        <button type="submit" class="btn btn-warning">
-                                            <i class="fas fa-save"></i> Actualizar Estudiante
-                                        </button>
-                                        <a href="estudiantes_list.php" class="btn btn-default">
-                                            <i class="fas fa-arrow-left"></i> Cancelar
-                                        </a>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Sidebar user panel (optional) -->
+        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+          <div class="image">
+            <img src="/final/public/images/perfil.svg" class="img-circle elevation-2" alt="User Image">
+          </div>
+          <div class="info">
+            <a href="#" class="d-block"><?php echo isset($_SESSION['sesion_email']) ? $_SESSION['sesion_email'] : 'Usuario'; ?></a>
+          </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="main-footer">
-            <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong>
-            Todos los derechos reservados.
-        </footer>
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="true">
+            <!-- Add icons to the links using the .nav-icon class
+                 with font-awesome or any other icon font library -->
+
+            <?php if (true) { ?>
+              <li class="nav-item">
+                <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-cog mr-1"></i>
+                  <p>
+                    Configuraciones
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="/final/admin/configuraciones/index.php" class="nav-link">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Configuraciones</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            <?php } ?>
+
+            <!-- Docentes -->
+            <?php if (true) { ?>
+              <li class="nav-item">
+                <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-chalkboard-teacher"></i>
+                  <p>
+                    Docentes
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="/final/views/docentes/docentes_list.php" class="nav-link">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Listado</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            <?php } ?>
+
+            <!-- Estudiantes -->
+            <?php if (true) { ?>
+              <li class="nav-item menu-open">
+                <a href="#" class="nav-link active" style="background-color: rgba(255, 255, 255, 0.1);">
+                  <i class="nav-icon fas fa-user-graduate"></i>
+                  <p>
+                    Estudiantes
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="/final/admin/estudiantes/estudiantes_list.php" class="nav-link">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Listado</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            <?php } ?>
+
+            <!-- Inscripciones -->
+            <?php if (true) { ?>
+              <li class="nav-item">
+                <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-graduation-cap"></i>
+                  <p>
+                    Inscripciones
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="/final/admin/inscripciones/indexf2.php" class="nav-link">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Inscripción</p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="/final/admin/reinscripciones/reinscripcion2.php" class="nav-link">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Reinscripción</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            <?php } ?>
+
+            <!-- Niveles -->
+            <?php if (true) { ?>
+              <li class="nav-item">
+                <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-layer-group"></i>
+                  <p>
+                    Niveles
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="/final/views/grados/grados_list_solo_lectura.php" class="nav-link">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Listado</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            <?php } ?>
+
+            <!-- Representantes -->
+            <?php if (true) { ?>
+              <li class="nav-item">
+                <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-user-tie"></i>
+                  <p>
+                    Representantes
+                    <i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="/final/admin/representantes/representantes_list.php" class="nav-link">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Listado</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            <?php } ?>
+
+            <!-- Cerrar sesión -->
+            <li class="nav-item">
+              <a href="/final/login/logout.php" class="nav-link" style="background-color: #c40c0c;">
+                <i class="nav-icon fas fa-sign-out-alt"></i>
+                <p>Cerrar sesión</p>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+      </div>
+      <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+      <!-- Content Header -->
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>Editar Estudiante</h1>
+            </div>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="estudiantes_list.php">Estudiantes</a></li>
+                <li class="breadcrumb-item active">Editar</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main content -->
+      <section class="content">
+        <div class="container-fluid">
+          <!-- Mensajes de alerta -->
+          <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger alert-dismissible">
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+              <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
+              <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+            </div>
+          <?php endif; ?>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="card card-warning">
+                <div class="card-header">
+                  <h3 class="card-title">Editar Datos del Estudiante</h3>
+                </div>
+                <form method="POST" id="formEstudiante">
+                  <div class="card-body">
+                    <!-- Datos Personales del Estudiante -->
+                    <h5 class="text-primary mb-3">
+                      <i class="fas fa-user-graduate"></i> Información Personal del Estudiante
+                    </h5>
+                    <div class="row">
+                      <!-- Nacionalidad como lista desplegable -->
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="nacionalidad">Nacionalidad <span class="text-danger">* (Obligatorio)</span></label>
+                          <select class="form-control" id="nacionalidad" name="nacionalidad" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Venezolano" <?php echo ($estudiante->nacionalidad ?? '') == 'Venezolano' ? 'selected' : ''; ?>>Venezolano</option>
+                            <option value="Extranjero" <?php echo ($estudiante->nacionalidad ?? '') == 'Extranjero' ? 'selected' : ''; ?>>Extranjero</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <!-- Cédula editable -->
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="cedula">Cédula <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="cedula" name="cedula" 
+                                 value="<?php echo htmlspecialchars($estudiante->cedula ?? ''); ?>" required
+                                 maxlength="20">
+                          <small class="form-text text-muted">Solo se permiten números</small>
+                        </div>
+                      </div>
+                      
+                      <!-- Fecha de nacimiento -->
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="fecha_nac">Fecha de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="date" class="form-control" id="fecha_nac" name="fecha_nac"
+                                 value="<?php echo $estudiante->fecha_nac ?? ''; ?>" required>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group campo-obligatorio">
+                          <label for="primer_nombre">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="primer_nombre" name="primer_nombre" 
+                                 value="<?php echo htmlspecialchars($estudiante->primer_nombre ?? ''); ?>" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label for="segundo_nombre">Segundo Nombre</label>
+                          <input type="text" class="form-control" id="segundo_nombre" name="segundo_nombre"
+                                 value="<?php echo htmlspecialchars($estudiante->segundo_nombre ?? ''); ?>">
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group campo-obligatorio">
+                          <label for="primer_apellido">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="primer_apellido" name="primer_apellido"
+                                 value="<?php echo htmlspecialchars($estudiante->primer_apellido ?? ''); ?>" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label for="segundo_apellido">Segundo Apellido</label>
+                          <input type="text" class="form-control" id="segundo_apellido" name="segundo_apellido"
+                                 value="<?php echo htmlspecialchars($estudiante->segundo_apellido ?? ''); ?>">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="sexo">Sexo <span class="text-danger">* (Obligatorio)</span></label>
+                          <select class="form-control" id="sexo" name="sexo" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Masculino" <?php echo ($estudiante->sexo ?? '') == 'Masculino' ? 'selected' : ''; ?>>Masculino</option>
+                            <option value="Femenino" <?php echo ($estudiante->sexo ?? '') == 'Femenino' ? 'selected' : ''; ?>>Femenino</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="lugar_nac">Lugar de Nacimiento <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="lugar_nac" name="lugar_nac"
+                                 value="<?php echo htmlspecialchars($estudiante->lugar_nac ?? ''); ?>" required>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label for="telefono">Teléfono Móvil</label>
+                          <input type="text" class="form-control" id="telefono" name="telefono"
+                                 value="<?php echo htmlspecialchars($estudiante->telefono ?? ''); ?>" maxlength="11">
+                          <small class="form-text text-muted">Solo se permiten números</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label for="telefono_hab">Teléfono Habitación</label>
+                          <input type="text" class="form-control" id="telefono_hab" name="telefono_hab"
+                                 value="<?php echo htmlspecialchars($estudiante->telefono_hab ?? ''); ?>" maxlength="11">
+                          <small class="form-text text-muted">Solo se permiten números</small>
+                        </div>
+                      </div>
+                      <div class="col-md-8">
+                        <div class="form-group">
+                          <label for="correo">Correo Electrónico</label>
+                          <input type="email" class="form-control" id="correo" name="correo"
+                                 value="<?php echo htmlspecialchars($estudiante->correo ?? ''); ?>">
+                          <small class="form-text text-muted">Formato: usuario@dominio.com</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Dirección del Estudiante - CON SCROLL -->
+                    <h5 class="text-primary mb-3 mt-4">
+                      <i class="fas fa-map-marker-alt"></i> Dirección del Estudiante
+                    </h5>
+
+                    <!-- Campo para controlar si comparte dirección con el representante -->
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label for="comparte_direccion">¿El estudiante vive en la misma dirección del representante? <span class="text-danger">* (Obligatorio)</span></label>
+                          <select class="form-control" id="comparte_direccion" name="comparte_direccion" required>
+                            <option value="">Seleccione...</option>
+                            <option value="1" <?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'selected' : ''; ?>>Sí</option>
+                            <option value="0" <?php echo ($estudiante->comparte_direccion ?? '1') == '0' ? 'selected' : ''; ?>>No</option>
+                          </select>
+                          <small class="form-text text-muted">
+                            Si selecciona "No", podrá ingresar una dirección diferente para el estudiante.
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Campos de dirección del estudiante - CON SCROLL -->
+                    <div id="direccion_estudiante" style="<?php echo ($estudiante->comparte_direccion ?? '1') == '1' ? 'display: none;' : ''; ?>">
+                      <div class="row">
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="estado_e">Estado</label>
+                            <select class="form-control select2 select-direccion large-select" id="estado_e" name="estado_e" style="width: 100%;" 
+                                    data-placeholder="Seleccione un estado...">
+                              <option value=""></option>
+                              <?php
+                              if (isset($estados) && $estados) {
+                                // Reiniciar el puntero si es necesario
+                                if (method_exists($estados, 'fetch')) {
+                                  while ($estado = $estados->fetch(PDO::FETCH_ASSOC)) {
+                                    $selected = ($id_estado_estudiante ?? '') == $estado['id_estado'] ? 'selected' : '';
+                                    echo "<option value='{$estado['id_estado']}' {$selected}>{$estado['nom_estado']}</option>";
+                                  }
+                                } else {
+                                  echo "<option value=''>Error: No se pudieron cargar los estados</option>";
+                                }
+                              } else {
+                                echo "<option value=''>No hay estados disponibles</option>";
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="municipio_e">Municipio</label>
+                            <select class="form-control select2 select-direccion large-select" id="municipio_e" name="municipio_e" style="width: 100%;" 
+                                    data-placeholder="Primero seleccione un estado" <?php echo !$id_estado_estudiante ? 'disabled' : ''; ?>>
+                              <option value=""></option>
+                              <?php
+                              if (isset($municipios_estudiante) && $municipios_estudiante) {
+                                while ($municipio = $municipios_estudiante->fetch(PDO::FETCH_ASSOC)) {
+                                  $selected = ($id_municipio_estudiante ?? '') == $municipio['id_municipio'] ? 'selected' : '';
+                                  echo "<option value='{$municipio['id_municipio']}' {$selected}>{$municipio['nom_municipio']}</option>";
+                                }
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="form-group">
+                            <label for="parroquia_e">Parroquia</label>
+                            <select class="form-control select2 select-direccion large-select" id="parroquia_e" name="id_parroquia" style="width: 100%;" 
+                                    data-placeholder="Primero seleccione un municipio" <?php echo !$id_municipio_estudiante ? 'disabled' : ''; ?>>
+                              <option value=""></option>
+                              <?php
+                              if (isset($parroquias_estudiante) && $parroquias_estudiante) {
+                                while ($parroquia = $parroquias_estudiante->fetch(PDO::FETCH_ASSOC)) {
+                                  $selected = ($estudiante->id_parroquia ?? '') == $parroquia['id_parroquia'] ? 'selected' : '';
+                                  echo "<option value='{$parroquia['id_parroquia']}' {$selected}>{$parroquia['nom_parroquia']}</option>";
+                                }
+                              }
+                              ?>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label for="direccion_e">Dirección Completa</label>
+                            <input type="text" class="form-control" id="direccion_e" name="direccion"
+                                   value="<?php echo htmlspecialchars($estudiante->direccion ?? ''); ?>">
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label for="calle_e">Calle/Avenida</label>
+                            <input type="text" class="form-control" id="calle_e" name="calle"
+                                   value="<?php echo htmlspecialchars($estudiante->calle ?? ''); ?>">
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label for="casa_e">Casa/Edificio</label>
+                            <input type="text" class="form-control" id="casa_e" name="casa"
+                                   value="<?php echo htmlspecialchars($estudiante->casa ?? ''); ?>">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Sección de Salud del Estudiante -->
+                    <h5 class="text-primary mb-3 mt-4">
+                      <i class="fas fa-heartbeat"></i> Información de Salud del Estudiante
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label>Patologías/Alergias</label>
+
+                          <!-- Contenedor para los selects dinámicos -->
+                          <div id="contenedor-patologias">
+                            <!-- Select Principal -->
+                            <div class="mb-2 patologia-item">
+                              <select name="patologias[]" class="form-control select-patologia">
+                                <option value="">Seleccione una patología...</option>
+                                <option value="0">Ninguna</option>
+                                <?php
+                                // Cargar patologías desde la base de datos
+                                if (isset($patologias) && $patologias) {
+                                  if (method_exists($patologias, 'fetch')) {
+                                    while ($patologia = $patologias->fetch(PDO::FETCH_ASSOC)) {
+                                      $selected = in_array($patologia['id_patologia'], $patologias_seleccionadas) ? 'selected' : '';
+                                      echo "<option value='{$patologia['id_patologia']}' {$selected}>{$patologia['nom_patologia']}</option>";
+                                    }
+                                  }
+                                } else {
+                                  echo "<option value=''>No hay patologías registradas</option>";
+                                }
+                                ?>
+                              </select>
+                            </div>
+                          </div>
+
+                          <!-- Botón para agregar más patologías -->
+                          <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-patologia">
+                              <i class="fas fa-plus"></i> Agregar otra patología
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label>Discapacidades</label>
+
+                          <!-- Contenedor para los selects dinámicos -->
+                          <div id="contenedor-discapacidades">
+                            <!-- Select Principal -->
+                            <div class="mb-2 discapacidad-item">
+                              <select name="discapacidades[]" class="form-control select-discapacidad">
+                                <option value="">Seleccione una discapacidad...</option>
+                                <option value="0">Ninguna</option>
+                                <?php
+                                // Cargar discapacidades desde la base de datos
+                                if (isset($discapacidades) && $discapacidades) {
+                                  if (method_exists($discapacidades, 'fetch')) {
+                                    while ($discapacidad = $discapacidades->fetch(PDO::FETCH_ASSOC)) {
+                                      $selected = in_array($discapacidad['id_discapacidad'], $discapacidades_seleccionadas) ? 'selected' : '';
+                                      echo "<option value='{$discapacidad['id_discapacidad']}' {$selected}>{$discapacidad['nom_discapacidad']}</option>";
+                                    }
+                                  }
+                                } else {
+                                  echo "<option value=''>No hay discapacidades registradas</option>";
+                                }
+                                ?>
+                              </select>
+                            </div>
+                          </div>
+
+                          <!-- Botón para agregar más discapacidades -->
+                          <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btn-agregar-discapacidad">
+                              <i class="fas fa-plus"></i> Agregar otra discapacidad
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Datos del Representante -->
+                    <h5 class="text-primary mb-3 mt-4">
+                      <i class="fas fa-user-tie"></i> Datos del Representante
+                    </h5>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group campo-obligatorio">
+                          <label for="primer_nombre_rep">Primer Nombre <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="primer_nombre_rep" name="primer_nombre_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->primer_nombre_rep ?? ''); ?>" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label for="segundo_nombre_rep">Segundo Nombre</label>
+                          <input type="text" class="form-control" id="segundo_nombre_rep" name="segundo_nombre_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->segundo_nombre_rep ?? ''); ?>">
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group campo-obligatorio">
+                          <label for="primer_apellido_rep">Primer Apellido <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="primer_apellido_rep" name="primer_apellido_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->primer_apellido_rep ?? ''); ?>" required>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label for="segundo_apellido_rep">Segundo Apellido</label>
+                          <input type="text" class="form-control" id="segundo_apellido_rep" name="segundo_apellido_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->segundo_apellido_rep ?? ''); ?>">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="form-group campo-obligatorio">
+                          <label for="cedula_rep">Cédula del Representante <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="cedula_rep" name="cedula_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->cedula_rep ?? ''); ?>" required
+                                 maxlength="20">
+                          <small class="form-text text-muted">Solo se permiten números</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group campo-obligatorio">
+                          <label for="id_parentesco">Parentesco <span class="text-danger">* (Obligatorio)</span></label>
+                          <select class="form-control" id="id_parentesco" name="id_parentesco" required>
+                            <option value="">Seleccione...</option>
+                            <?php
+                            if (isset($parentescos) && $parentescos) {
+                              if (method_exists($parentescos, 'fetch')) {
+                                while ($parentesco = $parentescos->fetch(PDO::FETCH_ASSOC)) {
+                                  $selected = ($estudiante->id_parentesco ?? '') == $parentesco['id_parentesco'] ? 'selected' : '';
+                                  echo "<option value='{$parentesco['id_parentesco']}' {$selected}>{$parentesco['parentesco']}</option>";
+                                }
+                              }
+                            } else {
+                              echo "<option value=''>Error al cargar parentescos</option>";
+                            }
+                            ?>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group campo-obligatorio">
+                          <label for="telefono_rep">Teléfono Móvil <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="telefono_rep" name="telefono_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->telefono_rep ?? ''); ?>" required maxlength="11">
+                          <small class="form-text text-muted">Solo se permiten números</small>
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <div class="form-group">
+                          <label for="telefono_hab_rep">Teléfono Habitación</label>
+                          <input type="text" class="form-control" id="telefono_hab_rep" name="telefono_hab_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->telefono_hab_rep ?? ''); ?>" maxlength="11">
+                          <small class="form-text text-muted">Solo se permiten números</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="correo_rep">Correo Electrónico <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="email" class="form-control" id="correo_rep" name="correo_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->correo_rep ?? ''); ?>" required>
+                          <small class="form-text text-muted">Formato: usuario@dominio.com</small>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="id_profesion_rep">Profesión <span class="text-danger">* (Obligatorio)</span></label>
+                          <select class="form-control select2 select-profesion large-select" id="id_profesion_rep" name="id_profesion_rep" style="width: 100%;" required
+                                  data-placeholder="Seleccione una profesión...">
+                            <option value=""></option>
+                            <?php
+                            if (isset($profesiones) && $profesiones) {
+                              // Asegurar que las profesiones sean un array o objeto iterable
+                              if (is_object($profesiones) && method_exists($profesiones, 'fetch')) {
+                                while ($profesion = $profesiones->fetch(PDO::FETCH_ASSOC)) {
+                                  $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
+                                  echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
+                                }
+                              } elseif (is_array($profesiones)) {
+                                foreach ($profesiones as $profesion) {
+                                  $selected = ($estudiante->id_profesion_rep ?? '') == $profesion['id_profesion'] ? 'selected' : '';
+                                  echo "<option value='{$profesion['id_profesion']}' {$selected}>{$profesion['profesion']}</option>";
+                                }
+                              } else {
+                                echo "<option value=''>No se pudieron cargar las profesiones</option>";
+                              }
+                            } else {
+                              echo "<option value=''>No hay profesiones disponibles</option>";
+                            }
+                            ?>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group campo-obligatorio">
+                          <label for="ocupacion_rep">Ocupación <span class="text-danger">* (Obligatorio)</span></label>
+                          <input type="text" class="form-control" id="ocupacion_rep" name="ocupacion_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->ocupacion_rep ?? ''); ?>" required>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="lugar_trabajo_rep">Lugar de Trabajo</label>
+                          <input type="text" class="form-control" id="lugar_trabajo_rep" name="lugar_trabajo_rep"
+                                 value="<?php echo htmlspecialchars($estudiante->lugar_trabajo_rep ?? ''); ?>">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- /.card-body -->
+
+                  <div class="card-footer">
+                    <button type="submit" class="btn btn-warning">
+                      <i class="fas fa-save"></i> Actualizar Estudiante
+                    </button>
+                    <a href="estudiantes_list.php" class="btn btn-default">
+                      <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
-    <!-- jQuery -->
-    <script src="/final/public/plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap 4 -->
-    <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- Select2 -->
-    <script src="/final/public/plugins/select2/js/select2.full.min.js"></script>
-    <!-- AdminLTE App -->
-    <script src="/final/public/dist/js/adminlte.min.js"></script>
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+      <!-- Control sidebar content goes here -->
+      <div class="p-3">
+        <h5>Panel de Control</h5>
+        <p>Editar Estudiante</p>
+      </div>
+    </aside>
+    <!-- /.control-sidebar -->
 
-    <script>
-        $(function () {
-            // Inicializar Select2 para todos los selects CON SCROLL MEJORADO
-            $('.select2').select2({
-                theme: 'bootstrap4',
-                width: '100%',
-                dropdownParent: $('body'),
-                placeholder: function() {
-                    return $(this).data('placeholder') || 'Seleccione...';
-                },
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return "No se encontraron resultados";
-                    },
-                    searching: function() {
-                        return "Buscando...";
-                    }
-                },
-                // Configuración para mejorar el scroll
-                dropdownCssClass: "scrollable-dropdown",
-                scrollAfterSelect: true
-            });
+    <!-- Main Footer -->
+    <footer class="main-footer">
+      <!-- To the right -->
+      <div class="float-right d-none d-sm-inline">
+        UPTEC "MS"
+      </div>
+      <!-- Default to the left -->
+      <strong>Copyright &copy; 2025 Nuevo Horizonte.</strong> Todos los derechos reservados.
+    </footer>
+  </div>
+  <!-- ./wrapper -->
 
-            // Configuración ESPECÍFICA para selects grandes (dirección y profesiones)
-            $('.large-select').select2({
-                theme: 'bootstrap4',
-                width: '100%',
-                dropdownParent: $('body'),
-                placeholder: function() {
-                    return $(this).data('placeholder') || 'Seleccione...';
-                },
-                allowClear: true,
-                language: {
-                    noResults: function() {
-                        return "No se encontraron resultados";
-                    },
-                    searching: function() {
-                        return "Buscando...";
-                    }
-                },
-                // Configuraciones específicas para lists grandes
-                dropdownCssClass: "large-dropdown",
-                scrollAfterSelect: true,
-                // Limitar altura máxima del dropdown
-                dropdownAutoWidth: false,
-                // Habilitar búsqueda para mejor manejo de muchas opciones
-                minimumResultsForSearch: 3
-            });
+  <!-- REQUIRED SCRIPTS -->
+  <!-- jQuery -->
+  <script src="/final/public/plugins/jquery/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="/final/public/dist/js/adminlte.min.js"></script>
+  <!-- Select2 -->
+  <script src="/final/public/plugins/select2/js/select2.full.min.js"></script>
+  <!-- Datatables -->
+  <script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
+  <script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
 
-            // Función para convertir texto a mayúsculas
-            function convertirMayusculas(elemento) {
-                elemento.value = elemento.value.toUpperCase();
-            }
-
-            // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
-            $('input[type="text"]:not([readonly])').on('input', function() {
-                convertirMayusculas(this);
-            });
-
-            // Solo letras (para nombres, apellidos, lugar de nacimiento, dirección, calle, casa, ocupación, lugar de trabajo)
-            $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion_e, #calle_e, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
-                this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
-                convertirMayusculas(this);
-            });
-
-            // Validación específica para casa/apto (permite letras, números y caracteres especiales comunes)
-            $('#casa_e').on('input', function() {
-                // Permitir letras, números, guiones, #, y espacios
-                this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-#]/g, '');
-                convertirMayusculas(this);
-            });
-
-            // Solo números (para teléfonos y cédulas)
-            $('#cedula, #cedula_rep, #telefono, #telefono_hab, #telefono_rep, #telefono_hab_rep').on('input', function() {
-                this.value = this.value.replace(/\D/g, '');
-            });
-
-            // Validación de correo electrónico
-            $('#correo, #correo_rep').on('blur', function() {
-                const email = this.value;
-                if (email && !isValidEmail(email)) {
-                    alert('Por favor, ingrese un correo electrónico válido (debe contener @ y dominio)');
-                    this.focus();
-                    $(this).addClass('is-invalid');
-                } else {
-                    $(this).removeClass('is-invalid');
-                }
-            });
-
-            // Función para validar formato de email
-            function isValidEmail(email) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return emailRegex.test(email);
-            }
-
-            // Validación en tiempo real para campos obligatorios
-            $('input[required], select[required]').on('blur', function() {
-                const valor = $(this).val();
-                if (!valor) {
-                    $(this).addClass('is-invalid');
-                } else {
-                    $(this).removeClass('is-invalid');
-                }
-            });
-
-            // Manejo de dirección compartida
-            $('#comparte_direccion').on('change', function() {
-                const comparteDireccion = $(this).val();
-                const direccionEstudiante = $('#direccion_estudiante');
-                
-                if (comparteDireccion === '0') {
-                    direccionEstudiante.slideDown();
-                    // Habilitar selects de dirección
-                    $('#estado_e, #municipio_e, #parroquia_e').prop('disabled', false).trigger('change');
-                    // Re-inicializar Select2 después de habilitar
-                    $('#estado_e, #municipio_e, #parroquia_e').select2({
-                        theme: 'bootstrap4',
-                        width: '100%',
-                        dropdownParent: $('body')
-                    });
-                } else {
-                    direccionEstudiante.slideUp();
-                    // Deshabilitar selects de dirección
-                    $('#estado_e, #municipio_e, #parroquia_e').prop('disabled', true).trigger('change');
-                    // Limpiar campos
-                    $('#estado_e').val('').trigger('change');
-                    $('#municipio_e').val('').trigger('change');
-                    $('#parroquia_e').val('').trigger('change');
-                    $('#direccion_e, #calle_e, #casa_e').val('');
-                }
-            });
-
-            // Cargar municipios cuando cambie el estado
-            $('#estado_e').on('change', function() {
-                const estadoId = $(this).val();
-                const municipioSelect = $('#municipio_e');
-                const parroquiaSelect = $('#parroquia_e');
-
-                if (estadoId) {
-                    municipioSelect.prop('disabled', false);
-                    parroquiaSelect.prop('disabled', true);
-                    parroquiaSelect.html('<option value=""></option>').trigger('change');
-                    
-                    // Re-inicializar Select2 después de habilitar
-                    municipioSelect.select2({
-                        theme: 'bootstrap4',
-                        width: '100%',
-                        dropdownParent: $('body'),
-                        placeholder: 'Seleccionar Municipio'
-                    });
-                    
-                    // Cargar municipios via AJAX
-                    $.ajax({
-                        url: '/final/app/controllers/ubicaciones/municipios.php',
-                        method: 'POST',
-                        data: { estado_id: estadoId },
-                        dataType: 'json',
-                        success: function(data) {
-                            municipioSelect.html('<option value=""></option>');
-                            if (data && data.length > 0) {
-                                $.each(data, function(index, municipio) {
-                                    municipioSelect.append('<option value="' + municipio.id_municipio + '">' + municipio.nom_municipio + '</option>');
-                                });
-                            } else {
-                                municipioSelect.append('<option value="">No hay municipios disponibles</option>');
-                            }
-                            municipioSelect.trigger('change');
-                        },
-                        error: function() {
-                            alert('Error al cargar municipios');
-                            municipioSelect.html('<option value="">Error al cargar</option>').trigger('change');
-                        }
-                    });
-                } else {
-                    municipioSelect.prop('disabled', true);
-                    parroquiaSelect.prop('disabled', true);
-                    municipioSelect.html('<option value=""></option>').trigger('change');
-                    parroquiaSelect.html('<option value=""></option>').trigger('change');
-                }
-            });
-
-            // Cargar parroquias cuando cambie el municipio
-            $('#municipio_e').on('change', function() {
-                const municipioId = $(this).val();
-                const parroquiaSelect = $('#parroquia_e');
-
-                if (municipioId) {
-                    parroquiaSelect.prop('disabled', false);
-                    
-                    // Re-inicializar Select2 después de habilitar
-                    parroquiaSelect.select2({
-                        theme: 'bootstrap4',
-                        width: '100%',
-                        dropdownParent: $('body'),
-                        placeholder: 'Seleccionar Parroquia'
-                    });
-                    
-                    // Cargar parroquias via AJAX
-                    $.ajax({
-                        url: '/final/app/controllers/ubicaciones/parroquias.php',
-                        method: 'POST',
-                        data: { municipio_id: municipioId },
-                        dataType: 'json',
-                        success: function(data) {
-                            parroquiaSelect.html('<option value=""></option>');
-                            if (data && data.length > 0) {
-                                $.each(data, function(index, parroquia) {
-                                    parroquiaSelect.append('<option value="' + parroquia.id_parroquia + '">' + parroquia.nom_parroquia + '</option>');
-                                });
-                            } else {
-                                parroquiaSelect.append('<option value="">No hay parroquias disponibles</option>');
-                            }
-                            parroquiaSelect.trigger('change');
-                        },
-                        error: function() {
-                            alert('Error al cargar parroquias');
-                            parroquiaSelect.html('<option value="">Error al cargar</option>').trigger('change');
-                        }
-                    });
-                } else {
-                    parroquiaSelect.prop('disabled', true);
-                    parroquiaSelect.html('<option value=""></option>').trigger('change');
-                }
-            });
-
-            // Validación del formulario antes de enviar
-            $('#formEstudiante').on('submit', function(e) {
-                let isValid = true;
-                let mensajesError = [];
-
-                // Campos obligatorios del estudiante
-                const camposObligatoriosEstudiante = {
-                    'nacionalidad': 'Nacionalidad',
-                    'cedula': 'Cédula',
-                    'fecha_nac': 'Fecha de Nacimiento',
-                    'primer_nombre': 'Primer Nombre',
-                    'primer_apellido': 'Primer Apellido',
-                    'sexo': 'Sexo',
-                    'lugar_nac': 'Lugar de Nacimiento',
-                    'comparte_direccion': 'Comparte dirección con representante'
-                };
-
-                // Campos obligatorios del representante
-                const camposObligatoriosRepresentante = {
-                    'primer_nombre_rep': 'Primer Nombre del Representante',
-                    'primer_apellido_rep': 'Primer Apellido del Representante',
-                    'cedula_rep': 'Cédula del Representante',
-                    'id_parentesco': 'Parentesco',
-                    'telefono_rep': 'Teléfono Móvil del Representante',
-                    'correo_rep': 'Correo Electrónico del Representante',
-                    'id_profesion_rep': 'Profesión del Representante',
-                    'ocupacion_rep': 'Ocupación del Representante'
-                };
-
-                // Validar campos obligatorios del estudiante
-                for (const [campo, nombre] of Object.entries(camposObligatoriosEstudiante)) {
-                    const valor = campo.startsWith('id_') ? 
-                        $(`#${campo}`).val() : 
-                        $(`#${campo}`).val().trim();
-
-                    if (!valor) {
-                        mensajesError.push(`El campo "${nombre}" es obligatorio`);
-                        $(`#${campo}`).addClass('is-invalid');
-                        isValid = false;
-                    } else {
-                        $(`#${campo}`).removeClass('is-invalid');
-                    }
-                }
-
-                // Validar campos obligatorios del representante
-                for (const [campo, nombre] of Object.entries(camposObligatoriosRepresentante)) {
-                    const valor = campo.startsWith('id_') ? 
-                        $(`#${campo}`).val() : 
-                        $(`#${campo}`).val().trim();
-
-                    if (!valor) {
-                        mensajesError.push(`El campo "${nombre}" es obligatorio`);
-                        $(`#${campo}`).addClass('is-invalid');
-                        isValid = false;
-                    } else {
-                        $(`#${campo}`).removeClass('is-invalid');
-                    }
-                }
-
-                // Validar teléfonos (solo números)
-                const telefono = $('#telefono').val();
-                const telefonoHab = $('#telefono_hab').val();
-                const telefonoRep = $('#telefono_rep').val();
-                const telefonoHabRep = $('#telefono_hab_rep').val();
-
-                if (telefono && !/^\d+$/.test(telefono)) {
-                    mensajesError.push('El teléfono móvil del estudiante debe contener solo números');
-                    isValid = false;
-                }
-
-                if (telefonoHab && !/^\d+$/.test(telefonoHab)) {
-                    mensajesError.push('El teléfono de habitación del estudiante debe contener solo números');
-                    isValid = false;
-                }
-
-                if (telefonoRep && !/^\d+$/.test(telefonoRep)) {
-                    mensajesError.push('El teléfono móvil del representante debe contener solo números');
-                    isValid = false;
-                }
-
-                if (telefonoHabRep && !/^\d+$/.test(telefonoHabRep)) {
-                    mensajesError.push('El teléfono de habitación del representante debe contener solo números');
-                    isValid = false;
-                }
-
-                // Validar correos electrónicos
-                const correo = $('#correo').val();
-                const correoRep = $('#correo_rep').val();
-
-                if (correo && !isValidEmail(correo)) {
-                    mensajesError.push('Por favor, ingrese un correo electrónico válido para el estudiante (formato: usuario@dominio.com)');
-                    isValid = false;
-                }
-
-                if (correoRep && !isValidEmail(correoRep)) {
-                    mensajesError.push('Por favor, ingrese un correo electrónico válido para el representante (formato: usuario@dominio.com)');
-                    isValid = false;
-                }
-
-                // Validar fecha de nacimiento (no puede ser futura)
-                const fechaNac = $('#fecha_nac').val();
-                if (fechaNac) {
-                    const hoy = new Date().toISOString().split('T')[0];
-                    if (fechaNac > hoy) {
-                        mensajesError.push('La fecha de nacimiento no puede ser futura');
-                        isValid = false;
-                    }
-                }
-
-                // Mostrar errores si los hay
-                if (!isValid) {
-                    e.preventDefault();
-                    alert('Por favor, corrija los siguientes errores:\n\n• ' + mensajesError.join('\n• '));
-
-                    // Scroll al primer error
-                    $('.is-invalid').first().focus();
-                }
-            });
-
-            // Limpiar validación cuando el usuario empiece a escribir
-            $('input, select').on('input change', function() {
-                $(this).removeClass('is-invalid');
-            });
-        });
-    </script>
-
-    <!-- Manejo de patologias con select adicionales -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const contenedorPatologias = document.getElementById('contenedor-patologias');
-        const btnAgregarPatologia = document.getElementById('btn-agregar-patologia');
-
-        // Obtener las patologías desde el primer select
-        function obtenerOpcionesPatologias() {
-          const primerSelect = document.querySelector('.select-patologia');
-          if (!primerSelect) return '';
-
-          const opciones = Array.from(primerSelect.options)
-            .filter(option => option.value !== '')
-            .map(option => `<option value="${option.value}">${option.text}</option>`)
-            .join('');
-
-          return opciones;
-        }
-
-        // Función para crear un nuevo select de patología
-        function crearSelectPatologia() {
-          const opciones = obtenerOpcionesPatologias();
-
-          const div = document.createElement('div');
-          div.className = 'mb-2 patologia-item d-flex align-items-center';
-
-          div.innerHTML = `
-                <select name="patologias[]" class="form-control select-patologia me-2">
-                    <option value="">Seleccione una patología...</option>
-                    ${opciones}
-                </select>
-                <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-patologia">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-
-          return div;
-        }
-
-        // Agregar nuevo select
-        btnAgregarPatologia.addEventListener('click', function() {
-          const nuevoSelect = crearSelectPatologia();
-          contenedorPatologias.appendChild(nuevoSelect);
-
-          // Agregar evento al botón eliminar
-          const btnEliminar = nuevoSelect.querySelector('.btn-eliminar-patologia');
-          btnEliminar.addEventListener('click', function() {
-            nuevoSelect.remove();
-          });
-        });
-
-        // Eliminar select (evento delegado)
-        contenedorPatologias.addEventListener('click', function(e) {
-          if (e.target.classList.contains('btn-eliminar-patologia') ||
-            e.target.closest('.btn-eliminar-patologia')) {
-            const btn = e.target.classList.contains('btn-eliminar-patologia') ?
-              e.target : e.target.closest('.btn-eliminar-patologia');
-            btn.closest('.patologia-item').remove();
+  <script>
+    $(function () {
+      // Inicializar Select2 para todos los selects CON SCROLL MEJORADO
+      $('.select2').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        dropdownParent: $('body'),
+        placeholder: function() {
+          return $(this).data('placeholder') || 'Seleccione...';
+        },
+        allowClear: true,
+        language: {
+          noResults: function() {
+            return "No se encontraron resultados";
+          },
+          searching: function() {
+            return "Buscando...";
           }
+        },
+        // Configuración para mejorar el scroll
+        dropdownCssClass: "scrollable-dropdown",
+        scrollAfterSelect: true
+      });
+
+      // Configuración ESPECÍFICA para selects grandes (dirección y profesiones)
+      $('.large-select').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        dropdownParent: $('body'),
+        placeholder: function() {
+          return $(this).data('placeholder') || 'Seleccione...';
+        },
+        allowClear: true,
+        language: {
+          noResults: function() {
+            return "No se encontraron resultados";
+          },
+          searching: function() {
+            return "Buscando...";
+          }
+        },
+        // Configuraciones específicas para lists grandes
+        dropdownCssClass: "large-dropdown",
+        scrollAfterSelect: true,
+        // Limitar altura máxima del dropdown
+        dropdownAutoWidth: false,
+        // Habilitar búsqueda para mejor manejo de muchas opciones
+        minimumResultsForSearch: 3
+      });
+
+      // Función para convertir texto a mayúsculas
+      function convertirMayusculas(elemento) {
+        elemento.value = elemento.value.toUpperCase();
+      }
+
+      // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
+      $('input[type="text"]:not([readonly])').on('input', function() {
+        convertirMayusculas(this);
+      });
+
+      // Solo letras (para nombres, apellidos, lugar de nacimiento, dirección, calle, casa, ocupación, lugar de trabajo)
+      $('#primer_nombre, #segundo_nombre, #primer_apellido, #segundo_apellido, #lugar_nac, #direccion_e, #calle_e, #primer_nombre_rep, #segundo_nombre_rep, #primer_apellido_rep, #segundo_apellido_rep, #ocupacion_rep, #lugar_trabajo_rep').on('input', function() {
+        this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+        convertirMayusculas(this);
+      });
+
+      // Validación específica para casa/apto (permite letras, números y caracteres especiales comunes)
+      $('#casa_e').on('input', function() {
+        // Permitir letras, números, guiones, #, y espacios
+        this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-#]/g, '');
+        convertirMayusculas(this);
+      });
+
+      // Solo números (para teléfonos y cédulas)
+      $('#cedula, #cedula_rep, #telefono, #telefono_hab, #telefono_rep, #telefono_hab_rep').on('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+      });
+
+      // Validación de correo electrónico
+      $('#correo, #correo_rep').on('blur', function() {
+        const email = this.value;
+        if (email && !isValidEmail(email)) {
+          alert('Por favor, ingrese un correo electrónico válido (debe contener @ y dominio)');
+          this.focus();
+          $(this).addClass('is-invalid');
+        } else {
+          $(this).removeClass('is-invalid');
+        }
+      });
+
+      // Función para validar formato de email
+      function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      }
+
+      // Validación en tiempo real para campos obligatorios
+      $('input[required], select[required]').on('blur', function() {
+        const valor = $(this).val();
+        if (!valor) {
+          $(this).addClass('is-invalid');
+        } else {
+          $(this).removeClass('is-invalid');
+        }
+      });
+
+      // Manejo de dirección compartida
+      $('#comparte_direccion').on('change', function() {
+        const comparteDireccion = $(this).val();
+        const direccionEstudiante = $('#direccion_estudiante');
+        
+        if (comparteDireccion === '0') {
+          direccionEstudiante.slideDown();
+          // Habilitar selects de dirección
+          $('#estado_e, #municipio_e, #parroquia_e').prop('disabled', false).trigger('change');
+          // Re-inicializar Select2 después de habilitar
+          $('#estado_e, #municipio_e, #parroquia_e').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('body')
+          });
+        } else {
+          direccionEstudiante.slideUp();
+          // Deshabilitar selects de dirección
+          $('#estado_e, #municipio_e, #parroquia_e').prop('disabled', true).trigger('change');
+          // Limpiar campos
+          $('#estado_e').val('').trigger('change');
+          $('#municipio_e').val('').trigger('change');
+          $('#parroquia_e').val('').trigger('change');
+          $('#direccion_e, #calle_e, #casa_e').val('');
+        }
+      });
+
+      // Cargar municipios cuando cambie el estado
+      $('#estado_e').on('change', function() {
+        const estadoId = $(this).val();
+        const municipioSelect = $('#municipio_e');
+        const parroquiaSelect = $('#parroquia_e');
+
+        if (estadoId) {
+          municipioSelect.prop('disabled', false);
+          parroquiaSelect.prop('disabled', true);
+          parroquiaSelect.html('<option value=""></option>').trigger('change');
+          
+          // Re-inicializar Select2 después de habilitar
+          municipioSelect.select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('body'),
+            placeholder: 'Seleccionar Municipio'
+          });
+          
+          // Cargar municipios via AJAX
+          $.ajax({
+            url: '/final/app/controllers/ubicaciones/municipios.php',
+            method: 'POST',
+            data: { estado_id: estadoId },
+            dataType: 'json',
+            success: function(data) {
+              municipioSelect.html('<option value=""></option>');
+              if (data && data.length > 0) {
+                $.each(data, function(index, municipio) {
+                  municipioSelect.append('<option value="' + municipio.id_municipio + '">' + municipio.nom_municipio + '</option>');
+                });
+              } else {
+                municipioSelect.append('<option value="">No hay municipios disponibles</option>');
+              }
+              municipioSelect.trigger('change');
+            },
+            error: function() {
+              alert('Error al cargar municipios');
+              municipioSelect.html('<option value="">Error al cargar</option>').trigger('change');
+            }
+          });
+        } else {
+          municipioSelect.prop('disabled', true);
+          parroquiaSelect.prop('disabled', true);
+          municipioSelect.html('<option value=""></option>').trigger('change');
+          parroquiaSelect.html('<option value=""></option>').trigger('change');
+        }
+      });
+
+      // Cargar parroquias cuando cambie el municipio
+      $('#municipio_e').on('change', function() {
+        const municipioId = $(this).val();
+        const parroquiaSelect = $('#parroquia_e');
+
+        if (municipioId) {
+          parroquiaSelect.prop('disabled', false);
+          
+          // Re-inicializar Select2 después de habilitar
+          parroquiaSelect.select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('body'),
+            placeholder: 'Seleccionar Parroquia'
+          });
+          
+          // Cargar parroquias via AJAX
+          $.ajax({
+            url: '/final/app/controllers/ubicaciones/parroquias.php',
+            method: 'POST',
+            data: { municipio_id: municipioId },
+            dataType: 'json',
+            success: function(data) {
+              parroquiaSelect.html('<option value=""></option>');
+              if (data && data.length > 0) {
+                $.each(data, function(index, parroquia) {
+                  parroquiaSelect.append('<option value="' + parroquia.id_parroquia + '">' + parroquia.nom_parroquia + '</option>');
+                });
+              } else {
+                parroquiaSelect.append('<option value="">No hay parroquias disponibles</option>');
+              }
+              parroquiaSelect.trigger('change');
+            },
+            error: function() {
+              alert('Error al cargar parroquias');
+              parroquiaSelect.html('<option value="">Error al cargar</option>').trigger('change');
+            }
+          });
+        } else {
+          parroquiaSelect.prop('disabled', true);
+          parroquiaSelect.html('<option value=""></option>').trigger('change');
+        }
+      });
+
+      // Validación del formulario antes de enviar
+      $('#formEstudiante').on('submit', function(e) {
+        let isValid = true;
+        let mensajesError = [];
+
+        // Campos obligatorios del estudiante
+        const camposObligatoriosEstudiante = {
+          'nacionalidad': 'Nacionalidad',
+          'cedula': 'Cédula',
+          'fecha_nac': 'Fecha de Nacimiento',
+          'primer_nombre': 'Primer Nombre',
+          'primer_apellido': 'Primer Apellido',
+          'sexo': 'Sexo',
+          'lugar_nac': 'Lugar de Nacimiento',
+          'comparte_direccion': 'Comparte dirección con representante'
+        };
+
+        // Campos obligatorios del representante
+        const camposObligatoriosRepresentante = {
+          'primer_nombre_rep': 'Primer Nombre del Representante',
+          'primer_apellido_rep': 'Primer Apellido del Representante',
+          'cedula_rep': 'Cédula del Representante',
+          'id_parentesco': 'Parentesco',
+          'telefono_rep': 'Teléfono Móvil del Representante',
+          'correo_rep': 'Correo Electrónico del Representante',
+          'id_profesion_rep': 'Profesión del Representante',
+          'ocupacion_rep': 'Ocupación del Representante'
+        };
+
+        // Validar campos obligatorios del estudiante
+        for (const [campo, nombre] of Object.entries(camposObligatoriosEstudiante)) {
+          const valor = campo.startsWith('id_') ? 
+            $(`#${campo}`).val() : 
+            $(`#${campo}`).val().trim();
+
+          if (!valor) {
+            mensajesError.push(`El campo "${nombre}" es obligatorio`);
+            $(`#${campo}`).addClass('is-invalid');
+            isValid = false;
+          } else {
+            $(`#${campo}`).removeClass('is-invalid');
+          }
+        }
+
+        // Validar campos obligatorios del representante
+        for (const [campo, nombre] of Object.entries(camposObligatoriosRepresentante)) {
+          const valor = campo.startsWith('id_') ? 
+            $(`#${campo}`).val() : 
+            $(`#${campo}`).val().trim();
+
+          if (!valor) {
+            mensajesError.push(`El campo "${nombre}" es obligatorio`);
+            $(`#${campo}`).addClass('is-invalid');
+            isValid = false;
+          } else {
+            $(`#${campo}`).removeClass('is-invalid');
+          }
+        }
+
+        // Validar teléfonos (solo números)
+        const telefono = $('#telefono').val();
+        const telefonoHab = $('#telefono_hab').val();
+        const telefonoRep = $('#telefono_rep').val();
+        const telefonoHabRep = $('#telefono_hab_rep').val();
+
+        if (telefono && !/^\d+$/.test(telefono)) {
+          mensajesError.push('El teléfono móvil del estudiante debe contener solo números');
+          isValid = false;
+        }
+
+        if (telefonoHab && !/^\d+$/.test(telefonoHab)) {
+          mensajesError.push('El teléfono de habitación del estudiante debe contener solo números');
+          isValid = false;
+        }
+
+        if (telefonoRep && !/^\d+$/.test(telefonoRep)) {
+          mensajesError.push('El teléfono móvil del representante debe contener solo números');
+          isValid = false;
+        }
+
+        if (telefonoHabRep && !/^\d+$/.test(telefonoHabRep)) {
+          mensajesError.push('El teléfono de habitación del representante debe contener solo números');
+          isValid = false;
+        }
+
+        // Validar correos electrónicos
+        const correo = $('#correo').val();
+        const correoRep = $('#correo_rep').val();
+
+        if (correo && !isValidEmail(correo)) {
+          mensajesError.push('Por favor, ingrese un correo electrónico válido para el estudiante (formato: usuario@dominio.com)');
+          isValid = false;
+        }
+
+        if (correoRep && !isValidEmail(correoRep)) {
+          mensajesError.push('Por favor, ingrese un correo electrónico válido para el representante (formato: usuario@dominio.com)');
+          isValid = false;
+        }
+
+        // Validar fecha de nacimiento (no puede ser futura)
+        const fechaNac = $('#fecha_nac').val();
+        if (fechaNac) {
+          const hoy = new Date().toISOString().split('T')[0];
+          if (fechaNac > hoy) {
+            mensajesError.push('La fecha de nacimiento no puede ser futura');
+            isValid = false;
+          }
+        }
+
+        // Mostrar errores si los hay
+        if (!isValid) {
+          e.preventDefault();
+          alert('Por favor, corrija los siguientes errores:\n\n• ' + mensajesError.join('\n• '));
+
+          // Scroll al primer error
+          $('.is-invalid').first().focus();
+        }
+      });
+
+      // Limpiar validación cuando el usuario empiece a escribir
+      $('input, select').on('input change', function() {
+        $(this).removeClass('is-invalid');
+      });
+    });
+  </script>
+
+  <!-- Manejo de patologias con select adicionales -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const contenedorPatologias = document.getElementById('contenedor-patologias');
+      const btnAgregarPatologia = document.getElementById('btn-agregar-patologia');
+
+      // Obtener las patologías desde el primer select
+      function obtenerOpcionesPatologias() {
+        const primerSelect = document.querySelector('.select-patologia');
+        if (!primerSelect) return '';
+
+        const opciones = Array.from(primerSelect.options)
+          .filter(option => option.value !== '')
+          .map(option => `<option value="${option.value}">${option.text}</option>`)
+          .join('');
+
+        return opciones;
+      }
+
+      // Función para crear un nuevo select de patología
+      function crearSelectPatologia() {
+        const opciones = obtenerOpcionesPatologias();
+
+        const div = document.createElement('div');
+        div.className = 'mb-2 patologia-item d-flex align-items-center';
+
+        div.innerHTML = `
+              <select name="patologias[]" class="form-control select-patologia me-2">
+                  <option value="">Seleccione una patología...</option>
+                  ${opciones}
+              </select>
+              <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-patologia">
+                  <i class="fas fa-times"></i>
+              </button>
+          `;
+
+        return div;
+      }
+
+      // Agregar nuevo select
+      btnAgregarPatologia.addEventListener('click', function() {
+        const nuevoSelect = crearSelectPatologia();
+        contenedorPatologias.appendChild(nuevoSelect);
+
+        // Agregar evento al botón eliminar
+        const btnEliminar = nuevoSelect.querySelector('.btn-eliminar-patologia');
+        btnEliminar.addEventListener('click', function() {
+          nuevoSelect.remove();
         });
       });
-    </script>
 
-    <!-- Manejo de discapacidades con select adicionales -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const contenedorDiscapacidades = document.getElementById('contenedor-discapacidades');
-        const btnAgregarDiscapacidad = document.getElementById('btn-agregar-discapacidad');
-
-        // Obtener las opciones de discapacidades desde el primer select
-        function obtenerOpcionesDiscapacidades() {
-          const primerSelect = document.querySelector('.select-discapacidad');
-          if (!primerSelect) return '';
-
-          const opciones = Array.from(primerSelect.options)
-            .filter(option => option.value !== '')
-            .map(option => `<option value="${option.value}">${option.text}</option>`)
-            .join('');
-
-          return opciones;
+      // Eliminar select (evento delegado)
+      contenedorPatologias.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-eliminar-patologia') ||
+          e.target.closest('.btn-eliminar-patologia')) {
+          const btn = e.target.classList.contains('btn-eliminar-patologia') ?
+            e.target : e.target.closest('.btn-eliminar-patologia');
+          btn.closest('.patologia-item').remove();
         }
+      });
+    });
+  </script>
 
-        // Función para crear un nuevo select de discapacidad
-        function crearSelectDiscapacidad() {
-          const opciones = obtenerOpcionesDiscapacidades();
+  <!-- Manejo de discapacidades con select adicionales -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const contenedorDiscapacidades = document.getElementById('contenedor-discapacidades');
+      const btnAgregarDiscapacidad = document.getElementById('btn-agregar-discapacidad');
 
-          const div = document.createElement('div');
-          div.className = 'mb-2 discapacidad-item d-flex align-items-center';
+      // Obtener las opciones de discapacidades desde el primer select
+      function obtenerOpcionesDiscapacidades() {
+        const primerSelect = document.querySelector('.select-discapacidad');
+        if (!primerSelect) return '';
 
-          div.innerHTML = `
-                <select name="discapacidades[]" class="form-control select-discapacidad me-2">
-                    <option value="">Seleccione una discapacidad...</option>
-                    ${opciones}
-                </select>
-                <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-discapacidad">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
+        const opciones = Array.from(primerSelect.options)
+          .filter(option => option.value !== '')
+          .map(option => `<option value="${option.value}">${option.text}</option>`)
+          .join('');
 
-          return div;
-        }
+        return opciones;
+      }
 
-        // Agregar nuevo select
-        btnAgregarDiscapacidad.addEventListener('click', function() {
-          const nuevoSelect = crearSelectDiscapacidad();
-          contenedorDiscapacidades.appendChild(nuevoSelect);
+      // Función para crear un nuevo select de discapacidad
+      function crearSelectDiscapacidad() {
+        const opciones = obtenerOpcionesDiscapacidades();
 
-          // Agregar evento al botón eliminar
-          const btnEliminar = nuevoSelect.querySelector('.btn-eliminar-discapacidad');
-          btnEliminar.addEventListener('click', function() {
-            nuevoSelect.remove();
-          });
-        });
+        const div = document.createElement('div');
+        div.className = 'mb-2 discapacidad-item d-flex align-items-center';
 
-        // Eliminar select (evento delegado)
-        contenedorDiscapacidades.addEventListener('click', function(e) {
-          if (e.target.classList.contains('btn-eliminar-discapacidad') ||
-            e.target.closest('.btn-eliminar-discapacidad')) {
-            const btn = e.target.classList.contains('btn-eliminar-discapacidad') ?
-              e.target : e.target.closest('.btn-eliminar-discapacidad');
-            btn.closest('.discapacidad-item').remove();
-          }
+        div.innerHTML = `
+              <select name="discapacidades[]" class="form-control select-discapacidad me-2">
+                  <option value="">Seleccione una discapacidad...</option>
+                  ${opciones}
+              </select>
+              <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar-discapacidad">
+                  <i class="fas fa-times"></i>
+              </button>
+          `;
+
+        return div;
+      }
+
+      // Agregar nuevo select
+      btnAgregarDiscapacidad.addEventListener('click', function() {
+        const nuevoSelect = crearSelectDiscapacidad();
+        contenedorDiscapacidades.appendChild(nuevoSelect);
+
+        // Agregar evento al botón eliminar
+        const btnEliminar = nuevoSelect.querySelector('.btn-eliminar-discapacidad');
+        btnEliminar.addEventListener('click', function() {
+          nuevoSelect.remove();
         });
       });
-    </script>
+
+      // Eliminar select (evento delegado)
+      contenedorDiscapacidades.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-eliminar-discapacidad') ||
+          e.target.closest('.btn-eliminar-discapacidad')) {
+          const btn = e.target.classList.contains('btn-eliminar-discapacidad') ?
+            e.target : e.target.closest('.btn-eliminar-discapacidad');
+          btn.closest('.discapacidad-item').remove();
+        }
+      });
+    });
+  </script>
 </body>
+
 </html>
