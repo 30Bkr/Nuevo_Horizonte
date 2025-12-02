@@ -1741,302 +1741,302 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
         });
     }
 
-   // ========== VALIDACIÓN DEL FORMULARIO COMPLETA MODIFICADA PARA GENERAR CONSTANCIA ==========
-document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
-    const mismaCasa = document.getElementById('misma_casa_hidden').value;
-    const idDireccionEst = document.getElementById('id_direccion_est').value;
+    // ========== VALIDACIÓN DEL FORMULARIO COMPLETA MODIFICADA PARA GENERAR CONSTANCIA ==========
+    document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
+      const mismaCasa = document.getElementById('misma_casa_hidden').value;
+      const idDireccionEst = document.getElementById('id_direccion_est').value;
 
-    console.log('🔄 Validando formulario...');
-    console.log('📍 misma_casa:', mismaCasa, 'id_direccion_est:', idDireccionEst);
+      console.log('🔄 Validando formulario...');
+      console.log('📍 misma_casa:', mismaCasa, 'id_direccion_est:', idDireccionEst);
 
-    // Validar campos requeridos básicos
-    const camposRequeridosBasicos = [
+      // Validar campos requeridos básicos
+      const camposRequeridosBasicos = [
         'id_periodo', 'id_nivel', 'id_seccion'
-    ];
+      ];
 
-    const camposFaltantesBasicos = [];
-    camposRequeridosBasicos.forEach(campo => {
+      const camposFaltantesBasicos = [];
+      camposRequeridosBasicos.forEach(campo => {
         const elemento = document.getElementById(campo);
         if (!elemento || !elemento.value.trim()) {
-            camposFaltantesBasicos.push(campo);
-            elemento.classList.add('is-invalid');
+          camposFaltantesBasicos.push(campo);
+          elemento.classList.add('is-invalid');
         } else {
-            elemento.classList.remove('is-invalid');
+          elemento.classList.remove('is-invalid');
         }
-    });
+      });
 
-    if (camposFaltantesBasicos.length > 0) {
+      if (camposFaltantesBasicos.length > 0) {
         e.preventDefault();
         alert('Por favor complete todos los campos requeridos de información académica.');
         return false;
-    }
+      }
 
-    // Validar dirección según si viven juntos o no
-    if (mismaCasa === 'no') {
+      // Validar dirección según si viven juntos o no
+      if (mismaCasa === 'no') {
         console.log('📍 Validando dirección del estudiante (NO viven juntos)');
 
         const camposDireccionRequeridos = [
-            'estado_e', 'municipio_e', 'parroquia_e', 'direccion_e'
+          'estado_e', 'municipio_e', 'parroquia_e', 'direccion_e'
         ];
 
         const camposFaltantesDireccion = [];
         camposDireccionRequeridos.forEach(campo => {
-            const elemento = document.getElementById(campo);
-            if (!elemento || !elemento.value.trim()) {
-                camposFaltantesDireccion.push(campo);
-                elemento.classList.add('is-invalid');
-            } else {
-                elemento.classList.remove('is-invalid');
-            }
+          const elemento = document.getElementById(campo);
+          if (!elemento || !elemento.value.trim()) {
+            camposFaltantesDireccion.push(campo);
+            elemento.classList.add('is-invalid');
+          } else {
+            elemento.classList.remove('is-invalid');
+          }
         });
 
         if (camposFaltantesDireccion.length > 0) {
-            e.preventDefault();
-            alert('Cuando el estudiante no vive con el representante, debe completar todos los datos de dirección del estudiante.');
-            document.getElementById('direccion_representante').style.display = 'block';
-            return false;
+          e.preventDefault();
+          alert('Cuando el estudiante no vive con el representante, debe completar todos los datos de dirección del estudiante.');
+          document.getElementById('direccion_representante').style.display = 'block';
+          return false;
         }
 
         document.getElementById('id_direccion_est').value = '';
         console.log('🔄 Forzando id_direccion_est vacío para crear nueva dirección');
 
-    } else {
+      } else {
         console.log('📍 Viven juntos - usando dirección del representante:', idDireccionEst);
 
         const idDireccionRepreCompartida = document.getElementById('id_direccion_repre_compartida').value;
         if (!idDireccionRepreCompartida) {
-            e.preventDefault();
-            alert('Error: No se pudo determinar la dirección compartida con el representante. Por favor, vuelva a validar el representante.');
-            return false;
+          e.preventDefault();
+          alert('Error: No se pudo determinar la dirección compartida con el representante. Por favor, vuelva a validar el representante.');
+          return false;
         }
 
         document.getElementById('id_direccion_est').value = idDireccionRepreCompartida;
 
         const camposDireccion = ['estado_e', 'municipio_e', 'parroquia_e', 'direccion_e', 'calle_e', 'casa_e'];
         camposDireccion.forEach(campo => {
-            const elemento = document.getElementById(campo);
-            if (elemento) {
-                elemento.classList.remove('is-invalid');
-                elemento.required = false;
-                if (campo !== 'id_direccion_est') {
-                    elemento.value = '';
-                }
+          const elemento = document.getElementById(campo);
+          if (elemento) {
+            elemento.classList.remove('is-invalid');
+            elemento.required = false;
+            if (campo !== 'id_direccion_est') {
+              elemento.value = '';
             }
+          }
         });
 
         console.log('✅ Dirección validada - usando dirección del representante:', idDireccionRepreCompartida);
-    }
+      }
 
-    // Validar datos personales básicos del estudiante
-    const camposEstudianteRequeridos = [
+      // Validar datos personales básicos del estudiante
+      const camposEstudianteRequeridos = [
         'nacionalidad_e', 'fecha_nac_e', 'cedula_e', 'sexo_e',
         'primer_nombre_e', 'primer_apellido_e', 'lugar_nac_e'
-    ];
+      ];
 
-    const camposFaltantesEstudiante = [];
-    camposEstudianteRequeridos.forEach(campo => {
+      const camposFaltantesEstudiante = [];
+      camposEstudianteRequeridos.forEach(campo => {
         const elemento = document.getElementById(campo);
         if (!elemento || !elemento.value.trim()) {
-            camposFaltantesEstudiante.push(campo);
-            elemento.classList.add('is-invalid');
+          camposFaltantesEstudiante.push(campo);
+          elemento.classList.add('is-invalid');
         } else {
-            elemento.classList.remove('is-invalid');
+          elemento.classList.remove('is-invalid');
         }
-    });
+      });
 
-    if (camposFaltantesEstudiante.length > 0) {
+      if (camposFaltantesEstudiante.length > 0) {
         e.preventDefault();
         alert('Por favor complete todos los campos requeridos del estudiante.');
         return false;
-    }
+      }
 
-    // NUEVA VALIDACIÓN: Verificar que el período esté vigente
-    const periodoSelect = document.getElementById('id_periodo');
-    const selectedOption = periodoSelect.options[periodoSelect.selectedIndex];
+      // NUEVA VALIDACIÓN: Verificar que el período esté vigente
+      const periodoSelect = document.getElementById('id_periodo');
+      const selectedOption = periodoSelect.options[periodoSelect.selectedIndex];
 
-    if (selectedOption.value) {
+      if (selectedOption.value) {
         const fechaIni = selectedOption.getAttribute('data-fecha-ini');
         const fechaFin = selectedOption.getAttribute('data-fecha-fin');
         const fechaActual = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
         console.log('📅 Validación de fechas:', {
-            fechaIni,
-            fechaFin,
-            fechaActual
+          fechaIni,
+          fechaFin,
+          fechaActual
         });
 
         if (fechaActual < fechaIni) {
-            e.preventDefault();
-            alert('❌ El período académico seleccionado no ha iniciado.\n\n' +
-                `Fecha de inicio: ${formatFecha(fechaIni)}\n` +
-                `Fecha actual: ${formatFecha(fechaActual)}`);
-            periodoSelect.focus();
-            return false;
+          e.preventDefault();
+          alert('❌ El período académico seleccionado no ha iniciado.\n\n' +
+            `Fecha de inicio: ${formatFecha(fechaIni)}\n` +
+            `Fecha actual: ${formatFecha(fechaActual)}`);
+          periodoSelect.focus();
+          return false;
         }
 
         if (fechaActual > fechaFin) {
-            e.preventDefault();
-            alert('❌ El período académico seleccionado ha finalizado.\n\n' +
-                `Fecha de finalización: ${formatFecha(fechaFin)}\n` +
-                `Fecha actual: ${formatFecha(fechaActual)}`);
-            periodoSelect.focus();
-            return false;
+          e.preventDefault();
+          alert('❌ El período académico seleccionado ha finalizado.\n\n' +
+            `Fecha de finalización: ${formatFecha(fechaFin)}\n` +
+            `Fecha actual: ${formatFecha(fechaActual)}`);
+          periodoSelect.focus();
+          return false;
         }
-    }
+      }
 
-    // Función auxiliar para formatear fechas
-    function formatFecha(fechaISO) {
+      // Función auxiliar para formatear fechas
+      function formatFecha(fechaISO) {
         const fecha = new Date(fechaISO);
         return fecha.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
         });
-    }
+      }
 
-    // Validar que se haya seleccionado un estudiante
-    const idEstudianteExistente = document.getElementById('id_estudiante_existente').value;
-    if (!idEstudianteExistente) {
+      // Validar que se haya seleccionado un estudiante
+      const idEstudianteExistente = document.getElementById('id_estudiante_existente').value;
+      if (!idEstudianteExistente) {
         e.preventDefault();
         alert('Error: No se ha seleccionado un estudiante. Por favor, regrese al paso 3 y seleccione un estudiante.');
         return false;
-    }
+      }
 
-    // Validar que se haya validado un representante
-    const idRepresentanteExistente = document.getElementById('id_representante_existente').value;
-    if (!idRepresentanteExistente) {
+      // Validar que se haya validado un representante
+      const idRepresentanteExistente = document.getElementById('id_representante_existente').value;
+      if (!idRepresentanteExistente) {
         e.preventDefault();
         alert('Error: No se ha validado un representante. Por favor, comience desde el paso 1.');
         return false;
-    }
+      }
 
-    console.log('✅ Formulario validado correctamente');
+      console.log('✅ Formulario validado correctamente');
 
-    // PREVENIR EL ENVÍO POR DEFECTO - MANEJARLO CON FETCH
-    e.preventDefault();
+      // PREVENIR EL ENVÍO POR DEFECTO - MANEJARLO CON FETCH
+      e.preventDefault();
 
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-    submitBtn.disabled = true;
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      submitBtn.disabled = true;
 
-    // Mostrar mensaje de procesamiento
-    const processingMsg = document.createElement('div');
-    processingMsg.className = 'alert alert-info';
-    processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando reinscripción...';
-    document.querySelector('.content-wrapper').prepend(processingMsg);
+      // Mostrar mensaje de procesamiento
+      const processingMsg = document.createElement('div');
+      processingMsg.className = 'alert alert-info';
+      processingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando reinscripción...';
+      document.querySelector('.content-wrapper').prepend(processingMsg);
 
-    console.log('📤 Datos que se enviarán:');
-    const formData = new FormData(this);
-    for (let [key, value] of formData.entries()) {
+      console.log('📤 Datos que se enviarán:');
+      const formData = new FormData(this);
+      for (let [key, value] of formData.entries()) {
         console.log(`- ${key}: ${value}`);
-    }
+      }
 
-    console.log('🎯 DATOS CLAVE PARA REINSCRIPCIÓN:');
-    console.log('- id_estudiante_existente:', document.getElementById('id_estudiante_existente').value);
-    console.log('- id_representante_existente:', document.getElementById('id_representante_existente').value);
-    console.log('- id_parentesco_estudiante:', document.getElementById('id_parentesco_estudiante').value);
-    console.log('- misma_casa_hidden:', document.getElementById('misma_casa_hidden').value);
-    console.log('- juntos:', document.getElementById('juntos').value);
-    console.log('- id_direccion_est:', document.getElementById('id_direccion_est').value);
-    console.log('- id_direccion_repre:', document.getElementById('id_direccion_repre').value);
-    console.log('- id_direccion_repre_compartida:', document.getElementById('id_direccion_repre_compartida').value);
+      console.log('🎯 DATOS CLAVE PARA REINSCRIPCIÓN:');
+      console.log('- id_estudiante_existente:', document.getElementById('id_estudiante_existente').value);
+      console.log('- id_representante_existente:', document.getElementById('id_representante_existente').value);
+      console.log('- id_parentesco_estudiante:', document.getElementById('id_parentesco_estudiante').value);
+      console.log('- misma_casa_hidden:', document.getElementById('misma_casa_hidden').value);
+      console.log('- juntos:', document.getElementById('juntos').value);
+      console.log('- id_direccion_est:', document.getElementById('id_direccion_est').value);
+      console.log('- id_direccion_repre:', document.getElementById('id_direccion_repre').value);
+      console.log('- id_direccion_repre_compartida:', document.getElementById('id_direccion_repre_compartida').value);
 
-    // ========== ENVÍO DEL FORMULARIO CON MANEJO DE CONSTANCIA ==========
-    fetch(this.action, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        return response.text().then(text => {
+      // ========== ENVÍO DEL FORMULARIO CON MANEJO DE CONSTANCIA ==========
+      fetch(this.action, {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          return response.text().then(text => {
             console.log('📨 Respuesta cruda del servidor:', text.substring(0, 300));
 
             try {
-                const jsonData = JSON.parse(text);
-                console.log('✅ JSON parseado correctamente:', jsonData);
-                return jsonData;
+              const jsonData = JSON.parse(text);
+              console.log('✅ JSON parseado correctamente:', jsonData);
+              return jsonData;
             } catch (jsonError) {
-                console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
+              console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
 
-                // Buscar pistas de éxito en el texto crudo
-                const hasSuccessIndicators =
-                    text.includes('success') ||
-                    text.includes('id_inscripcion') ||
-                    text.includes('exitosamente') ||
-                    text.length < 100;
+              // Buscar pistas de éxito en el texto crudo
+              const hasSuccessIndicators =
+                text.includes('success') ||
+                text.includes('id_inscripcion') ||
+                text.includes('exitosamente') ||
+                text.length < 100;
 
-                if (hasSuccessIndicators) {
-                    console.log('🎯 Respuesta parece exitosa a pesar del formato JSON inválido');
+              if (hasSuccessIndicators) {
+                console.log('🎯 Respuesta parece exitosa a pesar del formato JSON inválido');
 
-                    // Intentar extraer el ID de inscripción del texto
-                    let idInscripcion = null;
-                    const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
-                    if (idMatch) {
-                        idInscripcion = idMatch[1];
-                    }
-
-                    return {
-                        success: true,
-                        message: 'Reinscripción procesada exitosamente',
-                        id_inscripcion: idInscripcion
-                    };
+                // Intentar extraer el ID de inscripción del texto
+                let idInscripcion = null;
+                const idMatch = text.match(/"id_inscripcion":\s*(\d+)/) || text.match(/id_inscripcion[^0-9]*([0-9]+)/);
+                if (idMatch) {
+                  idInscripcion = idMatch[1];
                 }
 
                 return {
-                    success: true,
-                    message: 'Proceso completado',
-                    id_inscripcion: null
+                  success: true,
+                  message: 'Reinscripción procesada exitosamente',
+                  id_inscripcion: idInscripcion
                 };
+              }
+
+              return {
+                success: true,
+                message: 'Proceso completado',
+                id_inscripcion: null
+              };
             }
-        });
-    })
-    .then(data => {
-        // Remover mensaje de procesamiento
-        processingMsg.remove();
+          });
+        })
+        .then(data => {
+          // Remover mensaje de procesamiento
+          processingMsg.remove();
 
-        console.log('📊 Resultado final del proceso:', data);
+          console.log('📊 Resultado final del proceso:', data);
 
-        // Intentar obtener el ID de inscripción
-        let idInscripcion = data.id_inscripcion;
+          // Intentar obtener el ID de inscripción
+          let idInscripcion = data.id_inscripcion;
 
-        // SOLO generar constancia si tenemos un ID válido (numérico)
-        if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
+          // SOLO generar constancia si tenemos un ID válido (numérico)
+          if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
             // Generar constancia con el ID disponible
             // generarConstanciaInscripcion(idInscripcion)
             generarConstanciaInscripcion(idInscripcion)
-                .then(() => {
-                    console.log('✅ Proceso de constancia completado');
-                    
-                    // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
-                    setTimeout(() => {
-                        console.log('🔄 Redirigiendo a dashboard...');
-                        window.location.href = '/final/admin/index.php';
-                     }, 5000); // Reducí el tiempo a 5 segundos
-                    })
-                .catch((error) => {
-                    console.warn('⚠️ Error en proceso de constancia:', error);
-                    
-                    // Mostrar mensaje de error pero continuar
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'alert alert-warning mt-2';
-                    errorMsg.innerHTML = `
+              .then(() => {
+                console.log('✅ Proceso de constancia completado');
+
+                // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
+                setTimeout(() => {
+                  console.log('🔄 Redirigiendo a dashboard...');
+                  window.location.href = '/final/admin/index.php';
+                }, 5000); // Reducí el tiempo a 5 segundos
+              })
+              .catch((error) => {
+                console.warn('⚠️ Error en proceso de constancia:', error);
+
+                // Mostrar mensaje de error pero continuar
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-warning mt-2';
+                errorMsg.innerHTML = `
                         <small>Hubo un problema con la constancia, pero la reinscripción fue exitosa.</small><br>
                         <a href="/final/app/controllers/reinscripciones/generar_constancia_reinscripcion.php?id_inscripcion=${idInscripcion}" 
                             target="_blank" class="btn btn-outline-warning btn-sm mt-1">
                             <i class="fas fa-redo"></i> Intentar Generar Constancia Nuevamente
                         </a>
                     `;
-                    document.querySelector('.content-wrapper').prepend(errorMsg);
-                    
-                    // Redirigir después de más tiempo
-                    setTimeout(() => {
-                        window.location.href = '/final/admin/index.php';
-                    }, 6000);
-                });
-        } else {
+                document.querySelector('.content-wrapper').prepend(errorMsg);
+
+                // Redirigir después de más tiempo
+                setTimeout(() => {
+                  window.location.href = '/final/admin/index.php';
+                }, 6000);
+              });
+          } else {
             // Si no hay ID válido, solo redirigir
             console.warn('⚠️ No se generará constancia - ID no válido:', idInscripcion);
-            
+
             const noConstanciaMsg = document.createElement('div');
             noConstanciaMsg.className = 'alert alert-info mt-3';
             noConstanciaMsg.innerHTML = `
@@ -2044,149 +2044,100 @@ document.getElementById('form-reinscripcion').addEventListener('submit', functio
                 <small>Puede generar la constancia más tarde desde el listado de estudiantes.</small>
             `;
             document.querySelector('.content-wrapper').prepend(noConstanciaMsg);
-            
-            setTimeout(() => {
-                console.log('🔄 Redirigiendo a dashboard...');
-                window.location.href = '/final/admin/index.php';
-            }, 5000);
-        }
 
-    })
-    .catch(error => {
-        console.error('💥 Error crítico en el proceso:', error);
-        
-        // Remover mensaje de procesamiento
-        processingMsg.remove();
-        
-        // Rehabilitar botón
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-        
-        // Solo mostrar error si es realmente crítico (errores de red)
-        if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+            setTimeout(() => {
+              console.log('🔄 Redirigiendo a dashboard...');
+              window.location.href = '/final/admin/index.php';
+            }, 5000);
+          }
+
+        })
+        .catch(error => {
+          console.error('💥 Error crítico en el proceso:', error);
+
+          // Remover mensaje de procesamiento
+          processingMsg.remove();
+
+          // Rehabilitar botón
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+
+          // Solo mostrar error si es realmente crítico (errores de red)
+          if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
             const errorAlert = document.createElement('div');
             errorAlert.className = 'alert alert-danger';
             errorAlert.innerHTML = `<strong>❌ Error de conexión</strong><br><small>No se pudo conectar con el servidor.</small>`;
             document.querySelector('.content-wrapper').prepend(errorAlert);
-        } else {
+          } else {
             // Para otros errores, mostrar éxito (nuestra estrategia de silenciamiento)
             const successAlert = document.createElement('div');
             successAlert.className = 'alert alert-success';
             successAlert.innerHTML = `<strong>✅ Proceso completado</strong>`;
             document.querySelector('.content-wrapper').prepend(successAlert);
-            
+
             // Redirigir después de un tiempo
             setTimeout(() => {
-                window.location.href = '/final/admin/index.php';
+              window.location.href = '/final/admin/index.php';
             }, 4000);
-        }
+          }
+        });
     });
-});
 
-// ========== FUNCIÓN PARA GENERAR CONSTANCIA DE REINSCRIPCIÓN ==========
-function generarConstanciaInscripcion(idInscripcion) {
-    // ✅ VALIDACIÓN ADICIONAL: Verificar que el ID sea numérico
-    if (!idInscripcion || isNaN(idInscripcion)) {
+    // ========== FUNCIÓN PARA GENERAR CONSTANCIA DE REINSCRIPCIÓN ==========
+    function generarConstanciaInscripcion(idInscripcion) {
+      // ✅ VALIDACIÓN ADICIONAL: Verificar que el ID sea numérico
+      if (!idInscripcion || isNaN(idInscripcion)) {
         console.error('❌ ID de inscripción no válido para generar constancia:', idInscripcion);
         return Promise.reject(new Error('ID de inscripción no válido'));
-    }
-    
-    return new Promise((resolve, reject) => {
+      }
+
+      return new Promise((resolve, reject) => {
         console.log('📄 Generando constancia para reinscripción ID:', idInscripcion);
-        
+
         // Mostrar mensaje de que se está generando la constancia
         const generatingMsg = document.createElement('div');
         generatingMsg.className = 'alert alert-info';
         generatingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando constancia de reinscripción...';
         document.querySelector('.content-wrapper').prepend(generatingMsg);
-        
+
         // ✅ USAR EL MISMO ARCHIVO DE CONSTANCIAS DE INSCRIPCIÓN
         const constanciaUrl = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
-        
+
         console.log('🔗 URL de constancia:', constanciaUrl);
-        
+
         // Crear un iframe temporal para abrir la constancia
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = constanciaUrl;
         document.body.appendChild(iframe);
-        
+
         // También abrir en nueva pestaña
         setTimeout(() => {
-            generatingMsg.remove();
-            
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.innerHTML = `
+          generatingMsg.remove();
+
+          const successMsg = document.createElement('div');
+          successMsg.className = 'alert alert-success';
+          successMsg.innerHTML = `
                 <strong>✅ Reinscripción completada exitosamente</strong><br>
                 <small>La constancia se abrirá en una nueva pestaña.</small>
             `;
-            document.querySelector('.content-wrapper').prepend(successMsg);
-            
-            // Abrir en nueva pestaña
-            window.open(constanciaUrl, '_blank');
-            
-            resolve({ success: true });
-            
+          document.querySelector('.content-wrapper').prepend(successMsg);
+
+          // Abrir en nueva pestaña
+          window.open(constanciaUrl, '_blank');
+
+          resolve({
+            success: true
+          });
+
         }, 2000);
 
-    });
-}
+      });
+    }
 
-        // ========== GENERAR CONSTANCIA DESPUÉS DE REINSCRIPCIÓN EXITOSA ==========
-// function generarConstanciaReinscripcion(idInscripcion) {
-//     // ✅ VALIDACIÓN ADICIONAL: Verificar que el ID sea numérico
-//     if (!idInscripcion || isNaN(idInscripcion)) {
-//         console.error('❌ ID de inscripción no válido para generar constancia:', idInscripcion);
-//         return Promise.reject(new Error('ID de inscripción no válido'));
-//     }
-    
-//     return new Promise((resolve, reject) => {
-//         console.log('📄 Generando constancia para reinscripción ID:', idInscripcion);
-        
-//         // Mostrar mensaje de que se está generando la constancia
-//         const generatingMsg = document.createElement('div');
-//         generatingMsg.className = 'alert alert-info';
-//         generatingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando constancia de reinscripción...';
-//         document.querySelector('.content-wrapper').prepend(generatingMsg);
-        
-//         // Usar el archivo de constancias de reinscripción
-//         const constanciaUrl = `/final/app/controllers/reinscripciones/generar_constancia_reinscripcion.php?id_inscripcion=${idInscripcion}`;
-        
-//         setTimeout(() => {
-//             generatingMsg.remove();
-            
-//             const successMsg = document.createElement('div');
-//             successMsg.className = 'alert alert-success';
-//             successMsg.innerHTML = `
-//                 <strong>✅ Reinscripción completada exitosamente</strong><br>
-//                 <small>La constancia se abrirá en una nueva ventana para visualización.</small>
-//                 <br><small><em>Puede usar el botón de descarga del navegador si desea guardarla.</em></small>
-//             `;
-//             document.querySelector('.content-wrapper').prepend(successMsg);
-            
-//             // Abrir en nueva pestaña para VISUALIZACIÓN
-//             console.log('🔗 Abriendo constancia para visualización:', constanciaUrl);
-//             window.open(constanciaUrl, '_blank', 'width=1000,height=700,scrollbars=yes');
-            
-//             // También mostrar botón por si la ventana emergente es bloqueada
-//             const buttonMsg = document.createElement('div');
-//             buttonMsg.className = 'alert alert-info mt-2';
-//             buttonMsg.innerHTML = `
-//                 <small>Si la constancia no se abrió automáticamente:</small><br>
-//                 <a href="${constanciaUrl}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">
-//                     <i class="fas fa-external-link-alt"></i> Abrir Constancia Manualmente
-//                 </a>
-//             `;
-//             document.querySelector('.content-wrapper').prepend(buttonMsg);
-            
-//             resolve({ success: true });
-            
-//         }, 1500);
 
-//     });
+
   });
-
 </script>
 
 <!-- ========== CONVERSIÓN AUTOMÁTICA A MAYÚSCULAS ========== -->
@@ -2199,12 +2150,12 @@ function generarConstanciaInscripcion(idInscripcion) {
 
     // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
     const inputsTexto = document.querySelectorAll('input[type="text"]:not([readonly])');
-    
+
     inputsTexto.forEach(input => {
       input.addEventListener('input', function() {
         convertirMayusculas(this);
       });
-      
+
       // También aplicar a los valores existentes al cargar la página
       if (input.value) {
         convertirMayusculas(input);
@@ -2213,12 +2164,12 @@ function generarConstanciaInscripcion(idInscripcion) {
 
     // Aplicar también a textareas
     const textareas = document.querySelectorAll('textarea:not([readonly])');
-    
+
     textareas.forEach(textarea => {
       textarea.addEventListener('input', function() {
         convertirMayusculas(this);
       });
-      
+
       // Aplicar a valores existentes
       if (textarea.value) {
         convertirMayusculas(textarea);
@@ -2233,7 +2184,7 @@ function generarConstanciaInscripcion(idInscripcion) {
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // ========== FUNCIONES DE VALIDACIÓN ==========
-    
+
     // Función para validar solo letras (incluye espacios y acentos)
     function validarSoloLetras(event) {
       const key = event.key;
