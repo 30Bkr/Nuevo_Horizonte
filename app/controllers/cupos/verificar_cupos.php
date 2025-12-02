@@ -6,6 +6,8 @@ include_once("/xampp/htdocs/final/app/conexion.php");
 include_once("/xampp/htdocs/final/app/controllers/cupos/cupos.php");
 
 try {
+
+
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     throw new Exception('Método no permitido');
   }
