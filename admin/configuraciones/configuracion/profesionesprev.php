@@ -9,8 +9,7 @@ try {
   $pdo = $conexion->conectar();
   $profesionController = new ProfesionController($pdo);
 
-  // Usar el nuevo método para obtener todas las profesiones
-  $profesiones = $profesionController->obtenerTodasLasProfesiones();
+  $profesiones = $profesionController->obtenerProfesiones();
   $totalUsos = $profesionController->contarUsosProfesion();
 } catch (Exception $e) {
   $profesiones = [];
@@ -24,7 +23,7 @@ try {
   <div class="content">
     <div class="container-fluid">
       <!-- Header -->
-      <div class="row mb-4 p-2">
+      <div class="row mb-4">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
@@ -131,16 +130,7 @@ try {
                       </td>
                     </tr>
                   <?php else: ?>
-                    <?php foreach ($profesiones as $profesion):
-                      // Verificar si la profesión está en uso
-                      try {
-                        $en_uso = $profesionController->profesionEnUso($profesion['id_profesion']);
-                        $conteo_usos = $profesionController->obtenerConteoUsosProfesion($profesion['id_profesion']);
-                      } catch (Exception $e) {
-                        $en_uso = false;
-                        $conteo_usos = 0;
-                      }
-                    ?>
+                    <?php foreach ($profesiones as $profesion): ?>
                       <tr id="profesion-<?php echo $profesion['id_profesion']; ?>">
                         <td><?php echo $profesion['id_profesion']; ?></td>
                         <td>
@@ -176,19 +166,10 @@ try {
                               <i class="fas fa-edit"></i>
                             </button>
                             <?php if ($profesion['estatus'] == 1): ?>
-                              <?php if ($en_uso): ?>
-                                <button type="button"
-                                  class="btn btn-sm btn-secondary"
-                                  data-toggle="tooltip"
-                                  title="No se puede desactivar porque está en uso en <?php echo $conteo_usos; ?> registro(s)">
-                                  <i class="fas fa-lock mr-1"></i> Bloqueado
-                                </button>
-                              <?php else: ?>
-                                <button class="btn btn-sm btn-outline-danger"
-                                  onclick="cambiarEstatus(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0)">
-                                  <i class="fas fa-pause"></i>
-                                </button>
-                              <?php endif; ?>
+                              <button class="btn btn-sm btn-outline-danger"
+                                onclick="cambiarEstatus(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0)">
+                                <i class="fas fa-pause"></i>
+                              </button>
                             <?php else: ?>
                               <button class="btn btn-sm btn-outline-success"
                                 onclick="cambiarEstatus(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 1)">
@@ -208,52 +189,6 @@ try {
                 <small class="text-muted">
                   Mostrando <span id="contadorProfesiones"><?php echo count($profesiones); ?></span> profesiones
                 </small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notas importantes -->
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="alert alert-info">
-            <h5><i class="icon fas fa-info"></i> Información Importante</h5>
-            <ul class="mb-0">
-              <li><strong>Profesiones en uso:</strong> No se pueden desactivar porque están siendo utilizadas por representantes o docentes</li>
-              <li><strong>Profesiones sin uso:</strong> Se pueden desactivar sin problemas</li>
-              <li><strong>Profesiones inactivas:</strong> No aparecerán en los formularios de nuevos registros</li>
-              <li>Los registros existentes que ya usen la profesión no se verán afectados al desactivarla</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Leyenda de estados -->
-      <div class="row mt-3">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h6 class="card-title mb-0">Leyenda de Estados</h6>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-3">
-                  <span class="badge badge-success mr-2">Activa</span>
-                  <small>Disponible para nuevos registros</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-danger mr-2">Inactiva</span>
-                  <small>No disponible para nuevos registros</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-info mr-2">En uso</span>
-                  <small>Usada por representantes o docentes</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-secondary mr-2">Sin uso</span>
-                  <small>No usada en el sistema</small>
-                </div>
               </div>
             </div>
           </div>
@@ -434,6 +369,7 @@ try {
     $('#modalConfirmacion').modal('show');
   }
 
+  // Funciones con Fetch
   async function agregarProfesion(event) {
     event.preventDefault();
 
@@ -513,8 +449,7 @@ try {
         $('#modalEditar').modal('hide');
         recargarProfesiones();
       } else {
-        const esDuplicado = result.duplicate || false;
-        mostrarMensaje(result.message, 'error', esDuplicado);
+        mostrarMensaje(result.message, 'error');
       }
     } catch (error) {
       mostrarMensaje('Error de conexión: ' + error.message, 'error');
@@ -586,132 +521,55 @@ try {
 
     if (profesiones.length === 0) {
       tbody.innerHTML = `
-        <tr>
-            <td colspan="6" class="text-center py-4">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No hay profesiones registradas</p>
-            </td>
-        </tr>
-      `;
+            <tr>
+                <td colspan="6" class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay profesiones registradas</p>
+                </td>
+            </tr>
+        `;
       return;
     }
 
-    // Para cada profesión, necesitamos verificar si está en uso
-    const promises = profesiones.map(async (profesion) => {
-      try {
-        const response = await fetch('../../../app/controllers/profesiones/accionesProfesiones.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: `action=verificar_uso&id=${profesion.id_profesion}`
-        });
-        const result = await response.json();
-        return {
-          ...profesion,
-          en_uso: result.success ? result.en_uso : false,
-          conteo: result.success ? result.conteo : 0
-        };
-      } catch (error) {
-        return {
-          ...profesion,
-          en_uso: false,
-          conteo: 0
-        };
-      }
-    });
-
-    Promise.all(promises).then((profesionesConUso) => {
-      tbody.innerHTML = profesionesConUso.map(profesion => `
+    tbody.innerHTML = profesiones.map(profesion => `
         <tr id="profesion-${profesion.id_profesion}">
-          <td>${profesion.id_profesion}</td>
-          <td>
-            <div class="d-flex align-items-center">
-              <i class="fas fa-user-tie text-primary mr-2"></i>
-              <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
-            </div>
-          </td>
-          <td>
-            <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
-                  id="estatus-${profesion.id_profesion}">
-              ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
-            </span>
-          </td>
-          <td>${formatFecha(profesion.creacion)}</td>
-          <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-          <td>
-            <div class="btn-group">
-              <button class="btn btn-sm btn-outline-primary" 
-                      onclick="editarProfesion(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', ${profesion.estatus})">
-                <i class="fas fa-edit"></i>
-              </button>
-              ${profesion.estatus == 1 ? 
-                (profesion.en_uso ?
-                  `<button type="button"
-                          class="btn btn-sm btn-secondary"
-                          data-toggle="tooltip"
-                          title="No se puede desactivar porque está en uso en ${profesion.conteo} registro(s)">
-                    <i class="fas fa-lock mr-1"></i> Bloqueado
-                  </button>` :
-                  `<button class="btn btn-sm btn-outline-danger"
-                          onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0)">
-                    <i class="fas fa-pause"></i>
-                  </button>`
-                ) :
-                `<button class="btn btn-sm btn-outline-success"
-                        onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 1)">
-                  <i class="fas fa-play"></i>
-                </button>`
-              }
-            </div>
-          </td>
+            <td>${profesion.id_profesion}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-tie text-primary mr-2"></i>
+                    <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
+                </div>
+            </td>
+            <td>
+                <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
+                      id="estatus-${profesion.id_profesion}">
+                    ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
+                </span>
+            </td>
+            <td>${formatFecha(profesion.creacion)}</td>
+            <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+            <td>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-primary" 
+                            onclick="editarProfesion(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', ${profesion.estatus})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${profesion.estatus == 1 ? 
+                        `<button class="btn btn-sm btn-outline-danger"
+                                onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0)">
+                            <i class="fas fa-pause"></i>
+                        </button>` :
+                        `<button class="btn btn-sm btn-outline-success"
+                                onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 1)">
+                            <i class="fas fa-play"></i>
+                        </button>`
+                    }
+                </div>
+            </td>
         </tr>
-      `).join('');
+    `).join('');
 
-      document.getElementById('contadorProfesiones').textContent = profesiones.length;
-    }).catch(error => {
-      console.error('Error al cargar datos de uso:', error);
-      // Si hay error, mostrar la tabla sin verificación de uso
-      tbody.innerHTML = profesiones.map(profesion => `
-        <tr id="profesion-${profesion.id_profesion}">
-          <td>${profesion.id_profesion}</td>
-          <td>
-            <div class="d-flex align-items-center">
-              <i class="fas fa-user-tie text-primary mr-2"></i>
-              <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
-            </div>
-          </td>
-          <td>
-            <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
-                  id="estatus-${profesion.id_profesion}">
-              ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
-            </span>
-          </td>
-          <td>${formatFecha(profesion.creacion)}</td>
-          <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-          <td>
-            <div class="btn-group">
-              <button class="btn btn-sm btn-outline-primary" 
-                      onclick="editarProfesion(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', ${profesion.estatus})">
-                <i class="fas fa-edit"></i>
-              </button>
-              ${profesion.estatus == 1 ? 
-                `<button class="btn btn-sm btn-outline-danger"
-                        onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0)">
-                  <i class="fas fa-pause"></i>
-                </button>` :
-                `<button class="btn btn-sm btn-outline-success"
-                        onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 1)">
-                  <i class="fas fa-play"></i>
-                </button>`
-              }
-            </div>
-          </td>
-        </tr>
-      `).join('');
-
-      document.getElementById('contadorProfesiones').textContent = profesiones.length;
-    });
+    document.getElementById('contadorProfesiones').textContent = profesiones.length;
   }
 
   function actualizarEstadisticas(profesiones) {
@@ -745,6 +603,7 @@ try {
     return fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES');
   }
 
+
   function mostrarMensaje(mensaje, tipo, esDuplicado = false) {
     // Determinar la clase de Bootstrap según el tipo
     let alertClass = '';
@@ -765,14 +624,14 @@ try {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
     alertDiv.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      z-index: 9999;
-      min-width: 350px;
-      max-width: 500px;
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-      border-left: 4px solid ${esDuplicado ? '#ffc107' : tipo === 'success' ? '#28a745' : '#dc3545'};
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 350px;
+        max-width: 500px;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border-left: 4px solid ${esDuplicado ? '#ffc107' : tipo === 'success' ? '#28a745' : '#dc3545'};
     `;
 
     // Título según el tipo
@@ -786,16 +645,16 @@ try {
     }
 
     alertDiv.innerHTML = `
-      <div class="d-flex align-items-center">
-        ${icono}
-        <div class="flex-grow-1">
-          <strong class="d-block">${titulo}</strong>
-          <span class="small">${mensaje}</span>
+        <div class="d-flex align-items-center">
+            ${icono}
+            <div class="flex-grow-1">
+                <strong class="d-block">${titulo}</strong>
+                <span class="small">${mensaje}</span>
+            </div>
         </div>
-      </div>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     `;
 
     // Agregar al cuerpo del documento
@@ -838,9 +697,6 @@ try {
     $('#modalAgregar').on('hidden.bs.modal', function() {
       document.getElementById('formAgregar').reset();
     });
-
-    // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
 

@@ -109,4 +109,98 @@ class ProfesionController
       return 0;
     }
   }
+
+  public function obtenerTodasLasProfesiones()
+  {
+    try {
+      $sql = "SELECT * FROM profesiones ORDER BY creacion DESC";
+      $stmt = $this->conn->prepare($sql);
+      $stmt->execute();
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error en obtenerTodasLasProfesiones: " . $e->getMessage());
+      return [];
+    }
+  }
+
+  /**
+   * Verifica si una profesión está en uso por representantes o docentes
+   */
+  public function profesionEnUso($id_profesion)
+  {
+    try {
+      // Verificar uso en representantes
+      $stmtRep = $this->conn->prepare("SELECT COUNT(*) as count FROM representantes WHERE id_profesion = ?");
+      $stmtRep->execute([$id_profesion]);
+      $repResult = $stmtRep->fetch(PDO::FETCH_ASSOC);
+
+      // Verificar uso en docentes
+      $stmtDoc = $this->conn->prepare("SELECT COUNT(*) as count FROM docentes WHERE id_profesion = ?");
+      $stmtDoc->execute([$id_profesion]);
+      $docResult = $stmtDoc->fetch(PDO::FETCH_ASSOC);
+
+      return ($repResult['count'] + $docResult['count']) > 0;
+    } catch (PDOException $e) {
+      error_log("Error en profesionEnUso: " . $e->getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Obtiene el conteo específico de usos de una profesión
+   */
+  public function obtenerConteoUsosProfesion($id_profesion)
+  {
+    try {
+      // Contar uso en representantes
+      $stmtRep = $this->conn->prepare("SELECT COUNT(*) as count FROM representantes WHERE id_profesion = ?");
+      $stmtRep->execute([$id_profesion]);
+      $repResult = $stmtRep->fetch(PDO::FETCH_ASSOC);
+
+      // Contar uso en docentes
+      $stmtDoc = $this->conn->prepare("SELECT COUNT(*) as count FROM docentes WHERE id_profesion = ?");
+      $stmtDoc->execute([$id_profesion]);
+      $docResult = $stmtDoc->fetch(PDO::FETCH_ASSOC);
+
+      return $repResult['count'] + $docResult['count'];
+    } catch (PDOException $e) {
+      error_log("Error en obtenerConteoUsosProfesion: " . $e->getMessage());
+      return 0;
+    }
+  }
+
+  /**
+   * Cambia el estatus de una profesión (activar/desactivar)
+   */
+  public function cambiarEstatusProfesion($id_profesion, $estatus)
+  {
+    try {
+      $sql = "UPDATE profesiones SET estatus = ?, actualizacion = NOW() WHERE id_profesion = ?";
+      $stmt = $this->conn->prepare($sql);
+      return $stmt->execute([$estatus, $id_profesion]);
+    } catch (PDOException $e) {
+      error_log("Error en cambiarEstatusProfesion: " . $e->getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Obtiene estadísticas generales de profesiones
+   */
+  public function obtenerEstadisticasProfesiones()
+  {
+    try {
+      $sql = "SELECT 
+              COUNT(*) as total,
+              SUM(CASE WHEN estatus = 1 THEN 1 ELSE 0 END) as activas,
+              SUM(CASE WHEN estatus = 0 THEN 1 ELSE 0 END) as inactivas
+              FROM profesiones";
+      $stmt = $this->conn->prepare($sql);
+      $stmt->execute();
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error en obtenerEstadisticasProfesiones: " . $e->getMessage());
+      return ['total' => 0, 'activas' => 0, 'inactivas' => 0];
+    }
+  }
 }
