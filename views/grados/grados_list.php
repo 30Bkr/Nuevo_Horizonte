@@ -60,6 +60,9 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                         <div class="card-header">
                             <h3 class="card-title">Listado de Grados, Años y Secciones</h3>
                             <div class="card-tools">
+                                <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
                                 <a href="grado_nuevo.php" class="btn btn-primary btn-sm">
                                     <i class="fas fa-plus"></i> Nuevo Grado/Año/Sección
                                 </a>
@@ -107,7 +110,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
                                         echo "<tr>";
                                         // Dejamos el ID aquí, DataTables lo reemplazará con el índice de fila.
-                                        echo "<td>{$row['id_nivel_seccion']}</td>"; 
+                                        echo "<td>{$row['id_nivel_seccion']}</td>";
                                         echo "<td>{$row['nombre_grado']}</td>";
                                         echo "<td>{$row['seccion']}</td>";
                                         echo "<td>{$row['capacidad']}</td>";
@@ -199,17 +202,19 @@ include_once('../../layout/mensajes.php');
             "responsive": true,
             "autoWidth": false,
             // Definición de columnas y sus propiedades
-            "columnDefs": [
-                { 
+            "columnDefs": [{
                     "targets": 0, // La columna # (índice 0)
                     "orderable": false, // No permitir la ordenación en esta columna
                     "searchable": false, // No permitir la búsqueda en esta columna
                     // Usamos la función render para obtener el índice de la fila.
-                    "render": function (data, type, row, meta) {
+                    "render": function(data, type, row, meta) {
                         return meta.row + 1;
                     }
                 },
-                { "orderable": false, "targets": [7] } // Columna Acciones (índice 7)
+                {
+                    "orderable": false,
+                    "targets": [7]
+                } // Columna Acciones (índice 7)
             ],
             "language": {
                 "decimal": "",
@@ -237,20 +242,23 @@ include_once('../../layout/mensajes.php');
             },
             // Ordenación inicial: Grado/Año (columna 1, ascendente), Sección (columna 2, ascendente)
             "order": [
-                [1, "asc"], 
+                [1, "asc"],
                 [2, "asc"]
             ]
         });
 
         // Solución Definitiva: Forzar el re-indexado de la columna # después de cada acción
         // Esto garantiza la numeración secuencial (1, 2, 3...) sin importar el ordenamiento o filtro.
-        table.on( 'draw.dt', function () {
+        table.on('draw.dt', function() {
             // Busca la columna 0 (el '#') y actualiza el contenido de cada celda
             // basándose en el índice actual de la fila (i + 1).
-            table.column(0, {search:'applied', order:'applied'}).nodes().each( function (cell, i) {
+            table.column(0, {
+                search: 'applied',
+                order: 'applied'
+            }).nodes().each(function(cell, i) {
                 cell.innerHTML = i + 1;
-            } );
-        } ).draw(); // El .draw() final asegura que se aplique inmediatamente después de la inicialización.
+            });
+        }).draw(); // El .draw() final asegura que se aplique inmediatamente después de la inicialización.
     });
 
     function confirmarCambioEstado(id, habilitar) {

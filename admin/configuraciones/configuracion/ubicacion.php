@@ -54,10 +54,21 @@ try {
 <div class="content-wrapper">
   <div class="content">
     <div class="container-fluid">
-      <div class="row mb-4">
+      <div class="row mb-4 p-2">
         <div class="col-12">
-          <h1 class="mb-0">Gestión de Ubicaciones</h1>
-          <p class="text-muted">Administra los estados, municipios y parroquias del sistema</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="mb-0">
+                <h1 class="mb-0">Gestión de Ubicaciones</h1>
+                <p class="text-muted">Administra los estados, municipios y parroquias del sistema</p>
+            </div>
+            <div>
+              <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+            </div>
+
+          </div>
         </div>
       </div>
 

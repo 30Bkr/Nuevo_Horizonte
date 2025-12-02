@@ -206,7 +206,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                   <i class="fas fa-save mr-2"></i>
                   Guardar Cambios
                 </button>
-                <a href="index.php" class="btn btn-default">
+                <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-default">
                   <i class="fas fa-times mr-2"></i>
                   Cancelar
                 </a>

@@ -40,6 +40,9 @@ try {
               <p class="text-muted">Administra los periodos escolares y años académicos</p>
             </div>
             <div>
+              <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
               <button class="btn btn-primary mr-2" onclick="abrirModalCrear()">
                 <i class="fas fa-plus mr-1"></i> Crear Periodo
               </button>

@@ -99,9 +99,12 @@ try {
                   <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i> Guardar Configuración
                   </button>
-                  <button type="button" class="btn btn-secondary" onclick="recargarConfiguracion()">
+                  <!-- <button type="button" class="btn btn-secondary" onclick="recargarConfiguracion()">
                     <i class="fas fa-sync mr-1"></i> Recargar
-                  </button>
+                  </button> -->
+                  <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                  </a>
                 </div>
               </form>
             </div>

@@ -33,9 +33,15 @@ try {
               </h1>
               <p class="text-muted">Administra el catálogo de patologías y condiciones médicas</p>
             </div>
-            <button class="btn btn-primary" onclick="abrirModalAgregar()">
-              <i class="fas fa-plus mr-1"></i> Agregar Patología
-            </button>
+            <div>
+              <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+              <button class="btn btn-primary" onclick="abrirModalAgregar()">
+                <i class="fas fa-plus mr-1"></i> Agregar Patología
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
