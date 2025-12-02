@@ -2233,7 +2233,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                 // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
                 setTimeout(() => {
                   console.log('🔄 Redirigiendo a dashboard...');
-                  window.location.href = '/final/admin/index.php';
+                  window.location.href = '/final/admin/reinscripciones/reinscripcion2.php';
                 }, 5000); // Reducí el tiempo a 5 segundos
               })
               .catch((error) => {
