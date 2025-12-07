@@ -729,12 +729,15 @@ try {
                               <?php
                               if (!empty($periodos)) {
                                 foreach ($periodos as $periodo) {
+                                  $selected = ($periodo['estatus'] == 1) ? 'selected' : '';
                                   $fecha_ini = date('d/m/Y', strtotime($periodo['fecha_ini']));
                                   $fecha_fin = date('d/m/Y', strtotime($periodo['fecha_fin']));
-                                  echo "<option value='{$periodo['id_periodo']}' data-fecha-ini='{$periodo['fecha_ini']}' data-fecha-fin='{$periodo['fecha_fin']}'>
-                            {$periodo['descripcion_periodo']} ({$fecha_ini} al {$fecha_fin})
+                                  echo "<option value='{$periodo['id_periodo']}' data-fecha-ini='{$periodo['fecha_ini']}' data-fecha-fin='{$periodo['fecha_fin']}' $selected>
+                            {$periodo['descripcion_periodo']} ({$fecha_ini} al {$fecha_fin}) {$periodo['estatus']}
                           </option>";
                                 }
+                              } else if ($periodos == []) {
+                                echo "<option value=''>El periodo academico activo ha finalizado</option>";
                               } else {
                                 echo "<option value=''>No hay períodos vigentes</option>";
                               }
@@ -744,7 +747,9 @@ try {
                               <?php
                               $fecha_hoy = date('d/m/Y');
                               if (!empty($periodos)) {
-                                echo "Fecha actual: {$fecha_hoy} - Períodos dentro del rango de fechas";
+                                echo "Fecha actual: {$fecha_hoy} - Períodos dentro del rango de fechas.";
+                              } else  if ($periodos == []) {
+                                echo '⚠️ No es posible reinscribir. El periodo academico activo ha finalizado.';
                               } else {
                                 echo "⚠️ No hay períodos académicos vigentes. Fecha actual: {$fecha_hoy}";
                               }
