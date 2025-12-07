@@ -736,6 +736,8 @@ try {
                             {$periodo['descripcion_periodo']} ({$fecha_ini} al {$fecha_fin}) {$periodo['estatus']}
                           </option>";
                                 }
+                              } else if ($periodos == []) {
+                                echo "<option value=''>El periodo academico activo ha finalizado</option>";
                               } else {
                                 echo "<option value=''>No hay períodos vigentes</option>";
                               }
@@ -745,7 +747,9 @@ try {
                               <?php
                               $fecha_hoy = date('d/m/Y');
                               if (!empty($periodos)) {
-                                echo "Fecha actual: {$fecha_hoy} - Períodos dentro del rango de fechas";
+                                echo "Fecha actual: {$fecha_hoy} - Períodos dentro del rango de fechas.";
+                              } else  if ($periodos == []) {
+                                echo '⚠️ No es posible reinscribir. El periodo academico activo ha finalizado.';
                               } else {
                                 echo "⚠️ No hay períodos académicos vigentes. Fecha actual: {$fecha_hoy}";
                               }
