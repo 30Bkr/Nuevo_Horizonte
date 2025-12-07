@@ -50,19 +50,29 @@ $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Listado de Estudiantes</h3>
-                            <div class="card-tools">
+                       <div class="card-header">
+                        <h3 class="card-title">Listado de Estudiantes</h3>
+                        <div class="card-tools">
+                            <!-- CONTENEDOR PARA BOTÓN Y FILTRO EN LÍNEA -->
+                            <div class="d-flex align-items-center">
+                                <!-- BOTÓN PARA GENERAR MATRÍCULA -->
+                                <div class="mr-2">
+                                    <a href="matricula_estudiantil_pdf.php" target="_blank" class="btn btn-success btn-sm">
+                                        <i class="fas fa-file-pdf mr-1"></i> Generar Matrícula
+                                    </a>
+                                </div>
+                                
                                 <!-- FILTRO DE ACTIVOS/INACTIVOS -->
-                                <div class="input-group input-group-sm" style="width: 200px;">
+                                <div style="width: 180px;">
                                     <select id="filtroEstado" class="form-control form-control-sm" onchange="cambiarFiltro(this.value)">
-                                    <option value="1" <?php echo $filtro_activo == 1 ? 'selected' : ''; ?>>Activos</option>
-                                    <option value="0" <?php echo $filtro_activo == 0 ? 'selected' : ''; ?>>Inactivos</option>
-                                    <option value="2" <?php echo $filtro_activo == 2 ? 'selected' : ''; ?>>Todos</option>
-                                </select>
+                                        <option value="1" <?php echo $filtro_activo == 1 ? 'selected' : ''; ?>>Activos</option>
+                                        <option value="0" <?php echo $filtro_activo == 0 ? 'selected' : ''; ?>>Inactivos</option>
+                                        <option value="2" <?php echo $filtro_activo == 2 ? 'selected' : ''; ?>>Todos</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
+                    </div>
                         <div class="card-body">
                             <?php
                             try {
