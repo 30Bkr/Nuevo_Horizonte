@@ -24,7 +24,7 @@ class InscripcionController
                 estatus
             FROM periodos 
             WHERE estatus = 1
-            AND '2025-12-07' BETWEEN fecha_ini AND fecha_fin
+            AND ? BETWEEN fecha_ini AND fecha_fin
             ORDER BY fecha_ini DESC
         ";
 
