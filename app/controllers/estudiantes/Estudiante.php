@@ -108,17 +108,6 @@ public function listarEstudiantes($filtro_activo = 1) {
 }
 // Nuevo método para obtener matrícula completa de estudiantes:
 public function obtenerMatriculaCompleta() {
-    // Obtener el periodo activo primero
-    $periodo_activo = $this->obtenerPeriodoActivo();
-    
-    if (!$periodo_activo) {
-        // Si no hay periodo activo, retornar vacío
-        $query = "SELECT 1 WHERE 1=0";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        return $stmt;
-    }
-    
     $query = "SELECT 
                 e.id_estudiante,
                 p.cedula,
@@ -128,16 +117,17 @@ public function obtenerMatriculaCompleta() {
                     UPPER(p.primer_nombre), ' ',
                     UPPER(COALESCE(p.segundo_nombre, ''))
                 ) as nombre_completo,
-                CONCAT(
-                    CASE 
-                        WHEN n.num_nivel <= 6 THEN CONCAT(n.num_nivel, '° Grado')
-                        ELSE CONCAT(n.num_nivel, '° Año')
-                    END,
-                    ' - Sección ', s.nom_seccion
-                ) as grado_seccion,
-                n.num_nivel as nivel_numero,
+                -- USAR DIRECTAMENTE EL NOMBRE DEL NIVEL DE LA TABLA
+                CONCAT(n.nom_nivel, ' - Sección ', s.nom_seccion) as grado_seccion,
+                n.nom_nivel as nombre_nivel,
                 s.nom_seccion as seccion,
-                n.nom_nivel as nombre_nivel
+                n.id_nivel,
+                -- ORDENAR: Primero Grados (id_nivel 1-6), luego Años (id_nivel 7-11)
+                CASE 
+                    WHEN n.id_nivel <= 6 THEN 1  -- Grados
+                    ELSE 2                       -- Años
+                END as orden_tipo,
+                n.id_nivel as orden_numero
               FROM estudiantes e
               INNER JOIN personas p ON e.id_persona = p.id_persona
               INNER JOIN inscripciones i ON e.id_estudiante = i.id_estudiante AND i.estatus = 1
@@ -147,7 +137,8 @@ public function obtenerMatriculaCompleta() {
               INNER JOIN periodos per ON i.id_periodo = per.id_periodo AND per.estatus = 1
               WHERE e.estatus = 1
               ORDER BY 
-                n.num_nivel ASC,
+                orden_tipo ASC,
+                orden_numero ASC,
                 s.nom_seccion ASC,
                 p.primer_apellido ASC,
                 p.segundo_apellido ASC,
