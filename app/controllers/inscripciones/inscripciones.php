@@ -20,7 +20,8 @@ class InscripcionController
                 id_periodo,
                 descripcion_periodo,
                 fecha_ini,
-                fecha_fin
+                fecha_fin,
+                estatus
             FROM periodos 
             WHERE estatus = 1
             AND ? BETWEEN fecha_ini AND fecha_fin

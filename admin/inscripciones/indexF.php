@@ -447,10 +447,20 @@ try {
                         </select>
                       </div>
                     </div>
-                    <div class="col-md-3">
+                    <!-- <div class="col-md-3">
                       <div class="form-group">
                         <label for="fecha_nac_e">Fecha de Nacimiento </label>
                         <input type="date" name="fecha_nac_e" id="fecha_nac_e" class="form-control" required>
+                      </div>
+                    </div> -->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label for="fecha_nac_e">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nac_e" id="fecha_nac_e" class="form-control" required>
+                        <small class="form-text text-muted" id="rango-fecha-help">
+                          <!-- Este mensaje se actualizará con JavaScript -->
+                          Cargando rango de edades permitidas...
+                        </small>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -990,7 +1000,7 @@ try {
 
       console.log(`🔍 Analizando nivel: "${nombreNivel}" - Grado:${esGrado} Año:${esAnio} Número:${numero}`);
 
-      if (edad >= 4 && edad <= 10) {
+      if (edad >= 3 && edad <= 10) {
         // 4-10 años: solo grados (desde 1° hasta 6° grado)
         return esGrado && numero >= 1 && numero <= 6;
       } else if (edad >= 11 && edad <= 12) {
@@ -998,7 +1008,7 @@ try {
         if (esGrado) return numero >= 4 && numero <= 6;
         if (esAnio) return numero >= 1 && numero <= 3;
         return false;
-      } else if (edad >= 13 && edad <= 18) {
+      } else if (edad >= 13 && edad <= 22) {
         // 13-18 años: solo años (desde 1° año hasta donde corresponda)
         return esAnio;
       }
@@ -1266,449 +1276,6 @@ try {
   });
 </script>
 
-<!-- <script>
-  // ========== CARGAR SECCIONES POR NIVEL Y VALIDACIÓN DE CUPOS ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-    const seccionSelect = document.querySelector('select[name="id_seccion"]');
-    const periodoSelect = document.querySelector('select[name="id_periodo"]');
-    const submitBtn = document.querySelector('button[type="submit"]');
-
-    let mensajeCupos = null;
-
-    // ========== FUNCIÓN PARA CARGAR SECCIONES POR NIVEL ==========
-    function cargarSeccionesPorNivel(idNivel) {
-      if (!idNivel) {
-        // Si no hay nivel seleccionado, limpiar secciones
-        seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-        seccionSelect.disabled = true;
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('id_nivel', idNivel);
-
-      // Mostrar loading en el select de secciones
-      seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
-      seccionSelect.disabled = true;
-      eliminarMensajeCupos();
-
-      fetch('/final/app/controllers/cupos/cargar_secciones.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
-
-          if (data.success && data.secciones && data.secciones.length > 0) {
-            data.secciones.forEach(seccion => {
-              seccionSelect.innerHTML += `<option value="${seccion.id_seccion}" data-nivel-seccion="${seccion.id_nivel_seccion}">
-                        ${seccion.nom_seccion} (Capacidad: ${seccion.capacidad})
-                    </option>`;
-            });
-            seccionSelect.disabled = false;
-
-            console.log('✅ Secciones cargadas:', data.secciones.length);
-          } else {
-            seccionSelect.innerHTML = '<option value="">No hay secciones disponibles para este nivel</option>';
-            seccionSelect.disabled = true;
-            console.warn('⚠️ No se encontraron secciones para el nivel:', idNivel);
-          }
-
-          // Una vez cargadas las secciones, verificar cupos si ya hay período seleccionado
-          if (periodoSelect && periodoSelect.value) {
-            setTimeout(verificarCupos, 100);
-          }
-        })
-        .catch(error => {
-          console.error('❌ Error al cargar secciones:', error);
-          seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
-          seccionSelect.disabled = true;
-        });
-    }
-
-    // ========== FUNCIÓN PARA VERIFICAR CUPOS (ACTUALIZADA) ==========
-    function verificarCupos() {
-      const selectedOption = seccionSelect.options[seccionSelect.selectedIndex];
-
-      if (!nivelSelect.value || !seccionSelect.value || !periodoSelect.value || !selectedOption) {
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const id_nivel_seccion = selectedOption.getAttribute('data-nivel-seccion');
-      const id_periodo = periodoSelect.value;
-
-      if (!id_nivel_seccion) {
-        console.error('❌ No se encontró el id_nivel_seccion en la opción seleccionada');
-        eliminarMensajeCupos();
-        return;
-      }
-
-      console.log('🔍 Verificando cupos para:', {
-        id_nivel_seccion: id_nivel_seccion,
-        id_periodo: id_periodo,
-        nivel: nivelSelect.value,
-        seccion: seccionSelect.value
-      });
-
-      const formData = new FormData();
-      formData.append('id_nivel_seccion', id_nivel_seccion);
-      formData.append('id_periodo', id_periodo);
-
-      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Error en la respuesta del servidor');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('📊 Respuesta de cupos:', data);
-          mostrarMensajeCupos(data);
-        })
-        .catch(error => {
-          console.error('❌ Error al verificar cupos:', error);
-          // Mostrar mensaje de error
-          mostrarMensajeCupos({
-            success: false,
-            disponible: false,
-            mensaje: 'Error al verificar disponibilidad de cupos'
-          });
-        });
-    }
-
-    // ========== FUNCIÓN PARA MOSTRAR MENSAJE DE CUPOS ==========
-    function mostrarMensajeCupos(data) {
-      eliminarMensajeCupos();
-
-      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
-      if (!informacionAcademica) {
-        console.warn('⚠️ No se encontró el contenedor para el mensaje de cupos');
-        return;
-      }
-
-      mensajeCupos = document.createElement('div');
-      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
-
-      if (data.success) {
-        mensajeCupos.innerHTML = `
-                <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
-                ${data.mensaje}
-                ${data.disponible ? 
-                    `<br><small class="text-white">Puede continuar con la inscripción</small>` : 
-                    `<br><small class="text-white">No se puede realizar la inscripción en esta sección</small>`
-                }
-            `;
-      } else {
-        mensajeCupos.innerHTML = `
-                <strong>❌ ERROR</strong><br>
-                ${data.message || 'Error al verificar cupos'}
-            `;
-      }
-
-      informacionAcademica.appendChild(mensajeCupos);
-
-      // Deshabilitar/habilitar el botón de enviar
-      if (submitBtn) {
-        submitBtn.disabled = !data.disponible;
-        console.log('🔄 Botón submit:', data.disponible ? 'HABILITADO' : 'DESHABILITADO');
-      }
-    }
-
-    // ========== FUNCIÓN PARA ELIMINAR MENSAJE DE CUPOS ==========
-    function eliminarMensajeCupos() {
-      if (mensajeCupos) {
-        mensajeCupos.remove();
-        mensajeCupos = null;
-      }
-      if (submitBtn) {
-        submitBtn.disabled = false;
-      }
-    }
-
-    // ========== EVENT LISTENERS ==========
-
-    // Event listener para cambios en el nivel
-    if (nivelSelect) {
-      nivelSelect.addEventListener('change', function() {
-        const idNivel = this.value;
-        console.log('🎯 Nivel cambiado:', idNivel);
-        cargarSeccionesPorNivel(idNivel);
-      });
-    }
-
-    // Event listener para cambios en la sección
-    if (seccionSelect) {
-      seccionSelect.addEventListener('change', function() {
-        console.log('🎯 Sección cambiada:', this.value);
-        if (this.value && periodoSelect.value) {
-          verificarCupos();
-        } else {
-          eliminarMensajeCupos();
-        }
-      });
-    }
-
-    // Event listener para cambios en el período
-    if (periodoSelect) {
-      periodoSelect.addEventListener('change', function() {
-        console.log('🎯 Período cambiado:', this.value);
-        if (this.value && seccionSelect.value) {
-          verificarCupos();
-        } else {
-          eliminarMensajeCupos();
-        }
-      });
-    }
-
-    // ========== INICIALIZACIÓN ==========
-
-    // Cargar secciones si ya hay un nivel seleccionado (al recargar página)
-    if (nivelSelect && nivelSelect.value) {
-      console.log('🔄 Inicializando con nivel pre-seleccionado:', nivelSelect.value);
-      setTimeout(() => {
-        cargarSeccionesPorNivel(nivelSelect.value);
-      }, 500);
-    } else {
-      // Inicializar select de secciones como deshabilitado
-      seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-      seccionSelect.disabled = true;
-    }
-
-    // Verificar cupos al cargar si ya hay valores seleccionados
-    setTimeout(() => {
-      if (nivelSelect.value && seccionSelect.value && periodoSelect.value) {
-        console.log('🔄 Verificando cupos iniciales...');
-        verificarCupos();
-      }
-    }, 1000);
-
-    // Debug inicial
-    console.log('🔍 Estado inicial de selects:', {
-      nivel: nivelSelect ? nivelSelect.value : 'No encontrado',
-      seccion: seccionSelect ? seccionSelect.value : 'No encontrado',
-      periodo: periodoSelect ? periodoSelect.value : 'No encontrado'
-    });
-  });
-</script>
-
-
-
-<script>
-  // ========== VALIDACIÓN DE EDAD Y FILTRADO DE NIVELES ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const fechaNacInput = document.querySelector('input[name="fecha_nac_e"]');
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-
-    // Event listener para cambios en la fecha de nacimiento
-    if (fechaNacInput) {
-      fechaNacInput.addEventListener('change', function() {
-        validarEdadYFiltrarNiveles(this.value);
-      });
-    }
-
-    // Función para calcular edad y filtrar niveles
-    function validarEdadYFiltrarNiveles(fechaNacimiento) {
-      if (!fechaNacimiento) return;
-
-      const fechaNac = new Date(fechaNacimiento);
-      const hoy = new Date();
-      let edad = hoy.getFullYear() - fechaNac.getFullYear();
-      const mes = hoy.getMonth() - fechaNac.getMonth();
-
-      if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-        edad--;
-      }
-
-      console.log(`🎯 Edad calculada: ${edad} años`);
-
-      // Filtrar niveles según la edad
-      filtrarNivelesPorEdad(edad);
-    }
-
-    // Función para filtrar niveles según la edad
-    function filtrarNivelesPorEdad(edad) {
-      if (!nivelSelect) return;
-
-      // Guardar el valor actual seleccionado
-      const valorActual = nivelSelect.value;
-
-      // Obtener todas las opciones disponibles
-      const todasLasOpciones = Array.from(nivelSelect.options);
-
-      // Limpiar el select
-      nivelSelect.innerHTML = '<option value="">Seleccionar Nivel</option>';
-
-      // Filtrar opciones según la edad
-      todasLasOpciones.forEach(opcion => {
-        if (opcion.value === '') return; // Saltar la opción vacía
-
-        const textoNivel = opcion.textContent.toLowerCase();
-        const esGrado = textoNivel.includes('grado');
-        const esAnio = textoNivel.includes('año') || textoNivel.includes('ano');
-
-        let mostrarOpcion = false;
-
-        if (edad >= 4 && edad <= 10) {
-          // Entre 4-10 años: solo grados
-          mostrarOpcion = esGrado;
-        } else if (edad > 10 && edad <= 12) {
-          // Entre 10-12 años: grados 4,5,6 y años 1,2,3
-          if (esGrado) {
-            const numeroGrado = extraerNumero(textoNivel);
-            mostrarOpcion = numeroGrado >= 4 && numeroGrado <= 6;
-          } else if (esAnio) {
-            const numeroAnio = extraerNumero(textoNivel);
-            mostrarOpcion = numeroAnio >= 1 && numeroAnio <= 3;
-          }
-        } else if (edad > 12) {
-          // Mayor de 12 años: solo años
-          mostrarOpcion = esAnio;
-        }
-
-        if (mostrarOpcion) {
-          nivelSelect.appendChild(opcion);
-        }
-      });
-
-      // Restaurar selección anterior si todavía está disponible
-      if (valorActual && nivelSelect.querySelector(`option[value="${valorActual}"]`)) {
-        nivelSelect.value = valorActual;
-      } else {
-        nivelSelect.value = '';
-        // Limpiar secciones si no hay nivel seleccionado
-        const seccionSelect = document.querySelector('select[name="id_seccion"]');
-        if (seccionSelect) {
-          seccionSelect.innerHTML = '<option value="">Primero seleccione un nivel</option>';
-          seccionSelect.disabled = true;
-        }
-      }
-
-      // Si quedó solo una opción, seleccionarla automáticamente
-      const opcionesDisponibles = Array.from(nivelSelect.options).filter(opt => opt.value !== '');
-      if (opcionesDisponibles.length === 1) {
-        nivelSelect.value = opcionesDisponibles[0].value;
-        // Disparar evento change para cargar secciones automáticamente
-        nivelSelect.dispatchEvent(new Event('change'));
-      }
-
-      console.log(`📚 Niveles disponibles para edad ${edad}:`, opcionesDisponibles.length);
-    }
-
-    // Función auxiliar para extraer números del texto del nivel
-    function extraerNumero(texto) {
-      const match = texto.match(/(\d+)/);
-      return match ? parseInt(match[1]) : 0;
-    }
-
-    // También validar al cargar la página si ya hay una fecha
-    if (fechaNacInput && fechaNacInput.value) {
-      setTimeout(() => {
-        validarEdadYFiltrarNiveles(fechaNacInput.value);
-      }, 500);
-    }
-  });
-</script> -->
-
-
-
-<!-- <script>
-  // ========== VALIDACIÓN DE CUPOS EN TIEMPO REAL ==========
-  document.addEventListener('DOMContentLoaded', function() {
-    const nivelSelect = document.querySelector('select[name="id_nivel"]');
-    const seccionSelect = document.querySelector('select[name="id_seccion"]');
-    const periodoSelect = document.querySelector('select[name="id_periodo"]');
-    const submitBtn = document.querySelector('button[type="submit"]');
-
-    let mensajeCupos = null;
-
-    // Función para verificar cupos
-    function verificarCupos() {
-      const id_nivel = nivelSelect.value;
-      const id_seccion = seccionSelect.value;
-      const id_periodo = periodoSelect.value;
-
-      if (!id_nivel || !id_seccion || !id_periodo) {
-        eliminarMensajeCupos();
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('id_nivel', id_nivel);
-      formData.append('id_seccion', id_seccion);
-      formData.append('id_periodo', id_periodo);
-
-      fetch('/final/app/controllers/cupos/verificar_cupos.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          mostrarMensajeCupos(data);
-        })
-        .catch(error => {
-          console.error('Error al verificar cupos:', error);
-        });
-    }
-
-    // Función para mostrar mensaje de cupos
-    function mostrarMensajeCupos(data) {
-      eliminarMensajeCupos();
-
-      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
-      if (!informacionAcademica) return;
-
-      mensajeCupos = document.createElement('div');
-      mensajeCupos.className = `alert ${data.disponible ? 'alert-success' : 'alert-danger'} mt-3`;
-      mensajeCupos.innerHTML = `
-            <strong>${data.disponible ? '✅ CUPOS DISPONIBLES' : '❌ SIN CUPOS'}</strong><br>
-            ${data.mensaje}
-            ${data.disponible ? 
-                `<br><small class="text-muted">Puede continuar con la inscripción</small>` : 
-                `<br><small class="text-muted">No se puede realizar la inscripción en esta sección</small>`
-            }
-        `;
-
-      informacionAcademica.appendChild(mensajeCupos);
-
-      // Deshabilitar/enable el botón de enviar
-      if (submitBtn) {
-        submitBtn.disabled = !data.disponible;
-      }
-    }
-
-    // Función para eliminar mensaje de cupos
-    function eliminarMensajeCupos() {
-      if (mensajeCupos) {
-        mensajeCupos.remove();
-        mensajeCupos = null;
-      }
-      if (submitBtn) {
-        submitBtn.disabled = false;
-      }
-    }
-
-    // Event listeners para cambios en los selects
-    if (nivelSelect) nivelSelect.addEventListener('change', verificarCupos);
-    if (seccionSelect) seccionSelect.addEventListener('change', verificarCupos);
-    if (periodoSelect) periodoSelect.addEventListener('change', verificarCupos);
-
-    // Verificar cupos al cargar si ya hay valores seleccionados
-    setTimeout(verificarCupos, 500);
-  });
-</script> -->
-
 <!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
 <!-- - Aca hacemos la validacion sobre si el estudiante vive en la misma casa -- -->
 <!--- Aca hacemos la validacion sobre si el estudiante vive en la misma casa ---->
@@ -1765,7 +1332,7 @@ try {
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
 
-<script>
+<!-- <script>
   document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_nac_e');
     const cedulaEInput = document.getElementById('cedula_e');
@@ -2007,6 +1574,368 @@ try {
         return 0;
       }
     }
+
+    // Debug inicial
+    console.log('🔍 Estado inicial:', {
+      fechaInput: fechaInput ? 'Encontrado' : 'No encontrado',
+      cedulaRInput: cedulaRInput ? 'Encontrado' : 'No encontrado',
+      cedulaEInput: cedulaEInput ? 'Encontrado' : 'No encontrado',
+      selectCi: selectCi ? 'Encontrado' : 'No encontrado',
+      selectCiValue: selectCi ? selectCi.value : 'N/A'
+    });
+  });
+</script> -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const fechaInput = document.getElementById('fecha_nac_e');
+    const cedulaEInput = document.getElementById('cedula_e');
+    const cedulaRInput = document.getElementById('cedula_r');
+    const id_representante_esc = document.getElementById('id_representante_existente');
+    const tipo = document.getElementById('tipo_persona');
+    const selectCi = document.getElementById('ci_si');
+    const rangoFechaHelp = document.getElementById('rango-fecha-help');
+
+    // Variables globales
+    const hoy = new Date();
+    const añoActual = hoy.getFullYear();
+    let añoMinimo = añoActual - 19;
+    let añoMaximo = añoActual - 5;
+    let edad_min_global = 5;
+    let edad_max_global = 19;
+
+    // ==================== FUNCIONES AUXILIARES ====================
+
+    // Función para mostrar errores en el formulario
+    function mostrarErrorFecha(mensaje) {
+      // Crear o actualizar elemento de error
+      let errorElement = fechaInput.parentElement.querySelector('.error-fecha');
+
+      if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'error-fecha text-danger mt-1 small';
+        fechaInput.parentElement.appendChild(errorElement);
+      }
+
+      errorElement.textContent = mensaje;
+      fechaInput.classList.add('is-invalid');
+
+      // Remover el error después de 5 segundos o al cambiar la fecha
+      setTimeout(() => {
+        if (errorElement.parentElement) {
+          errorElement.remove();
+          fechaInput.classList.remove('is-invalid');
+        }
+      }, 5000);
+    }
+
+    // Función para validar rango de fechas
+    function validarRangoFecha() {
+      if (!fechaInput.value) return true;
+
+      const fechaSeleccionada = new Date(fechaInput.value);
+      const fechaMin = new Date(añoMinimo, 0, 1); // 1 de enero del año mínimo
+      const fechaMax = new Date(añoMaximo, 11, 31); // 31 de diciembre del año máximo
+
+      if (fechaSeleccionada < fechaMin || fechaSeleccionada > fechaMax) {
+        const mensaje = `❌ Fecha fuera del rango permitido\n` +
+          `Edad permitida: ${edad_min_global} a ${edad_max_global} años\n` +
+          `Nacidos entre: ${añoMinimo} y ${añoMaximo}`;
+
+        mostrarErrorFecha(mensaje);
+
+        // Opcional: puedes descomentar la siguiente línea para usar alert
+        // alert(mensaje);
+
+        fechaInput.value = '';
+        fechaInput.focus();
+        return false;
+      }
+
+      // Si es válida, remover cualquier error previo
+      const errorElement = fechaInput.parentElement.querySelector('.error-fecha');
+      if (errorElement) {
+        errorElement.remove();
+        fechaInput.classList.remove('is-invalid');
+      }
+
+      return true;
+    }
+
+    // ==================== FUNCIONES PRINCIPALES ====================
+
+    // Función para obtener edades desde la base de datos
+    async function obtenerEdadesGlobales() {
+      try {
+        console.log('📊 Solicitando edades globales desde la base de datos...');
+
+        const response = await fetch('/final/app/controllers/globales/obtenerEdades.php', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const responseText = await response.text();
+        console.log('📨 Respuesta del servidor (edades):', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Error al parsear JSON:', parseError.message);
+          return {
+            success: false
+          };
+        }
+
+        if (data.success) {
+          console.log('✅ Edades obtenidas:', {
+            edad_min: data.edad_min,
+            edad_max: data.edad_max
+          });
+          return data;
+        } else {
+          console.error('❌ Error al obtener edades:', data.error);
+          return {
+            success: false
+          };
+        }
+
+      } catch (error) {
+        console.error('❌ Error en obtenerEdadesGlobales:', error);
+        return {
+          success: false
+        };
+      }
+    }
+
+    // Función para inicializar los límites de fecha
+    async function inicializarFechas() {
+      const edades = await obtenerEdadesGlobales();
+
+      if (edades.success) {
+        // Invertir el cálculo
+        añoMinimo = añoActual - edades.edad_max; // Para edad MÁXIMA
+        añoMaximo = añoActual - edades.edad_min; // Para edad MÍNIMA
+        edad_min_global = edades.edad_min;
+        edad_max_global = edades.edad_max;
+
+        console.log('🎯 Límites calculados:', {
+          añoMinimo: añoMinimo,
+          añoMaximo: añoMaximo,
+          edad_min: edad_min_global,
+          edad_max: edad_max_global,
+          explicación: `Estudiantes entre ${edad_min_global} y ${edad_max_global} años`
+        });
+      } else {
+        console.warn('⚠️ Usando valores por defecto para las edades');
+        añoMinimo = añoActual - 19;
+        añoMaximo = añoActual - 5;
+        edad_min_global = 5;
+        edad_max_global = 19;
+      }
+
+      // Establecer los límites en el input de fecha
+      fechaInput.min = `${añoMinimo}-01-01`;
+      fechaInput.max = `${añoMaximo}-12-31`;
+
+      // Actualizar el mensaje de ayuda
+      if (rangoFechaHelp) {
+        rangoFechaHelp.textContent = `Nacidos entre ${añoMinimo} y ${añoMaximo} (${edad_min_global} a ${edad_max_global} años)`;
+      }
+
+      console.log('📅 Límites de fecha establecidos:', {
+        min: fechaInput.min,
+        max: fechaInput.max,
+        rango_edades: `Nacidos entre ${añoMinimo} y ${añoMaximo}`
+      });
+    }
+
+    // Función para validar y generar cédula
+    async function validarRegistro() {
+      console.log('📅 Evento de cambio de fecha detectado');
+
+      // Primero validar la fecha
+      if (!validarRangoFecha()) {
+        console.log('❌ Fecha fuera del rango permitido');
+        return;
+      }
+
+      const fecha = fechaInput.value;
+      const idR = id_representante_esc.value;
+      const tp = tipo.value;
+      const cedulaRActual = cedulaRInput.value;
+
+      console.log('Datos obtenidos:', {
+        fecha: fecha,
+        cedulaRActual: cedulaRActual,
+        idR: idR,
+        tp: tp
+      });
+
+      // Verificar que tenemos todos los datos necesarios
+      if (!fecha) {
+        console.log('❌ No hay fecha seleccionada');
+        return;
+      }
+
+      if (!cedulaRActual) {
+        console.log('❌ No hay cédula de representante');
+        return;
+      }
+
+      const anioNacimiento = fecha.substring(2, 4);
+      console.log('🔢 Año de nacimiento extraído:', anioNacimiento);
+
+      if (tp === 'representante') {
+        console.log('👨‍👦 Tipo: representante - generando cédula escolar');
+        try {
+          cedulaRInput.disabled = true;
+          const numeroDEstudiantes = await validarYGenerarCedula(idR, anioNacimiento, cedulaRActual);
+          if (numeroDEstudiantes) {
+            cedulaEInput.value = numeroDEstudiantes;
+            cedulaEInput.readOnly = true;
+            cedulaEInput.style.backgroundColor = '#f8f9fa';
+            cedulaEInput.style.cursor = 'not-allowed';
+            console.log('✅ Cédula escolar generada:', numeroDEstudiantes);
+          }
+        } catch (error) {
+          console.error('❌ Error:', error);
+        }
+      } else {
+        console.log('👤 Tipo: otro - generando cédula simple');
+        const c_esc = anioNacimiento + '1' + cedulaRActual;
+        cedulaEInput.value = c_esc;
+        cedulaEInput.readOnly = true;
+        cedulaEInput.style.backgroundColor = '#f8f9fa';
+        cedulaEInput.style.cursor = 'not-allowed';
+        console.log('✅ Cédula escolar generada:', c_esc);
+      }
+    }
+
+    // Función para contar estudiantes
+    async function validarYGenerarCedula(idRepre, a, c) {
+      try {
+        console.log('📊 Solicitando cuenta de alumnos para ID:', idRepre);
+
+        const response = await fetch('/final/app/controllers/representantes/cuentaDeAlumnos.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `id=${encodeURIComponent(idRepre)}`
+        });
+
+        const responseText = await response.text();
+        console.log('📨 Respuesta del servidor:', responseText);
+
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Error al parsear JSON:', parseError.message);
+          throw new Error(`Error de formato JSON: ${parseError.message}`);
+        }
+
+        if (!data.success) {
+          throw new Error(data.error || 'Error del servidor');
+        }
+
+        console.log('✅ Total estudiantes:', data.total_estudiantes);
+        const cedulaEsc = a + (data.total_estudiantes + 1) + c;
+        console.log('🔢 Cédula escolar compuesta:', cedulaEsc);
+        return cedulaEsc;
+
+      } catch (error) {
+        console.error('❌ Error en validarYGenerarCedula:', error);
+        return 0;
+      }
+    }
+
+    // ==================== EVENT LISTENERS ====================
+
+    // Validar fecha en tiempo real
+    fechaInput.addEventListener('change', function() {
+      validarRangoFecha();
+      // Si la fecha es válida, proceder con la generación de cédula
+      if (fechaInput.value && validarRangoFecha() && selectCi.value === 'no') {
+        validarRegistro();
+      }
+    });
+
+    fechaInput.addEventListener('blur', function() {
+      validarRangoFecha();
+    });
+
+    fechaInput.addEventListener('input', function() {
+      // Validar mientras el usuario escribe (para entrada manual)
+      if (this.value.length === 10) { // Fecha completa en formato YYYY-MM-DD
+        setTimeout(() => validarRangoFecha(), 100);
+      }
+    });
+
+    // Manejar cambio en el select de CI
+    selectCi.addEventListener('change', function() {
+      console.log('🔄 Select CI cambiado a:', this.value);
+
+      if (this.value === 'no') {
+        console.log('🎯 Modo: Sin cédula - activando generación automática');
+        cedulaEInput.placeholder = "Se generará automáticamente";
+
+        // Ejecutar validación si ya hay fecha seleccionada
+        if (fechaInput.value) {
+          console.log('📋 Fecha ya seleccionada, ejecutando validación...');
+          if (validarRangoFecha()) {
+            validarRegistro();
+          }
+        } else {
+          console.log('⏳ Esperando selección de fecha...');
+        }
+
+      } else if (this.value === 'si') {
+        console.log('🆗 Modo: Con cédula - desactivando generación automática');
+        cedulaEInput.value = '';
+        cedulaEInput.readOnly = false;
+        cedulaEInput.style.backgroundColor = '';
+        cedulaEInput.style.cursor = '';
+        cedulaEInput.placeholder = "Ingrese la cédula de identidad";
+      }
+    });
+
+    // Escuchar cambios en la cédula del representante
+    cedulaRInput.addEventListener('input', function() {
+      console.log('✏️ Cédula representante cambiada:', this.value);
+      if (selectCi.value === 'no' && fechaInput.value && validarRangoFecha()) {
+        console.log('🔄 Regenerando cédula escolar por cambio en cédula representante');
+        validarRegistro();
+      }
+    });
+
+    // Validar fecha antes de enviar el formulario
+    const form = fechaInput.closest('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (fechaInput.value && !validarRangoFecha()) {
+          e.preventDefault();
+          fechaInput.focus();
+        }
+      });
+    }
+
+    // ==================== INICIALIZACIÓN ====================
+
+    // Inicializar los límites de fecha al cargar la página
+    inicializarFechas();
+
+    // Validar si ya hay una fecha seleccionada al cargar la página
+    setTimeout(() => {
+      if (fechaInput.value) {
+        console.log('🔍 Validando fecha pre-seleccionada al cargar...');
+        validarRangoFecha();
+      }
+    }, 500);
 
     // Debug inicial
     console.log('🔍 Estado inicial:', {
@@ -2564,8 +2493,14 @@ try {
 
 <!-- Aca Enviamos informacion del formulario -->
 <script>
-  // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ========== 
+  // ========== GENERAR CONSTANCIA DESPUÉS DE INSCRIPCIÓN EXITOSA ==========
   function generarConstanciaInscripcion(idInscripcion) {
+    // ✅ VALIDACIÓN ADICIONAL: Verificar que el ID sea numérico
+    if (!idInscripcion || isNaN(idInscripcion)) {
+      console.error('❌ ID de inscripción no válido para generar constancia:', idInscripcion);
+      return Promise.reject(new Error('ID de inscripción no válido'));
+    }
+
     return new Promise((resolve, reject) => {
       console.log('📄 Generando constancia para inscripción ID:', idInscripcion);
 
@@ -2575,114 +2510,46 @@ try {
       generatingMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando constancia de inscripción...';
       document.querySelector('.content-wrapper').prepend(generatingMsg);
 
-      // Llamar al endpoint AJAX para generar la constancia
-      const formData = new FormData();
-      formData.append('id_inscripcion', idInscripcion);
+      // Usar directamente generar_constancia.php (SIMPLIFICADO)
+      const constanciaUrl = `/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}`;
 
-      fetch('/final/app/controllers/inscripciones/generar_constancia_ajax.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            return response.text().then(text => {
-              console.log('📨 Respuesta de constancia (texto):', text.substring(0, 200));
+      setTimeout(() => {
+        generatingMsg.remove();
 
-              // Si parece que fue exitoso a pesar de no ser JSON
-              if (text.includes('success') || text.includes('download_url') || text.includes('generada')) {
-                console.log('✅ Constancia generada (respuesta no JSON pero exitosa)');
+        const successMsg = document.createElement('div');
+        successMsg.className = 'alert alert-success';
+        successMsg.innerHTML = `
+                <strong>✅ Inscripción completada exitosamente</strong><br>
+                <small>La constancia se abrirá en una nueva ventana para visualización.</small>
+                <br><small><em>Puede usar el botón de descarga del navegador si desea guardarla.</em></small>
+            `;
+        document.querySelector('.content-wrapper').prepend(successMsg);
 
-                // Intentar extraer la URL de descarga si está en el texto
-                let downloadUrl = '/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=' + idInscripcion;
+        // Abrir en nueva pestaña para VISUALIZACIÓN (no descarga automática)
+        console.log('🔗 Abriendo constancia para visualización:', constanciaUrl);
+        window.open(constanciaUrl, '_blank', 'width=1000,height=700,scrollbars=yes');
 
-                // Buscar patrones de URL en el texto
-                const urlMatch = text.match(/"download_url":"([^"]+)"/) || text.match(/download_url[^"]*"([^"]+)"/);
-                if (urlMatch) {
-                  downloadUrl = urlMatch[1];
-                }
-
-                return {
-                  success: true,
-                  download_url: downloadUrl,
-                  message: 'Constancia generada exitosamente'
-                };
-              }
-              throw new Error('Error generando constancia');
-            });
-          }
-          return response.json();
-        })
-        .then(data => {
-          generatingMsg.remove();
-
-          if (data.success) {
-            console.log('✅ Constancia generada:', data.download_url);
-
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success';
-            successMsg.innerHTML = `
-                    <strong>✅ Inscripción completada exitosamente</strong><br>
-                    <small>La constancia se ha generado y descargará automáticamente.</small>
-                `;
-            document.querySelector('.content-wrapper').prepend(successMsg);
-
-            // Descargar automáticamente si hay URL
-            if (data.download_url) {
-              setTimeout(() => {
-                console.log('🔗 Abriendo URL:', data.download_url);
-                window.open(data.download_url, '_blank');
-              }, 800);
-            } else {
-              // Fallback: usar el generador directo
-              setTimeout(() => {
-                const fallbackUrl = '/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=' + idInscripcion;
-                console.log('🔗 Usando fallback URL:', fallbackUrl);
-                window.open(fallbackUrl, '_blank');
-              }, 800);
-            }
-
-            resolve(data);
-          } else {
-            console.warn('⚠️ Constancia no generada:', data.message);
-
-            // Mostrar opción manual
-            const warningMsg = document.createElement('div');
-            warningMsg.className = 'alert alert-warning';
-            warningMsg.innerHTML = `
-                    <strong>✅ Inscripción completada</strong><br>
-                    <small>Puede generar la constancia manualmente si es necesario.</small><br>
-                    <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
-                       target="_blank" class="btn btn-outline-primary btn-sm mt-2">
-                        <i class="fas fa-redo"></i> Generar Constancia Manualmente
-                    </a>
-                `;
-            document.querySelector('.content-wrapper').prepend(warningMsg);
-
-            resolve(data);
-          }
-        })
-        .catch(error => {
-          console.warn('⚠️ Error en generación de constancia:', error);
-          generatingMsg.remove();
-
-          // Mostrar mensaje con opción manual
-          const errorMsg = document.createElement('div');
-          errorMsg.className = 'alert alert-warning';
-          errorMsg.innerHTML = `
-                <strong>✅ Inscripción completada</strong><br>
-                <small>Puede generar la constancia manualmente.</small><br>
-                <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
-                   target="_blank" class="btn btn-outline-primary btn-sm mt-2">
-                    <i class="fas fa-redo"></i> Generar Constancia Manualmente
+        // También mostrar botón por si la ventana emergente es bloqueada
+        const buttonMsg = document.createElement('div');
+        buttonMsg.className = 'alert alert-info mt-2';
+        buttonMsg.innerHTML = `
+                <small>Si la constancia no se abrió automáticamente:</small><br>
+                <a href="${constanciaUrl}" target="_blank" class="btn btn-outline-primary btn-sm mt-1">
+                    <i class="fas fa-external-link-alt"></i> Abrir Constancia Manualmente
                 </a>
             `;
-          document.querySelector('.content-wrapper').prepend(errorMsg);
+        document.querySelector('.content-wrapper').prepend(buttonMsg);
+        window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
 
-          resolve(); // Resolvemos igual para continuar
+        resolve({
+          success: true
         });
-    });
-  }
+
+      }, 1500); // Pequeño delay para mejor experiencia de usuario
+      window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
+
+    }); // <--- Cierra el return new Promise()
+  } // <--- Cierra function generarConstanciaInscripcion()
 
   // Modificar el manejo del envío del formulario
   document.addEventListener('DOMContentLoaded', function() {
@@ -2725,7 +2592,14 @@ try {
             try {
               const jsonData = JSON.parse(text);
               console.log('✅ JSON parseado correctamente:', jsonData);
+              setTimeout(() => {
+                location.href = '/final/admin/inscripciones/indexf2.php';
+
+              }, 3000);
+
+
               return jsonData;
+
             } catch (jsonError) {
               console.warn('⚠️ No se pudo parsear como JSON, pero continuamos...');
 
@@ -2769,54 +2643,66 @@ try {
 
           console.log('📊 Resultado final del proceso:', data);
 
-          // SIEMPRE considerar éxito si llegamos hasta aquí
-          const successAlert = document.createElement('div');
-          successAlert.className = 'alert alert-success';
-
-          if (data.success) {
-            successAlert.innerHTML = `<strong>✅ ${data.message || 'Inscripción completada exitosamente'}</strong>`;
-          } else {
-            // Aún si data.success es false, mostramos éxito (estrategia de silenciamiento)
-            successAlert.innerHTML = `<strong>✅ Proceso completado</strong><br><small>La inscripción ha sido procesada.</small>`;
-          }
-
-          document.querySelector('.content-wrapper').prepend(successAlert);
-
-          // Intentar obtener el ID de inscripción de diferentes maneras
+          // Intentar obtener el ID de inscripción
           let idInscripcion = data.id_inscripcion;
 
-          // Si no hay ID en la respuesta, intentar alternativas
+          // SOLUCIÓN RÁPIDA: Si no hay ID, no generar constancia
           if (!idInscripcion) {
-            console.warn('⚠️ No se recibió ID de inscripción, usando estrategias alternativas...');
-
-            // Estrategia 1: Intentar obtener del último registro (si tu sistema lo permite)
-            idInscripcion = 'last';
-
-            // Estrategia 2: Usar un timestamp como referencia
-            // idInscripcion = 'ref_' + Date.now();
+            console.warn('⚠️ No se generará constancia - ID no recibido');
+            idInscripcion = null;
           }
-
           console.log('🎯 ID de inscripción a usar:', idInscripcion);
 
-          // Generar constancia con el ID disponible
-          generarConstanciaInscripcion(idInscripcion)
-            .then(() => {
-              console.log('✅ Proceso de constancia completado');
+          // SOLO generar constancia si tenemos un ID válido (numérico)
+          if (idInscripcion && idInscripcion !== 'last' && !isNaN(idInscripcion)) {
+            // Generar constancia con el ID disponible
+            generarConstanciaInscripcion(idInscripcion)
+              .then(() => {
+                console.log('✅ Proceso de constancia completado');
 
-              // Redirigir después de un tiempo
-              setTimeout(() => {
-                console.log('🔄 Redirigiendo a dashboard...');
-                window.location.href = '/final/admin/index.php';
-              }, 5000);
-            })
-            .catch((error) => {
-              console.warn('⚠️ Error en proceso de constancia:', error);
+                // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
+                setTimeout(() => {
+                  console.log('🔄 Redirigiendo a dashboard...');
+                  window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
+                }, 8000); // 8 segundos para dar tiempo al usuario
+              })
+              .catch((error) => {
+                console.warn('⚠️ Error en proceso de constancia:', error);
 
-              // Redirigir incluso si hay error en la constancia
-              setTimeout(() => {
-                window.location.href = '/final/admin/index.php';
-              }, 4000);
-            });
+                // Mostrar mensaje de error pero continuar
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'alert alert-warning mt-2';
+                errorMsg.innerHTML = `
+                                <small>Hubo un problema con la constancia, pero la inscripción fue exitosa.</small><br>
+                                <a href="/final/app/controllers/inscripciones/generar_constancia.php?id_inscripcion=${idInscripcion}" 
+                                    target="_blank" class="btn btn-outline-warning btn-sm mt-1">
+                                    <i class="fas fa-redo"></i> Intentar Generar Constancia Nuevamente
+                                </a>
+                            `;
+                document.querySelector('.content-wrapper').prepend(errorMsg);
+
+                // Redirigir después de más tiempo
+                setTimeout(() => {
+                  window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
+                }, 6000);
+              });
+          } else {
+            // Si no hay ID válido, solo redirigir
+            console.warn('⚠️ No se generará constancia - ID no válido:', idInscripcion);
+
+            const noConstanciaMsg = document.createElement('div');
+            noConstanciaMsg.className = 'alert alert-info mt-3';
+            noConstanciaMsg.innerHTML = `
+                        <strong>✅ Inscripción completada exitosamente</strong><br>
+                        <small>Puede generar la constancia más tarde desde el listado de estudiantes.</small>
+                    `;
+            document.querySelector('.content-wrapper').prepend(noConstanciaMsg);
+
+            setTimeout(() => {
+              console.log('🔄 Redirigiendo a dashboard...');
+              window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
+            }, 5000);
+          }
 
         })
         .catch(error => {
@@ -2838,15 +2724,15 @@ try {
             successAlert.innerHTML = `<strong>✅ Proceso completado</strong>`;
             document.querySelector('.content-wrapper').prepend(successAlert);
 
-            // Intentar generar constancia de todas formas
-            setTimeout(() => {
-              generarConstanciaInscripcion('last')
-                .finally(() => {
-                  setTimeout(() => {
-                    window.location.href = '/final/admin/index.php';
-                  }, 4000);
-                });
-            }, 1000);
+            // // Intentar generar constancia de todas formas
+            // setTimeout(() => {
+            //     generarConstanciaInscripcion('last')
+            //         .finally(() => {
+            //             setTimeout(() => {
+            //                 window.location.href = '/final/admin/index.php';
+            //             }, 4000);
+            //         });
+            // }, 1000);
           }
 
           // Rehabilitar botón en caso de error crítico
@@ -2854,11 +2740,13 @@ try {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
           }
-        });
-    });
-  });
+        }); // <--- Cierre de la función de callback del .catch
+    }); // <--- Cierre del form.addEventListener('submit'
+  }); // <--- Cierre del document.addEventListener('DOMContentLoaded'
 </script>
-</script>
+
+
+
 
 
 <!-- Carga de estados, municipios, parroquias del representante -->
@@ -3199,6 +3087,46 @@ try {
         btn.closest('.discapacidad-item').remove();
       }
     });
+  });
+</script>
+
+<!-- ========== CONVERSIÓN AUTOMÁTICA A MAYÚSCULAS ========== -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Función para convertir texto a mayúsculas
+    function convertirMayusculas(elemento) {
+      elemento.value = elemento.value.toUpperCase();
+    }
+
+    // Aplicar conversión a mayúsculas en tiempo real para todos los inputs de texto editables
+    const inputsTexto = document.querySelectorAll('input[type="text"]:not([readonly])');
+
+    inputsTexto.forEach(input => {
+      input.addEventListener('input', function() {
+        convertirMayusculas(this);
+      });
+
+      // También aplicar a los valores existentes al cargar la página
+      if (input.value) {
+        convertirMayusculas(input);
+      }
+    });
+
+    // Aplicar también a textareas
+    const textareas = document.querySelectorAll('textarea:not([readonly])');
+
+    textareas.forEach(textarea => {
+      textarea.addEventListener('input', function() {
+        convertirMayusculas(this);
+      });
+
+      // Aplicar a valores existentes
+      if (textarea.value) {
+        convertirMayusculas(textarea);
+      }
+    });
+
+    console.log('✅ Conversión a mayúsculas configurada para todos los campos de texto');
   });
 </script>
 
@@ -3594,7 +3522,7 @@ try {
 
             // Redirigir después de 3 segundos
             setTimeout(() => {
-              window.location.href = '/final/admin/index.php';
+              window.location.href = '/final/admin/estudiantes/estudiantes_list.php';
             }, 3000);
 
           } else {

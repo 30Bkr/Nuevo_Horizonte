@@ -729,10 +729,11 @@ try {
                               <?php
                               if (!empty($periodos)) {
                                 foreach ($periodos as $periodo) {
+                                  $selected = ($periodo['estatus'] == 1) ? 'selected' : '';
                                   $fecha_ini = date('d/m/Y', strtotime($periodo['fecha_ini']));
                                   $fecha_fin = date('d/m/Y', strtotime($periodo['fecha_fin']));
-                                  echo "<option value='{$periodo['id_periodo']}' data-fecha-ini='{$periodo['fecha_ini']}' data-fecha-fin='{$periodo['fecha_fin']}'>
-                            {$periodo['descripcion_periodo']} ({$fecha_ini} al {$fecha_fin})
+                                  echo "<option value='{$periodo['id_periodo']}' data-fecha-ini='{$periodo['fecha_ini']}' data-fecha-fin='{$periodo['fecha_fin']}' $selected>
+                            {$periodo['descripcion_periodo']} ({$fecha_ini} al {$fecha_fin}) {$periodo['estatus']}
                           </option>";
                                 }
                               } else {
