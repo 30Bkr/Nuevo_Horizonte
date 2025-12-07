@@ -189,7 +189,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
                 <i class="nav-icon fas bi bi-card-list">
-                  <img src="<?= URL; ?>/public/images/secciones.svg" alt="Inscripcion">
+                  <img src="<?= URL; ?>/public/images/estudiante.svg" alt="Inscripcion">
 
                 </i>
                 <p>

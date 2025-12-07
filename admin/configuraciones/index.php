@@ -185,6 +185,30 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
           </div>
         </div>
       </div>
+
+      <div class="row">
+        <!-- Card 4: Quienes pueden inscribir -->
+        <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+          <div class="card card-warning card-outline">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-heartbeat mr-2"></i>
+
+                Parentesco
+              </h3>
+            </div>
+            <div class="card-body">
+              <p class="card-text">Gestión de personas que pueden inscribir dentro del sistema.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">Inscripciones</small>
+                <a href="configuracion/parentesco.php" class="btn btn-teal btn-sm" id="meal">
+                  <i class="fas fa-cog mr-1"></i> Configurar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

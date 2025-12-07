@@ -1817,6 +1817,12 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
       const nivelId = this.value;
       const seccionSelect = document.getElementById('id_seccion');
 
+      seccionSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const idSeccion = selectedOption.getAttribute('data-id-seccion');
+        document.getElementById('id_seccion_hidden').value = idSeccion || this.value;
+      });
+
       if (nivelId) {
         cargarSeccionesPorNivel(nivelId);
       } else {
@@ -1824,66 +1830,6 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
         seccionSelect.disabled = true;
       }
     });
-
-    document.getElementById('id_seccion').addEventListener('change', function() {
-      const selectedOption = this.options[this.selectedIndex];
-      const idSeccion = selectedOption.getAttribute('data-id-seccion');
-      document.getElementById('id_seccion_hidden').value = idSeccion || this.value;
-
-      // VERIFICAR CUPOS CUANDO SE SELECCIONA UNA SECCIÓN
-      verificarCupos();
-    });
-
-    // function cargarSeccionesPorNivel(nivelId) {
-    //   const formData = new FormData();
-    //   formData.append('id_nivel', nivelId);
-
-    //   const seccionSelect = document.getElementById('id_seccion');
-    //   seccionSelect.innerHTML = '<option value="">Cargando secciones...</option>';
-    //   seccionSelect.disabled = true;
-
-    //   fetch('/final/app/controllers/cupos/cargar_secciones.php', {
-    //       method: 'POST',
-    //       body: formData
-    //     })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //       if (data.success && data.secciones.length > 0) {
-    //         seccionSelect.innerHTML = '<option value="">Seleccionar Sección</option>';
-    //         data.secciones.forEach(seccion => {
-    //           const cuposDisponibles = seccion.capacidad - (seccion.inscritos || 0);
-    //           const textoCupos = cuposDisponibles > 0 ?
-    //             ` (${cuposDisponibles} cupos)` :
-    //             ' (Sin cupos)';
-    //           seccionSelect.innerHTML += `
-    //                 <option value="${seccion.id_nivel_seccion}" 
-    //                         data-id-seccion="${seccion.id_seccion}"
-    //                         ${cuposDisponibles <= 0 ? 'disabled' : ''}>
-    //                     ${seccion.nom_seccion}${textoCupos}
-    //                 </option>
-    //             `;
-    //         });
-
-    //         seccionSelect.disabled = false;
-
-    //         // Si solo hay una sección disponible, seleccionarla automáticamente
-    //         const opcionesDisponibles = Array.from(seccionSelect.options)
-    //           .filter(opt => !opt.disabled && opt.value !== '');
-
-    //         if (opcionesDisponibles.length === 1) {
-    //           seccionSelect.value = opcionesDisponibles[0].value;
-    //         }
-    //       } else {
-    //         seccionSelect.innerHTML = '<option value="">No hay secciones disponibles</option>';
-    //         seccionSelect.disabled = true;
-    //       }
-    //     })
-    //     .catch(error => {
-    //       console.error('Error cargando secciones:', error);
-    //       seccionSelect.innerHTML = '<option value="">Error al cargar secciones</option>';
-    //       seccionSelect.disabled = true;
-    //     });
-    // }
 
     function cargarSeccionesPorNivel(nivelId) {
       const formData = new FormData();
@@ -1909,7 +1855,6 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
               seccionSelect.innerHTML += `
                     <option value="${seccion.id_nivel_seccion}" 
                             data-id-seccion="${seccion.id_seccion}"
-                            data-nivel-seccion="${seccion.id_nivel_seccion}"  <!-- ESTA LÍNEA ES IMPORTANTE -->
                             ${cuposDisponibles <= 0 ? 'disabled' : ''}>
                         ${seccion.nom_seccion}${textoCupos}
                     </option>
@@ -1924,10 +1869,6 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
 
             if (opcionesDisponibles.length === 1) {
               seccionSelect.value = opcionesDisponibles[0].value;
-              // Disparar el evento change para verificar cupos
-              setTimeout(() => {
-                seccionSelect.dispatchEvent(new Event('change'));
-              }, 100);
             }
           } else {
             seccionSelect.innerHTML = '<option value="">No hay secciones disponibles</option>';
@@ -1940,29 +1881,6 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
           seccionSelect.disabled = true;
         });
     }
-
-    // FUNCIÓN PARA MOSTRAR MENSAJE DE CARGA
-    function mostrarMensajeCargandoCupos() {
-      eliminarMensajeCupos();
-
-      const informacionAcademica = document.querySelector('.informacion_academica .card-body');
-      if (!informacionAcademica) return;
-
-      mensajeCupos = document.createElement('div');
-      mensajeCupos.className = 'alert alert-info mt-3';
-      mensajeCupos.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando disponibilidad de cupos...';
-
-      informacionAcademica.appendChild(mensajeCupos);
-    }
-
-    // TAMBIÉN AGREGAR EVENTO AL PERIODO
-    document.getElementById('id_periodo').addEventListener('change', function() {
-      // Si ya hay una sección seleccionada, verificar cupos nuevamente
-      const seccionSelect = document.getElementById('id_seccion');
-      if (seccionSelect.value) {
-        verificarCupos();
-      }
-    });
 
     // ========== VALIDACIÓN DEL FORMULARIO COMPLETA MODIFICADA PARA GENERAR CONSTANCIA ==========
     document.getElementById('form-reinscripcion').addEventListener('submit', function(e) {
@@ -2233,7 +2151,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                 // Redirigir después de un tiempo más largo para que el usuario pueda ver/descargar la constancia
                 setTimeout(() => {
                   console.log('🔄 Redirigiendo a dashboard...');
-                  window.location.href = '/final/admin/reinscripciones/reinscripcion2.php';
+                  window.location.href = '/final/admin/index.php';
                 }, 5000); // Reducí el tiempo a 5 segundos
               })
               .catch((error) => {

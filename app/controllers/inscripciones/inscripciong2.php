@@ -1,7 +1,7 @@
 <?php
 // LIMPIAR ABSOLUTAMENTE TODO BUFFER ANTES DE COMENZAR
 while (ob_get_level()) {
-    ob_end_clean();
+  ob_end_clean();
 }
 
 // Iniciar sesión SIN output
@@ -503,7 +503,7 @@ try {
   $id_seccion = $_POST['id_seccion'];
   $id_periodo = $_POST['id_periodo'];
 
-  $disponibilidad = $cuposController->obtenerDisponibilidad($id_nivel, $id_seccion, $id_periodo);
+  $disponibilidad = $cuposController->obtenerDisponibilidadPorSeparado($id_nivel, $id_seccion, $id_periodo);
 
   if (!$disponibilidad['success']) {
     throw new Exception('Error al verificar disponibilidad: ' . $disponibilidad['message']);
@@ -538,21 +538,20 @@ try {
   error_log("REinscripción creada con ID: " . $id_inscripcion);
 
   // Confirmar transacción
- $pdo->commit();
+  $pdo->commit();
 
-// Respuesta de éxito con el ID de inscripción
-error_log("REinscripción completada exitosamente");
+  // Respuesta de éxito con el ID de inscripción
+  error_log("Inscripción completada exitosamente");
 
-// ENVIAR RESPUESTA JSON - ESTO ES LO ÚNICO QUE DEBE SALIR
-    echo json_encode([
-        'success' => true,
-        'message' => 'REinscripción realizada exitosamente',
-        'id_inscripcion' => $id_inscripcion,
-        'id_estudiante' => $id_estudiante,
-        'id_representante' => $id_representante,
-        'tipo_persona' => $tipo_persona
-    ]);
-  
+  // ENVIAR RESPUESTA JSON - ESTO ES LO ÚNICO QUE DEBE SALIR
+  echo json_encode([
+    'success' => true,
+    'message' => 'Inscripción realizada exitosamente',
+    'id_inscripcion' => $id_inscripcion,
+    'id_estudiante' => $id_estudiante,
+    'id_representante' => $id_representante,
+    'tipo_persona' => $tipo_persona
+  ]);
 } catch (Exception $e) {
   // Revertir transacción en caso de error
   if (isset($pdo) && $pdo->inTransaction()) {
@@ -562,13 +561,12 @@ error_log("REinscripción completada exitosamente");
 
   error_log("Error en inscripción: " . $e->getMessage());
 
- // ENVIAR ERROR EN JSON
-    http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error en la inscripción: ' . $e->getMessage()
-    ]);
-
+  // ENVIAR ERROR EN JSON
+  http_response_code(400);
+  echo json_encode([
+    'success' => false,
+    'message' => 'Error en la inscripción: ' . $e->getMessage()
+  ]);
 } finally {
   // Cerrar conexión si existe
   if (isset($conexion)) {
@@ -576,11 +574,10 @@ error_log("REinscripción completada exitosamente");
   }
 
   // LIMPIAR CUALQUIER BUFFER QUE HAYA QUEDADO
-    while (ob_get_level()) {
-        ob_end_clean();
-    }
-    
-    // FORZAR SALIDA INMEDIATA
-    exit;
+  while (ob_get_level()) {
+    ob_end_clean();
+  }
+
+  // FORZAR SALIDA INMEDIATA
+  exit;
 }
-?>
