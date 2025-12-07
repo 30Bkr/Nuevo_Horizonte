@@ -4,8 +4,10 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
-// CORRECCIÓN: Se corrige el doble cierre de comilla en esta línea.
 include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.php';
+
+// Obtener el filtro de estado (activo/inactivo)
+$filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
 ?>
 
 <div class="content-wrapper">
@@ -51,7 +53,15 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                         <div class="card-header">
                             <h3 class="card-title">Listado de Estudiantes</h3>
                             <div class="card-tools">
+                                <!-- FILTRO DE ACTIVOS/INACTIVOS -->
+                                <div class="input-group input-group-sm" style="width: 200px;">
+                                    <select id="filtroEstado" class="form-control form-control-sm" onchange="cambiarFiltro(this.value)">
+                                    <option value="1" <?php echo $filtro_activo == 1 ? 'selected' : ''; ?>>Activos</option>
+                                    <option value="0" <?php echo $filtro_activo == 0 ? 'selected' : ''; ?>>Inactivos</option>
+                                    <option value="2" <?php echo $filtro_activo == 2 ? 'selected' : ''; ?>>Todos</option>
+                                </select>
                                 </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <?php
@@ -61,7 +71,7 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
 
                                 if ($db) {
                                     $controller = new EstudianteController($db);
-                                    $stmt = $controller->listar();
+                                    $stmt = $controller->listar($filtro_activo);
 
                                     if ($stmt) {
                                         if ($stmt->rowCount() > 0) {
@@ -75,15 +85,14 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                             <th>Correo</th>
                                                             <th>Fecha Nac.</th>
                                                             <th>Sexo</th>
-                                                            <th>Inscripciones</th>
+                                                            <th>Inscripciones Realizadas</th>
+                                                            <th>Inscripción Actual</th>
                                                             <th>Estado</th>
                                                             <th>Acciones</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>';
 
-                                            // MODIFICACIÓN: Se elimina la lógica de $estudiantes, usort y $contador_base.
-                                            // Se itera directamente y DataTables se encargará de la paginación y ordenamiento.
                                             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                                                 $nombreCompleto = $row['primer_nombre'] . ' ' .
                                                     ($row['segundo_nombre'] ? $row['segundo_nombre'] . ' ' : '') .
@@ -98,6 +107,11 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                     '<span class="badge badge-info">' . $row['inscripciones_count'] . '</span>' :
                                                     '<span class="badge badge-secondary">0</span>';
 
+                                                // Estado de inscripción en periodo activo
+                                                $inscripcion_actual_badge = $row['estado_inscripcion'] == 'Inscrito' ?
+                                                    '<span class="badge badge-success">Inscrito</span>' :
+                                                    '<span class="badge badge-warning">No Inscrito</span>';
+
                                                 $boton_estado = $row['estatus'] == 1 ?
                                                     '<button type="button" class="btn btn-danger btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_estudiante'] . ', 0)">
                                                         <i class="fas fa-ban"></i>
@@ -106,8 +120,6 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                         <i class="fas fa-check"></i>
                                                     </button>';
 
-                                                // Botón para generar constancia (solo si tiene inscripciones)
-                                                // Se ajusta la llamada a generarConstancia para pasar el evento
                                                 $boton_constancia = $row['inscripciones_count'] > 0 ?
                                                     '<button type="button" class="btn btn-info btn-sm" title="Generar Constancia" onclick="generarConstancia(event, ' . $row['id_estudiante'] . ')">
                                                         <i class="fas fa-file-pdf"></i>
@@ -117,7 +129,6 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                     </button>';
 
                                                 echo "<tr>";
-                                                // MODIFICACIÓN: Dejamos la columna # vacía. DataTables la llenará con el número de secuencia.
                                                 echo "<td></td>"; 
                                                 echo "<td>{$row['cedula']}</td>";
                                                 echo "<td>{$nombreCompleto}</td>";
@@ -126,6 +137,7 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                 echo "<td>" . date('d/m/Y', strtotime($row['fecha_nac'])) . "</td>";
                                                 echo "<td>{$row['sexo']}</td>";
                                                 echo "<td>{$inscripciones_badge}</td>";
+                                                echo "<td>{$inscripcion_actual_badge}</td>";
                                                 echo "<td>{$estado_badge}</td>";
                                                 echo "<td>
                                                     <div class='btn-group'>
@@ -140,7 +152,7 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                                                     </div>
                                                 </td>";
                                                 echo "</tr>";
-                                            } // Cierre del while
+                                            }
 
                                             echo '</tbody></table>';
                                         } else {
@@ -157,12 +169,12 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                             }
                             ?>
                         </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </div>
+
 <script src="/final/public/plugins/jquery/jquery.min.js"></script>
 <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
@@ -198,21 +210,23 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                     "sortDescending": ": activar para ordenar descendente"
                 }
             },
-            // Se elimina el 'order': [[0, "asc"]] para que la columna # se pueda ordenar correctamente con los datos originales.
             "drawCallback": function(settings) {
-                // MODIFICACIÓN: Lógica para la numeración continua a través de las páginas
                 var api = this.api();
-                var startIndex = api.page.info().start; // Índice de inicio de la página actual
+                var startIndex = api.page.info().start;
 
                 api.column(0, {
                     page: 'current'
                 }).nodes().each(function(cell, i) {
-                    // La numeración continua es: Índice de inicio + índice de la fila en la página + 1
                     cell.innerHTML = startIndex + i + 1;
                 });
             }
         });
     });
+
+    // Función para cambiar el filtro
+    function cambiarFiltro(valor) {
+        window.location.href = 'estudiantes_list.php?filtro=' + valor;
+    }
 
     function cambiarEstado(id_estudiante, nuevo_estado) {
         const accion = nuevo_estado ? 'habilitar' : 'inhabilitar';
@@ -226,7 +240,6 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
                     estado: nuevo_estado
                 },
                 dataType: 'json',
-                // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
                 success: function(response) {
                     if (response.success) {
                         alert(response.message);
@@ -242,37 +255,28 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
         }
     }
 
-    // CORRECCIÓN: Se agrega 'event' como argumento
     function generarConstancia(event, id_estudiante) { 
-        // Mostrar mensaje de carga
         const boton = event.target;
         const originalHTML = boton.innerHTML;
         boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         boton.disabled = true;
 
-        // Obtener la última inscripción del estudiante
         $.ajax({
-            // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
             url: 'obtener_ultima_inscripcion.php', 
             type: 'POST',
             data: {
                 id_estudiante: id_estudiante
-            }, // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
-            // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
-            dataType: 'json', 
-            // CORRECCIÓN: Se usa coma (,) en lugar de punto y coma (;)
+            },
+            dataType: 'json',
             success: function(response) {
-                // Restaurar botón
                 boton.innerHTML = originalHTML;
                 boton.disabled = false;
 
                 if (response.success && response.id_inscripcion) {
-                    // Abrir la constancia en una nueva pestaña
                     window.open('/final/app/controllers/inscripciones/generar_constancia_estudiante.php?id_inscripcion=' + response.id_inscripcion + '&v=' + Date.now(), '_blank');
                 }
             }, 
             error: function(xhr, status, error) {
-                // Restaurar botón
                 boton.innerHTML = originalHTML;
                 boton.disabled = false;
                 

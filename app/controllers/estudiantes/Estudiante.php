@@ -52,8 +52,11 @@ class Estudiante {
         $this->conn = $db;
     }
 
-   // Listar todos los estudiantes
-public function listarEstudiantes() {
+   // Reemplazado el método listarEstudiantes() para mostrar a todos:
+public function listarEstudiantes($filtro_activo = 1) {
+    // Obtener el periodo activo
+    $periodo_activo = $this->obtenerPeriodoActivo();
+    
     $query = "SELECT 
                 e.id_estudiante,
                 e.estatus,
@@ -67,21 +70,49 @@ public function listarEstudiantes() {
                 p.fecha_nac,
                 p.sexo,
                 e.creacion,
-                (SELECT COUNT(*) FROM inscripciones i WHERE i.id_estudiante = e.id_estudiante AND i.estatus = 1) as inscripciones_count
+                (SELECT COUNT(*) FROM inscripciones i WHERE i.id_estudiante = e.id_estudiante AND i.estatus = 1) as inscripciones_count,
+                -- Verificar si está inscrito en el periodo activo
+                CASE 
+                    WHEN ? IS NOT NULL AND EXISTS (
+                        SELECT 1 FROM inscripciones i2 
+                        WHERE i2.id_estudiante = e.id_estudiante 
+                        AND i2.id_periodo = ? 
+                        AND i2.estatus = 1
+                    ) THEN 'Inscrito'
+                    ELSE 'No Inscrito'
+                END as estado_inscripcion
               FROM " . $this->table_name . " e
               INNER JOIN personas p ON e.id_persona = p.id_persona
-              WHERE e.id_estudiante IN (
-                  SELECT i.id_estudiante 
-                  FROM inscripciones i 
-                  INNER JOIN periodos per ON i.id_periodo = per.id_periodo 
-                  WHERE per.estatus = 1 AND i.estatus = 1
-              )
-              ORDER BY e.estatus DESC, p.primer_apellido, p.primer_nombre";
+              WHERE 1=1";
+
+    // Agregar condición según el filtro
+    if ($filtro_activo == 1) { // Solo activos
+        $query .= " AND e.estatus = 1";
+    } elseif ($filtro_activo == 0) { // Solo inactivos
+        $query .= " AND e.estatus = 0";
+    }
+    // Si es 2 (todos), no agregamos condición de estatus
+    
+   $query .= " ORDER BY e.estatus DESC, p.primer_nombre, p.segundo_nombre, p.primer_apellido, p.segundo_apellido";
 
     $stmt = $this->conn->prepare($query);
+    $id_periodo_activo = $periodo_activo ? $periodo_activo['id_periodo'] : null;
+    
+    // Bind parameters
+    $stmt->bindParam(1, $id_periodo_activo);
+    $stmt->bindParam(2, $id_periodo_activo);
+    
     $stmt->execute();
 
     return $stmt;
+}
+
+// Agregar este método auxiliar a la clase Estudiante:
+private function obtenerPeriodoActivo() {
+    $query = "SELECT id_periodo FROM periodos WHERE estatus = 1 LIMIT 1";
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
     // Obtener estudiante por ID

@@ -10,9 +10,9 @@ class EstudianteController {
         $this->estudiante = new Estudiante($db);
     }
 
-    public function listar() {
-        return $this->estudiante->listarEstudiantes();
-    }
+    public function listar($filtro_activo = 1) {
+    return $this->estudiante->listarEstudiantes($filtro_activo);
+}
 
     public function obtener($id) {
         return $this->estudiante->obtenerPorId($id);
