@@ -2593,7 +2593,7 @@ try {
               const jsonData = JSON.parse(text);
               console.log('✅ JSON parseado correctamente:', jsonData);
               setTimeout(() => {
-                location.href = '/final/admin/index.php';
+                location.href = '/final/admin/inscripciones/indexf2.php';
 
               }, 3000);
 
