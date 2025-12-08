@@ -134,7 +134,6 @@ try {
                 width: 100%;
                 margin: 0 auto;
             }
-            /* CINTILLO CON IMAGEN */
             .cintillo-imagen {
                 width: 100%;
                 text-align: center;
@@ -155,7 +154,6 @@ try {
                 margin-bottom: 20px;
                 border-radius: 5px;
             }
-            /* TÍTULO DEL DOCUMENTO */
             .document-title {
                 text-align: center;
                 color: #003366;
@@ -165,57 +163,30 @@ try {
                 padding-bottom: 10px;
                 border-bottom: 3px solid #003366;
             }
-            /* CONTENIDO DE LA CONSTANCIA - CORREGIDO */
             .constancia-content {
                 text-align: justify;
                 margin: 20px 0;
                 font-size: 13px;
                 line-height: 1.6;
-                text-justify: inter-character;
-                word-spacing: -0.5px;
-                letter-spacing: -0.1px;
-                hyphens: auto;
             }
             .constancia-content strong {
                 color: #003366;
             }
-            /* FIRMA Y SELLO - CORREGIDO */
+            /* SECCIÓN DE FIRMA */
             .firma-section {
-            margin-top: 100px;
-            margin-bottom: 40px; /* Agregar margen inferior */
-            text-align: center;
+                width: 100%;
+                margin-top: 80px;
+                margin-bottom: 40px;
+                text-align: center; 
             }
-            }
-            .linea-firma {
-                border-bottom: 1px solid #000;
-                width: 350px;
-                margin: 0 auto 15px auto;
-                height: 1px;
-            }
-            .nombre-director {
-                font-weight: bold;
-                margin-top: 5px;
-                text-align: center;
-                font-size: 14px;
-                text-transform: uppercase;
-            }
-            .cargo-director {
-                font-style: italic;
-                color: #666;
-                text-align: center;
-                margin-top: 3px;
-                font-size: 12px;
-            }
-            /* INFORMACIÓN INSTITUCIONAL */
             .info-institucional {
                 text-align: center;
-                margin: 20px 0 10px 0; /* Reducir margen superior */
+                margin: 20px 0 10px 0;
                 font-size: 11px;
                 color: #666;
                 border-top: 1px solid #ccc;
                 padding-top: 10px;
-                }
-            /* PIE DE PÁGINA */
+            }
             .footer {
                 margin-top: 20px;
                 text-align: center;
@@ -261,10 +232,16 @@ try {
             
                        <!-- SECCIÓN DE FIRMA - CORREGIDA -->
             <div class="firma-section">
-                <div class="linea-firma"></div>
-                <div class="nombre-director">' . $directora_nombre_mayusculas . '</div>
-                <div class="cargo-director">DIRECTOR(A)</div>
+                <table align="center" style="width: 350px; border-collapse: collapse;">
+                    <tr>
+                        <td style="border-top: 1px solid #000; text-align: center; padding-top: 5px;">
+                            <div style="font-weight: bold; font-size: 14px; margin-bottom: 2px;">' . $directora_nombre_mayusculas . '</div>
+                            <div style="font-style: italic; font-size: 12px; color: #666;">DIRECTOR(A)</div>
+                        </td>
+                    </tr>
+                </table>
             </div>
+            
             
             <!-- INFORMACIÓN INSTITUCIONAL - MÁS ESPACIO -->
             <div class="info-institucional">
