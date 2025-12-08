@@ -1,9 +1,9 @@
 <?php
 session_start();
 
-// // Verificar permisos
+// // Verificar permisos (Descomentar si es necesario en producción)
 // if (!isset($_SESSION['usuario_id'])) {
-//     die('Acceso no autorizado');
+//      die('Acceso no autorizado');
 // }
 
 // Incluir autoload de Composer para HTML2PDF
@@ -54,8 +54,8 @@ try {
        <style>
     body { 
         font-family: DejaVu Sans, Arial, sans-serif; 
-        font-size: 9px; /* Reducido de 10px para mejor ajuste */
-        line-height: 1.2; /* Reducido de 1.3 */
+        font-size: 10px; /* Aumentado ligeramente para mejor lectura */
+        line-height: 1.2; 
         margin: 0;
         padding: 0;
     }
@@ -64,125 +64,114 @@ try {
         margin: 0;
         padding: 0;
     }
-    /* CINTILLO CON IMAGEN */
+    /* CINTILLO */
     .cintillo-imagen {
         width: 100%;
         text-align: center;
-        margin-bottom: 2px; /* Reducido de 5px */
+        margin-bottom: 5px;
     }
     .cintillo-img {
-        max-width: 95%; /* Reducido de 100% para márgenes laterales */
-        height: 45px; /* Reducido de 50px */
+        width: 100%; /* Ocupar todo el ancho disponible */
+        height: auto;
     }
     .cintillo-texto {
         text-align: center;
         font-weight: bold;
-        font-size: 11px; /* Ajustado de 12px */
+        font-size: 12px;
         color: #003366;
-        padding: 5px; /* Reducido de 8px */
+        padding: 5px;
         background-color: #f8f9fa;
         border: 1px solid #003366;
-        margin-bottom: 5px; /* Reducido de 10px */
+        margin-bottom: 5px;
     }
     /* TÍTULO DEL REPORTE */
     .report-title {
         text-align: center;
         color: #003366;
-        font-size: 12px; /* Reducido de 14px */
+        font-size: 14px;
         font-weight: bold;
-        margin: 3px 0 5px 0; /* Reducido márgenes */
-        padding-bottom: 3px;
-        border-bottom: 1px solid #003366; /* Reducido de 2px */
+        margin: 5px 0;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #003366;
     }
     /* INFORMACIÓN DEL REPORTE */
     .report-info { 
         text-align: center;
-        margin-bottom: 5px; /* Reducido de 10px */
-        font-size: 8px; /* Reducido de 10px */
+        margin-bottom: 10px;
+        font-size: 9px;
         background-color: #f8f9fa;
-        padding: 4px; /* Reducido de 6px */
+        padding: 5px;
         border-radius: 3px;
         border: 1px solid #dee2e6;
     }
-    /* TABLA - AJUSTES DE ANCHO CRÍTICOS */
+    /* TABLA */
     table { 
         width: 100%; 
         border-collapse: collapse; 
-        margin-top: 3px;
-        font-size: 8px; /* Asegurar tamaño consistente */
+        margin-top: 5px;
+        font-size: 9px;
     }
     th { 
         background-color: #003366; 
         color: white;
-        border: 1px solid #ddd;
-        padding: 4px 2px; /* Reducido padding horizontal de 6px a 2px */
+        border: 1px solid #000;
+        padding: 5px;
         text-align: center;
         font-weight: bold;
-        font-size: 8px;
     }
     td { 
-        border: 1px solid #ddd; 
-        padding: 3px 2px; /* Reducido padding horizontal de 5px a 2px */
-        font-size: 8px;
+        border: 1px solid #000; 
+        padding: 4px;
         vertical-align: top;
     }
-    /* AJUSTES ESPECÍFICOS DE ANCHO DE COLUMNAS */
-    th:nth-child(1), td:nth-child(1) { width: 4%; }  /* N° */
-    th:nth-child(2), td:nth-child(2) { width: 12%; } /* CÉDULA */
-    th:nth-child(3), td:nth-child(3) { width: 52%; } /* NOMBRE COMPLETO - AUMENTADO */
-    th:nth-child(4), td:nth-child(4) { width: 32%; } /* GRADO/AÑO Y SECCIÓN - AUMENTADO */
     
     .text-center { text-align: center; }
     .text-left { text-align: left; }
     .text-right { text-align: right; }
-    .even-row {
-        background-color: #f8f9fa;
-    }
-    .odd-row {
-        background-color: #ffffff;
-    }
+    .even-row { background-color: #f8f9fa; }
+    .odd-row { background-color: #ffffff; }
+    
     /* SEPARADOR DE GRADO */
     .grado-separator {
         background-color: #e9ecef;
         font-weight: bold;
         color: #003366;
-        padding: 3px;
+        padding: 5px;
         border-left: 3px solid #003366;
-        margin-top: 3px;
-        font-size: 8px;
+        margin-top: 5px;
+        font-size: 10px;
     }
     /* PIE DE PÁGINA */
     .footer {
         margin-top: 10px;
         text-align: center;
-        font-size: 7px;
+        font-size: 8px;
         color: #666;
         border-top: 1px solid #ccc;
-        padding-top: 3px;
+        padding-top: 5px;
     }
     .no-data {
         text-align: center;
         padding: 15px;
         color: #666;
-        font-size: 9px;
+        font-size: 10px;
         font-style: italic;
     }
     /* CONTADOR TOTAL */
     .total-container {
-        margin-top: 8px;
-        padding: 6px;
+        margin-top: 10px;
+        padding: 8px;
         background-color: #f8f9fa;
         border: 1px solid #003366;
         border-radius: 3px;
-        font-size: 9px;
+        font-size: 10px;
         font-weight: bold;
         text-align: center;
     }
-</style>;
+</style>
     </head>
     <body>
         <div class="container">
-            <!-- CINTILLO CON IMAGEN OFICIAL O TEXTO ALTERNATIVO -->
             ' . ($cintillo_base64 ? '
             <div class="cintillo-imagen">
                 <img src="' . $cintillo_base64 . '" class="cintillo-img" alt="Cintillo Oficial">
@@ -191,12 +180,10 @@ try {
                 UNIDAD EDUCATIVA NACIONAL "NUEVO HORIZONTE"
             </div>') . '
             
-            <!-- TÍTULO DEL REPORTE -->
             <div class="report-title">
                 MATRÍCULA ESTUDIANTIL - AÑO ESCOLAR 2025-2026
             </div>
             
-            <!-- INFORMACIÓN DEL REPORTE -->
             <div class="report-info">
                 <strong>Fecha de Generación:</strong> ' . $fecha_actual . ' | 
                 <strong>Total de Estudiantes:</strong> ' . $totalEstudiantes . ' | 
@@ -204,15 +191,15 @@ try {
             </div>';
 
    if ($totalEstudiantes > 0) {
+    // Definimos style="width: 100%" explícitamente en la tabla
     $html .= '
-        <!-- TABLA DE MATRÍCULA -->
-        <table>
+        <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr>
-                    <th width="5%">#</th>
-                    <th width="15%">CÉDULA</th>
-                    <th width="40%">NOMBRE COMPLETO</th>
-                    <th width="40%">GRADO/AÑO Y SECCIÓN</th>
+                    <th style="width: 5%;">N°</th>
+                    <th style="width: 15%;">CÉDULA</th>
+                    <th style="width: 45%;">NOMBRE COMPLETO</th>
+                    <th style="width: 35%;">GRADO/AÑO Y SECCIÓN</th>
                 </tr>
             </thead>
             <tbody>';
@@ -221,10 +208,8 @@ try {
     $nivel_actual = '';
     
     while ($estudiante = $matricula->fetch(PDO::FETCH_ASSOC)) {
-        // Formatear el grado/sección para mostrar mejor
         $grado_seccion = $estudiante['grado_seccion'];
         
-        // Si cambió el nivel, agregar separador
         if ($estudiante['nombre_nivel'] != $nivel_actual) {
             $html .= '
                 <tr>
@@ -252,7 +237,7 @@ try {
             </tbody>
         </table>';
         
-        // Total de estudiantes al final
+        // Total
         $html .= '
             <div class="total-container">
                 TOTAL GENERAL DE ESTUDIANTES MATRICULADOS: ' . $totalEstudiantes . '
@@ -266,7 +251,6 @@ try {
     }
     
     $html .= '
-            <!-- PIE DE PÁGINA -->
             <div class="footer">
                 Unidad Educativa Nacional "Nuevo Horizonte" - Sistema de Gestión Escolar<br>
                 Página <span style="color: #003366; font-weight: bold;">[[page_cu]]</span> de <span style="color: #003366; font-weight: bold;">[[page_nb]]</span>
@@ -275,23 +259,21 @@ try {
     </body>
     </html>';
 
-    // Configurar y generar PDF
-    $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(15, 15, 15, 15));
+    // Configuración PDF: REDUJE LOS MÁRGENES de 15 a 5mm (Izquierda/Derecha) para maximizar ancho
+    // Array: (Izquierda, Arriba, Derecha, Abajo)
+    $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(5, 10, 5, 10));
     $html2pdf->setDefaultFont('dejavusans');
     $html2pdf->setTestTdInOnePage(false);
     $html2pdf->writeHTML($html);
     
-    // Descargar el PDF con nombre personalizado
     $filename = 'matricula_estudiantil_' . date('Y-m-d') . '.pdf';
-    $html2pdf->output($filename, 'I');  // 'I' = Inline (ver en navegador)
+    $html2pdf->output($filename, 'I');
 
 } catch (Html2PdfException $e) {
-    // Manejar errores de HTML2PDF
     $formatter = new ExceptionFormatter($e);
     echo $formatter->getHtmlMessage();
     
 } catch (Exception $e) {
-    // Manejar otros errores
     echo "<div class='alert alert-danger'>Error al generar el reporte: " . $e->getMessage() . "</div>";
 }
 ?>
