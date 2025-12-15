@@ -1,70 +1,20 @@
 <?php
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
+include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 
-// Crear instancia de conexión
+// Crear instancia de conexión y controlador
 $conexion = new Conexion();
 $conn = $conexion->conectar();
-
-// Función para obtener todos los estados
-function obtenerEstados($conn)
-{
-  $sql = "SELECT * FROM estados ORDER BY nom_estado";
-  $stmt = $conn->prepare($sql);
-  $stmt->execute();
-  return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// Función para verificar si un estado está en uso
-function estadoEnUso($conn, $id_estado)
-{
-  $sql = "SELECT COUNT(*) as count 
-            FROM direcciones d
-            INNER JOIN parroquias p ON d.id_parroquia = p.id_parroquia
-            INNER JOIN municipios m ON p.id_municipio = m.id_municipio
-            INNER JOIN estados e ON m.id_estado = e.id_estado
-            WHERE e.id_estado = ? AND d.estatus = 1";
-  $stmt = $conn->prepare($sql);
-  $stmt->execute([$id_estado]);
-  $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  return $result['count'] > 0;
-}
-
-// Función para obtener el conteo de usos del estado
-function obtenerConteoUsos($conn, $id_estado)
-{
-  $sql = "SELECT COUNT(*) as count 
-            FROM direcciones d
-            INNER JOIN parroquias p ON d.id_parroquia = p.id_parroquia
-            INNER JOIN municipios m ON p.id_municipio = m.id_municipio
-            INNER JOIN estados e ON m.id_estado = e.id_estado
-            WHERE e.id_estado = ? AND d.estatus = 1";
-  $stmt = $conn->prepare($sql);
-  $stmt->execute([$id_estado]);
-  $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  return $result['count'];
-}
-
-// Función para actualizar el estado de un estado
-function actualizarEstado($conn, $id_estado, $estatus)
-{
-  $sql = "UPDATE estados SET estatus = ?, actualizacion = NOW() WHERE id_estado = ?";
-  $stmt = $conn->prepare($sql);
-  return $stmt->execute([$estatus, $id_estado]);
-}
+$ubicacionController = new UbicacionController($conn);
 
 // Procesar actualización de estado
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_estado'])) {
   $id_estado = $_POST['id_estado'];
   $estatus = $_POST['estatus'];
 
-  // Validar si se intenta inhabilitar un estado que está en uso
-  if ($estatus == 0 && estadoEnUso($conn, $id_estado)) {
-    $conteo = obtenerConteoUsos($conn, $id_estado);
-    $_SESSION['mensaje'] = "No se puede inhabilitar el estado porque está siendo usado en $conteo dirección(es) activa(s)";
-    $_SESSION['tipo_mensaje'] = "error";
-  } else {
-    if (actualizarEstado($conn, $id_estado, $estatus)) {
+  try {
+    if ($ubicacionController->actualizarEstado($id_estado, $estatus)) {
       $accion = $estatus == 1 ? 'habilitado' : 'inhabilitado';
       $_SESSION['mensaje'] = "Estado $accion correctamente";
       $_SESSION['tipo_mensaje'] = "success";
@@ -72,22 +22,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_estado']))
       $_SESSION['mensaje'] = "Error al actualizar el estado";
       $_SESSION['tipo_mensaje'] = "error";
     }
+  } catch (Exception $e) {
+    $_SESSION['mensaje'] = $e->getMessage();
+    $_SESSION['tipo_mensaje'] = "error";
   }
 
-  header("Location: ubicacion.php");
+  echo '<script>window.location.href = "' . $_SERVER['PHP_SELF'] . '";</script>';
   exit();
 }
 
-$estados = obtenerEstados($conn);
+try {
+  $estados = $ubicacionController->obtenerTodosLosEstados();
+  $estadisticas = $ubicacionController->obtenerEstadisticasEstados();
+  $conteo_en_uso = $ubicacionController->obtenerConteoEstadosEnUso();
+} catch (Exception $e) {
+  $_SESSION['mensaje'] = $e->getMessage();
+  $_SESSION['tipo_mensaje'] = "error";
+  $estados = [];
+  $estadisticas = ['total' => 0, 'habilitados' => 0, 'inhabilitados' => 0];
+  $conteo_en_uso = 0;
+}
 ?>
 
 <div class="content-wrapper">
   <div class="content">
     <div class="container-fluid">
-      <div class="row mb-4">
+      <div class="row mb-4 p-2">
         <div class="col-12">
-          <h1 class="mb-0">Gestión de Ubicaciones</h1>
-          <p class="text-muted">Administra los estados, municipios y parroquias del sistema</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="mb-0">Gestión de Ubicaciones</h1>
+              <p class="text-muted">Administra los estados, municipios y parroquias del sistema</p>
+            </div>
+            <div>
+              <div class="btn-group">
+                <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
+                  <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <a href="municipios.php" class="btn btn-info ml-2">
+                  <i class="fas fa-city mr-1"></i> Municipios
+                </a>
+                <a href="parroquias.php" class="btn btn-success ml-2">
+                  <i class="fas fa-map-signs mr-1"></i> Parroquias
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -123,8 +103,13 @@ $estados = obtenerEstados($conn);
                   <tbody>
                     <?php if (count($estados) > 0): ?>
                       <?php foreach ($estados as $estado):
-                        $en_uso = estadoEnUso($conn, $estado['id_estado']);
-                        $conteo_usos = obtenerConteoUsos($conn, $estado['id_estado']);
+                        try {
+                          $en_uso = $ubicacionController->estadoEnUso($estado['id_estado']);
+                          $conteo_usos = $ubicacionController->obtenerConteoUsosEstado($estado['id_estado']);
+                        } catch (Exception $e) {
+                          $en_uso = false;
+                          $conteo_usos = 0;
+                        }
                       ?>
                         <tr>
                           <td><?php echo $estado['id_estado']; ?></td>
@@ -141,12 +126,12 @@ $estados = obtenerEstados($conn);
                           </td>
                           <td>
                             <?php if ($en_uso): ?>
-                              <span class="badge badge-info" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
-                                <i class="fas fa-link mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
+                              <span class="badge badge-warning" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
                               </span>
                             <?php else: ?>
                               <span class="badge badge-secondary">
-                                <i class="fas fa-unlink mr-1"></i>Sin uso
+                                <i class="fas fa-check-circle mr-1"></i>Sin uso
                               </span>
                             <?php endif; ?>
                           </td>
@@ -159,21 +144,12 @@ $estados = obtenerEstados($conn);
                             <form method="POST" class="d-inline">
                               <input type="hidden" name="id_estado" value="<?php echo $estado['id_estado']; ?>">
                               <input type="hidden" name="estatus" value="<?php echo $estado['estatus'] == 1 ? 0 : 1; ?>">
-                              <?php if ($estado['estatus'] == 1 && $en_uso): ?>
-                                <button type="button"
-                                  class="btn btn-sm btn-secondary"
-                                  data-toggle="tooltip"
-                                  title="No se puede inhabilitar porque está en uso en direcciones activas">
-                                  <i class="fas fa-lock mr-1"></i> Bloqueado
-                                </button>
-                              <?php else: ?>
-                                <button type="submit" name="actualizar_estado"
-                                  class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?>"
-                                  onclick="return confirm('¿Estás seguro de <?php echo $estado['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?> este estado?')">
-                                  <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
-                                  <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
-                                </button>
-                              <?php endif; ?>
+                              <button type="submit" name="actualizar_estado"
+                                class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?>"
+                                onclick="return confirm('¿Estás seguro de <?php echo $estado['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> este estado?<?php echo $en_uso && $estado['estatus'] == 1 ? '\n\nADVERTENCIA: Este estado está siendo usado en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarlo, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.' : ''; ?>')">
+                                <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
+                                <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
+                              </button>
                             </form>
                           </td>
                         </tr>
@@ -193,51 +169,39 @@ $estados = obtenerEstados($conn);
 
       <!-- Información adicional -->
       <div class="row mt-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="info-box">
             <span class="info-box-icon bg-info"><i class="fas fa-info-circle"></i></span>
             <div class="info-box-content">
-              <span class="info-box-text">Estados Habilitados</span>
-              <span class="info-box-number">
-                <?php
-                $habilitados = array_filter($estados, function ($estado) {
-                  return $estado['estatus'] == 1;
-                });
-                echo count($habilitados);
-                ?>
-              </span>
+              <span class="info-box-text">Total Estados</span>
+              <span class="info-box-number"><?php echo $estadisticas['total']; ?></span>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+          <div class="info-box">
+            <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Habilitados</span>
+              <span class="info-box-number"><?php echo $estadisticas['habilitados']; ?></span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
           <div class="info-box">
             <span class="info-box-icon bg-warning"><i class="fas fa-exclamation-triangle"></i></span>
             <div class="info-box-content">
-              <span class="info-box-text">Estados Inhabilitados</span>
-              <span class="info-box-number">
-                <?php
-                $inhabilitados = array_filter($estados, function ($estado) {
-                  return $estado['estatus'] == 0;
-                });
-                echo count($inhabilitados);
-                ?>
-              </span>
+              <span class="info-box-text">Inhabilitados</span>
+              <span class="info-box-number"><?php echo $estadisticas['inhabilitados']; ?></span>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="info-box">
-            <span class="info-box-icon bg-success"><i class="fas fa-link"></i></span>
+            <span class="info-box-icon bg-primary"><i class="fas fa-link"></i></span>
             <div class="info-box-content">
-              <span class="info-box-text">Estados en Uso</span>
-              <span class="info-box-number">
-                <?php
-                $en_uso = array_filter($estados, function ($estado) use ($conn) {
-                  return estadoEnUso($conn, $estado['id_estado']);
-                });
-                echo count($en_uso);
-                ?>
-              </span>
+              <span class="info-box-text">En Uso</span>
+              <span class="info-box-number"><?php echo $conteo_en_uso; ?></span>
             </div>
           </div>
         </div>
@@ -249,10 +213,11 @@ $estados = obtenerEstados($conn);
           <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> Información Importante</h5>
             <ul class="mb-0">
-              <li><strong>Estados en uso:</strong> No se pueden inhabilitar porque están siendo utilizados en direcciones activas</li>
-              <li><strong>Estados sin uso:</strong> Se pueden inhabilitar sin problemas</li>
+              <li><strong>Estados en uso:</strong> Pueden ser inhabilitados, pero aparecerá una advertencia</li>
+              <li><strong>Estados sin uso:</strong> Pueden ser inhabilitados sin problemas</li>
               <li><strong>Estados inhabilitados:</strong> No aparecerán en los formularios de nuevos registros</li>
-              <li>Los registros existentes que ya usen el estado no se verán afectados al inhabilitarlo</li>
+              <li>Los registros existentes que ya usen el estado NO se verán afectados al inhabilitarlo</li>
+              <li>Para habilitar un estado, simplemente haga clic en el botón "Habilitar"</li>
             </ul>
           </div>
         </div>
@@ -276,8 +241,8 @@ $estados = obtenerEstados($conn);
                   <small>No disponible para nuevos registros</small>
                 </div>
                 <div class="col-md-3">
-                  <span class="badge badge-info mr-2">En uso</span>
-                  <small>Usado en direcciones activas</small>
+                  <span class="badge badge-warning mr-2">En uso</span>
+                  <small>Usado en direcciones activas (advertencia al inhabilitar)</small>
                 </div>
                 <div class="col-md-3">
                   <span class="badge badge-secondary mr-2">Sin uso</span>
@@ -292,6 +257,7 @@ $estados = obtenerEstados($conn);
   </div>
 </div>
 
+<!-- (Los estilos y scripts se mantienen igual) -->
 <style>
   .card-purple {
     border-color: #6f42c1;
@@ -327,8 +293,9 @@ $estados = obtenerEstados($conn);
     background-color: #dc3545;
   }
 
-  .badge-info {
-    background-color: #17a2b8;
+  .badge-warning {
+    background-color: #ffc107;
+    color: #212529;
   }
 
   .badge-secondary {

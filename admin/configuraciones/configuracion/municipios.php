@@ -8,18 +8,21 @@ $conexion = new Conexion();
 $conn = $conexion->conectar();
 $ubicacionController = new UbicacionController($conn);
 
-// Procesar actualización de estado
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_estado'])) {
-  $id_estado = $_POST['id_estado'];
+// Variables de filtro
+$id_estado_filtro = isset($_GET['id_estado']) ? intval($_GET['id_estado']) : null;
+
+// Procesar actualización de estado de municipio
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_municipio'])) {
+  $id_municipio = $_POST['id_municipio'];
   $estatus = $_POST['estatus'];
 
   try {
-    if ($ubicacionController->actualizarEstado($id_estado, $estatus)) {
+    if ($ubicacionController->actualizarMunicipio($id_municipio, $estatus)) {
       $accion = $estatus == 1 ? 'habilitado' : 'inhabilitado';
-      $_SESSION['mensaje'] = "Estado $accion correctamente";
+      $_SESSION['mensaje'] = "Municipio $accion correctamente";
       $_SESSION['tipo_mensaje'] = "success";
     } else {
-      $_SESSION['mensaje'] = "Error al actualizar el estado";
+      $_SESSION['mensaje'] = "Error al actualizar el municipio";
       $_SESSION['tipo_mensaje'] = "error";
     }
   } catch (Exception $e) {
@@ -27,18 +30,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_estado']))
     $_SESSION['tipo_mensaje'] = "error";
   }
 
-  echo '<script>window.location.href = "' . $_SERVER['PHP_SELF'] . '";</script>';
+  // Redirigir manteniendo el filtro
+  $redirect_url = $_SERVER['PHP_SELF'];
+  if ($id_estado_filtro) {
+    $redirect_url .= "?id_estado=" . $id_estado_filtro;
+  }
+  echo '<script>window.location.href = "' . $redirect_url . '";</script>';
   exit();
 }
 
 try {
-  $estados = $ubicacionController->obtenerTodosLosEstados();
-  $estadisticas = $ubicacionController->obtenerEstadisticasEstados();
-  $conteo_en_uso = $ubicacionController->obtenerConteoEstadosEnUso();
+  // Obtener todos los estados para el select
+  $estados = $ubicacionController->obtenerEstados();
+
+  // Obtener municipios según filtro
+  $municipios = $ubicacionController->obtenerTodosLosMunicipios($id_estado_filtro);
+
+  // Obtener estadísticas
+  $estadisticas = $ubicacionController->obtenerEstadisticasMunicipios($id_estado_filtro);
+  $conteo_en_uso = $ubicacionController->obtenerConteoMunicipiosEnUso($id_estado_filtro);
 } catch (Exception $e) {
   $_SESSION['mensaje'] = $e->getMessage();
   $_SESSION['tipo_mensaje'] = "error";
   $estados = [];
+  $municipios = [];
   $estadisticas = ['total' => 0, 'habilitados' => 0, 'inhabilitados' => 0];
   $conteo_en_uso = 0;
 }
@@ -51,16 +66,13 @@ try {
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h1 class="mb-0">Gestión de Ubicaciones</h1>
-              <p class="text-muted">Administra los estados, municipios y parroquias del sistema</p>
+              <h1 class="mb-0">Gestión de Municipios</h1>
+              <p class="text-muted">Administra los municipios del sistema</p>
             </div>
             <div>
               <div class="btn-group">
-                <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
-                  <i class="fas fa-arrow-left"></i> Volver
-                </a>
-                <a href="municipios.php" class="btn btn-info ml-2">
-                  <i class="fas fa-city mr-1"></i> Municipios
+                <a href="http://localhost/final/admin/configuraciones/configuracion/ubicacion.php" class="btn btn-secondary">
+                  <i class="fas fa-arrow-left"></i> Estados
                 </a>
                 <a href="parroquias.php" class="btn btn-success ml-2">
                   <i class="fas fa-map-signs mr-1"></i> Parroquias
@@ -71,14 +83,43 @@ try {
         </div>
       </div>
 
-      <!-- Card de Estados -->
+      <!-- Filtro por Estado -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0"><i class="fas fa-filter mr-2"></i>Filtrar por Estado</h5>
+            </div>
+            <div class="card-body">
+              <form method="GET" class="form-inline">
+                <div class="form-group mr-3">
+                  <label for="id_estado" class="mr-2">Estado:</label>
+                  <select name="id_estado" id="id_estado" class="form-control" onchange="this.form.submit()">
+                    <option value="">Todos los estados</option>
+                    <?php foreach ($estados as $estado): ?>
+                      <option value="<?php echo $estado['id_estado']; ?>" <?php echo $id_estado_filtro == $estado['id_estado'] ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($estado['nom_estado']); ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <?php if ($id_estado_filtro): ?>
+                  <a href="municipios.php" class="btn btn-secondary">Quitar filtro</a>
+                <?php endif; ?>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card de Municipios -->
       <div class="row">
         <div class="col-12">
-          <div class="card card-purple card-outline">
+          <div class="card card-primary card-outline">
             <div class="card-header">
               <h3 class="card-title">
-                <i class="fas fa-map-marker-alt mr-2"></i>
-                Estados
+                <i class="fas fa-city mr-2"></i>
+                Municipios <?php echo $id_estado_filtro ? '(Filtrados)' : ''; ?>
               </h3>
               <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -92,7 +133,8 @@ try {
                   <thead class="thead-light">
                     <tr>
                       <th>ID</th>
-                      <th>Nombre del Estado</th>
+                      <th>Municipio</th>
+                      <th>Estado</th>
                       <th>Fecha de Creación</th>
                       <th>Última Actualización</th>
                       <th>En Uso</th>
@@ -101,24 +143,25 @@ try {
                     </tr>
                   </thead>
                   <tbody>
-                    <?php if (count($estados) > 0): ?>
-                      <?php foreach ($estados as $estado):
+                    <?php if (count($municipios) > 0): ?>
+                      <?php foreach ($municipios as $municipio):
                         try {
-                          $en_uso = $ubicacionController->estadoEnUso($estado['id_estado']);
-                          $conteo_usos = $ubicacionController->obtenerConteoUsosEstado($estado['id_estado']);
+                          $en_uso = $ubicacionController->municipioEnUso($municipio['id_municipio']);
+                          $conteo_usos = $ubicacionController->obtenerConteoUsosMunicipio($municipio['id_municipio']);
                         } catch (Exception $e) {
                           $en_uso = false;
                           $conteo_usos = 0;
                         }
                       ?>
                         <tr>
-                          <td><?php echo $estado['id_estado']; ?></td>
-                          <td><?php echo htmlspecialchars($estado['nom_estado']); ?></td>
-                          <td><?php echo date('d/m/Y H:i', strtotime($estado['creacion'])); ?></td>
+                          <td><?php echo $municipio['id_municipio']; ?></td>
+                          <td><?php echo htmlspecialchars($municipio['nom_municipio']); ?></td>
+                          <td><?php echo htmlspecialchars($municipio['nom_estado']); ?></td>
+                          <td><?php echo date('d/m/Y H:i', strtotime($municipio['creacion'])); ?></td>
                           <td>
                             <?php
-                            if ($estado['actualizacion']) {
-                              echo date('d/m/Y H:i', strtotime($estado['actualizacion']));
+                            if ($municipio['actualizacion']) {
+                              echo date('d/m/Y H:i', strtotime($municipio['actualizacion']));
                             } else {
                               echo 'No actualizado';
                             }
@@ -136,19 +179,19 @@ try {
                             <?php endif; ?>
                           </td>
                           <td>
-                            <span class="badge badge-<?php echo $estado['estatus'] == 1 ? 'success' : 'danger'; ?>">
-                              <?php echo $estado['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
+                            <span class="badge badge-<?php echo $municipio['estatus'] == 1 ? 'success' : 'danger'; ?>">
+                              <?php echo $municipio['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
                             </span>
                           </td>
                           <td>
                             <form method="POST" class="d-inline">
-                              <input type="hidden" name="id_estado" value="<?php echo $estado['id_estado']; ?>">
-                              <input type="hidden" name="estatus" value="<?php echo $estado['estatus'] == 1 ? 0 : 1; ?>">
-                              <button type="submit" name="actualizar_estado"
-                                class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?>"
-                                onclick="return confirm('¿Estás seguro de <?php echo $estado['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> este estado?<?php echo $en_uso && $estado['estatus'] == 1 ? '\n\nADVERTENCIA: Este estado está siendo usado en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarlo, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.' : ''; ?>')">
-                                <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
-                                <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
+                              <input type="hidden" name="id_municipio" value="<?php echo $municipio['id_municipio']; ?>">
+                              <input type="hidden" name="estatus" value="<?php echo $municipio['estatus'] == 1 ? 0 : 1; ?>">
+                              <button type="submit" name="actualizar_municipio"
+                                class="btn btn-sm btn-<?php echo $municipio['estatus'] == 1 ? 'warning' : 'success'; ?>"
+                                onclick="return confirm('¿Estás seguro de <?php echo $municipio['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> este municipio?<?php echo $en_uso && $municipio['estatus'] == 1 ? '\n\nADVERTENCIA: Este municipio está siendo usado en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarlo, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.\n\nNOTA: Al inhabilitar un municipio, todas sus parroquias también se inhabilitarán.' : ''; ?>')">
+                                <i class="fas fa-<?php echo $municipio['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
+                                <?php echo $municipio['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
                               </button>
                             </form>
                           </td>
@@ -156,7 +199,7 @@ try {
                       <?php endforeach; ?>
                     <?php else: ?>
                       <tr>
-                        <td colspan="7" class="text-center">No hay estados registrados</td>
+                        <td colspan="8" class="text-center">No hay municipios registrados</td>
                       </tr>
                     <?php endif; ?>
                   </tbody>
@@ -171,9 +214,9 @@ try {
       <div class="row mt-4">
         <div class="col-md-3">
           <div class="info-box">
-            <span class="info-box-icon bg-info"><i class="fas fa-info-circle"></i></span>
+            <span class="info-box-icon bg-info"><i class="fas fa-city"></i></span>
             <div class="info-box-content">
-              <span class="info-box-text">Total Estados</span>
+              <span class="info-box-text">Total Municipios</span>
               <span class="info-box-number"><?php echo $estadisticas['total']; ?></span>
             </div>
           </div>
@@ -213,43 +256,13 @@ try {
           <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> Información Importante</h5>
             <ul class="mb-0">
-              <li><strong>Estados en uso:</strong> Pueden ser inhabilitados, pero aparecerá una advertencia</li>
-              <li><strong>Estados sin uso:</strong> Pueden ser inhabilitados sin problemas</li>
-              <li><strong>Estados inhabilitados:</strong> No aparecerán en los formularios de nuevos registros</li>
-              <li>Los registros existentes que ya usen el estado NO se verán afectados al inhabilitarlo</li>
-              <li>Para habilitar un estado, simplemente haga clic en el botón "Habilitar"</li>
+              <li><strong>Municipios en uso:</strong> Pueden ser inhabilitados, pero aparecerá una advertencia</li>
+              <li><strong>Municipios sin uso:</strong> Pueden ser inhabilitados sin problemas</li>
+              <li><strong>Municipios inhabilitados:</strong> No aparecerán en los formularios de nuevos registros</li>
+              <li>Los registros existentes que ya usen el municipio NO se verán afectados al inhabilitarlo</li>
+              <li><strong>IMPORTANTE:</strong> Al inhabilitar un municipio, todas sus parroquias también se inhabilitarán</li>
+              <li>Para habilitar un municipio, simplemente haga clic en el botón "Habilitar"</li>
             </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Leyenda de estados -->
-      <div class="row mt-3">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h6 class="card-title mb-0">Leyenda de Estados</h6>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-3">
-                  <span class="badge badge-success mr-2">Habilitado</span>
-                  <small>Disponible para nuevos registros</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-danger mr-2">Inhabilitado</span>
-                  <small>No disponible para nuevos registros</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-warning mr-2">En uso</span>
-                  <small>Usado en direcciones activas (advertencia al inhabilitar)</small>
-                </div>
-                <div class="col-md-3">
-                  <span class="badge badge-secondary mr-2">Sin uso</span>
-                  <small>No usado en direcciones activas</small>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -257,26 +270,13 @@ try {
   </div>
 </div>
 
-<!-- (Los estilos y scripts se mantienen igual) -->
 <style>
-  .card-purple {
-    border-color: #6f42c1;
+  .card-primary {
+    border-color: #007bff;
   }
 
-  .card-purple>.card-header {
-    background-color: #6f42c1;
-    color: white;
-  }
-
-  .btn-purple {
-    background-color: #6f42c1;
-    border-color: #6f42c1;
-    color: white;
-  }
-
-  .btn-purple:hover {
-    background-color: #5a379c;
-    border-color: #5a379c;
+  .card-primary>.card-header {
+    background-color: #007bff;
     color: white;
   }
 

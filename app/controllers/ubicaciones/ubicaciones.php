@@ -22,6 +22,293 @@ class UbicacionController
     }
   }
 
+  // Obtener todos los municipios para administración
+  public function obtenerTodosLosMunicipios($id_estado = null)
+  {
+    try {
+      $sql = "SELECT m.*, e.nom_estado 
+              FROM municipios m
+              INNER JOIN estados e ON m.id_estado = e.id_estado";
+
+      if ($id_estado) {
+        $sql .= " WHERE m.id_estado = :id_estado";
+      }
+
+      $sql .= " ORDER BY e.nom_estado, m.nom_municipio";
+
+      $stmt = $this->pdo->prepare($sql);
+
+      if ($id_estado) {
+        $stmt->execute([':id_estado' => $id_estado]);
+      } else {
+        $stmt->execute();
+      }
+
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener municipios: " . $e->getMessage());
+    }
+  }
+
+  // Verificar si un municipio está en uso en direcciones activas
+  public function municipioEnUso($id_municipio)
+  {
+    try {
+      $sql = "SELECT COUNT(*) as count 
+              FROM direcciones d
+              INNER JOIN parroquias p ON d.id_parroquia = p.id_parroquia
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio
+              WHERE m.id_municipio = ? AND d.estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_municipio]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      return $result['count'] > 0;
+    } catch (PDOException $e) {
+      throw new Exception("Error al verificar uso del municipio: " . $e->getMessage());
+    }
+  }
+
+  // Obtener conteo de usos de un municipio en direcciones activas
+  public function obtenerConteoUsosMunicipio($id_municipio)
+  {
+    try {
+      $sql = "SELECT COUNT(*) as count 
+              FROM direcciones d
+              INNER JOIN parroquias p ON d.id_parroquia = p.id_parroquia
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio
+              WHERE m.id_municipio = ? AND d.estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_municipio]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      return $result['count'];
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener conteo de usos del municipio: " . $e->getMessage());
+    }
+  }
+
+  // Actualizar estado de un municipio
+  public function actualizarMunicipio($id_municipio, $estatus)
+  {
+    try {
+      $sql = "UPDATE municipios SET estatus = ?, actualizacion = NOW() WHERE id_municipio = ?";
+      $stmt = $this->pdo->prepare($sql);
+      return $stmt->execute([$estatus, $id_municipio]);
+    } catch (PDOException $e) {
+      throw new Exception("Error al actualizar municipio: " . $e->getMessage());
+    }
+  }
+
+  // Obtener estadísticas de municipios
+  public function obtenerEstadisticasMunicipios($id_estado = null)
+  {
+    try {
+      $sql = "SELECT 
+              COUNT(*) as total,
+              SUM(CASE WHEN m.estatus = 1 THEN 1 ELSE 0 END) as habilitados,
+              SUM(CASE WHEN m.estatus = 0 THEN 1 ELSE 0 END) as inhabilitados
+              FROM municipios m";
+
+      if ($id_estado) {
+        $sql .= " WHERE m.id_estado = :id_estado";
+      }
+
+      $stmt = $this->pdo->prepare($sql);
+
+      if ($id_estado) {
+        $stmt->execute([':id_estado' => $id_estado]);
+      } else {
+        $stmt->execute();
+      }
+
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener estadísticas de municipios: " . $e->getMessage());
+    }
+  }
+
+  // Obtener conteo de municipios en uso
+  public function obtenerConteoMunicipiosEnUso($id_estado = null)
+  {
+    try {
+      $sql = "SELECT COUNT(DISTINCT m.id_municipio) as count
+              FROM direcciones d
+              INNER JOIN parroquias p ON d.id_parroquia = p.id_parroquia
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio";
+
+      if ($id_estado) {
+        $sql .= " WHERE d.estatus = 1 AND m.id_estado = :id_estado";
+      } else {
+        $sql .= " WHERE d.estatus = 1";
+      }
+
+      $stmt = $this->pdo->prepare($sql);
+
+      if ($id_estado) {
+        $stmt->execute([':id_estado' => $id_estado]);
+      } else {
+        $stmt->execute();
+      }
+
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      return $result['count'];
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener conteo de municipios en uso: " . $e->getMessage());
+    }
+  }
+  public function obtenerTodasLasParroquias($id_municipio = null, $id_estado = null)
+  {
+    try {
+      $sql = "SELECT p.*, m.nom_municipio, e.nom_estado 
+              FROM parroquias p
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio
+              INNER JOIN estados e ON m.id_estado = e.id_estado";
+
+      $conditions = [];
+      $params = [];
+
+      if ($id_municipio) {
+        $conditions[] = "p.id_municipio = :id_municipio";
+        $params[':id_municipio'] = $id_municipio;
+      }
+
+      if ($id_estado) {
+        $conditions[] = "m.id_estado = :id_estado";
+        $params[':id_estado'] = $id_estado;
+      }
+
+      if (!empty($conditions)) {
+        $sql .= " WHERE " . implode(" AND ", $conditions);
+      }
+
+      $sql .= " ORDER BY e.nom_estado, m.nom_municipio, p.nom_parroquia";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute($params);
+
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener parroquias: " . $e->getMessage());
+    }
+  }
+
+  // Verificar si una parroquia está en uso en direcciones activas
+  public function parroquiaEnUso($id_parroquia)
+  {
+    try {
+      $sql = "SELECT COUNT(*) as count 
+              FROM direcciones d
+              WHERE d.id_parroquia = ? AND d.estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_parroquia]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      return $result['count'] > 0;
+    } catch (PDOException $e) {
+      throw new Exception("Error al verificar uso de la parroquia: " . $e->getMessage());
+    }
+  }
+
+  // Obtener conteo de usos de una parroquia en direcciones activas
+  public function obtenerConteoUsosParroquia($id_parroquia)
+  {
+    try {
+      $sql = "SELECT COUNT(*) as count 
+              FROM direcciones d
+              WHERE d.id_parroquia = ? AND d.estatus = 1";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_parroquia]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      return $result['count'];
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener conteo de usos de la parroquia: " . $e->getMessage());
+    }
+  }
+
+  // Actualizar estado de una parroquia
+  public function actualizarParroquia($id_parroquia, $estatus)
+  {
+    try {
+      $sql = "UPDATE parroquias SET estatus = ?, actualizacion = NOW() WHERE id_parroquia = ?";
+      $stmt = $this->pdo->prepare($sql);
+      return $stmt->execute([$estatus, $id_parroquia]);
+    } catch (PDOException $e) {
+      throw new Exception("Error al actualizar parroquia: " . $e->getMessage());
+    }
+  }
+
+  // Obtener estadísticas de parroquias
+  public function obtenerEstadisticasParroquias($id_municipio = null, $id_estado = null)
+  {
+    try {
+      $sql = "SELECT 
+              COUNT(*) as total,
+              SUM(CASE WHEN p.estatus = 1 THEN 1 ELSE 0 END) as habilitados,
+              SUM(CASE WHEN p.estatus = 0 THEN 1 ELSE 0 END) as inhabilitados
+              FROM parroquias p
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio";
+
+      $conditions = [];
+      $params = [];
+
+      if ($id_municipio) {
+        $conditions[] = "p.id_municipio = :id_municipio";
+        $params[':id_municipio'] = $id_municipio;
+      }
+
+      if ($id_estado) {
+        $conditions[] = "m.id_estado = :id_estado";
+        $params[':id_estado'] = $id_estado;
+      }
+
+      if (!empty($conditions)) {
+        $sql .= " WHERE " . implode(" AND ", $conditions);
+      }
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute($params);
+
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener estadísticas de parroquias: " . $e->getMessage());
+    }
+  }
+
+  // Obtener conteo de parroquias en uso
+  public function obtenerConteoParroquiasEnUso($id_municipio = null, $id_estado = null)
+  {
+    try {
+      $sql = "SELECT COUNT(DISTINCT p.id_parroquia) as count
+              FROM direcciones d
+              INNER JOIN parroquias p ON d.id_parroquia = p.id_parroquia
+              INNER JOIN municipios m ON p.id_municipio = m.id_municipio";
+
+      $conditions = ["d.estatus = 1"];
+      $params = [];
+
+      if ($id_municipio) {
+        $conditions[] = "p.id_municipio = :id_municipio";
+        $params[':id_municipio'] = $id_municipio;
+      }
+
+      if ($id_estado) {
+        $conditions[] = "m.id_estado = :id_estado";
+        $params[':id_estado'] = $id_estado;
+      }
+
+      $sql .= " WHERE " . implode(" AND ", $conditions);
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute($params);
+
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+      return $result['count'];
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener conteo de parroquias en uso: " . $e->getMessage());
+    }
+  }
   // Obtener municipios por estado
   public function obtenerMunicipiosPorEstado($id_estado)
   {
@@ -157,7 +444,6 @@ class UbicacionController
       throw new Exception("Error al actualizar estado: " . $e->getMessage());
     }
   }
-
   // Obtener estadísticas de estados
   public function obtenerEstadisticasEstados()
   {
