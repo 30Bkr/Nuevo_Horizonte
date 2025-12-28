@@ -266,7 +266,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                             <input type="file" class="custom-file-input" id="fotoArchivo" name="foto" accept="image/*" required>
                             <label class="custom-file-label" for="fotoArchivo">Seleccionar archivo...</label>
                         </div>
-                        <small class="form-text text-muted">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 2MB. Recomendado: 150x180px</small>
+                        <small class="form-text text-muted">Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB. Recomendado: 150x180px</small>
                     </div>
                     
                     <div class="text-center mt-3">
@@ -349,9 +349,9 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                 }
                 
                 // Validar tipo de archivo
-                var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
                 if (!allowedTypes.includes(file.type)) {
-                    alert('Formato no permitido. Use JPG, PNG o GIF');
+                    alert('Formato no permitido. Use JPG o PNG');
                     $(this).val('');
                     $(this).next('.custom-file-label').html('Seleccionar archivo...');
                     $('#previewFoto').addClass('d-none').attr('src', '');

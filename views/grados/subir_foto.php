@@ -26,9 +26,9 @@ if (empty($cedula) || empty($tipo) || !$foto) {
 }
 
 // Validar tipo de archivo
-$allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+$allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
 if (!in_array($foto['type'], $allowed_types)) {
-    echo json_encode(['success' => false, 'message' => 'Formato no permitido. Use JPG, PNG o GIF']);
+    echo json_encode(['success' => false, 'message' => 'Formato no permitido. Use JPG o PNG']);
     exit();
 }
 
