@@ -284,6 +284,10 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
     </div>
 </div>
 
+<?php
+include_once("/xampp/htdocs/final/layout/layaout2.php");
+include_once("/xampp/htdocs/final/layout/mensajes.php");
+?>
 <script>
     $(document).ready(function() {
         $('#tablaEstudiantes').DataTable({
@@ -500,8 +504,4 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
         }, 500);
     }
 </script>
-
-<?php
-include_once("/xampp/htdocs/final/layout/layaout2.php");
-include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>

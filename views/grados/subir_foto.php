@@ -8,10 +8,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Validar que el usuario tenga sesión iniciada (cualquier usuario logueado)
-if (!isset($_SESSION['id_usuario'])) {
-    echo json_encode(['success' => false, 'message' => 'Debe iniciar sesión para subir fotos.']);
-    exit();
-}
+// if (!isset($_SESSION['id_usuario'])) {
+//     echo json_encode(['success' => false, 'message' => 'Debe iniciar sesión para subir fotos.']);
+//     exit();
+// }
 
 $database = new Conexion();
 $db = $database->conectar();
