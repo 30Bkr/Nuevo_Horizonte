@@ -221,7 +221,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
             </div>
-                        </div>
+        </div>
     </div>
 </div>
 
@@ -240,6 +240,45 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Subir Foto (NUEVO) -->
+<div class="modal fade" id="modalSubirFoto" tabindex="-1" role="dialog" aria-labelledby="modalSubirFotoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSubirFotoLabel">Subir Foto Carnet</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formSubirFoto" enctype="multipart/form-data">
+                    <input type="hidden" id="fotoCedula" name="cedula">
+                    <input type="hidden" id="fotoTipo" name="tipo">
+                    
+                    <div class="form-group">
+                        <label for="fotoArchivo">Seleccionar imagen:</label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="fotoArchivo" name="foto" accept="image/*" required>
+                            <label class="custom-file-label" for="fotoArchivo">Seleccionar archivo...</label>
+                        </div>
+                        <small class="form-text text-muted">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 2MB. Recomendado: 150x180px</small>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <img id="previewFoto" src="" alt="Vista previa" class="img-thumbnail d-none" style="max-width: 150px; max-height: 180px; object-fit: cover;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSubirFoto">
+                    <i class="fas fa-upload"></i> Subir Foto
+                </button>
             </div>
         </div>
     </div>
@@ -285,6 +324,120 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
             },
             "dom": '<"top"lf>rt<"bottom"ip><"clear">'
         });
+
+        // Configurar input file para mostrar nombre del archivo
+        $('.custom-file-input').on('change', function() {
+            var fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        });
+
+        // Vista previa de la foto - FIXED
+        $(document).on('change', '#fotoArchivo', function() {
+            var file = this.files[0];
+            if (file) {
+                // Validar tamaño (máximo 2MB)
+                if (file.size > 2097152) {
+                    alert('La imagen no debe superar 2MB');
+                    $(this).val('');
+                    $(this).next('.custom-file-label').html('Seleccionar archivo...');
+                    $('#previewFoto').addClass('d-none').attr('src', '');
+                    return;
+                }
+                
+                // Validar tipo de archivo
+                var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Formato no permitido. Use JPG, PNG o GIF');
+                    $(this).val('');
+                    $(this).next('.custom-file-label').html('Seleccionar archivo...');
+                    $('#previewFoto').addClass('d-none').attr('src', '');
+                    return;
+                }
+                
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#previewFoto').attr('src', e.target.result).removeClass('d-none');
+                };
+                reader.onerror = function() {
+                    alert('Error al leer el archivo');
+                    $('#previewFoto').addClass('d-none').attr('src', '');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                $('#previewFoto').addClass('d-none').attr('src', '');
+            }
+        });
+
+        // Subir foto - FIXED
+        $('#btnSubirFoto').click(function() {
+            var fileInput = $('#fotoArchivo')[0];
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Por favor, seleccione una imagen');
+                return;
+            }
+            
+            var formData = new FormData($('#formSubirFoto')[0]);
+            
+            // Mostrar indicador de carga
+            $(this).html('<i class="fas fa-spinner fa-spin"></i> Subiendo...').prop('disabled', true);
+            
+            $.ajax({
+                url: 'subir_foto.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    try {
+                        var result = JSON.parse(response);
+                        if (result.success) {
+                            // Mostrar mensaje de éxito
+                            alert('¡Foto subida correctamente!');
+                            $('#modalSubirFoto').modal('hide');
+                            
+                            // Recargar la ficha correspondiente después de un breve delay
+                            setTimeout(function() {
+                                if ($('#fotoTipo').val() === 'estudiante') {
+                                    verFichaEstudiante($('#fotoCedula').val());
+                                } else {
+                                    verFichaRepresentante($('#fotoCedula').val());
+                                }
+                            }, 500);
+                            
+                        } else {
+                            alert('Error: ' + result.message);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e, response);
+                        alert('Error al procesar la respuesta del servidor');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    alert('Error de conexión al subir la foto. Verifique la consola para más detalles.');
+                },
+                complete: function() {
+                    // Restaurar botón
+                    $('#btnSubirFoto').html('<i class="fas fa-upload"></i> Subir Foto').prop('disabled', false);
+                }
+            });
+        });
+
+        // Limpiar modal al cerrar
+        $('#modalSubirFoto').on('hidden.bs.modal', function() {
+            $('#formSubirFoto')[0].reset();
+            $('.custom-file-label').html('Seleccionar archivo...');
+            $('#previewFoto').addClass('d-none').attr('src', '');
+            $('#btnSubirFoto').prop('disabled', false);
+        });
+        
+        // También limpiar al abrir
+        $('#modalSubirFoto').on('show.bs.modal', function() {
+            $('#formSubirFoto')[0].reset();
+            $('.custom-file-label').html('Seleccionar archivo...');
+            $('#previewFoto').addClass('d-none').attr('src', '');
+            $('#btnSubirFoto').prop('disabled', false);
+        });
     });
 
     // Función para ver ficha del estudiante
@@ -299,7 +452,8 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
             success: function(response) {
                 $('#contenidoFichaEstudiante').html(response);
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Error loading student info:', error);
                 $('#contenidoFichaEstudiante').html('<div class="alert alert-danger">Error al cargar la información del estudiante.</div>');
             }
         });
@@ -317,10 +471,33 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
             success: function(response) {
                 $('#contenidoFichaRepresentante').html(response);
             },
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Error loading representative info:', error);
                 $('#contenidoFichaRepresentante').html('<div class="alert alert-danger">Error al cargar la información del representante.</div>');
             }
         });
+    }
+
+    // Función para abrir modal de subir foto
+    function abrirModalFoto(cedula, tipo) {
+        $('#fotoCedula').val(cedula);
+        $('#fotoTipo').val(tipo);
+        
+        // Configurar título del modal según el tipo
+        var titulo = (tipo === 'estudiante') ? 'Subir Foto del Estudiante' : 'Subir Foto del Representante';
+        $('#modalSubirFotoLabel').text(titulo);
+        
+        // Resetear formulario y mostrar modal
+        $('#formSubirFoto')[0].reset();
+        $('.custom-file-label').html('Seleccionar archivo...');
+        $('#previewFoto').addClass('d-none').attr('src', '');
+        $('#btnSubirFoto').prop('disabled', false);
+        $('#modalSubirFoto').modal('show');
+        
+        // Enfocar el input file después de que el modal se muestre
+        setTimeout(function() {
+            $('#fotoArchivo').focus();
+        }, 500);
     }
 </script>
 

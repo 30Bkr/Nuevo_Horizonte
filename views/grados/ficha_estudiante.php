@@ -63,60 +63,102 @@ try {
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6">
-                                <h5><i class="fas fa-id-card"></i> Datos de Identificación</h5>
-                                <table class="table table-bordered">
-                                    <tr>
-                                        <th width="40%">Cédula:</th>
-                                        <td>' . htmlspecialchars($estudiante['cedula']) . '</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Nombre Completo:</th>
-                                        <td>' . htmlspecialchars($estudiante['primer_nombre'] . ' ' . 
-                                            ($estudiante['segundo_nombre'] ? $estudiante['segundo_nombre'] . ' ' : '') . 
-                                            $estudiante['primer_apellido'] . ' ' . 
-                                            ($estudiante['segundo_apellido'] ? $estudiante['segundo_apellido'] : '')) . '</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha de Nacimiento:</th>
-                                        <td>' . ($estudiante['fecha_nac'] ? date('d/m/Y', strtotime($estudiante['fecha_nac'])) : 'No especificada') . '</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Edad:</th>
-                                        <td>' . $edad . ' años</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Sexo:</th>
-                                        <td>' . htmlspecialchars($estudiante['sexo']) . '</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Lugar de Nacimiento:</th>
-                                        <td>' . htmlspecialchars($estudiante['lugar_nac']) . '</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Nacionalidad:</th>
-                                        <td>' . htmlspecialchars($estudiante['nacionalidad']) . '</td>
-                                    </tr>
-                                </table>
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="photo-container" style="border: 2px solid #ddd; padding: 10px; border-radius: 5px; background: #f9f9f9;">
+                                    <h5><i class="fas fa-id-card"></i> Foto Carnet</h5>';
+                                    
+        // Mostrar foto del estudiante
+        if (!empty($estudiante['foto_estudiante']) && file_exists($_SERVER['DOCUMENT_ROOT'] . $estudiante['foto_estudiante'])) {
+            echo '<img src="' . htmlspecialchars($estudiante['foto_estudiante']) . '" 
+                      alt="Foto del estudiante" 
+                      class="img-thumbnail mt-2" 
+                      style="max-width: 150px; max-height: 180px; object-fit: cover;">';
+        } else {
+            echo '<div class="mt-3">
+                    <i class="fas fa-user fa-5x text-muted"></i><br>
+                    <small class="text-muted">Sin foto carnet</small>
+                  </div>';
+        }
+        
+        // Botón para cambiar foto (SIN verificación de rol)
+        echo '<div class="mt-3">
+                <button type="button" class="btn btn-outline-primary btn-sm btn-block" 
+                        onclick="subirFotoEstudiante(\'' . htmlspecialchars($estudiante['cedula']) . '\')">
+                    <i class="fas fa-camera"></i> Cambiar Foto
+                </button>
+              </div>';
+        
+        echo '              </div>
+                                <div class="mt-3">
+                                    <table class="table table-sm table-bordered">
+                                        <tr>
+                                            <th width="40%">Cédula:</th>
+                                            <td>' . htmlspecialchars($estudiante['cedula']) . '</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Edad:</th>
+                                            <td>' . $edad . ' años</td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
                             
-                            <div class="col-md-6">
-                                <h5><i class="fas fa-phone"></i> Información de Contacto</h5>
-                                <table class="table table-bordered">
-                                    <tr>
-                                        <th width="40%">Teléfono Móvil:</th>
-                                        <td>' . htmlspecialchars($estudiante['telefono'] ?: 'No especificado') . '</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Teléfono Habitación:</th>
-                                        <td>' . htmlspecialchars($estudiante['telefono_hab'] ?: 'No especificado') . '</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Correo Electrónico:</th>
-                                        <td>' . htmlspecialchars($estudiante['correo'] ?: 'No especificado') . '</td>
-                                    </tr>
-                                </table>
+                            <div class="col-md-8">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <h5><i class="fas fa-user"></i> Datos Personales</h5>
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th width="30%">Nombre Completo:</th>
+                                                <td>' . htmlspecialchars($estudiante['primer_nombre'] . ' ' . 
+                                                    ($estudiante['segundo_nombre'] ? $estudiante['segundo_nombre'] . ' ' : '') . 
+                                                    $estudiante['primer_apellido'] . ' ' . 
+                                                    ($estudiante['segundo_apellido'] ? $estudiante['segundo_apellido'] : '')) . '</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Fecha de Nacimiento:</th>
+                                                <td>' . ($estudiante['fecha_nac'] ? date('d/m/Y', strtotime($estudiante['fecha_nac'])) : 'No especificada') . '</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Sexo:</th>
+                                                <td>' . htmlspecialchars($estudiante['sexo']) . '</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Lugar de Nacimiento:</th>
+                                                <td>' . htmlspecialchars($estudiante['lugar_nac']) . '</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Nacionalidad:</th>
+                                                <td>' . htmlspecialchars($estudiante['nacionalidad']) . '</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
                                 
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <h5><i class="fas fa-phone"></i> Información de Contacto</h5>
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <th width="30%">Teléfono Móvil:</th>
+                                                <td>' . htmlspecialchars($estudiante['telefono'] ?: 'No especificado') . '</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Teléfono Habitación:</th>
+                                                <td>' . htmlspecialchars($estudiante['telefono_hab'] ?: 'No especificado') . '</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Correo Electrónico:</th>
+                                                <td>' . htmlspecialchars($estudiante['correo'] ?: 'No especificado') . '</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
                                 <h5><i class="fas fa-home"></i> Dirección</h5>
                                 <table class="table table-bordered">
                                     <tr>
@@ -145,14 +187,12 @@ try {
                                     </tr>
                                 </table>
                             </div>
-                        </div>
-                        
-                        <div class="row mt-3">
-                            <div class="col-md-12">
+                            
+                            <div class="col-md-6">
                                 <h5><i class="fas fa-heartbeat"></i> Información Médica</h5>
                                 <table class="table table-bordered">
                                     <tr>
-                                        <th width="20%">Patologías/Enfermedades:</th>
+                                        <th width="40%">Patologías/Enfermedades:</th>
                                         <td>' . ($estudiante['patologias'] ? htmlspecialchars($estudiante['patologias']) : 'Ninguna registrada') . '</td>
                                     </tr>
                                     <tr>
@@ -160,15 +200,11 @@ try {
                                         <td>' . ($estudiante['discapacidades'] ? htmlspecialchars($estudiante['discapacidades']) : 'Ninguna registrada') . '</td>
                                     </tr>
                                 </table>
-                            </div>
-                        </div>
-                        
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <h5><i class="fas fa-info-circle"></i> Información del Registro</h5>
+                                
+                                <h5 class="mt-3"><i class="fas fa-info-circle"></i> Información del Registro</h5>
                                 <table class="table table-bordered">
                                     <tr>
-                                        <th width="20%">Fecha de Registro:</th>
+                                        <th width="40%">Fecha de Registro:</th>
                                         <td>' . date('d/m/Y H:i:s', strtotime($estudiante['fecha_registro'])) . '</td>
                                     </tr>
                                     <tr>
@@ -181,7 +217,19 @@ try {
                     </div>
                 </div>
             </div>
-        </div>';
+        </div>
+        
+        <script>
+        function subirFotoEstudiante(cedula) {
+            // Esta función se implementará en el archivo principal
+            // que contiene el modal para subir fotos
+            if (typeof abrirModalFoto === "function") {
+                abrirModalFoto(cedula, "estudiante");
+            } else {
+                alert("Funcionalidad no disponible");
+            }
+        }
+        </script>';
     } else {
         echo '<div class="alert alert-warning">No se encontró información del estudiante.</div>';
     }
