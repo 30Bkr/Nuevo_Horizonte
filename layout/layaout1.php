@@ -1,26 +1,16 @@
 <?php
 include_once('/xampp/htdocs/final/global/utils.php');
 include_once('/xampp/htdocs/final/app/users.php');
+require_once '/xampp/htdocs/final/global/check_permissions.php';
 
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
-$esto = $_SESSION['sesion_email'];
+$esto = $_SESSION['usuario_email'];
 $user = new Usuarios;
 $info = $user->consultar($esto);
-// echo "<pre>";
-// var_dump('primer: ', $esto);
-// var_dump($listaPersona[0]->contrasena);
-// echo (password_verify($listaPersona[0]->contrasena, $password));
-// var_dump($listaPersona[0]->id_persona);
-// var_dump($info);
-// var_dump($listaPersona);
 
-
-// echo "</pre>";
-
-// $mira = $_SESSION['nombre'];
-if (isset($_SESSION['sesion_email'])) {
+if (isset($_SESSION['usuario_id'])) {
   // echo $info[0]->apellido;
   $_SESSION['mensaje'] = "Bienvenido al sistema Nuevo Horizonte nerd";
   $_SESSION['icono'] = "success";
@@ -30,13 +20,8 @@ if (isset($_SESSION['sesion_email'])) {
   $_SESSION['icono'] = "error";
   header('Location: ' . URL . '/login/index.php');
 }
-// session_start();
-// if (isset($_SESSION['email'])) {
-//   echo "EL usuario paso por el login";
-// } else {
-//   echo "EL usuario no paso por el login";
-//   header('Location: ' . URL . '/login/index.php');
-// }
+$nombreUsuario = $_SESSION['usuario_nombre_completo'] ?? $_SESSION['usuario_email'] ?? 'Usuario';
+$rolUsuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
 ?>
 <!DOCTYPE html>
 <!--
@@ -117,7 +102,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                with font-awesome or any other icon font library -->
 
           <?php
-          if (true) { ?>
+          if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
             <li class="nav-item">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -148,7 +133,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
           <!-- // Docentes  -->
 
-          <?php if (true) { ?>
+          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
 
             <li class="nav-item ">
               <a href="#" class="nav-link">
@@ -184,7 +169,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
           <!-- Estudiantes -->
 
-          <?php if (true) { ?>
+          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
             <li class="nav-item ">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -215,7 +200,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Inscripciones -->
 
           <?php
-          if (true) { ?>
+          if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
             <li class="nav-item">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -261,7 +246,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 
-          <?php if (true) { ?>
+          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
             <li class="nav-item ">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -289,7 +274,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           ?>
 
 
-          <?php if (true) { ?>
+          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
 
             <li class="nav-item ">
               <a href="#" class="nav-link">

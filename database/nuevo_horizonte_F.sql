@@ -22579,6 +22579,9 @@ ALTER TABLE `roles_permisos`
 ADD CONSTRAINT `fk_roles_permisos_permisos` FOREIGN KEY (`id_permiso`) REFERENCES `permisos` (`id_permiso`),
 ADD CONSTRAINT `fk_roles_permisos_roles` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`);
 
+ALTER TABLE personas
+ADD COLUMN foto_estudiante VARCHAR(255) DEFAULT NULL AFTER correo,
+ADD COLUMN foto_representante VARCHAR(255) DEFAULT NULL AFTER correo;
 --
 -- Filtros para la tabla `usuarios`
 --

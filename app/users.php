@@ -18,24 +18,38 @@ class Usuarios
   public $correo;
   public $nombre;
   public $apellido;
-
   public function createUser()
   {
-    $conexion = new Conexion();
-    $objConexion = $conexion->conectar();
-    $sql = "INSERT INTO usuarios (id_persona, id_rol, nombre_usuario, usuario, contraseña, estatus)
-            VALUES (:id_persona, :id_rol, :nombre_usuario, :usuario, :contraseña, :estatus)";
-    $stmt = $objConexion->prepare($sql);
-    $stmt->bindParam(":id_persona", $this->id_persona);
-    $stmt->bindParam(":id_rol", $this->id_rol);
-    $stmt->bindParam(":nombre_usuario", $this->nombre_usuario);
-    $stmt->bindParam(":usuario", $this->usuario);
-    $stmt->bindParam(":contraseña", $this->contraseña);
-    $stmt->bindParam(":estatus", $this->estatus);
-    $stmt->execute();
-    $stmt = null;
-    $conexion->desconectar();
-    echo "Cuenta creada con exito";
+    try {
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+
+      // ANTES (SHA256):
+      // $hashContrasena = hash('sha256', $this->contraseña);
+
+      // AHORA (BCRYPT):
+      $hashContrasena = password_hash($this->contraseña, PASSWORD_BCRYPT, ['cost' => 12]);
+
+      $sql = "INSERT INTO usuarios (id_persona, id_rol, nombre_usuario, usuario, contraseña, estatus, contrasena_migrada)
+                VALUES (:id_persona, :id_rol, :nombre_usuario, :usuario, :contrasena, :estatus, 1)"; // 1 = ya migrado
+
+      $stmt = $objConexion->prepare($sql);
+      $stmt->bindParam(":id_persona", $this->id_persona);
+      $stmt->bindParam(":id_rol", $this->id_rol);
+      $stmt->bindParam(":nombre_usuario", $this->nombre_usuario);
+      $stmt->bindParam(":usuario", $this->usuario);
+      $stmt->bindParam(":contrasena", $hashContrasena);
+      $stmt->bindParam(":estatus", $this->estatus);
+
+      if ($stmt->execute()) {
+        return "Cuenta creada con éxito (contraseña BCRYPT)";
+      } else {
+        return "Error al crear la cuenta";
+      }
+    } catch (PDOException $e) {
+      error_log("Error en createUser: " . $e->getMessage());
+      return "Error en el sistema";
+    }
   }
   public function listar()
   {
@@ -75,34 +89,33 @@ class Usuarios
     $conexion->desconectar();
   }
 
-  public function consultar($aqui)
+  public function consultar($usuario)
   {
     try {
       $conexion = new Conexion();
       $objConexion = $conexion->conectar();
-      // echo "<pre>";
-      // var_dump($aqui);
-      // echo "</pre>";
-      $sql = "SELECT * FROM usuarios WHERE usuario = '$aqui' AND estatus = 1";
+
+      // Usar prepared statements para seguridad
+      $sql = "SELECT * FROM usuarios WHERE usuario = :usuario AND estatus = '1'";
       $stmt = $objConexion->prepare($sql);
+      $stmt->bindParam(':usuario', $usuario);
       $stmt->execute();
+
       $listarUsuarios = array();
       while ($row = $stmt->fetch(PDO::FETCH_OBJ)) {
         $objUsuarios = new Usuarios();
         $objUsuarios->id_usuario = $row->id_usuario;
         $objUsuarios->id_persona = $row->id_persona;
         $objUsuarios->id_rol = $row->id_rol;
-        // $objUsuarios->nombre_usuario = $row->nombre_usuario;
         $objUsuarios->usuario = $row->usuario;
         $objUsuarios->contrasena = $row->contrasena;
         $objUsuarios->estatus = $row->estatus;
         $listarUsuarios[] = $objUsuarios;
       }
       return $listarUsuarios;
-      $stmt = null;
-      $conexion->desconectar();
-    } catch (PDOEXception $th) {
-      echo "Error al establecer conexion Acaa:" . $th->getMessage();
+    } catch (PDOException $th) {
+      error_log("Error en consultar usuario: " . $th->getMessage());
+      return array();
     }
   }
   public function info($aqui)
