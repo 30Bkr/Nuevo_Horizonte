@@ -11,81 +11,84 @@ $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
 ?>
 
 <div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Gestión de Estudiantes</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                        <li class="breadcrumb-item active">Estudiantes</li>
-                    </ol>
+    <div class="content">
+
+
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>Gestión de Estudiantes</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
+                            <li class="breadcrumb-item active">Estudiantes</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="content">
-        <div class="container-fluid">
-            <?php if (isset($_SESSION['success'])): ?>
-                <div class="alert alert-success alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
-                    <?php echo $_SESSION['success'];
-                    unset($_SESSION['success']); ?>
-                </div>
-            <?php endif; ?>
+        <section class="content">
+            <div class="container-fluid">
+                <?php if (isset($_SESSION['success'])): ?>
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h5><i class="icon fas fa-check"></i> ¡Éxito!</h5>
+                        <?php echo $_SESSION['success'];
+                        unset($_SESSION['success']); ?>
+                    </div>
+                <?php endif; ?>
 
-            <?php if (isset($_SESSION['error'])): ?>
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
-                    <?php echo $_SESSION['error'];
-                    unset($_SESSION['error']); ?>
-                </div>
-            <?php endif; ?>
+                <?php if (isset($_SESSION['error'])): ?>
+                    <div class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
+                        <?php echo $_SESSION['error'];
+                        unset($_SESSION['error']); ?>
+                    </div>
+                <?php endif; ?>
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                       <div class="card-header">
-                        <h3 class="card-title">Listado de Estudiantes</h3>
-                        <div class="card-tools">
-                            <!-- CONTENEDOR PARA BOTÓN Y FILTRO EN LÍNEA -->
-                            <div class="d-flex align-items-center">
-                                <!-- BOTÓN PARA GENERAR MATRÍCULA -->
-                                <div class="mr-2">
-                                    <a href="matricula_estudiantil_pdf.php" target="_blank" class="btn btn-success btn-sm">
-                                        <i class="fas fa-file-pdf mr-1"></i> Generar Matrícula
-                                    </a>
-                                </div>
-                                
-                                <!-- FILTRO DE ACTIVOS/INACTIVOS -->
-                                <div style="width: 180px;">
-                                    <select id="filtroEstado" class="form-control form-control-sm" onchange="cambiarFiltro(this.value)">
-                                        <option value="1" <?php echo $filtro_activo == 1 ? 'selected' : ''; ?>>Activos</option>
-                                        <option value="0" <?php echo $filtro_activo == 0 ? 'selected' : ''; ?>>Inactivos</option>
-                                        <option value="2" <?php echo $filtro_activo == 2 ? 'selected' : ''; ?>>Todos</option>
-                                    </select>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Listado de Estudiantes</h3>
+                                <div class="card-tools">
+                                    <!-- CONTENEDOR PARA BOTÓN Y FILTRO EN LÍNEA -->
+                                    <div class="d-flex align-items-center">
+                                        <!-- BOTÓN PARA GENERAR MATRÍCULA -->
+                                        <div class="mr-2">
+                                            <a href="matricula_estudiantil_pdf.php" target="_blank" class="btn btn-success btn-sm">
+                                                <i class="fas fa-file-pdf mr-1"></i> Generar Matrícula
+                                            </a>
+                                        </div>
+
+                                        <!-- FILTRO DE ACTIVOS/INACTIVOS -->
+                                        <div style="width: 180px;">
+                                            <select id="filtroEstado" class="form-control form-control-sm" onchange="cambiarFiltro(this.value)">
+                                                <option value="1" <?php echo $filtro_activo == 1 ? 'selected' : ''; ?>>Activos</option>
+                                                <option value="0" <?php echo $filtro_activo == 0 ? 'selected' : ''; ?>>Inactivos</option>
+                                                <option value="2" <?php echo $filtro_activo == 2 ? 'selected' : ''; ?>>Todos</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                        <div class="card-body">
-                            <?php
-                            try {
-                                $database = new Conexion();
-                                $db = $database->conectar();
+                            <div class="card-body">
+                                <?php
+                                try {
+                                    $database = new Conexion();
+                                    $db = $database->conectar();
 
-                                if ($db) {
-                                    $controller = new EstudianteController($db);
-                                    $stmt = $controller->listar($filtro_activo);
+                                    if ($db) {
+                                        $controller = new EstudianteController($db);
+                                        $stmt = $controller->listar($filtro_activo);
 
-                                    if ($stmt) {
-                                        if ($stmt->rowCount() > 0) {
-                                            echo '<table id="tablaEstudiantes" class="table table-bordered table-striped">
+                                        if ($stmt) {
+                                            if ($stmt->rowCount() > 0) {
+                                                echo '<table id="tablaEstudiantes" class="table table-bordered table-striped">
                                                     <thead>
                                                         <tr>
                                                             <th>N°</th>
@@ -103,53 +106,53 @@ $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
                                                     </thead>
                                                     <tbody>';
 
-                                            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                                $nombreCompleto = $row['primer_nombre'] . ' ' .
-                                                    ($row['segundo_nombre'] ? $row['segundo_nombre'] . ' ' : '') .
-                                                    $row['primer_apellido'] . ' ' .
-                                                    ($row['segundo_apellido'] ? $row['segundo_apellido'] : '');
+                                                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                                    $nombreCompleto = $row['primer_nombre'] . ' ' .
+                                                        ($row['segundo_nombre'] ? $row['segundo_nombre'] . ' ' : '') .
+                                                        $row['primer_apellido'] . ' ' .
+                                                        ($row['segundo_apellido'] ? $row['segundo_apellido'] : '');
 
-                                                $estado_badge = $row['estatus'] == 1 ?
-                                                    '<span class="badge badge-success">Activo</span>' :
-                                                    '<span class="badge badge-danger">Inactivo</span>';
+                                                    $estado_badge = $row['estatus'] == 1 ?
+                                                        '<span class="badge badge-success">Activo</span>' :
+                                                        '<span class="badge badge-danger">Inactivo</span>';
 
-                                                $inscripciones_badge = $row['inscripciones_count'] > 0 ?
-                                                    '<span class="badge badge-info">' . $row['inscripciones_count'] . '</span>' :
-                                                    '<span class="badge badge-secondary">0</span>';
+                                                    $inscripciones_badge = $row['inscripciones_count'] > 0 ?
+                                                        '<span class="badge badge-info">' . $row['inscripciones_count'] . '</span>' :
+                                                        '<span class="badge badge-secondary">0</span>';
 
-                                                // Estado de inscripción en periodo activo
-                                                $inscripcion_actual_badge = $row['estado_inscripcion'] == 'Inscrito' ?
-                                                    '<span class="badge badge-success">Inscrito</span>' :
-                                                    '<span class="badge badge-warning">No Inscrito</span>';
+                                                    // Estado de inscripción en periodo activo
+                                                    $inscripcion_actual_badge = $row['estado_inscripcion'] == 'Inscrito' ?
+                                                        '<span class="badge badge-success">Inscrito</span>' :
+                                                        '<span class="badge badge-warning">No Inscrito</span>';
 
-                                                $boton_estado = $row['estatus'] == 1 ?
-                                                    '<button type="button" class="btn btn-danger btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_estudiante'] . ', 0)">
+                                                    $boton_estado = $row['estatus'] == 1 ?
+                                                        '<button type="button" class="btn btn-danger btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_estudiante'] . ', 0)">
                                                         <i class="fas fa-ban"></i>
                                                     </button>' :
-                                                    '<button type="button" class="btn btn-success btn-sm" title="Habilitar" onclick="cambiarEstado(' . $row['id_estudiante'] . ', 1)">
+                                                        '<button type="button" class="btn btn-success btn-sm" title="Habilitar" onclick="cambiarEstado(' . $row['id_estudiante'] . ', 1)">
                                                         <i class="fas fa-check"></i>
                                                     </button>';
 
-                                                $boton_constancia = $row['inscripciones_count'] > 0 ?
-                                                    '<button type="button" class="btn btn-info btn-sm" title="Generar Constancia" onclick="generarConstancia(event, ' . $row['id_estudiante'] . ')">
+                                                    $boton_constancia = $row['inscripciones_count'] > 0 ?
+                                                        '<button type="button" class="btn btn-info btn-sm" title="Generar Constancia" onclick="generarConstancia(event, ' . $row['id_estudiante'] . ')">
                                                         <i class="fas fa-file-pdf"></i>
                                                     </button>' :
-                                                    '<button type="button" class="btn btn-info btn-sm" title="Sin inscripciones" disabled>
+                                                        '<button type="button" class="btn btn-info btn-sm" title="Sin inscripciones" disabled>
                                                         <i class="fas fa-file-pdf"></i>
                                                     </button>';
 
-                                                echo "<tr>";
-                                                echo "<td></td>"; 
-                                                echo "<td>{$row['cedula']}</td>";
-                                                echo "<td>{$nombreCompleto}</td>";
-                                                echo "<td>{$row['telefono']}</td>";
-                                                echo "<td>{$row['correo']}</td>";
-                                                echo "<td>" . date('d/m/Y', strtotime($row['fecha_nac'])) . "</td>";
-                                                echo "<td>{$row['sexo']}</td>";
-                                                echo "<td>{$inscripciones_badge}</td>";
-                                                echo "<td>{$inscripcion_actual_badge}</td>";
-                                                echo "<td>{$estado_badge}</td>";
-                                                echo "<td>
+                                                    echo "<tr>";
+                                                    echo "<td></td>";
+                                                    echo "<td>{$row['cedula']}</td>";
+                                                    echo "<td>{$nombreCompleto}</td>";
+                                                    echo "<td>{$row['telefono']}</td>";
+                                                    echo "<td>{$row['correo']}</td>";
+                                                    echo "<td>" . date('d/m/Y', strtotime($row['fecha_nac'])) . "</td>";
+                                                    echo "<td>{$row['sexo']}</td>";
+                                                    echo "<td>{$inscripciones_badge}</td>";
+                                                    echo "<td>{$inscripcion_actual_badge}</td>";
+                                                    echo "<td>{$estado_badge}</td>";
+                                                    echo "<td>
                                                     <div class='btn-group'>
                                                         <a href='estudiante_editar.php?id={$row['id_estudiante']}' class='btn btn-warning btn-sm' title='Editar'>
                                                             <i class='fas fa-edit'></i>
@@ -161,29 +164,32 @@ $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
                                                         {$boton_estado}
                                                     </div>
                                                 </td>";
-                                                echo "</tr>";
-                                            }
+                                                    echo "</tr>";
+                                                }
 
-                                            echo '</tbody></table>';
+                                                echo '</tbody></table>';
+                                            } else {
+                                                echo "<div class='alert alert-info'>No hay estudiantes registrados en el sistema.</div>";
+                                            }
                                         } else {
-                                            echo "<div class='alert alert-info'>No hay estudiantes registrados en el sistema.</div>";
+                                            echo "<div class='alert alert-warning'>No se pudo obtener la lista de estudiantes.</div>";
                                         }
                                     } else {
-                                        echo "<div class='alert alert-warning'>No se pudo obtener la lista de estudiantes.</div>";
+                                        echo "<div class='alert alert-danger'>✗ Error de conexión a la base de datos</div>";
                                     }
-                                } else {
-                                    echo "<div class='alert alert-danger'>✗ Error de conexión a la base de datos</div>";
+                                } catch (Exception $e) {
+                                    echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
                                 }
-                            } catch (Exception $e) {
-                                echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
-                            }
-                            ?>
+                                ?>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
     </div>
+
+</div>
 
 <script src="/final/public/plugins/jquery/jquery.min.js"></script>
 <script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -257,7 +263,7 @@ $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
                     } else {
                         alert('Error: ' + response.message);
                     }
-                }, 
+                },
                 error: function() {
                     alert('Error al procesar la solicitud');
                 }
@@ -265,14 +271,14 @@ $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
         }
     }
 
-    function generarConstancia(event, id_estudiante) { 
+    function generarConstancia(event, id_estudiante) {
         const boton = event.target;
         const originalHTML = boton.innerHTML;
         boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         boton.disabled = true;
 
         $.ajax({
-            url: 'obtener_ultima_inscripcion.php', 
+            url: 'obtener_ultima_inscripcion.php',
             type: 'POST',
             data: {
                 id_estudiante: id_estudiante
@@ -285,11 +291,11 @@ $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
                 if (response.success && response.id_inscripcion) {
                     window.open('/final/app/controllers/inscripciones/generar_constancia_estudiante.php?id_inscripcion=' + response.id_inscripcion + '&v=' + Date.now(), '_blank');
                 }
-            }, 
+            },
             error: function(xhr, status, error) {
                 boton.innerHTML = originalHTML;
                 boton.disabled = false;
-                
+
                 alert('Error al procesar la solicitud: ' + error);
             }
         });

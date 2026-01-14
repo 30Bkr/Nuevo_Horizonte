@@ -2,24 +2,19 @@
 include_once('/xampp/htdocs/final/global/utils.php');
 include_once('/xampp/htdocs/final/app/users.php');
 require_once '/xampp/htdocs/final/global/check_permissions.php';
+require_once '/xampp/htdocs/final/global/protect.php';
+require_once '/xampp/htdocs/final/global/notifications.php';
+
 
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
+
+
 $esto = $_SESSION['usuario_email'];
 $user = new Usuarios;
 $info = $user->consultar($esto);
 
-if (isset($_SESSION['usuario_id'])) {
-  // echo $info[0]->apellido;
-  $_SESSION['mensaje'] = "Bienvenido al sistema Nuevo Horizonte nerd";
-  $_SESSION['icono'] = "success";
-} else {
-  echo "EL usuario no paso por el login";
-  $_SESSION['mensaje'] = "Es necesario iniciar sesión";
-  $_SESSION['icono'] = "error";
-  header('Location: ' . URL . '/login/index.php');
-}
 $nombreUsuario = $_SESSION['usuario_nombre_completo'] ?? $_SESSION['usuario_email'] ?? 'Usuario';
 $rolUsuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
 ?>
@@ -273,6 +268,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
+          <?php if (PermissionManager::canView('admin/roles_permisos/index.php') && PermissionManager::isAdmin()): ?>
+            <li class="nav-item">
+              <a href="#" class="nav-link">
+                <i class="nav-icon fas bi bi-shield-lock">
+                  <img src="<?= URL; ?>/public/images/shield.svg" alt="Seguridad">
+                </i>
+                <p>
+                  Seguridad
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/roles_permisos/index.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Roles y Permisos</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          <?php endif; ?>
+
 
           <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
 
@@ -324,3 +341,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       </div>
       <!-- /.sidebar -->
     </aside>
+    <!-- Notificaciones -->
+    <div class="container-fluid mt-3" style="margin-left: 250px;">
+      <?php Notification::show(); ?>
+    </div>

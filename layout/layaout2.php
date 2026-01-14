@@ -34,6 +34,45 @@
     <script src="<?= URL; ?>/public/plugins/select2/js/select2.full.min.js"></script>
     <script src="<?= URL; ?>/public/plugins/datatables/jquery.dataTables.min.js"></script>
     <script src="<?= URL; ?>/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <!-- Script para mejor manejo de notificaciones -->
+    <script>
+      // Función global para cerrar notificaciones
+      function cerrarNotificacionGlobal(id) {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+          // Agregar animación de salida
+          elemento.style.animation = 'desvanecerSalida 0.4s ease forwards';
+
+          // Eliminar después de la animación
+          setTimeout(() => {
+            if (elemento.parentNode) {
+              elemento.parentNode.removeChild(elemento);
+            }
+          }, 400);
+        }
+      }
+
+      // Cerrar todas las notificaciones
+      function cerrarTodasNotificaciones() {
+        const notificaciones = document.querySelectorAll('.notificacion-toast');
+        notificaciones.forEach(notif => {
+          notif.style.animation = 'desvanecerSalida 0.4s ease forwards';
+          setTimeout(() => {
+            if (notif.parentNode) {
+              notif.parentNode.removeChild(notif);
+            }
+          }, 400);
+        });
+      }
+
+      // Si hay muchas notificaciones, espaciarlas
+      document.addEventListener('DOMContentLoaded', function() {
+        const notificaciones = document.querySelectorAll('.notificacion-toast');
+        notificaciones.forEach((notif, index) => {
+          notif.style.top = (20 + (index * 80)) + 'px';
+        });
+      });
+    </script>
     </body>
 
     </html>

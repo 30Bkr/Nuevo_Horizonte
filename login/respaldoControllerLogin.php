@@ -69,12 +69,10 @@ if (PasswordHelper::verify($password, $hashAlmacenado)) {
     $_SESSION['usuario_email'] = $usuarioData->usuario;
     $_SESSION['usuario_nombre'] = $info->nombre . ' ' . $info->apellido;
     $_SESSION['usuario_rol'] = $info->cargo;
-    $_SESSION['usuario_rol_id'] = $usuarioData->id_rol;
   } else {
     $_SESSION['usuario_id'] = $usuarioData->id_usuario;
     $_SESSION['usuario_email'] = $usuarioData->usuario;
     $_SESSION['usuario_rol'] = 'Usuario';
-    $_SESSION['usuario_rol_id'] = $usuarioData->id_rol;
   }
 
   $_SESSION['icono'] = "success";
@@ -83,7 +81,7 @@ if (PasswordHelper::verify($password, $hashAlmacenado)) {
   if ($_SESSION['usuario_rol'] === 'Administrador') {
     header('Location:' . URL . '/admin/index.php');
   } else {
-    header('Location:' . URL . '/admin-docentes/index.php');
+    header('Location:' . URL . '/dashboard/index.php');
   }
   exit();
 } else {

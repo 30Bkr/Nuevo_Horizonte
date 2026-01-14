@@ -1,10 +1,18 @@
 <?php
-session_start();
 
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
 include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteController.php';
 include_once("/xampp/htdocs/final/layout/layaout1.php");
+
+
+require_once '/xampp/htdocs/final/global/check_permissions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+PermissionManager::requirePermission();
 
 ?>
 

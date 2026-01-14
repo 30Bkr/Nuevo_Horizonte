@@ -34,7 +34,17 @@ try {
     header("Location: representantes_list.php");
     exit();
 }
+
+// require_once '/xampp/htdocs/final/global/check_permissions.php';
+
+// if (session_status() === PHP_SESSION_NONE) {
+//     session_start();
+// }
+
+// PermissionManager::requirePermission();
 include_once("/xampp/htdocs/final/layout/layaout1.php");
+
+
 
 ?>
 <!-- Content Wrapper -->
@@ -224,7 +234,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                                                 INNER JOIN parentesco par ON er.id_parentesco = par.id_parentesco
                                                                 WHERE er.id_representante = ? AND er.estatus = 1 AND e.estatus = 1
                                                                 ORDER BY p.primer_apellido, p.primer_nombre";
-                                            
+
                                             $stmt_estudiantes = $db->prepare($query_estudiantes);
                                             $stmt_estudiantes->bindParam(1, $id_representante);
                                             $stmt_estudiantes->execute();
@@ -232,20 +242,20 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                             if ($stmt_estudiantes->rowCount() > 0) {
                                                 echo '<div class="table-responsive"><table class="table table-sm table-bordered">';
                                                 echo '<thead><tr><th>Nombre</th><th>Cédula</th><th>Parentesco</th></tr></thead><tbody>';
-                                                
+
                                                 while ($estudiante = $stmt_estudiantes->fetch(PDO::FETCH_ASSOC)) {
                                                     $nombreCompleto = $estudiante['primer_nombre'] . ' ' .
                                                         ($estudiante['segundo_nombre'] ? $estudiante['segundo_nombre'] . ' ' : '') .
                                                         $estudiante['primer_apellido'] . ' ' .
                                                         ($estudiante['segundo_apellido'] ? $estudiante['segundo_apellido'] : '');
-                                                    
+
                                                     echo "<tr>";
                                                     echo "<td>" . htmlspecialchars($nombreCompleto) . "</td>";
                                                     echo "<td>" . htmlspecialchars($estudiante['cedula']) . "</td>";
                                                     echo "<td>" . htmlspecialchars($estudiante['parentesco']) . "</td>";
                                                     echo "</tr>";
                                                 }
-                                                
+
                                                 echo '</tbody></table></div>';
                                             } else {
                                                 echo '<div class="alert alert-info">No tiene estudiantes asignados.</div>';

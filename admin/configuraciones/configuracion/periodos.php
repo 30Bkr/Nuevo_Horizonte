@@ -1,7 +1,9 @@
 <?php
+require_once '/xampp/htdocs/final/global/protect.php';
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
 include_once("/xampp/htdocs/final/app/controllers/periodos/periodos.php");
+
 
 // Obtener datos iniciales
 try {
@@ -291,69 +293,6 @@ try {
     </div>
   </div>
 </div>
-<!-- <div class="modal fade" id="modalCrear" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">
-          <i class="fas fa-plus-circle mr-2"></i>
-          Crear Nuevo Periodo Académico
-        </h5>
-        <button type="button" class="close" data-dismiss="modal">
-          <span>&times;</span>
-        </button>
-      </div>
-      <form id="formCrear" onsubmit="crearPeriodo(event)">
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
-                <label for="descripcion_periodo">Descripción del Periodo:</label>
-                <input type="text" class="form-control" id="descripcion_periodo" name="descripcion"
-                  placeholder="Ej: Año Escolar 2024-2025, Semestre 2024-B..." required>
-                <small class="form-text text-muted">
-                  Ingresa una descripción clara del periodo académico
-                </small>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="fecha_ini">Fecha de Inicio:</label>
-                <input type="date" class="form-control" id="fecha_ini" name="fecha_ini" required>
-                <small class="form-text text-muted">
-                  Fecha en que inicia el periodo académico
-                </small>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="fecha_fin">Fecha de Fin:</label>
-                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
-                <small class="form-text text-muted">
-                  Fecha en que finaliza el periodo académico
-                </small>
-              </div>
-            </div>
-          </div>
-          <div class="alert alert-info" id="infoUltimoPeriodo">
-            <i class="fas fa-info-circle mr-2"></i>
-            <span id="textoInfoUltimoPeriodo">Cargando información del último periodo...</span>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">
-            <i class="fas fa-times mr-1"></i> Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save mr-1"></i> Crear Periodo
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div> -->
 
 <!-- Modal Generar Periodos Automáticos -->
 <div class="modal fade" id="modalGenerarAutomaticos" tabindex="-1" role="dialog">

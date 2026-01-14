@@ -120,8 +120,8 @@ class PermissionManager
    */
   public static function isAdmin()
   {
-    return isset($_SESSION['usuario_rol_nombre']) &&
-      $_SESSION['usuario_rol_nombre'] === 'Administrador';
+    return isset($_SESSION['usuario_rol']) &&
+      $_SESSION['usuario_rol'] === 'Administrador';
   }
 
   /**
@@ -129,8 +129,8 @@ class PermissionManager
    */
   public static function isTeacher()
   {
-    return isset($_SESSION['usuario_rol_nombre']) &&
-      $_SESSION['usuario_rol_nombre'] === 'Docente';
+    return isset($_SESSION['usuario_rol']) &&
+      $_SESSION['usuario_rol'] === 'Docente';
   }
 
   /**
