@@ -22,8 +22,9 @@ if ($_POST) {
         $docente->correo = $_POST['correo'];
         $docente->id_profesion = $_POST['id_profesion'];
         
-        // Campos de dirección
-        $docente->id_parroquia = $_POST['id_parroquia'];
+        // ========== CAMPOS DE DIRECCIÓN (ACTUALIZADOS) ==========
+        // En el formulario, el campo de parroquia viene como 'parroquia' no 'id_parroquia'
+        $docente->id_parroquia = $_POST['parroquia'];
         $docente->direccion = $_POST['direccion'];
         $docente->calle = $_POST['calle'];
         $docente->casa = $_POST['casa'];

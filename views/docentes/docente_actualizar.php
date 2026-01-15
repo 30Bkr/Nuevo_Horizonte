@@ -48,19 +48,12 @@ if ($_POST) {
             $docente->id_profesion = $_POST['id_profesion'];
             $docente->usuario = $_POST['usuario'];
             
-            // ========== DATOS DE DIRECCIÓN (CRÍTICOS PARA EL ERROR) ==========
+            // ========== DATOS DE DIRECCIÓN ==========
+        
             $docente->id_parroquia = $id_parroquia;
             $docente->direccion = $_POST['direccion'];
             $docente->calle = $_POST['calle'];
             $docente->casa = $_POST['casa'];
-            
-            // ========== VERIFICAR DATOS ANTES DE ACTUALIZAR ==========
-            echo "<pre>DEBUG - Datos a actualizar:";
-            echo "id_parroquia: " . $docente->id_parroquia;
-            echo "direccion: " . $docente->direccion;
-            echo "calle: " . $docente->calle;
-            echo "casa: " . $docente->casa;
-            echo "</pre>";
             
             // ========== VERIFICAR SI EL USUARIO YA EXISTE ==========
             if ($docente->usuarioExiste($docente->usuario, $docente->id_persona)) {

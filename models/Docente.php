@@ -123,215 +123,232 @@ class Docente {
         return false;
     }
 
-   // Crear nuevo docente
-public function crear() {
-    try {
-        // Validaciones adicionales
-        if (empty($this->sexo)) {
-            throw new Exception("El sexo es obligatorio");
-        }
-        
-        if (empty($this->nacionalidad)) {
-            throw new Exception("La nacionalidad es obligatoria");
-        }
-        
-        if (empty($this->fecha_nac)) {
-            throw new Exception("La fecha de nacimiento es obligatoria");
-        }
-        
-        if (empty($this->telefono)) {
-            throw new Exception("El teléfono móvil es obligatorio");
-        }
-        
-        // Validar formato de correo
-        if (!empty($this->correo) && !filter_var($this->correo, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception("El formato del correo electrónico no es válido");
-        }
-
-        // Validar que la cédula solo contenga números
-        if (!empty($this->cedula) && !preg_match('/^\d+$/', $this->cedula)) {
-            throw new Exception("La cédula debe contener solo números");
-        }
-
-        // Validar longitud mínima de cédula
-        if (!empty($this->cedula) && strlen($this->cedula) < 6) {
-            throw new Exception("La cédula debe tener al menos 6 dígitos");
-        }
-
-        // Validar que los teléfonos solo contengan números
-        if (!empty($this->telefono) && !preg_match('/^\d+$/', $this->telefono)) {
-            throw new Exception("El teléfono móvil debe contener solo números");
-        }
-
-        if (!empty($this->telefono_hab) && !preg_match('/^\d+$/', $this->telefono_hab)) {
-            throw new Exception("El teléfono de habitación debe contener solo números");
-        }
-
-        // Validar que la fecha de nacimiento no sea futura
-        if (!empty($this->fecha_nac)) {
-            $hoy = new DateTime();
-            $fechaNac = new DateTime($this->fecha_nac);
-            if ($fechaNac > $hoy) {
-                throw new Exception("La fecha de nacimiento no puede ser futura");
+    // Crear nuevo docente
+    public function crear() {
+        try {
+            // Validaciones adicionales
+            if (empty($this->sexo)) {
+                throw new Exception("El sexo es obligatorio");
             }
+            
+            if (empty($this->nacionalidad)) {
+                throw new Exception("La nacionalidad es obligatoria");
+            }
+            
+            if (empty($this->fecha_nac)) {
+                throw new Exception("La fecha de nacimiento es obligatoria");
+            }
+            
+            if (empty($this->telefono)) {
+                throw new Exception("El teléfono móvil es obligatorio");
+            }
+            
+            // Validar formato de correo
+            if (!empty($this->correo) && !filter_var($this->correo, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("El formato del correo electrónico no es válido");
+            }
+
+            // Validar que la cédula solo contenga números
+            if (!empty($this->cedula) && !preg_match('/^\d+$/', $this->cedula)) {
+                throw new Exception("La cédula debe contener solo números");
+            }
+
+            // Validar longitud mínima de cédula
+            if (!empty($this->cedula) && strlen($this->cedula) < 6) {
+                throw new Exception("La cédula debe tener al menos 6 dígitos");
+            }
+
+            // Validar que los teléfonos solo contengan números
+            if (!empty($this->telefono) && !preg_match('/^\d+$/', $this->telefono)) {
+                throw new Exception("El teléfono móvil debe contener solo números");
+            }
+
+            if (!empty($this->telefono_hab) && !preg_match('/^\d+$/', $this->telefono_hab)) {
+                throw new Exception("El teléfono de habitación debe contener solo números");
+            }
+
+            // Validar que la fecha de nacimiento no sea futura
+            if (!empty($this->fecha_nac)) {
+                $hoy = new DateTime();
+                $fechaNac = new DateTime($this->fecha_nac);
+                if ($fechaNac > $hoy) {
+                    throw new Exception("La fecha de nacimiento no puede ser futura");
+                }
+            }
+
+            // Validar campos de dirección
+            if (empty($this->id_parroquia)) {
+                throw new Exception("La parroquia es obligatoria");
+            }
+            
+            if (empty($this->direccion)) {
+                throw new Exception("La dirección completa es obligatoria");
+            }
+            
+            if (empty($this->calle)) {
+                throw new Exception("La calle/avenida es obligatoria");
+            }
+            
+            if (empty($this->casa)) {
+                throw new Exception("La casa/edificio es obligatoria");
+            }
+
+            $this->conn->beginTransaction();
+
+            // 1. Insertar dirección
+            $queryDireccion = "INSERT INTO direcciones 
+                              (id_parroquia, direccion, calle, casa, creacion, estatus) 
+                              VALUES (?, ?, ?, ?, NOW(), 1)";
+            
+            $stmtDireccion = $this->conn->prepare($queryDireccion);
+            $stmtDireccion->bindParam(1, $this->id_parroquia);
+            $stmtDireccion->bindParam(2, $this->direccion);
+            $stmtDireccion->bindParam(3, $this->calle);
+            $stmtDireccion->bindParam(4, $this->casa);
+            $stmtDireccion->execute();
+            
+            $this->id_direccion = $this->conn->lastInsertId();
+
+            // 2. Insertar persona (convertir a mayúsculas)
+            $queryPersona = "INSERT INTO personas 
+                            (id_direccion, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, 
+                             cedula, telefono, telefono_hab, correo, lugar_nac, fecha_nac, sexo, nacionalidad, creacion, estatus) 
+                            VALUES (?, UPPER(?), UPPER(?), UPPER(?), UPPER(?), ?, ?, ?, LOWER(?), UPPER(?), ?, UPPER(?), UPPER(?), NOW(), 1)";
+            
+            $stmtPersona = $this->conn->prepare($queryPersona);
+            $stmtPersona->bindParam(1, $this->id_direccion);
+            $stmtPersona->bindParam(2, $this->primer_nombre);
+            $stmtPersona->bindParam(3, $this->segundo_nombre);
+            $stmtPersona->bindParam(4, $this->primer_apellido);
+            $stmtPersona->bindParam(5, $this->segundo_apellido);
+            $stmtPersona->bindParam(6, $this->cedula);
+            $stmtPersona->bindParam(7, $this->telefono);
+            $stmtPersona->bindParam(8, $this->telefono_hab);
+            $stmtPersona->bindParam(9, $this->correo);
+            $stmtPersona->bindParam(10, $this->lugar_nac);
+            $stmtPersona->bindParam(11, $this->fecha_nac);
+            $stmtPersona->bindParam(12, $this->sexo);
+            $stmtPersona->bindParam(13, $this->nacionalidad);
+            $stmtPersona->execute();
+            
+            $this->id_persona = $this->conn->lastInsertId();
+
+            // 3. Insertar docente
+            $queryDocente = "INSERT INTO docentes (id_persona, id_profesion, creacion, estatus) 
+                            VALUES (?, ?, NOW(), 1)";
+            
+            $stmtDocente = $this->conn->prepare($queryDocente);
+            $stmtDocente->bindParam(1, $this->id_persona);
+            $stmtDocente->bindParam(2, $this->id_profesion);
+            $stmtDocente->execute();
+            
+            $this->id_docente = $this->conn->lastInsertId();
+
+            // 4. Crear usuario automáticamente con la cédula
+            $this->usuario = $this->cedula; // Usuario = cédula
+            $queryUsuario = "INSERT INTO usuarios (id_persona, id_rol, usuario, contrasena, creacion, estatus) 
+                            VALUES (?, ?, ?, ?, NOW(), 1)";
+            
+            // Hash de contraseña (por defecto: cédula)
+            $contrasena_hash = hash('sha256', $this->cedula);
+            
+            $stmtUsuario = $this->conn->prepare($queryUsuario);
+            $stmtUsuario->bindParam(1, $this->id_persona);
+            $stmtUsuario->bindParam(2, $this->id_rol);
+            $stmtUsuario->bindParam(3, $this->usuario);
+            $stmtUsuario->bindParam(4, $contrasena_hash);
+            $stmtUsuario->execute();
+
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            throw $e;
         }
-
-        $this->conn->beginTransaction();
-
-        // 1. Insertar dirección
-        $queryDireccion = "INSERT INTO direcciones 
-                          (id_parroquia, direccion, calle, casa, creacion, estatus) 
-                          VALUES (?, ?, ?, ?, NOW(), 1)";
-        
-        $stmtDireccion = $this->conn->prepare($queryDireccion);
-        $stmtDireccion->bindParam(1, $this->id_parroquia);
-        $stmtDireccion->bindParam(2, $this->direccion);
-        $stmtDireccion->bindParam(3, $this->calle);
-        $stmtDireccion->bindParam(4, $this->casa);
-        $stmtDireccion->execute();
-        
-        $this->id_direccion = $this->conn->lastInsertId();
-
-        // 2. Insertar persona (convertir a mayúsculas)
-        $queryPersona = "INSERT INTO personas 
-                        (id_direccion, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, 
-                         cedula, telefono, telefono_hab, correo, lugar_nac, fecha_nac, sexo, nacionalidad, creacion, estatus) 
-                        VALUES (?, UPPER(?), UPPER(?), UPPER(?), UPPER(?), ?, ?, ?, LOWER(?), UPPER(?), ?, UPPER(?), UPPER(?), NOW(), 1)";
-        
-        $stmtPersona = $this->conn->prepare($queryPersona);
-        $stmtPersona->bindParam(1, $this->id_direccion);
-        $stmtPersona->bindParam(2, $this->primer_nombre);
-        $stmtPersona->bindParam(3, $this->segundo_nombre);
-        $stmtPersona->bindParam(4, $this->primer_apellido);
-        $stmtPersona->bindParam(5, $this->segundo_apellido);
-        $stmtPersona->bindParam(6, $this->cedula);
-        $stmtPersona->bindParam(7, $this->telefono);
-        $stmtPersona->bindParam(8, $this->telefono_hab);
-        $stmtPersona->bindParam(9, $this->correo);
-        $stmtPersona->bindParam(10, $this->lugar_nac);
-        $stmtPersona->bindParam(11, $this->fecha_nac);
-        $stmtPersona->bindParam(12, $this->sexo);
-        $stmtPersona->bindParam(13, $this->nacionalidad);
-        $stmtPersona->execute();
-        
-        $this->id_persona = $this->conn->lastInsertId();
-
-        // 3. Insertar docente
-        $queryDocente = "INSERT INTO docentes (id_persona, id_profesion, creacion, estatus) 
-                        VALUES (?, ?, NOW(), 1)";
-        
-        $stmtDocente = $this->conn->prepare($queryDocente);
-        $stmtDocente->bindParam(1, $this->id_persona);
-        $stmtDocente->bindParam(2, $this->id_profesion);
-        $stmtDocente->execute();
-        
-        $this->id_docente = $this->conn->lastInsertId();
-
-        // 4. Crear usuario automáticamente con la cédula
-        $this->usuario = $this->cedula; // Usuario = cédula
-        $queryUsuario = "INSERT INTO usuarios (id_persona, id_rol, usuario, contrasena, creacion, estatus) 
-                        VALUES (?, ?, ?, ?, NOW(), 1)";
-        
-        // Hash de contraseña (por defecto: cédula)
-        $contrasena_hash = hash('sha256', $this->cedula);
-        
-        $stmtUsuario = $this->conn->prepare($queryUsuario);
-        $stmtUsuario->bindParam(1, $this->id_persona);
-        $stmtUsuario->bindParam(2, $this->id_rol);
-        $stmtUsuario->bindParam(3, $this->usuario);
-        $stmtUsuario->bindParam(4, $contrasena_hash);
-        $stmtUsuario->execute();
-
-        $this->conn->commit();
-        return true;
-
-    } catch (Exception $e) {
-        $this->conn->rollBack();
-        throw $e;
     }
-}
 
     // Actualizar docente
     public function actualizar() {
-    try {
-        // Iniciar transacción
-        $this->conn->beginTransaction();
-        
-        // 1. ACTUALIZAR DIRECCIÓN
-        $queryDireccion = "UPDATE direcciones SET 
-                            id_parroquia = :id_parroquia,
-                            direccion = :direccion,
-                            calle = :calle,
-                            casa = :casa,
-                            actualizacion = NOW()
-                          WHERE id_direccion = :id_direccion";
-        
-        $stmtDireccion = $this->conn->prepare($queryDireccion);
-        $stmtDireccion->bindParam(':id_parroquia', $this->id_parroquia);
-        $stmtDireccion->bindParam(':direccion', $this->direccion);
-        $stmtDireccion->bindParam(':calle', $this->calle);
-        $stmtDireccion->bindParam(':casa', $this->casa);
-        $stmtDireccion->bindParam(':id_direccion', $this->id_direccion);
-        $stmtDireccion->execute();
-        
-        // 2. ACTUALIZAR PERSONA
-        $queryPersona = "UPDATE personas SET 
-                          telefono = :telefono,
-                          telefono_hab = :telefono_hab,
-                          correo = :correo,
-                          lugar_nac = :lugar_nac,
-                          fecha_nac = :fecha_nac,
-                          sexo = :sexo,
-                          nacionalidad = :nacionalidad,
-                          actualizacion = NOW()
-                        WHERE id_persona = :id_persona";
-        
-        $stmtPersona = $this->conn->prepare($queryPersona);
-        $stmtPersona->bindParam(':telefono', $this->telefono);
-        $stmtPersona->bindParam(':telefono_hab', $this->telefono_hab);
-        $stmtPersona->bindParam(':correo', $this->correo);
-        $stmtPersona->bindParam(':lugar_nac', $this->lugar_nac);
-        $stmtPersona->bindParam(':fecha_nac', $this->fecha_nac);
-        $stmtPersona->bindParam(':sexo', $this->sexo);
-        $stmtPersona->bindParam(':nacionalidad', $this->nacionalidad);
-        $stmtPersona->bindParam(':id_persona', $this->id_persona);
-        $stmtPersona->execute();
-        
-        // 3. ACTUALIZAR DOCENTE
-        $queryDocente = "UPDATE docentes SET 
-                          id_profesion = :id_profesion,
-                          actualizacion = NOW()
-                        WHERE id_docente = :id_docente";
-        
-        $stmtDocente = $this->conn->prepare($queryDocente);
-        $stmtDocente->bindParam(':id_profesion', $this->id_profesion);
-        $stmtDocente->bindParam(':id_docente', $this->id_docente);
-        $stmtDocente->execute();
-        
-        // 4. ACTUALIZAR USUARIO (si aplica)
-        if (!empty($this->usuario)) {
-            $queryUsuario = "UPDATE usuarios SET 
-                              usuario = :usuario,
+        try {
+            // Iniciar transacción
+            $this->conn->beginTransaction();
+            
+            // 1. ACTUALIZAR DIRECCIÓN
+            $queryDireccion = "UPDATE direcciones SET 
+                                id_parroquia = :id_parroquia,
+                                direccion = :direccion,
+                                calle = :calle,
+                                casa = :casa,
+                                actualizacion = NOW()
+                              WHERE id_direccion = :id_direccion";
+            
+            $stmtDireccion = $this->conn->prepare($queryDireccion);
+            $stmtDireccion->bindParam(':id_parroquia', $this->id_parroquia);
+            $stmtDireccion->bindParam(':direccion', $this->direccion);
+            $stmtDireccion->bindParam(':calle', $this->calle);
+            $stmtDireccion->bindParam(':casa', $this->casa);
+            $stmtDireccion->bindParam(':id_direccion', $this->id_direccion);
+            $stmtDireccion->execute();
+            
+            // 2. ACTUALIZAR PERSONA
+            $queryPersona = "UPDATE personas SET 
+                              telefono = :telefono,
+                              telefono_hab = :telefono_hab,
+                              correo = :correo,
+                              lugar_nac = :lugar_nac,
+                              fecha_nac = :fecha_nac,
+                              sexo = :sexo,
+                              nacionalidad = :nacionalidad,
                               actualizacion = NOW()
                             WHERE id_persona = :id_persona";
             
-            $stmtUsuario = $this->conn->prepare($queryUsuario);
-            $stmtUsuario->bindParam(':usuario', $this->usuario);
-            $stmtUsuario->bindParam(':id_persona', $this->id_persona);
-            $stmtUsuario->execute();
+            $stmtPersona = $this->conn->prepare($queryPersona);
+            $stmtPersona->bindParam(':telefono', $this->telefono);
+            $stmtPersona->bindParam(':telefono_hab', $this->telefono_hab);
+            $stmtPersona->bindParam(':correo', $this->correo);
+            $stmtPersona->bindParam(':lugar_nac', $this->lugar_nac);
+            $stmtPersona->bindParam(':fecha_nac', $this->fecha_nac);
+            $stmtPersona->bindParam(':sexo', $this->sexo);
+            $stmtPersona->bindParam(':nacionalidad', $this->nacionalidad);
+            $stmtPersona->bindParam(':id_persona', $this->id_persona);
+            $stmtPersona->execute();
+            
+            // 3. ACTUALIZAR DOCENTE
+            $queryDocente = "UPDATE docentes SET 
+                              id_profesion = :id_profesion,
+                              actualizacion = NOW()
+                            WHERE id_docente = :id_docente";
+            
+            $stmtDocente = $this->conn->prepare($queryDocente);
+            $stmtDocente->bindParam(':id_profesion', $this->id_profesion);
+            $stmtDocente->bindParam(':id_docente', $this->id_docente);
+            $stmtDocente->execute();
+            
+            // 4. ACTUALIZAR USUARIO (si aplica)
+            if (!empty($this->usuario)) {
+                $queryUsuario = "UPDATE usuarios SET 
+                                  usuario = :usuario,
+                                  actualizacion = NOW()
+                                WHERE id_persona = :id_persona";
+                
+                $stmtUsuario = $this->conn->prepare($queryUsuario);
+                $stmtUsuario->bindParam(':usuario', $this->usuario);
+                $stmtUsuario->bindParam(':id_persona', $this->id_persona);
+                $stmtUsuario->execute();
+            }
+            
+            // Confirmar transacción
+            $this->conn->commit();
+            return true;
+            
+        } catch (Exception $e) {
+            // Revertir transacción en caso de error
+            $this->conn->rollBack();
+            error_log("Error al actualizar docente: " . $e->getMessage());
+            return false;
         }
-        
-        // Confirmar transacción
-        $this->conn->commit();
-        return true;
-        
-    } catch (Exception $e) {
-        // Revertir transacción en caso de error
-        $this->conn->rollBack();
-        error_log("Error al actualizar docente: " . $e->getMessage());
-        return false;
     }
-}
 
     // Cambiar estado del docente (habilitar/inhabilitar)
     public function cambiarEstado($id, $estado) {
