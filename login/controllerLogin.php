@@ -1,6 +1,6 @@
 <?php
 include_once('../app/users.php');
-include_once('../app/password_helper.php'); // NUEVO
+include_once('../app/password_helper.php');
 include_once('../global/utils.php');
 
 // 1. Validar método
@@ -36,22 +36,18 @@ if (empty($listaUsuario)) {
 $usuarioData = $listaUsuario[0];
 $hashAlmacenado = $usuarioData->contrasena;
 
-// 4. VERIFICAR CONTRASEÑA (NUEVO SISTEMA HÍBRIDO)
+// 4. VERIFICAR CONTRASEÑA
 if (PasswordHelper::verify($password, $hashAlmacenado)) {
   // ✅ Contraseña correcta
 
   // 5. ¿Es SHA256? Entonces migrar a BCRYPT
   if (PasswordHelper::getHashType($hashAlmacenado) === 'SHA256') {
-    // Migrar automáticamente
     if (PasswordHelper::migrateToBCRYPT(
       $usuarioData->id_usuario,
       $password,
       $hashAlmacenado
     )) {
-      // Registrar en logs
       error_log("Usuario {$email} migrado a BCRYPT automáticamente");
-
-      // Opcional: Notificar al usuario
       session_start();
       $_SESSION['mensaje_info'] = "Tu contraseña ha sido actualizada automáticamente por seguridad";
     }
@@ -73,18 +69,14 @@ if (PasswordHelper::verify($password, $hashAlmacenado)) {
   } else {
     $_SESSION['usuario_id'] = $usuarioData->id_usuario;
     $_SESSION['usuario_email'] = $usuarioData->usuario;
-    $_SESSION['usuario_rol'] = 'Usuario';
+    $_SESSION['usuario_rol'] = $info->cargo;
     $_SESSION['usuario_rol_id'] = $usuarioData->id_rol;
   }
 
   $_SESSION['icono'] = "success";
 
-  // 7. Redirigir según rol
-  if ($_SESSION['usuario_rol'] === 'Administrador') {
-    header('Location:' . URL . '/admin/index.php');
-  } else {
-    header('Location:' . URL . '/admin-docentes/index.php');
-  }
+  // 7. REDIRIGIR A TODOS AL MISMO DASHBOARD
+  header('Location:' . URL . '/admin/index.php');
   exit();
 } else {
   // ❌ Contraseña incorrecta

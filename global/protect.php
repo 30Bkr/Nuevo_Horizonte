@@ -7,23 +7,19 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once '/xampp/htdocs/final/global/check_permissions.php';
 require_once '/xampp/htdocs/final/global/utils.php';
-require_once '/xampp/htdocs/final/global/notifications.php';
 
-
-
-// Función auxiliar para obtener URL relativa
-function getCurrentRelativeUrlForProtection()
+// Función para obtener URL relativa
+function getRelativeUrlForProtection()
 {
   $requestUri = $_SERVER['REQUEST_URI'];
-
-  // Extraer la parte después de /final/
   $basePath = '/final/';
-  $pos = strpos($requestUri, $basePath);
 
+  // Extraer todo después de /final/
+  $pos = strpos($requestUri, $basePath);
   if ($pos !== false) {
     $relativeUrl = substr($requestUri, $pos + strlen($basePath));
 
-    // Limpiar parámetros GET para comparación
+    // Remover parámetros GET
     $questionMarkPos = strpos($relativeUrl, '?');
     if ($questionMarkPos !== false) {
       $relativeUrl = substr($relativeUrl, 0, $questionMarkPos);
@@ -35,33 +31,45 @@ function getCurrentRelativeUrlForProtection()
   return $requestUri;
 }
 
-// Verificar autenticación
+// URLs que NO requieren autenticación
+$publicUrls = [
+  'login/index.php',
+  'login/login_controller.php'
+];
+
+$currentUrl = getRelativeUrlForProtection();
+
+// DEBUG
+error_log("=== PROTECT.PHP ===");
+error_log("URL: $currentUrl");
+error_log("Usuario ID: " . ($_SESSION['usuario_id'] ?? 'NO SESION'));
+
+// 1. Si es URL pública, permitir acceso
+if (in_array($currentUrl, $publicUrls)) {
+  error_log("URL pública - SIN VERIFICACIÓN");
+  return;
+}
+
+// 2. Verificar autenticación
 if (!isset($_SESSION['usuario_id'])) {
-  $_SESSION['mensaje'] = "Es necesario iniciar sesión";
+  error_log("SIN AUTENTICACIÓN - Redirigiendo a login");
+  $_SESSION['mensaje'] = "Debes iniciar sesión para continuar";
+  $_SESSION['icono'] = "error";
+  header('Location: ' . URL . '/login/index.php');
+  exit();
+}
+
+// 3. Verificar permisos
+error_log("Verificando permisos para: $currentUrl");
+if (!PermissionManager::check($currentUrl)) {
+  error_log("SIN PERMISOS - Redirigiendo a dashboard");
+  $_SESSION['mensaje'] = "No tienes permiso para acceder a esta sección";
   $_SESSION['icono'] = "error";
 
-  if (!headers_sent()) {
-    header('Location: ' . URL . '/login/index.php');
-    exit();
-  } else {
-    echo '<script>window.location.href="' . URL . '/login/index.php"</script>';
-    exit();
-  }
+  // IMPORTANTE: Siempre redirigir al dashboard que SÍ es accesible
+  header('Location: ' . URL . '/admin/index.php');
+  exit();
 }
 
-// Verificar permisos para la página actual
-$currentUrl = getCurrentRelativeUrlForProtection();
-if (!PermissionManager::check($currentUrl)) {
-  // $_SESSION['mensaje'] = "No tienes permiso para acceder a esta sección";
-  // $_SESSION['icono'] = "error";
-  // Usar Notification::set en lugar de $_SESSION directamente
-  Notification::set("No tienes permiso para acceder a esta sección", "error");
-
-  if (!headers_sent()) {
-    header('Location: ' . URL . '/admin/index.php');
-    exit();
-  } else {
-    echo '<script>window.location.href="' . URL . '/admin/index.php"</script>';
-    exit();
-  }
-}
+error_log("CON PERMISOS - Acceso permitido");
+// Si pasa todas las verificaciones, continuar

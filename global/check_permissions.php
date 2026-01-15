@@ -37,13 +37,38 @@ class PermissionManager
       $url = self::getCurrentRelativeUrl();
     }
 
-    // Administrador tiene acceso a todo
-    if (self::isAdmin()) {
+    // DEBUG: Ver qué está pasando
+    error_log("=== CHECK PERMISSIONS ===");
+    error_log("URL a verificar: " . $url);
+    error_log("Usuario ID: " . ($_SESSION['usuario_id'] ?? 'NO'));
+    error_log("Usuario Rol: " . ($_SESSION['usuario_rol'] ?? 'NO'));
+    error_log("Usuario Rol ID: " . ($_SESSION['usuario_rol_id'] ?? 'NO'));
+
+    // URLs que son accesibles para TODOS los usuarios autenticados
+    $publicForAllAuthenticated = [
+      'admin/index.php',
+      'login/logout.php',
+      'admin/perfil.php' // Si tienes página de perfil
+    ];
+
+    // Si la URL está en la lista pública, permitir acceso
+    if (in_array($url, $publicForAllAuthenticated)) {
+      error_log("URL pública - PERMITIDO");
       return true;
     }
 
-    // Verificar permiso en BD
-    return self::hasPermission($_SESSION['usuario_id'] ?? 0, $url);
+    // Administrador tiene acceso a todo
+    if (self::isAdmin()) {
+      error_log("Es admin - PERMITIDO");
+      return true;
+    }
+
+    // Verificar permiso en BD para otras URLs
+    // CORRECCIÓN: Usar el rol_id de la sesión
+    $rolId = $_SESSION['usuario_rol_id'] ?? 0;
+    error_log("Verificando permisos para rol ID: " . $rolId);
+
+    return self::hasPermission($rolId, $url);
   }
 
   /**
@@ -54,46 +79,56 @@ class PermissionManager
     $pdo = self::initDB();
 
     try {
+      // DEBUG: Para ver qué se está verificando
+      error_log("hasPermission - Rol ID: $roleId, URL: $url");
+
       // Primero intentar con la URL completa
       $sql = "SELECT COUNT(*) as tiene_permiso
-                    FROM roles_permisos rp
-                    INNER JOIN permisos p ON p.id_permiso = rp.id_permiso
-                    WHERE rp.id_rol = :rol_id
-                      AND rp.estatus = 1
-                      AND p.estatus = 1
-                      AND (p.url = :url OR p.nom_url = :url)";
+                FROM roles_permisos rp
+                INNER JOIN permisos p ON p.id_permiso = rp.id_permiso
+                WHERE rp.id_rol = :rol_id
+                  AND rp.estatus = 1
+                  AND p.estatus = 1
+                  AND (p.url = :url OR p.nom_url = :url)";
 
       $stmt = $pdo->prepare($sql);
-      $stmt->bindParam(':rol_id', $roleId);
+      $stmt->bindParam(':rol_id', $roleId, PDO::PARAM_INT);
       $stmt->bindParam(':url', $url);
       $stmt->execute();
 
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
       if ($result['tiene_permiso'] > 0) {
+        error_log("PERMITIDO - URL exacta encontrada");
         return true;
       }
 
       // Si no encuentra, intentar con coincidencia parcial
-      // (por ejemplo, si la URL tiene parámetros)
       $sqlPartial = "SELECT COUNT(*) as tiene_permiso
-                          FROM roles_permisos rp
-                          INNER JOIN permisos p ON p.id_permiso = rp.id_permiso
-                          WHERE rp.id_rol = :rol_id
-                            AND rp.estatus = 1
-                            AND p.estatus = 1
-                            AND :url LIKE CONCAT('%', p.url, '%')";
+                       FROM roles_permisos rp
+                       INNER JOIN permisos p ON p.id_permiso = rp.id_permiso
+                       WHERE rp.id_rol = :rol_id
+                         AND rp.estatus = 1
+                         AND p.estatus = 1
+                         AND :url LIKE CONCAT('%', p.url, '%')";
 
       $stmtPartial = $pdo->prepare($sqlPartial);
-      $stmtPartial->bindParam(':rol_id', $roleId);
+      $stmtPartial->bindParam(':rol_id', $roleId, PDO::PARAM_INT);
       $stmtPartial->bindParam(':url', $url);
       $stmtPartial->execute();
 
       $resultPartial = $stmtPartial->fetch(PDO::FETCH_ASSOC);
 
-      return $resultPartial['tiene_permiso'] > 0;
+      $tienePermiso = $resultPartial['tiene_permiso'] > 0;
+      if ($tienePermiso) {
+        error_log("PERMITIDO - Coincidencia parcial encontrada");
+      } else {
+        error_log("DENEGADO - No se encontró permiso");
+      }
+
+      return $tienePermiso;
     } catch (PDOException $e) {
-      error_log("Error verificando permiso: " . $e->getMessage());
+      error_log("ERROR en hasPermission: " . $e->getMessage());
       return false;
     }
   }
@@ -112,7 +147,35 @@ class PermissionManager
       return false;
     }
 
-    return self::hasPermission($_SESSION['usuario_id'], $menuUrl);
+    return self::hasPermission($_SESSION['usuario_rol_id'], $menuUrl);
+  }
+  public static function canViewAny(array $urls)
+  {
+    // Validar que $urls sea un array
+    if (!is_array($urls) || empty($urls)) {
+      return false;
+    }
+
+    // Si es admin, puede ver todo
+    if (self::isAdmin()) {
+      return true;
+    }
+
+    // Si no hay usuario o rol, no puede ver nada
+    if (!isset($_SESSION['usuario_id']) || !isset($_SESSION['usuario_rol_id'])) {
+      return false;
+    }
+
+    $rolId = $_SESSION['usuario_rol_id'];
+
+    // Verificar si tiene permiso para al menos una de las URLs
+    foreach ($urls as $url) {
+      if (self::hasPermission($rolId, $url)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

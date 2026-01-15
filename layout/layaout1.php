@@ -97,7 +97,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                with font-awesome or any other icon font library -->
 
           <?php
-          if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
+          if (PermissionManager::canViewAny(['admin/configuraciones/index.php'])) { ?>
             <li class="nav-item">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -128,7 +128,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
           <!-- // Docentes  -->
 
-          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
+          <?php if (PermissionManager::canViewAny(['admin/configuraciones/index.php'])) { ?>
 
             <li class="nav-item ">
               <a href="#" class="nav-link">
@@ -164,7 +164,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
           <!-- Estudiantes -->
 
-          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
+          <?php if (PermissionManager::canViewAny(['admin/estudiantes/estudiantes_list.php'])) { ?>
             <li class="nav-item ">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -195,7 +195,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Inscripciones -->
 
           <?php
-          if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
+          if (PermissionManager::canViewAny(['admin/inscripciones/indexf2.php'])) { ?>
             <li class="nav-item">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -241,7 +241,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 
-          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
+          <?php if (PermissionManager::canViewAny(['admin/configuraciones/index.php'])) { ?>
             <li class="nav-item ">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
@@ -268,7 +268,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-          <?php if (PermissionManager::canView('admin/roles_permisos/index.php') && PermissionManager::isAdmin()): ?>
+          <?php if (PermissionManager::canViewAny(['admin/roles_permisos/index.php']) && PermissionManager::isAdmin()): ?>
             <li class="nav-item">
               <a href="#" class="nav-link">
                 <i class="nav-icon fas bi bi-shield-lock">
@@ -291,7 +291,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <?php endif; ?>
 
 
-          <?php if (PermissionManager::canView('admin/configuraciones/index.php')) { ?>
+          <?php if (PermissionManager::canViewAny(['admin/configuraciones/index.php'])) { ?>
 
             <li class="nav-item ">
               <a href="#" class="nav-link">
