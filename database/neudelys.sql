@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 15-01-2026 a las 17:27:18
+-- Tiempo de generación: 16-01-2026 a las 02:12:33
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -45,9 +45,9 @@ CREATE TABLE `direcciones` (
 INSERT INTO `direcciones` (`id_direccion`, `id_parroquia`, `direccion`, `calle`, `casa`, `creacion`, `actualizacion`, `estatus`) VALUES
 (1, 1, 'Av Principal de Petare', 'Av Principal', 'Casa 123', '2025-11-10 06:17:16', '2025-11-23 20:27:06', 1),
 (2, 2, 'Urbanización Caucagüita', 'Calle 2', 'Edificio A, Apt 4B', '2025-11-10 06:17:16', '2025-11-27 01:35:47', 1),
-(3, 3, 'Sector Baruta', 'Calle Los Samanes', 'Quinta María', '2025-11-10 06:17:16', '2025-11-25 20:53:36', 1),
+(3, 3, 'Sector Baruta', 'Calle Los Samanes', 'Quinta María', '2025-11-10 06:17:16', '2026-01-15 20:21:26', 1),
 (4, 4, 'AV INTERCOMUNAL EL VALLE', 'AV PRINCIPAL', 'CASA 80', '2025-11-10 06:17:16', '2025-12-02 01:04:35', 1),
-(5, 1, 'Urbanización Los Naranjos', 'Calle 5', 'Casa 89', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
+(5, 1, 'Urbanización Los Naranjos', 'Calle 5', 'Casa 89', '2025-11-10 06:17:16', '2026-01-15 21:09:06', 1),
 (6, 2, 'Sector La Dolorita', 'Calle 7', 'Edificio B, Apt 2C', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
 (7, 3, 'Urbanización Prados del Este', 'Av Ppal', 'Quinta Los Pinos', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
 (13, 1, 'Av Principal de Petare', 'Av Principal', 'Casa 123', '2025-11-11 18:59:50', NULL, 1),
@@ -72,7 +72,8 @@ INSERT INTO `direcciones` (`id_direccion`, `id_parroquia`, `direccion`, `calle`,
 (38, 68, 'AV PRINCIPAL ANTIMANO', 'LOS JABILLOS', '', '2025-11-30 00:55:12', NULL, 1),
 (39, 87, 'Barrio Nuevo Horizonte', 'La Parada', '56', '2025-11-30 14:45:26', '2025-12-07 18:10:29', 1),
 (41, 87, 'BARRIO NUEVO HORIZONTE', 'LA PARADA', '23', '2025-12-01 21:27:51', '2025-12-01 20:04:30', 1),
-(43, 87, 'GATO NEGRO', 'CATIA', '3', '2025-12-02 17:09:44', NULL, 1);
+(43, 87, 'GATO NEGRO', 'CATIA', '3', '2025-12-02 17:09:44', NULL, 1),
+(45, 76, 'LA CANDELARIA', 'AV URDANETA', 'SANTA FE, N32', '2026-01-16 00:06:30', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -124,7 +125,8 @@ INSERT INTO `docentes` (`id_docente`, `id_persona`, `creacion`, `actualizacion`,
 (2, 33, '2025-11-17 04:30:35', '2025-11-27 18:31:14', 0, 12),
 (3, 34, '2025-11-17 04:41:45', '2025-12-02 01:25:19', 1, 12),
 (4, 47, '2025-11-24 23:38:25', '2025-12-02 01:21:12', 1, 12),
-(5, 48, '2025-11-25 00:44:20', NULL, 1, 12);
+(5, 48, '2025-11-25 00:44:20', NULL, 1, 12),
+(6, 129, '2026-01-16 00:06:30', NULL, 1, 12);
 
 -- --------------------------------------------------------
 
@@ -274,7 +276,9 @@ INSERT INTO `estudiantes` (`id_estudiante`, `id_persona`, `creacion`, `actualiza
 (62, 121, '2025-12-02 21:40:49', NULL, 1),
 (63, 123, '2025-12-03 01:23:16', NULL, 1),
 (64, 125, '2025-12-07 22:04:29', NULL, 1),
-(65, 127, '2025-12-07 22:10:29', NULL, 1);
+(65, 127, '2025-12-07 22:10:29', NULL, 1),
+(66, 130, '2026-01-16 01:07:20', NULL, 1),
+(67, 132, '2026-01-16 01:09:06', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -311,18 +315,17 @@ CREATE TABLE `estudiantes_patologias` (
 --
 
 INSERT INTO `estudiantes_patologias` (`id_estudiante_patologia`, `id_estudiante`, `id_patologia`, `creacion`, `actualizacion`, `estatus`) VALUES
-(1, 1, 1, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(2, 3, 2, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(3, 5, 3, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(4, 7, 4, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(5, 11, 4, '2025-11-11 18:59:50', NULL, 1),
-(6, 12, 4, '2025-11-11 19:30:17', NULL, 1),
-(7, 14, 2, '2025-11-11 22:16:43', NULL, 1),
-(8, 14, 3, '2025-11-11 22:16:43', NULL, 1),
-(9, 15, 2, '2025-11-11 22:52:57', NULL, 1),
-(10, 28, 1, '2025-11-27 05:35:47', NULL, 1),
-(11, 29, 4, '2025-11-28 04:37:12', NULL, 1),
-(12, 58, 1, '2025-12-02 14:41:06', NULL, 1);
+(12, 58, 1, '2025-12-02 14:41:06', NULL, 1),
+(13, 3, 2, '2026-01-16 00:30:54', NULL, 1),
+(14, 11, 4, '2026-01-16 00:32:31', NULL, 1),
+(15, 1, 1, '2026-01-16 00:33:00', NULL, 1),
+(16, 29, 4, '2026-01-16 00:41:26', NULL, 1),
+(17, 28, 1, '2026-01-16 00:46:00', NULL, 1),
+(18, 12, 4, '2026-01-16 00:52:23', NULL, 1),
+(19, 15, 2, '2026-01-16 00:54:59', NULL, 1),
+(20, 14, 2, '2026-01-16 00:58:28', NULL, 1),
+(21, 7, 4, '2026-01-16 01:04:20', NULL, 1),
+(22, 5, 3, '2026-01-16 01:05:29', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -367,7 +370,7 @@ INSERT INTO `estudiantes_representantes` (`id_estudiante_representante`, `id_est
 (20, 23, 1, 1, '2025-11-20 22:01:18', NULL, 1),
 (21, 24, 1, 1, '2025-11-22 22:32:30', NULL, 1),
 (22, 26, 1, 6, '2025-11-24 00:27:06', NULL, 1),
-(23, 27, 3, 2, '2025-11-26 00:53:36', NULL, 1),
+(23, 27, 3, 2, '2025-11-26 00:53:36', '2026-01-15 20:21:26', 1),
 (24, 28, 2, 1, '2025-11-27 05:35:47', NULL, 1),
 (25, 29, 17, 1, '2025-11-28 04:37:12', NULL, 1),
 (26, 30, 18, 2, '2025-11-28 23:32:52', NULL, 1),
@@ -400,7 +403,9 @@ INSERT INTO `estudiantes_representantes` (`id_estudiante_representante`, `id_est
 (58, 62, 19, 6, '2025-12-02 21:40:49', NULL, 1),
 (59, 63, 19, 6, '2025-12-03 01:23:16', NULL, 1),
 (60, 64, 19, 2, '2025-12-07 22:04:29', NULL, 1),
-(61, 65, 19, 2, '2025-12-07 22:10:29', NULL, 1);
+(61, 65, 19, 2, '2025-12-07 22:10:29', NULL, 1),
+(62, 66, 5, 1, '2026-01-16 01:07:20', NULL, 1),
+(63, 67, 5, 5, '2026-01-16 01:09:06', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -534,7 +539,34 @@ INSERT INTO `inscripciones` (`id_inscripcion`, `id_estudiante`, `id_periodo`, `i
 (88, 63, 3, 17, 1, '2025-12-02', '', '2025-12-03 01:28:25', NULL, 1),
 (89, 64, 1, 23, 1, '2025-12-07', '', '2025-12-07 22:04:29', NULL, 1),
 (90, 65, 3, 24, 1, '2025-12-07', '', '2025-12-07 22:10:29', NULL, 1),
-(91, 64, 3, 24, 1, '2025-12-07', '', '2025-12-08 00:18:01', NULL, 1);
+(91, 64, 3, 24, 1, '2025-12-07', '', '2025-12-08 00:18:01', NULL, 1),
+(92, 27, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:29:36', NULL, 1),
+(93, 3, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:30:54', NULL, 1),
+(94, 13, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:32:03', NULL, 1),
+(95, 11, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:32:31', NULL, 1),
+(96, 1, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:33:00', NULL, 1),
+(97, 23, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:33:55', NULL, 1),
+(98, 22, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:34:59', NULL, 1),
+(99, 26, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:38:20', NULL, 1),
+(100, 29, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:41:26', NULL, 1),
+(101, 19, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:43:41', NULL, 1),
+(102, 2, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:45:01', NULL, 1),
+(103, 28, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:46:00', NULL, 1),
+(104, 6, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:47:19', NULL, 1),
+(105, 21, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:50:43', NULL, 1),
+(106, 12, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:52:23', NULL, 1),
+(107, 20, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:53:18', NULL, 1),
+(108, 15, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:54:59', NULL, 1),
+(109, 43, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:56:42', NULL, 1),
+(110, 14, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:58:28', NULL, 1),
+(111, 17, 3, 3, 1, '2026-01-15', '', '2026-01-16 00:59:40', NULL, 1),
+(112, 18, 3, 3, 1, '2026-01-15', '', '2026-01-16 01:00:29', NULL, 1),
+(113, 4, 3, 3, 1, '2026-01-15', '', '2026-01-16 01:01:49', NULL, 1),
+(114, 16, 3, 3, 1, '2026-01-15', '', '2026-01-16 01:03:27', NULL, 1),
+(115, 7, 3, 3, 1, '2026-01-15', '', '2026-01-16 01:04:20', NULL, 1),
+(116, 5, 3, 3, 1, '2026-01-15', '', '2026-01-16 01:05:29', NULL, 1),
+(117, 66, 3, 3, 1, '2026-01-16', '', '2026-01-16 01:07:20', NULL, 1),
+(118, 67, 3, 3, 1, '2026-01-16', '', '2026-01-16 01:09:06', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -948,7 +980,7 @@ CREATE TABLE `niveles_secciones` (
 INSERT INTO `niveles_secciones` (`id_nivel_seccion`, `id_nivel`, `id_seccion`, `capacidad`, `creacion`, `actualizacion`, `estatus`) VALUES
 (1, 1, 1, 20, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
 (2, 1, 2, 25, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(3, 2, 1, 25, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
+(3, 2, 1, 37, '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
 (4, 1, 3, 30, '2025-11-26 23:49:33', NULL, 1),
 (5, 1, 4, 37, '2025-11-30 14:30:58', NULL, 1),
 (6, 2, 2, 37, '2025-11-30 14:31:18', NULL, 1),
@@ -2294,50 +2326,50 @@ CREATE TABLE `personas` (
 --
 
 INSERT INTO `personas` (`id_persona`, `id_direccion`, `primer_nombre`, `segundo_nombre`, `primer_apellido`, `segundo_apellido`, `cedula`, `telefono`, `telefono_hab`, `correo`, `foto_representante`, `foto_estudiante`, `lugar_nac`, `fecha_nac`, `sexo`, `nacionalidad`, `creacion`, `actualizacion`, `estatus`) VALUES
-(1, 1, 'María', 'Gabriela', 'Pérez', 'González', '28987654', '04141234567', '02127788991', 'maria.perez@email.com', NULL, NULL, 'Caracas', '2015-03-15', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(2, 2, 'Carlos', 'José', 'Rodríguez', 'López', '29012345', '04149876543', '02128877665', 'carlos.rodriguez@email.com', NULL, NULL, 'Caracas', '2016-07-22', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(3, 3, 'Ana', 'Isabel', 'García', 'Mendoza', '29123456', '04148765432', '02129988776', 'ana.garcia@email.com', NULL, NULL, 'Caracas', '2015-11-08', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(4, 4, 'Luis', 'Alberto', 'Martínez', 'Rojas', '29234567', '04147654321', '02126655443', 'luis.martinez@email.com', NULL, NULL, 'Caracas', '2016-01-30', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(5, 5, 'Valentina', 'Sophia', 'Hernández', 'Silva', '29345678', '04146543210', '02125544332', 'valentina.hernandez@email.com', NULL, NULL, 'Caracas', '2015-09-14', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(6, 6, 'Diego', 'Alejandro', 'Torres', 'Ramírez', '29456789', '04145432109', '02124433221', 'diego.torres@email.com', NULL, NULL, 'Caracas', '2016-04-05', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(7, 7, 'Sofía', 'Camila', 'Díaz', 'Fernández', '29567890', '04144321098', '02123322110', 'sofia.diaz@email.com', NULL, NULL, 'Caracas', '2015-12-18', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(8, 1, 'Carmen', 'Elena', 'González', 'Pérez', '15678901', '04141234568', '02127788992', 'carmen.gonzalez@email.com', NULL, NULL, 'Caracas', '1980-05-20', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-23 20:27:06', 1),
-(9, 2, 'José', 'Luis', 'López', 'Rodríguez', '16789012', '04149876544', '02128877666', 'jose.lopez@email.com', NULL, NULL, 'Caracas', '1978-08-15', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-27 01:35:47', 1),
-(10, 3, 'Isabel', 'Carmen', 'Mendoza', 'García', '17890123', '04148765433', '02129988777', 'isabel.mendoza@email.com', NULL, NULL, 'Caracas', '1982-03-10', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-25 20:53:36', 1),
-(11, 4, 'ALBERTO', 'JOSÉ', 'ROJAS', 'MARTÍNEZ', '18901234', '04147654322', '02126655444', 'alberto.rojas@email.com', NULL, NULL, 'CARACAS', '1975-11-25', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-12-02 01:04:35', 1),
-(12, 5, 'Roberto', 'Carlos', 'Silva', 'Hernández', '19012345', '04146543211', '02125544333', 'roberto.silva@email.com', NULL, NULL, 'Caracas', '1979-07-30', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(13, 6, 'Patricia', 'Ana', 'Ramírez', 'Torres', '20123456', '04145432110', '02124433222', 'patricia.ramirez@email.com', NULL, NULL, 'Caracas', '1981-09-05', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(14, 7, 'Fernando', 'Luis', 'Fernández', 'Díaz', '21234567', '04144321099', '02123322111', 'fernando.fernandez@email.com', NULL, NULL, 'Caracas', '1977-12-12', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
+(1, 1, 'María', 'Gabriela', 'Pérez', 'González', '28987654', '04141234567', '02127788991', 'maria.perez@email.com', NULL, NULL, 'Caracas', '2015-03-15', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:33:00', 1),
+(2, 2, 'CARLOS', 'JOSÉ', 'RODRÍGUEZ', 'LÓPEZ', '29012345', '04149876543', '02128877665', 'carlos.rodriguez@email.com', NULL, NULL, 'CARACAS', '2016-07-22', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:45:01', 1),
+(3, 3, 'Ana', 'Isabel', 'García', 'Mendoza', '29123456', '04148765432', '02129988776', 'ana.garcia@email.com', NULL, NULL, 'Caracas', '2015-11-08', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:30:54', 1),
+(4, 4, 'LUIS', 'ALBERTO', 'MARTÍNEZ', 'ROJAS', '29234567', '04147654321', '02126655443', 'luis.martinez@email.com', NULL, NULL, 'CARACAS', '2016-01-30', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 21:01:49', 1),
+(5, 5, 'VALENTINA', 'SOPHIA', 'SILVA', 'SILVA', '29345678', '04146543210', '02125544332', 'valentina.hernandez@email.com', NULL, NULL, 'CARACAS', '2015-09-14', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 21:05:29', 1),
+(6, 6, 'Diego', 'Alejandro', 'Torres', 'Ramírez', '29456789', '04145432109', '02124433221', 'diego.torres@email.com', NULL, NULL, 'Caracas', '2016-04-05', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:47:19', 1),
+(7, 7, 'SOFÍA', 'CAMILA', 'FERNANDEZ', 'MENDEZ', '29567890', '04144321098', '02123322110', 'sofia.diaz@email.com', NULL, NULL, 'CARACAS', '2015-12-18', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 21:04:20', 1),
+(8, 1, 'CARMEN', 'ELENA', 'GONZÁLEZ', 'PÉREZ', '15678901', '04141234568', '02127788992', 'carmen.gonzalez@email.com', NULL, NULL, 'CARACAS', '1980-05-20', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:38:20', 1),
+(9, 2, 'José', 'Luis', 'López', 'Rodríguez', '16789012', '04149876544', '02128877666', 'jose.lopez@email.com', NULL, NULL, 'Caracas', '1978-08-15', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:46:00', 1),
+(10, 3, 'ISABEL', 'CARMEN', 'MENDOZA', 'GARCÍA', '17890123', '04148765433', '02129988777', 'isabel.mendoza@email.com', NULL, NULL, 'Caracas', '1982-03-10', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:30:54', 1),
+(11, 4, 'ALBERTO', 'JOSÉ', 'ROJAS', 'MARTÍNEZ', '18901234', '04147654322', '02126655444', 'alberto.rojas@email.com', NULL, NULL, 'CARACAS', '1975-11-25', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 21:01:49', 1),
+(12, 5, 'Roberto', 'Carlos', 'Silva', 'Hernández', '19012345', '04146543211', '02125544333', 'roberto.silva@email.com', NULL, NULL, 'Caracas', '1979-07-30', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 21:09:06', 1),
+(13, 6, 'Patricia', 'Ana', 'Ramírez', 'Torres', '20123456', '04145432110', '02124433222', 'patricia.ramirez@email.com', NULL, NULL, 'Caracas', '1981-09-05', 'Femenino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 20:47:19', 1),
+(14, 7, 'Fernando', 'Luis', 'Fernández', 'Díaz', '21234567', '04144321099', '02123322111', 'fernando.fernandez@email.com', NULL, NULL, 'Caracas', '1977-12-12', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2026-01-15 21:04:20', 1),
 (15, 1, 'Admin', 'Sistema', 'Neudelys', 'School', '12345678', '04140000000', '02120000000', 'admin@neudelys.edu.ve', NULL, NULL, 'Caracas', '1990-01-01', 'Masculino', 'Venezolano', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1),
-(24, 13, 'Briant', 'briant', 'Sanchez', 'carrillo', '12344321', '04149105229', '02127788992', 'briant@gmail.com', NULL, NULL, 'El paraiso', '2025-10-28', 'Masculino', 'Venezolano', '2025-11-11 18:59:50', NULL, 1),
-(25, 14, 'Briant', 'Alessandro', 'Carrillo', 'Sanchez', '27318765', '04149105229', '04149105229', 'Briant1@gmail.com', NULL, NULL, 'Caracas', '2025-11-04', 'Masculino', 'Venezolano', '2025-11-11 19:30:17', '2025-11-20 16:05:39', 1),
-(26, 15, 'Hugo', 'massimo', 'Carrillo', 'Mendez', '32846139', '04149015229', '04149105229', 'hugo@gmail.com', NULL, NULL, 'El paraiso', '2025-10-26', 'Masculino', 'Venezolano', '2025-11-11 19:30:17', NULL, 1),
-(27, 16, 'Aharon', 'Orlando', 'Stojs', 'Shein', '123456783', '04149015229', '02127788992', 'aharon@gmail.com', NULL, NULL, 'El paraiso', '1879-12-30', 'Femenino', 'Venezolano', '2025-11-11 20:02:31', NULL, 1),
-(28, 17, 'Maria', 'Alicia', 'Sanchez', 'Devia', '9344828', '04149105229', '04149105229', 'alicias@gmail.com', NULL, NULL, 'El paraiso', '1998-11-30', 'Femenino', 'Venezolano', '2025-11-11 22:16:43', NULL, 1),
-(29, 18, 'Pablo', 'Hugo', 'Chacon', 'Mejias', '76544567', '04149105229', '04149105229', 'pablo@gmail.com', NULL, NULL, 'El paraiso', '2025-10-28', 'Masculino', 'Venezolano', '2025-11-11 22:16:43', NULL, 1),
-(30, 19, 'Meyly', 'J', 'Pinto', 'G', '657483762', '04125079067', '04125079067', 'meylypinto@gmail.com', NULL, NULL, 'Caracas', '1971-12-14', 'Femenino', 'Venezolano', '2025-11-11 22:52:57', NULL, 1),
-(31, 20, 'Jose', 'Carlos', 'Andrades', 'Pinto', '34562738', '04149105229', '04125079067', 'Jose@gmail.com', NULL, NULL, 'El paraiso', '2025-01-11', 'Masculino', 'Venezolano', '2025-11-11 22:52:57', NULL, 1),
-(32, 7, 'Luny', 'k', 'Lopez', 'm', '57481293', '04149105229', '02123322111', 'luny@gmail.com', NULL, NULL, 'El paraiso', '1199-11-30', 'Masculino', 'Venezolano', '2025-11-13 01:21:00', NULL, 1),
+(24, 13, 'Briant', 'briant', 'Sanchez', 'carrillo', '12344321', '04149105229', '02127788992', 'briant@gmail.com', NULL, NULL, 'El paraiso', '2025-10-28', 'Masculino', 'Venezolano', '2025-11-11 18:59:50', '2026-01-15 20:32:31', 1),
+(25, 14, 'Briant', 'Alessandro', 'Carrillo', 'Sanchez', '27318765', '04149105229', '04149105229', 'Briant1@gmail.com', NULL, NULL, 'Caracas', '2025-11-04', 'Masculino', 'Venezolano', '2025-11-11 19:30:17', '2026-01-15 20:53:18', 1),
+(26, 15, 'HUGO', 'MASSIMO', 'CARRILLO', 'MENDEZ', '32846139', '04149015229', '04149105229', 'hugo@gmail.com', NULL, NULL, 'EL PARAISO', '2025-10-26', 'Masculino', 'Venezolano', '2025-11-11 19:30:17', '2026-01-15 20:52:23', 1),
+(27, 16, 'Aharon', 'Orlando', 'Stojs', 'Shein', '123456783', '04149015229', '02127788992', 'aharon@gmail.com', NULL, NULL, 'El paraiso', '1879-12-30', 'Femenino', 'Venezolano', '2025-11-11 20:02:31', '2026-01-15 20:32:03', 1),
+(28, 17, 'Maria', 'Alicia', 'Sanchez', 'Devia', '9344828', '04149105229', '04149105229', 'alicias@gmail.com', NULL, NULL, 'El paraiso', '1998-11-30', 'Femenino', 'Venezolano', '2025-11-11 22:16:43', '2026-01-15 20:58:28', 1),
+(29, 18, 'PABLO', 'HUGO', 'CHACON', 'MEJIAS', '76544567', '04149105229', '04149105229', 'pablo@gmail.com', NULL, NULL, 'EL PARAISO', '2025-10-28', 'Masculino', 'Venezolano', '2025-11-11 22:16:43', '2026-01-15 20:58:28', 1),
+(30, 19, 'Meyly', 'J', 'Pinto', 'G', '657483762', '04125079067', '04125079067', 'meylypinto@gmail.com', NULL, NULL, 'Caracas', '1971-12-14', 'Femenino', 'Venezolano', '2025-11-11 22:52:57', '2026-01-15 20:54:59', 1),
+(31, 20, 'JOSE', 'CARLOS', 'ANDRADES', 'PINTO', '34562738', '04149105229', '04125079067', 'Jose@gmail.com', NULL, NULL, 'EL PARAISO', '2025-01-11', 'Masculino', 'Venezolano', '2025-11-11 22:52:57', '2026-01-15 20:54:59', 1),
+(32, 7, 'LUNY', 'ANDRES', 'FERNANDEZ', 'MENDEZ', '57481293', '04149105229', '02123322111', 'luny@gmail.com', NULL, NULL, 'EL PARAISO', '1199-11-30', 'Masculino', 'Venezolano', '2025-11-13 01:21:00', '2026-01-15 21:03:27', 1),
 (33, 21, 'Carlos', 'Enrique', 'Moreno', 'Salazar', '27654322', '0416789542', '', 'cmoreno@gmail.com', NULL, NULL, 'Caracas', '1990-01-01', 'Masculino', 'Venezolano', '2025-11-17 04:30:35', NULL, 1),
-(34, 29, 'Roberto', 'Andres', 'Dela', 'Salazar', '12333666', '0412345678', '000000000', 'rdela@gmail.com', NULL, NULL, 'Caracas', '1990-01-01', 'Masculino', 'Venezolano', '2025-11-17 04:41:45', '2025-12-02 01:25:19', 1),
-(35, 29, 'K', 'K', 'K', 'K', '20112333666', '04149105229', '000000000', 'K@gmail.com', NULL, NULL, 'El paraiso', '2020-12-22', 'Masculino', 'Venezolano', '2025-11-20 03:45:22', NULL, 1),
-(36, 29, 'S', 's', 's', 's', '20212333666', '04149105229', '000000000', 'S@gmail.com', NULL, NULL, 'El paraiso', '2020-12-09', 'Masculino', 'Venezolano', '2025-11-20 04:15:06', NULL, 1),
-(37, 30, 'A', 'A', 'A', 'A', '123151', '04149105229', '04149105229', 'a@mgil.com', NULL, NULL, 'CARACAS', '2025-11-05', 'MASCULINO', 'VENEZOLANO', '2025-11-20 04:38:27', '2025-12-01 19:26:24', 1),
-(38, 30, 'A', 'a', 'a', 'm', '201123151', '04149015229', '04149105229', 'ak@gmial.com', NULL, NULL, 'El paraisoe', '2020-12-02', 'Femenino', 'Venezolano', '2025-11-20 04:38:27', NULL, 1),
-(39, 14, 'Nn', 'N', 'N', 'N', '20227318765', '04149105229', '04149105229', 'N@GMAIL.COM', NULL, NULL, 'El paraisoe', '2020-12-14', 'Masculino', 'Venezolano', '2025-11-20 20:05:39', NULL, 1),
-(40, 31, 'f', 'F', 'F', 'F', '15521097', '04125079067', '04125079067', 'F@GMAIL.COM', NULL, NULL, 'Caracas', '2025-12-31', 'Masculino', 'Venezolano', '2025-11-20 20:09:12', NULL, 1),
-(41, 31, 'g', 'G', 'G', 'G', '20115521097', '04149105229', '04125079067', 'GH@GMAIL.COM', NULL, NULL, 'G', '2020-12-31', 'Masculino', 'Venezolano', '2025-11-20 20:09:12', NULL, 1),
-(42, 32, 'Z', 'Z', 'Z', 'Z', '20415678901', '04149105229', '02127788992', 'J@gmail.com', NULL, NULL, 'El paraisoe', '2020-12-17', 'Femenino', 'Venezolano', '2025-11-20 21:54:05', NULL, 1),
-(43, 33, 'T', 'briant', 'T', 'carrillo', '20515678901', '0412785942', '02127788992', 't@GMAIL.COM', NULL, NULL, 'El paraiso', '2020-12-16', 'Masculino', 'Venezolano', '2025-11-20 22:01:18', NULL, 1),
+(34, 29, 'Roberto', 'Andres', 'Dela', 'Salazar', '12333666', '0412345678', '000000000', 'rdela@gmail.com', NULL, NULL, 'Caracas', '1990-01-01', 'Masculino', 'Venezolano', '2025-11-17 04:41:45', '2026-01-15 21:00:29', 1),
+(35, 29, 'KARLO', '', 'DELA', 'K', '20112333666', '04149105229', '000000000', 'K@gmail.com', NULL, NULL, 'El paraiso', '2020-12-22', 'Masculino', 'Venezolano', '2025-11-20 03:45:22', '2026-01-15 20:59:40', 1),
+(36, 29, 'RAIMOND', '', 'DELA', '', '20212333666', '04149105229', '000000000', 'S@gmail.com', NULL, NULL, 'El paraiso', '2020-12-09', 'Masculino', 'Venezolano', '2025-11-20 04:15:06', '2026-01-15 21:00:29', 1),
+(37, 30, 'ARA', '', 'AZAS', '', '123151', '04149105229', '04149105229', 'a@mgil.com', NULL, NULL, 'CARACAS', '2025-11-05', 'Masculino', 'Venezolano', '2025-11-20 04:38:27', '2026-01-15 20:43:41', 1),
+(38, 30, 'ANTONIA', 'MARY', 'AZAS', 'MARCANO', '201123151', '04149015229', '04149105229', 'ak@gmial.com', NULL, NULL, 'EL PARAISO', '2020-12-02', 'Femenino', 'Venezolano', '2025-11-20 04:38:27', '2026-01-15 20:43:41', 1),
+(39, 14, 'NANDO', '', 'CARRILLO', 'MENDEZ', '20227318765', '04149105229', '04149105229', 'N@GMAIL.COM', NULL, NULL, 'EL PARAISO', '2020-12-14', 'Masculino', 'Venezolano', '2025-11-20 20:05:39', '2026-01-15 20:53:18', 1),
+(40, 31, 'FRANCISCO', 'FARA', 'FERNANDEZ', 'DIAZ', '15521097', '04125079067', '04125079067', 'F@GMAIL.COM', NULL, NULL, 'Caracas', '2025-12-31', 'Masculino', 'Venezolano', '2025-11-20 20:09:12', '2026-01-15 20:50:43', 1),
+(41, 31, 'GABRIEL', 'ANGEL', 'FERNANDEZ', 'GARCIA', '20115521097', '04149105229', '04125079067', 'GH@GMAIL.COM', NULL, NULL, 'CARACAS', '2020-12-31', 'Masculino', 'Venezolano', '2025-11-20 20:09:12', '2026-01-15 20:50:43', 1),
+(42, 32, 'ZAMARA', 'ZOE', 'RODRIGUEZ', 'LOPEZ', '20415678901', '04149105229', '02127788992', 'J@gmail.com', NULL, NULL, 'EL PARAISO', '2020-12-17', 'Femenino', 'Venezolano', '2025-11-20 21:54:05', '2026-01-15 20:34:59', 1),
+(43, 33, 'TATIANA', '', 'RODRIGUEZ', 'CARRILLO', '20515678901', '0412785942', '02127788992', 't@GMAIL.COM', NULL, NULL, 'El paraiso', '2020-12-16', 'Masculino', 'Venezolano', '2025-11-20 22:01:18', '2026-01-15 20:33:55', 1),
 (44, 1, 'elo', 'eli', 'as', 'ta', '20615678901', '04149015229', '02127788992', 'elo@gmail.com', NULL, NULL, 'El paraisoe', '2020-12-09', 'Masculino', 'Venezolano', '2025-11-22 22:32:30', NULL, 1),
-(46, 1, 'z', 'z', 'z', 'z', '20715678901', '04149105229', '02127788992', 'z@gmail.com', NULL, NULL, 'El paraiso', '2020-12-31', 'Masculino', 'Venezolano', '2025-11-24 00:27:06', NULL, 1),
+(46, 1, 'JHOEL', 'JOSE', 'RODRIGUEZ', 'LOPEZ', '20715678901', '04149105229', '02127788992', 'jr@gmail.com', NULL, NULL, 'EL PARAISO', '2020-12-31', 'Masculino', 'Venezolano', '2025-11-24 00:27:06', '2026-01-15 20:38:20', 1),
 (47, 34, 'Andres', 'Eloy', 'Blanco', '', '13544321', '0412654324', '', 'aeloy@gmail.com', NULL, NULL, 'Caracas', '1975-11-15', 'Masculino', 'Venezolano', '2025-11-24 23:38:25', '2025-12-02 01:21:12', 1),
 (48, 35, 'Ronald', '', 'Delgado', '', '12467895', '0412543267', '', '', NULL, NULL, 'Caracas', '1977-09-15', 'Masculino', 'Venezolano', '2025-11-25 00:44:20', NULL, 1),
-(49, 3, 'Adriana', 'Carolina', 'Rodríguez', 'Mendoza', '19217890123', '', '02129988777', '', NULL, NULL, 'Caracas', '2019-09-10', 'Femenino', 'Venezolano', '2025-11-26 00:53:36', NULL, 1),
-(50, 2, 'Joheiric', 'Alexa', 'Lopez', 'Carrera', '19216789012', '', '02128877666', '', NULL, NULL, 'Caracas', '2019-12-10', 'Femenino', 'Venezolano', '2025-11-27 05:35:47', NULL, 1),
-(51, 36, 'Juan', 'Luis', 'Guerra', 'Guerra', '27365944', '04142236676', '', 'jguerra@gmail.com', NULL, NULL, 'San Félix', '1980-12-30', 'Masculino', 'Venezolano', '2025-11-28 04:37:12', NULL, 1),
-(52, 36, 'Andres', 'Angel', 'Guerra', '', '16127365944', '', '', 'a@guerra.com', NULL, NULL, 'Caracas', '2016-07-08', 'Masculino', 'Venezolano', '2025-11-28 04:37:12', NULL, 1),
-(53, 37, 'TRINIDAD', 'SAMALIA', 'CABRERA', 'LATAN', '23638934', '0412634546', '', 'tsamalia@gmail.com', '/final/uploads/fotos/representante_23638934_1766952448.jpg', NULL, 'SAN FÉLIX', '1993-07-04', 'Femenino', 'Venezolano', '2025-11-28 23:32:52', '2025-12-02 17:32:27', 1),
+(49, 3, 'ADRIANA', 'CAROLINA', 'RODRÍGUEZ', 'MENDOZA', '32456789', '', '02129988777', '', NULL, NULL, 'CARACAS', '2014-06-11', 'Femenino', 'Venezolano', '2025-11-26 00:53:36', '2026-01-15 20:29:36', 1),
+(50, 2, 'JOHEIRIC', 'ALEXA', 'LOPEZ', 'CARRERA', '19216789012', '', '02128877666', '', NULL, NULL, 'CARACAS', '2019-12-10', 'Femenino', 'Venezolano', '2025-11-27 05:35:47', '2026-01-15 20:46:00', 1),
+(51, 36, 'Juan', 'Luis', 'Guerra', 'Guerra', '27365944', '04142236676', '', 'jguerra@gmail.com', NULL, NULL, 'San Félix', '1980-12-30', 'Masculino', 'Venezolano', '2025-11-28 04:37:12', '2026-01-15 20:41:26', 1),
+(52, 36, 'ANDRES', 'ANGEL', 'GUERRA', '', '16127365944', '', '', 'a@guerra.com', NULL, NULL, 'CARACAS', '2016-07-08', 'Masculino', 'Venezolano', '2025-11-28 04:37:12', '2026-01-15 20:41:26', 1),
+(53, 37, 'TRINIDAD', 'SAMALIA', 'CABRERA', 'LATAN', '23638934', '0412634546', '', 'tsamalia@gmail.com', '/final/uploads/fotos/representante_23638934_1766952448.jpg', NULL, 'SAN FÉLIX', '1993-07-04', 'Femenino', 'Venezolano', '2025-11-28 23:32:52', '2026-01-15 20:56:42', 1),
 (54, 37, 'Santiago', '', 'Pacheco', 'Cabrera', '17123638934', '', '', '', NULL, NULL, 'Puerto Ordaz', '2017-01-28', 'Masculino', 'Venezolano', '2025-11-28 23:32:52', '2025-12-02 16:55:16', 1),
 (58, 37, 'Sophia', 'Valentina', 'Pacheco', 'Cabrera', '35765487', '', '', '', NULL, NULL, 'Puerto Ordaz', '2014-12-28', 'Femenino', 'Venezolano', '2025-11-29 00:49:29', '2025-12-02 13:11:04', 1),
 (62, 37, 'Caro', '', 'Pacheco', '', '16323638934', '', '', '', NULL, NULL, 'Puerto Ordaz', '2016-08-20', 'Femenino', 'Venezolano', '2025-11-29 01:26:47', '2025-12-02 17:31:38', 1),
@@ -2348,7 +2380,7 @@ INSERT INTO `personas` (`id_persona`, `id_direccion`, `primer_nombre`, `segundo_
 (75, 37, 'daniela', '', 'lopez', '', '19823638934', '', '', '', NULL, NULL, 'Caracas', '2019-06-11', 'Femenino', 'Venezolano', '2025-11-29 03:13:49', '2025-12-02 17:32:27', 1),
 (77, 37, 'VENCIDA', '', 'LOPEZ', '', '18923638934', '', '', '', NULL, NULL, 'CARACAS', '2018-11-10', 'FEMENINO', 'VENEZOLANO', '2025-11-29 03:25:04', '2025-12-01 19:54:27', 1),
 (79, 38, 'CAMILA', '', 'LOPEZ', '', '201023638934', '', '', '', NULL, '/final/uploads/fotos/estudiante_201023638934_1766951733.jpg', 'CARACAS', '2020-06-08', 'Femenino', 'Venezolano', '2025-11-29 03:45:48', '2025-11-30 13:53:59', 1),
-(81, 37, 'Vencidita', '', 'Lopez', '', '201123638934', '', '', '', NULL, NULL, 'Caracas', '2020-04-13', 'Femenino', 'Venezolano', '2025-11-29 03:53:17', NULL, 1),
+(81, 37, 'VENCIDITA', '', 'LOPEZ', '', '201123638934', '', '', '', NULL, NULL, 'CARACAS', '2020-04-13', 'Femenino', 'Venezolano', '2025-11-29 03:53:17', '2026-01-15 20:56:42', 1),
 (83, 37, 'Maria', '', 'Ramírez', '', '201223638934', '', '', '', NULL, NULL, 'Caracas', '2020-03-15', 'Femenino', 'Venezolano', '2025-11-29 15:06:58', '2025-11-30 12:50:32', 1),
 (87, 37, 'Carlos', '', 'Lopez', '', '191323638934', '', '', '', NULL, NULL, 'Caracas', '2019-02-10', 'Masculino', 'Venezolano', '2025-11-29 16:39:28', '2025-12-02 17:23:10', 1),
 (91, 37, 'Pedro', '', 'Perez', '', '191423638934', '', '', '', NULL, NULL, 'Caracas', '2019-03-13', 'Masculino', 'Venezolano', '2025-11-29 16:54:26', '2025-11-30 13:34:37', 1),
@@ -2370,7 +2402,10 @@ INSERT INTO `personas` (`id_persona`, `id_direccion`, `primer_nombre`, `segundo_
 (121, 39, 'CARLA', 'MARIA', 'GONZALEZ', 'PEREZ', '16415683394', '', '', '', NULL, NULL, 'CARACAS', '2016-07-15', 'Femenino', 'Venezolano', '2025-12-02 21:40:49', '2025-12-02 17:45:12', 1),
 (123, 39, 'ANA', '', 'CAMPOS', '', '16515683394', '', '', '', NULL, NULL, 'CARACAS', '2016-02-04', 'Femenino', 'Venezolano', '2025-12-03 01:23:16', '2025-12-02 21:28:25', 1),
 (125, 39, 'EUGENIA', 'MARIA', 'RIMAC', 'CABRERA', '35456789', '', '', '', NULL, NULL, 'CARACAS', '2013-03-14', 'Femenino', 'Venezolano', '2025-12-07 22:04:29', '2025-12-07 20:18:01', 1),
-(127, 39, 'DAVID', 'EDUARDO', 'RIMAC', 'CABRERA', '37654354', '0414235678', '', 'deduardo@gmail.com', NULL, NULL, 'CARACAS', '2013-06-06', 'Masculino', 'Venezolano', '2025-12-07 22:10:29', NULL, 1);
+(127, 39, 'DAVID', 'EDUARDO', 'RIMAC', 'CABRERA', '37654354', '0414235678', '', 'deduardo@gmail.com', NULL, NULL, 'CARACAS', '2013-06-06', 'Masculino', 'Venezolano', '2025-12-07 22:10:29', NULL, 1),
+(129, 45, 'MARIA', '', 'CASTRO', 'RODRÍGUEZ', '13456789', '0412445654', '', 'mcastro12@gmail.com', NULL, NULL, 'CARACAS', '1977-10-12', 'FEMENINO', 'VENEZOLANO', '2026-01-16 00:06:30', NULL, 1),
+(130, 5, 'ARANZA', 'ANDREINA', 'SILVA', 'SILVA', '34564765', '', '02125544333', '', NULL, NULL, 'CARACAS', '2015-06-11', 'Femenino', 'Venezolano', '2026-01-16 01:07:20', NULL, 1),
+(132, 5, 'MARIA', 'GABRIELA', 'ARAY', 'HERNÁNDEZ', '34345654', '', '02125544333', '', NULL, NULL, 'CARACAS', '2015-03-13', 'Femenino', 'Venezolano', '2026-01-16 01:09:06', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -2446,21 +2481,21 @@ CREATE TABLE `representantes` (
 --
 
 INSERT INTO `representantes` (`id_representante`, `id_persona`, `ocupacion`, `lugar_trabajo`, `creacion`, `actualizacion`, `estatus`, `id_profesion`) VALUES
-(1, 8, 'Ingeniero Civil', 'Constructora Nacional', '2025-11-10 06:17:16', '2025-11-23 20:27:06', 1, 10),
-(2, 9, 'Médico', 'Hospital Central', '2025-11-10 06:17:16', '2025-11-27 01:35:47', 1, 8),
-(3, 10, 'Contadora', 'Firma Contable', '2025-11-10 06:17:16', '2025-11-25 20:53:36', 1, 28),
-(4, 11, 'DOCENTE', 'UNIVERSIDAD CENTRAL', '2025-11-10 06:17:16', '2025-12-02 01:04:35', 1, 12),
-(5, 12, 'Arquitecto', 'Estudio de Arquitectura', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1, 2),
-(6, 13, 'Abogada', 'Bufete Legal', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1, 1),
-(7, 14, 'Ingeniero de Sistemas', 'Empresa Tecnológica', '2025-11-10 06:17:16', '2025-11-10 02:17:16', 1, 10),
-(11, 25, 'mecanico', 'Mercedes', '2025-11-11 19:30:17', '2025-11-20 16:05:39', 1, 13),
-(12, 28, 'mecanico', 'Mercedes', '2025-11-11 22:16:43', NULL, 1, 13),
-(13, 30, 'Ingeniero', 'Bancamiga', '2025-11-11 22:52:57', NULL, 1, 10),
-(14, 34, 'K', 'K', '2025-11-20 03:45:22', '2025-11-20 00:15:06', 1, 12),
-(15, 37, 'BARBERO', 'SABANA GRANDE', '2025-11-20 04:38:27', '2025-12-01 19:27:35', 1, 28),
-(16, 40, 'F', 'F', '2025-11-20 20:09:12', NULL, 1, 1),
-(17, 51, 'Consultor', 'ABAE', '2025-11-28 04:37:12', '2025-11-29 23:34:58', 1, 1),
-(18, 53, 'AMA DE CASA', '', '2025-11-28 23:32:52', '2025-12-02 17:32:27', 1, 29),
+(1, 8, 'Ingeniero Civil', 'CONSTRUCTORA NACIONAL', '2025-11-10 06:17:16', '2026-01-15 20:38:20', 1, 10),
+(2, 9, 'Médico', 'Hospital Central', '2025-11-10 06:17:16', '2026-01-15 20:46:00', 1, 8),
+(3, 10, 'CONTADORA', 'FIRMA CONTABLE', '2025-11-10 06:17:16', '2026-01-15 20:30:54', 1, 28),
+(4, 11, 'DOCENTE', 'UNIVERSIDAD CENTRAL', '2025-11-10 06:17:16', '2026-01-15 21:01:49', 1, 12),
+(5, 12, 'Arquitecto', 'Estudio de Arquitectura', '2025-11-10 06:17:16', '2026-01-15 21:09:06', 1, 2),
+(6, 13, 'Abogada', 'Bufete Legal', '2025-11-10 06:17:16', '2026-01-15 20:47:19', 1, 1),
+(7, 14, 'Ingeniero de Sistemas', 'Empresa Tecnológica', '2025-11-10 06:17:16', '2026-01-15 21:04:20', 1, 10),
+(11, 25, 'mecanico', 'Mercedes', '2025-11-11 19:30:17', '2026-01-15 20:53:18', 1, 13),
+(12, 28, 'mecanico', 'Mercedes', '2025-11-11 22:16:43', '2026-01-15 20:58:28', 1, 13),
+(13, 30, 'Ingeniero', 'Bancamiga', '2025-11-11 22:52:57', '2026-01-15 20:54:59', 1, 10),
+(14, 34, 'K', 'K', '2025-11-20 03:45:22', '2026-01-15 21:00:29', 1, 12),
+(15, 37, 'BARBERO', 'SABANA GRANDE', '2025-11-20 04:38:27', '2026-01-15 20:43:41', 1, 28),
+(16, 40, 'CONSULTOR', '', '2025-11-20 20:09:12', '2026-01-15 20:50:43', 1, 1),
+(17, 51, 'Consultor', 'ABAE', '2025-11-28 04:37:12', '2026-01-15 20:41:26', 1, 1),
+(18, 53, 'AMA DE CASA', '', '2025-11-28 23:32:52', '2026-01-15 20:56:42', 1, 29),
 (19, 97, 'AMA DE CASA', '', '2025-11-30 14:45:26', '2025-12-07 20:18:01', 1, 30),
 (20, 106, 'ABOGADA', 'TRIBUNAL SUPREMO DE JUSTICIA', '2025-12-01 21:27:51', '2025-12-01 20:04:30', 1, 1);
 
@@ -2571,7 +2606,8 @@ INSERT INTO `usuarios` (`id_usuario`, `id_persona`, `id_rol`, `usuario`, `contra
 (2, 33, 2, 'cmoreno', '7f42dcd0205e6f5d9fdb76a77098eda3b6a637e69f278c0715ea93b48726dab6', '2025-11-17 04:30:35', NULL, 1),
 (3, 34, 2, 'rdela', '29aa5d0911f4fb6c3cb3b5f79b6e22f4555e9e71a4d63541ca8a5142c2521ac1', '2025-11-17 04:41:45', '2025-12-02 01:25:19', 1),
 (4, 47, 2, '13544321', '9309a090b467e184588cf3611e00e3b78c106239f8b52bcf308b6bd1260a71ea', '2025-11-24 23:38:25', '2025-12-02 01:21:12', 1),
-(5, 48, 2, '12467895', '026875080e88f1c7673dc6155b908c997348223178e903bbb7c5ced9dee74115', '2025-11-25 00:44:20', NULL, 1);
+(5, 48, 2, '12467895', '026875080e88f1c7673dc6155b908c997348223178e903bbb7c5ced9dee74115', '2025-11-25 00:44:20', NULL, 1),
+(6, 129, 2, '13456789', '2eaecc6a5e6c83a76e6f8fe25b9c25009cfe97742fb6c00a93ac39c728f0d156', '2026-01-16 00:06:30', NULL, 1);
 
 --
 -- Índices para tablas volcadas
@@ -2788,7 +2824,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `direcciones`
 --
 ALTER TABLE `direcciones`
-  MODIFY `id_direccion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `id_direccion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT de la tabla `discapacidades`
@@ -2800,7 +2836,7 @@ ALTER TABLE `discapacidades`
 -- AUTO_INCREMENT de la tabla `docentes`
 --
 ALTER TABLE `docentes`
-  MODIFY `id_docente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_docente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `docentes_especialidades`
@@ -2824,7 +2860,7 @@ ALTER TABLE `estados`
 -- AUTO_INCREMENT de la tabla `estudiantes`
 --
 ALTER TABLE `estudiantes`
-  MODIFY `id_estudiante` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id_estudiante` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT de la tabla `estudiantes_discapacidades`
@@ -2836,13 +2872,13 @@ ALTER TABLE `estudiantes_discapacidades`
 -- AUTO_INCREMENT de la tabla `estudiantes_patologias`
 --
 ALTER TABLE `estudiantes_patologias`
-  MODIFY `id_estudiante_patologia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_estudiante_patologia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT de la tabla `estudiantes_representantes`
 --
 ALTER TABLE `estudiantes_representantes`
-  MODIFY `id_estudiante_representante` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id_estudiante_representante` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT de la tabla `globales`
@@ -2854,7 +2890,7 @@ ALTER TABLE `globales`
 -- AUTO_INCREMENT de la tabla `inscripciones`
 --
 ALTER TABLE `inscripciones`
-  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
+  MODIFY `id_inscripcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
 
 --
 -- AUTO_INCREMENT de la tabla `municipios`
@@ -2908,7 +2944,7 @@ ALTER TABLE `permisos`
 -- AUTO_INCREMENT de la tabla `personas`
 --
 ALTER TABLE `personas`
-  MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
+  MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
 
 --
 -- AUTO_INCREMENT de la tabla `profesiones`
@@ -2944,7 +2980,7 @@ ALTER TABLE `secciones`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Restricciones para tablas volcadas
