@@ -14,25 +14,18 @@ try {
   $periodoController = new PeriodoController($pdo);
   $action = $_POST['action'] ?? '';
 
-  // Obtener ID del usuario desde la sesión
-  $id_usuario = $_SESSION['usuario_id'] ?? 0;
-
   switch ($action) {
     case 'obtener_todos':
       $periodos = $periodoController->obtenerPeriodos();
       $periodoActivo = $periodoController->obtenerPeriodoActivo();
       $estadisticas = $periodoController->obtenerEstadisticasPeriodos();
 
-      // Obtener también información de versión actual
-      $versionGlobal = $periodoController->obtenerVersionGlobalActual();
-
       $response = [
         'success' => true,
         'data' => [
           'periodos' => $periodos,
           'periodo_activo' => $periodoActivo,
-          'estadisticas' => $estadisticas,
-          'version_global' => $versionGlobal
+          'estadisticas' => $estadisticas
         ]
       ];
       break;
@@ -42,8 +35,7 @@ try {
       if (empty($idPeriodo)) {
         $response = ['success' => false, 'message' => 'ID de periodo no válido'];
       } else {
-        // Pasar id_usuario al método
-        $response = $periodoController->activarPeriodo($idPeriodo, $id_usuario);
+        $response = $periodoController->activarPeriodo($idPeriodo);
       }
       break;
 
@@ -57,14 +49,6 @@ try {
       } else {
         $response = $periodoController->crearPeriodo($descripcion, $fechaIni, $fechaFin);
       }
-      break;
-
-    case 'obtener_version_actual':
-      $versionGlobal = $periodoController->obtenerVersionGlobalActual();
-      $response = [
-        'success' => true,
-        'data' => $versionGlobal
-      ];
       break;
 
     default:

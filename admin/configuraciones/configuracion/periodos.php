@@ -126,6 +126,8 @@ try {
         </div>
       <?php endif; ?>
 
+
+
       <!-- Lista de Periodos -->
       <div class="row">
         <div class="col-12">
@@ -218,6 +220,54 @@ try {
                 <small class="text-muted">
                   Mostrando <?php echo count($periodos); ?> periodos
                 </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de Versión Global -->
+      <div class="row mb-3">
+        <div class="col-12">
+          <div class="card card-info">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="fas fa-code-branch mr-2"></i>
+                Sistema de Versiones
+              </h3>
+              <div class="card-tools">
+                <a href="historial_institucion.php" class="btn btn-info btn-sm">
+                  <i class="fas fa-history mr-1"></i>
+                  Ver Historial Completo
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <strong><i class="fas fa-calendar-check mr-2"></i>Periodo Activo:</strong><br>
+                  <span class="h5"><?php echo $periodoActivo ? htmlspecialchars($periodoActivo['descripcion_periodo']) : 'No hay periodo activo'; ?></span>
+                </div>
+                <div class="col-md-4">
+                  <strong><i class="fas fa-code-branch mr-2"></i>Versión Actual:</strong><br>
+                  <span class="h5" id="versionActual">
+                    <?php
+                    // Obtener versión actual
+                    try {
+                      $stmt = $pdo->prepare("SELECT version FROM globales WHERE es_activo = 1 ORDER BY version DESC LIMIT 1");
+                      $stmt->execute();
+                      $version = $stmt->fetch(PDO::FETCH_ASSOC);
+                      echo $version ? 'v' . $version['version'] : 'v1';
+                    } catch (Exception $e) {
+                      echo 'v1';
+                    }
+                    ?>
+                  </span>
+                </div>
+                <div class="col-md-4">
+                  <strong><i class="fas fa-exclamation-triangle mr-2"></i>Importante:</strong><br>
+                  <small>Al activar un nuevo periodo, se crea una nueva versión en el historial de configuraciones.</small>
+                </div>
               </div>
             </div>
           </div>
@@ -512,6 +562,25 @@ try {
 
     $('#modalConfirmacion').modal('show');
   }
+  async function actualizarVersionActual() {
+    try {
+      const response = await fetch('../../../app/controllers/periodos/accionesPeriodos.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=obtener_version_actual'
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        document.getElementById('versionActual').textContent = `v${result.data.version || 1}`;
+      }
+    } catch (error) {
+      console.error('Error al actualizar versión:', error);
+    }
+  }
 
   // Funciones con Fetch
   async function crearPeriodo(event) {
@@ -564,12 +633,96 @@ try {
     }
   }
 
+  // async function confirmarActivacion() {
+  //   if (!periodoSeleccionado) return;
+
+  //   const {
+  //     id
+  //   } = periodoSeleccionado;
+
+  //   try {
+  //     const response = await fetch('../../../app/controllers/periodos/accionesPeriodos.php', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/x-www-form-urlencoded',
+  //       },
+  //       body: `action=activar&id_periodo=${id}`
+  //     });
+
+  //     const result = await response.json();
+
+  //     if (result.success) {
+  //       mostrarMensaje(result.message, 'success');
+  //       $('#modalConfirmacion').modal('hide');
+  //       recargarPeriodos();
+  //     } else {
+  //       mostrarMensaje(result.message, 'error');
+  //     }
+  //   } catch (error) {
+  //     mostrarMensaje('Error de conexión: ' + error.message, 'error');
+  //   }
+  // }
+
+  // async function confirmarActivacion() {
+  //   if (!periodoSeleccionado) return;
+
+  //   const {
+  //     id,
+  //     descripcion
+  //   } = periodoSeleccionado;
+
+  //   // Botón de confirmación
+  //   const btnConfirmar = document.getElementById('btnConfirmarActivacion');
+  //   const btnOriginal = btnConfirmar.innerHTML;
+  //   btnConfirmar.disabled = true;
+  //   btnConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Activando...';
+
+  //   try {
+  //     const response = await fetch('../../../app/controllers/periodos/accionesPeriodos.php', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/x-www-form-urlencoded',
+  //       },
+  //       body: `action=activar&id_periodo=${id}`
+  //     });
+
+  //     const result = await response.json();
+
+  //     if (result.success) {
+  //       mostrarMensaje(result.message, 'success');
+  //       $('#modalConfirmacion').modal('hide');
+
+  //       // Mostrar mensaje de nueva versión
+  //       if (result.data && result.data.version) {
+  //         mostrarMensaje(`Nueva versión creada: v${result.data.version}. El historial completo se puede ver en "Ver Historial".`, 'success');
+
+  //         // Actualizar versión en la interfaz
+  //         document.getElementById('versionActual').textContent = `v${result.data.version}`;
+  //       }
+
+  //       recargarPeriodos();
+  //     } else {
+  //       mostrarMensaje(result.message, 'error');
+  //     }
+  //   } catch (error) {
+  //     mostrarMensaje('Error de conexión: ' + error.message, 'error');
+  //   } finally {
+  //     btnConfirmar.disabled = false;
+  //     btnConfirmar.innerHTML = btnOriginal;
+  //   }
+  // }
   async function confirmarActivacion() {
     if (!periodoSeleccionado) return;
 
     const {
-      id
+      id,
+      descripcion
     } = periodoSeleccionado;
+
+    const btnConfirmar = document.getElementById('btnConfirmarActivacion');
+    const btnOriginal = btnConfirmar.innerHTML;
+    btnConfirmar.disabled = true;
+    btnConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Activando...';
 
     try {
       const response = await fetch('../../../app/controllers/periodos/accionesPeriodos.php', {
@@ -585,14 +738,31 @@ try {
       if (result.success) {
         mostrarMensaje(result.message, 'success');
         $('#modalConfirmacion').modal('hide');
-        recargarPeriodos();
+
+        // Recargar la página completa para ver cambios
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+
       } else {
         mostrarMensaje(result.message, 'error');
       }
     } catch (error) {
-      mostrarMensaje('Error de conexión: ' + error.message, 'error');
+      // Si hay error JSON, aún recargamos la página
+      console.error('Error:', error);
+      mostrarMensaje('Periodo activado. Recargando página...', 'success');
+      $('#modalConfirmacion').modal('hide');
+
+      setTimeout(() => {
+        location.reload();
+      }, 1500);
+    } finally {
+      btnConfirmar.disabled = false;
+      btnConfirmar.innerHTML = btnOriginal;
     }
   }
+
+
 
   async function recargarPeriodos() {
     try {
@@ -655,11 +825,17 @@ try {
     const {
       periodos,
       periodo_activo,
-      estadisticas
+      estadisticas,
+      version_global
     } = data;
     actualizarTablaPeriodos(periodos);
     actualizarEstadisticas(estadisticas);
     actualizarPeriodoActivo(periodo_activo);
+
+    // Actualizar versión si está disponible
+    if (version_global && version_global.version) {
+      document.getElementById('versionActual').textContent = `v${version_global.version}`;
+    }
   }
 
   function actualizarTablaPeriodos(periodos) {

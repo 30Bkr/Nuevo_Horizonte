@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 05-01-2026 a las 03:50:26
+-- Tiempo de generación: 06-01-2026 a las 05:12:23
 -- Versión del servidor: 11.7.2-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -14965,6 +14965,33 @@ VALUES (
         '2025-12-31 21:08:14',
         NULL,
         1
+    ),
+    (
+        9,
+        'roles_permisos',
+        'admin/roles_permisos/index.php',
+        'Acceso al módulo de roles y permisos',
+        '2026-01-06 03:33:19',
+        NULL,
+        1
+    ),
+    (
+        10,
+        'roles_permisos_guardar',
+        'admin/roles_permisos/guardar_permisos.php',
+        'Guardar permisos de roles',
+        '2026-01-06 03:33:19',
+        NULL,
+        1
+    ),
+    (
+        11,
+        'roles_permisos_rol',
+        'admin/roles_permisos/guardar_rol.php',
+        'Guardar/editar roles',
+        '2026-01-06 03:33:19',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -16861,6 +16888,30 @@ VALUES (
         '2025-12-31 21:19:07',
         NULL,
         1
+    ),
+    (
+        19,
+        1,
+        9,
+        '2026-01-06 03:33:27',
+        NULL,
+        1
+    ),
+    (
+        20,
+        1,
+        10,
+        '2026-01-06 03:33:27',
+        NULL,
+        1
+    ),
+    (
+        21,
+        1,
+        11,
+        '2026-01-06 03:33:27',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -17414,7 +17465,7 @@ AUTO_INCREMENT = 7;
 --
 ALTER TABLE `permisos`
 MODIFY `id_permiso` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 9;
+AUTO_INCREMENT = 12;
 
 --
 -- AUTO_INCREMENT de la tabla `personas`
@@ -17449,7 +17500,7 @@ AUTO_INCREMENT = 3;
 --
 ALTER TABLE `roles_permisos`
 MODIFY `id_rol_permiso` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 19;
+AUTO_INCREMENT = 22;
 
 --
 -- AUTO_INCREMENT de la tabla `secciones`
@@ -17586,21 +17637,3 @@ COMMIT;
 ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */
 ;
-
--- codigo que hay que agregar luego:
-
--- INSERT INTO permisos (nom_url, url, descripcion, creacion, estatus)
--- VALUES
--- ('roles_permisos', 'admin/roles_permisos/index.php', 'Acceso al módulo de roles y permisos', NOW(), 1),
--- ('roles_permisos_guardar', 'admin/roles_permisos/guardar_permisos.php', 'Guardar permisos de roles', NOW(), 1),
--- ('roles_permisos_rol', 'admin/roles_permisos/guardar_rol.php', 'Guardar/editar roles', NOW(), 1);
-
--- -- Asignar permiso solo al administrador
--- INSERT INTO roles_permisos (id_rol, id_permiso, creacion, estatus)
--- SELECT 1, id_permiso, NOW(), 1
--- FROM permisos
--- WHERE url IN (
---   'admin/roles_permisos/index.php',
---   'admin/roles_permisos/guardar_permisos.php',
---   'admin/roles_permisos/guardar_rol.php'
--- );

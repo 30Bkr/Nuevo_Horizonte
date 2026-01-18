@@ -30,41 +30,8 @@ class PeriodoController
     }
   }
 
-  // public function activarPeriodo($idPeriodo)
-  // {
-  //   try {
-  //     // Iniciar transacción
-  //     $this->conn->beginTransaction();
-
-  //     // Primero, desactivar todos los periodos
-  //     $stmtDesactivar = $this->conn->prepare("UPDATE periodos SET estatus = 0");
-  //     $stmtDesactivar->execute();
-
-  //     // Luego, activar el periodo seleccionado
-  //     $stmtActivar = $this->conn->prepare("UPDATE periodos SET estatus = 1, actualizacion = NOW() WHERE id_periodo = ?");
-  //     $stmtActivar->execute([$idPeriodo]);
-
-  //     // Actualizar globales con el nuevo periodo activo
-  //     $stmtGlobales = $this->conn->prepare("UPDATE globales SET id_periodo = ? WHERE id_globales = 1");
-  //     $stmtGlobales->execute([$idPeriodo]);
-
-  //     $this->conn->commit();
-
-  //     return [
-  //       'success' => true,
-  //       'message' => 'Periodo activado correctamente'
-  //     ];
-  //   } catch (PDOException $e) {
-  //     $this->conn->rollBack();
-  //     return [
-  //       'success' => false,
-  //       'message' => 'Error al activar periodo: ' . $e->getMessage()
-  //     ];
-  //   }
-  // }
-
   /**
-   * Activa un periodo y actualiza globales
+   * Activa un periodo y crea nueva versión en globales
    */
   public function activarPeriodo($idPeriodo, $id_usuario = null)
   {
@@ -80,96 +47,46 @@ class PeriodoController
       $stmtActivar = $this->conn->prepare("UPDATE periodos SET estatus = 1, actualizacion = NOW() WHERE id_periodo = ?");
       $stmtActivar->execute([$idPeriodo]);
 
-      // 3. Obtener datos del periodo
+      // 3. Obtener datos del periodo que se va a activar
       $stmtPeriodo = $this->conn->prepare("SELECT descripcion_periodo FROM periodos WHERE id_periodo = ?");
       $stmtPeriodo->execute([$idPeriodo]);
       $periodo = $stmtPeriodo->fetch(PDO::FETCH_ASSOC);
+      $nombrePeriodo = $periodo['descripcion_periodo'] ?? 'Periodo ' . $idPeriodo;
 
-      if (!$periodo) {
-        throw new Exception("Periodo no encontrado");
-      }
-
-      $nombrePeriodo = $periodo['descripcion_periodo'];
-
-      // 4. Obtener la configuración global actual (si existe)
+      // 4. Obtener la configuración global activa actual
       $stmtGlobal = $this->conn->prepare("
-              SELECT * FROM globales 
-              ORDER BY id_globales DESC 
-              LIMIT 1
-          ");
+                SELECT * FROM globales 
+                WHERE es_activo = 1 
+                ORDER BY version DESC 
+                LIMIT 1
+            ");
       $stmtGlobal->execute();
       $globalActual = $stmtGlobal->fetch(PDO::FETCH_ASSOC);
 
-      // 5. Si NO existe registro en globales, crear uno nuevo
       if (!$globalActual) {
-        // Crear registro inicial en globales
-        $stmtInsert = $this->conn->prepare("
-                INSERT INTO globales (
-                    edad_min, edad_max, nom_instituto, id_periodo,
-                    version, es_activo, id_usuario_modificacion, motivo_cambio, fecha_modificacion
-                ) VALUES (5, 18, 'Institución Educativa', ?, 1, 1, ?, 'Configuración inicial', NOW())
-            ");
-        $stmtInsert->execute([$idPeriodo, $id_usuario ?? 0]);
-
-        $this->conn->commit();
-
-        return [
-          'success' => true,
-          'message' => 'Periodo activado correctamente. Configuración global creada.',
-          'data' => [
-            'id_periodo' => $idPeriodo,
-            'periodo' => $nombrePeriodo,
-            'version' => 1
-          ]
-        ];
+        // Si no hay versión activa, buscar la última
+        $stmtGlobal = $this->conn->prepare("SELECT * FROM globales ORDER BY version DESC LIMIT 1");
+        $stmtGlobal->execute();
+        $globalActual = $stmtGlobal->fetch(PDO::FETCH_ASSOC);
       }
 
-      // 6. Si SÍ existe registro en globales, actualizarlo según sistema de versiones
-
-      // Primero, verificar si tiene sistema de versiones (campo 'version')
-      $tieneVersion = isset($globalActual['version']);
-
-      if (!$tieneVersion) {
-        // Tabla NO tiene sistema de versiones - Actualizar directamente
-        $stmtUpdate = $this->conn->prepare("
-                UPDATE globales 
-                SET id_periodo = ?, 
-                    actualizacion = NOW()
-                WHERE id_globales = ?
-            ");
-        $stmtUpdate->execute([$idPeriodo, $globalActual['id_globales']]);
-
-        $this->conn->commit();
-
-        return [
-          'success' => true,
-          'message' => 'Periodo activado correctamente. Globales actualizado.',
-          'data' => [
-            'id_periodo' => $idPeriodo,
-            'periodo' => $nombrePeriodo
-          ]
-        ];
-      }
-
-      // 7. Tabla SÍ tiene sistema de versiones - Crear nueva versión
-
-      // Desactivar versión actual
+      // 5. Desactivar versión actual de globales
       $stmtDesactivarGlobal = $this->conn->prepare("UPDATE globales SET es_activo = 0 WHERE es_activo = 1");
       $stmtDesactivarGlobal->execute();
 
-      // Obtener siguiente versión
+      // 6. Obtener siguiente versión
       $stmtVersion = $this->conn->prepare("SELECT COALESCE(MAX(version), 0) + 1 as nueva_version FROM globales");
       $stmtVersion->execute();
       $nuevaVersion = $stmtVersion->fetchColumn();
 
-      // Insertar nueva versión
+      // 7. Insertar nueva versión con el nuevo periodo
       $stmtNuevaVersion = $this->conn->prepare("
-              INSERT INTO globales (
-                  edad_min, edad_max, nom_instituto, id_periodo,
-                  nom_directora, ci_directora, direccion,
-                  version, es_activo, id_usuario_modificacion, motivo_cambio, fecha_modificacion
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NOW())
-          ");
+                INSERT INTO globales (
+                    edad_min, edad_max, nom_instituto, id_periodo,
+                    nom_directora, ci_directora, direccion,
+                    version, es_activo, id_usuario_modificacion, motivo_cambio, fecha_modificacion
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, NOW())
+            ");
 
       $motivo = "Cambio de periodo académico activo a: " . $nombrePeriodo;
 
@@ -202,12 +119,6 @@ class PeriodoController
       return [
         'success' => false,
         'message' => 'Error al activar periodo: ' . $e->getMessage()
-      ];
-    } catch (Exception $e) {
-      $this->conn->rollBack();
-      return [
-        'success' => false,
-        'message' => 'Error: ' . $e->getMessage()
       ];
     }
   }
@@ -268,57 +179,6 @@ class PeriodoController
     }
   }
 
-  // public function generarPeriodosAutomaticos($fechaInicio, $aniosFuturos)
-  // {
-  //   try {
-  //     $periodosCreados = [];
-  //     $fechaActual = new DateTime($fechaInicio);
-
-  //     // Obtener el último periodo para empezar desde ahí
-  //     $stmtUltimo = $this->conn->prepare("SELECT fecha_fin FROM periodos ORDER BY fecha_fin DESC LIMIT 1");
-  //     $stmtUltimo->execute();
-  //     $ultimoPeriodo = $stmtUltimo->fetch(PDO::FETCH_ASSOC);
-
-  //     if ($ultimoPeriodo) {
-  //       $fechaActual = new DateTime($ultimoPeriodo['fecha_fin']);
-  //       $fechaActual->modify('+1 day'); // Empezar al día siguiente del último periodo
-  //     }
-
-  //     for ($i = 1; $i <= $aniosFuturos; $i++) {
-  //       $fechaIniPeriodo = clone $fechaActual;
-  //       $fechaFinPeriodo = clone $fechaActual;
-  //       $fechaFinPeriodo->modify('+10 months'); // Aproximadamente un año escolar
-
-  //       $descripcion = 'Año Escolar ' . $fechaIniPeriodo->format('Y') . '-' . $fechaFinPeriodo->format('Y');
-
-  //       $resultado = $this->crearPeriodo(
-  //         $descripcion,
-  //         $fechaIniPeriodo->format('Y-m-d'),
-  //         $fechaFinPeriodo->format('Y-m-d')
-  //       );
-
-  //       if ($resultado['success']) {
-  //         $periodosCreados[] = $descripcion;
-  //       }
-
-  //       // Preparar siguiente periodo (empezar después del fin del actual)
-  //       $fechaActual = clone $fechaFinPeriodo;
-  //       $fechaActual->modify('+2 months'); // Vacaciones entre periodos
-  //     }
-
-  //     return [
-  //       'success' => true,
-  //       'message' => 'Se crearon ' . count($periodosCreados) . ' periodos automáticamente',
-  //       'periodos_creados' => $periodosCreados
-  //     ];
-  //   } catch (Exception $e) {
-  //     return [
-  //       'success' => false,
-  //       'message' => 'Error al generar periodos automáticos: ' . $e->getMessage()
-  //     ];
-  //   }
-  // }
-
   public function obtenerEstadisticasPeriodos()
   {
     try {
@@ -353,6 +213,26 @@ class PeriodoController
         'periodos_activos' => 0,
         'estudiantes_activos' => 0
       ];
+    }
+  }
+
+  /**
+   * Obtiene la versión actual de globales para mostrar en la interfaz
+   */
+  public function obtenerVersionGlobalActual()
+  {
+    try {
+      $stmt = $this->conn->prepare("
+                SELECT version, fecha_modificacion 
+                FROM globales 
+                WHERE es_activo = 1 
+                ORDER BY version DESC 
+                LIMIT 1
+            ");
+      $stmt->execute();
+      return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      return ['version' => 1, 'fecha_modificacion' => date('Y-m-d H:i:s')];
     }
   }
 }

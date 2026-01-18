@@ -14,6 +14,19 @@ try {
   $edadesController = new EdadesController($pdo);
   $action = $_POST['action'] ?? '';
 
+  // Obtener ID del usuario desde la sesión
+  $id_usuario = $_SESSION['usuario_id'] ?? 0;
+
+  // Si no hay usuario en sesión, usar uno por defecto o devolver error
+  if ($id_usuario <= 0 && $action === 'actualizar') {
+    $response = [
+      'success' => false,
+      'message' => 'Debe iniciar sesión para realizar esta acción.'
+    ];
+    echo json_encode($response);
+    exit();
+  }
+
   switch ($action) {
     case 'obtener_configuracion':
       $configuracion = $edadesController->obtenerConfiguracionEdades();
@@ -33,7 +46,8 @@ try {
           'message' => 'Las edades deben ser números positivos.'
         ];
       } else {
-        $response = $edadesController->actualizarConfiguracionEdades($edadMin, $edadMax);
+        // Pasar el id_usuario al método
+        $response = $edadesController->actualizarConfiguracionEdades($edadMin, $edadMax, $id_usuario);
       }
       break;
 
@@ -50,6 +64,14 @@ try {
       $response = [
         'success' => true,
         'data' => $estudiantes
+      ];
+      break;
+
+    case 'obtener_info_modificacion':
+      $info = $edadesController->obtenerInfoUltimaModificacion();
+      $response = [
+        'success' => true,
+        'data' => $info ?: []
       ];
       break;
 

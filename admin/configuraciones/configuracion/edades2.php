@@ -12,19 +12,10 @@ try {
   $configuracion = $edadesController->obtenerConfiguracionEdades();
   $estadisticas = $edadesController->obtenerEstadisticasEdades();
   $estudiantesFueraRango = $edadesController->obtenerEstudiantesFueraRango();
-
-  // Intenta obtener info de modificación, pero si falla, continúa
-  try {
-    $infoModificacion = $edadesController->obtenerInfoUltimaModificacion();
-  } catch (Exception $e) {
-    $infoModificacion = null;
-    error_log("Info modificación no disponible: " . $e->getMessage());
-  }
 } catch (Exception $e) {
-  $configuracion = ['edad_min' => 5, 'edad_max' => 18, 'version' => 1];
+  $configuracion = ['edad_min' => 5, 'edad_max' => 18];
   $estadisticas = [];
   $estudiantesFueraRango = [];
-  $infoModificacion = null;
   $_SESSION['mensaje'] = $e->getMessage();
   $_SESSION['tipo_mensaje'] = 'error';
 }
@@ -41,17 +32,8 @@ try {
               <h1 class="mb-0">
                 <i class="fas fa-child mr-2"></i>
                 Configuración de Edades
-                <?php if (isset($configuracion['version'])): ?>
-                  <span class="badge badge-light ml-2">Versión <?php echo $configuracion['version']; ?></span>
-                <?php endif; ?>
               </h1>
               <p class="text-muted">Define los rangos de edad para la inscripción de estudiantes</p>
-            </div>
-            <div>
-              <a href="historial_institucion.php" class="btn btn-info btn-sm">
-                <i class="fas fa-history mr-1"></i>
-                Ver Historial
-              </a>
             </div>
           </div>
         </div>
@@ -68,19 +50,6 @@ try {
               </h3>
             </div>
             <div class="card-body">
-              <?php if ($infoModificacion && !empty($infoModificacion['nombre_usuario'])): ?>
-                <div class="alert alert-light border mb-3">
-                  <small>
-                    <i class="fas fa-info-circle mr-1"></i>
-                    <strong>Última modificación:</strong><br>
-                    <i class="fas fa-user mr-1"></i>
-                    Por: <strong><?php echo htmlspecialchars($infoModificacion['nombre_usuario']); ?></strong><br>
-                    <i class="fas fa-calendar-alt mr-1"></i>
-                    Fecha: <?php echo date('d/m/Y H:i', strtotime($infoModificacion['fecha_modificacion'])); ?>
-                  </small>
-                </div>
-              <?php endif; ?>
-
               <form id="formConfiguracion" onsubmit="actualizarConfiguracion(event)">
                 <div class="row">
                   <div class="col-md-6">
@@ -130,6 +99,9 @@ try {
                   <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save mr-1"></i> Guardar Configuración
                   </button>
+                  <!-- <button type="button" class="btn btn-secondary" onclick="recargarConfiguracion()">
+                    <i class="fas fa-sync mr-1"></i> Recargar
+                  </button> -->
                   <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Volver
                   </a>
@@ -169,7 +141,7 @@ try {
                 </div>
               </div>
 
-              <div class="small-box bg-success mb-3">
+              <div class="small-box bg-success">
                 <div class="inner">
                   <h3 id="rangoConfigurado"><?php echo $configuracion['edad_max'] - $configuracion['edad_min']; ?></h3>
                   <p>Años de Rango Permitido</p>
@@ -178,18 +150,6 @@ try {
                   <i class="fas fa-ruler-combined"></i>
                 </div>
               </div>
-
-              <?php if (isset($configuracion['version'])): ?>
-                <div class="small-box bg-secondary">
-                  <div class="inner">
-                    <h3>v<?php echo $configuracion['version']; ?></h3>
-                    <p>Versión Actual</p>
-                  </div>
-                  <div class="icon">
-                    <i class="fas fa-code-branch"></i>
-                  </div>
-                </div>
-              <?php endif; ?>
             </div>
           </div>
         </div>
@@ -367,7 +327,7 @@ try {
 </style>
 
 <script>
-  // Función para mostrar mensajes
+  // Función para mostrar mensajes (usa la misma que en profesiones)
   function mostrarMensaje(mensaje, tipo, esDuplicado = false) {
     const alertClass = tipo === 'success' ? 'success' : esDuplicado ? 'warning' : 'danger';
 
@@ -394,8 +354,7 @@ try {
     }, 5000);
   }
 
-  // Función principal para actualizar configuración
-  // En la función actualizarConfiguracion(event)
+  // Funciones principales
   async function actualizarConfiguracion(event) {
     event.preventDefault();
 
@@ -414,13 +373,7 @@ try {
       return;
     }
 
-    if (edadMin > 25 || edadMax > 25) {
-      mostrarMensaje('Las edades no pueden ser mayores a 25 años para educación básica.', 'error');
-      return;
-    }
-
     const boton = event.target.querySelector('button[type="submit"]');
-    const botonOriginal = boton.innerHTML;
     boton.disabled = true;
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
 
@@ -431,37 +384,19 @@ try {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: `action=actualizar&edad_min=${edadMin}&edad_max=${edadMax}`
-        // El id_usuario se obtiene automáticamente de la sesión en el PHP
       });
 
       const result = await response.json();
 
       if (result.success) {
         mostrarMensaje(result.message, 'success');
-
-        // Actualizar la interfaz
+        // Actualizar la interfaz con los nuevos valores
         document.getElementById('rangoActualMin').textContent = result.data.edad_min;
         document.getElementById('rangoActualMax').textContent = result.data.edad_max;
         document.getElementById('rangoConfigurado').textContent = result.data.edad_max - result.data.edad_min;
 
-        // Actualizar versión si está disponible
-        if (result.data.version) {
-          const versionBadge = document.querySelector('.badge.badge-light');
-          if (versionBadge) {
-            versionBadge.textContent = `Versión ${result.data.version}`;
-          }
-
-          const versionBox = document.querySelector('.small-box.bg-secondary h3');
-          if (versionBox) {
-            versionBox.textContent = `v${result.data.version}`;
-          }
-        }
-
-        // Recargar la página para ver cambios completos
-        setTimeout(() => {
-          location.reload();
-        }, 1500);
-
+        // Recargar estadísticas
+        await recargarEstadisticas();
       } else {
         mostrarMensaje(result.message, 'error');
       }
@@ -469,91 +404,38 @@ try {
       mostrarMensaje('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
-      boton.innerHTML = botonOriginal;
+      boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Configuración';
     }
   }
-  // async function actualizarConfiguracion(event) {
-  //   event.preventDefault();
 
-  //   const formData = new FormData(event.target);
-  //   const edadMin = parseInt(formData.get('edad_min'));
-  //   const edadMax = parseInt(formData.get('edad_max'));
+  async function recargarConfiguracion() {
+    try {
+      const response = await fetch('../../../app/controllers/edades/accionesEdades.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=obtener_configuracion'
+      });
 
-  //   // Validación básica
-  //   if (edadMin >= edadMax) {
-  //     mostrarMensaje('La edad mínima debe ser menor que la edad máxima.', 'error');
-  //     return;
-  //   }
+      const result = await response.json();
 
-  //   if (edadMin < 0 || edadMax < 0) {
-  //     mostrarMensaje('Las edades no pueden ser números negativos.', 'error');
-  //     return;
-  //   }
+      if (result.success) {
+        document.getElementById('edad_min').value = result.data.edad_min;
+        document.getElementById('edad_max').value = result.data.edad_max;
+        document.getElementById('rangoActualMin').textContent = result.data.edad_min;
+        document.getElementById('rangoActualMax').textContent = result.data.edad_max;
+        document.getElementById('rangoConfigurado').textContent = result.data.edad_max - result.data.edad_min;
 
-  //   if (edadMin > 25 || edadMax > 25) {
-  //     mostrarMensaje('Las edades no pueden ser mayores a 25 años para educación básica.', 'error');
-  //     return;
-  //   }
-
-  //   const boton = event.target.querySelector('button[type="submit"]');
-  //   const botonOriginal = boton.innerHTML;
-  //   boton.disabled = true;
-  //   boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
-
-  //   try {
-  //     const response = await fetch('../../../app/controllers/edades/accionesEdades.php', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/x-www-form-urlencoded',
-  //       },
-  //       body: `action=actualizar&edad_min=${edadMin}&edad_max=${edadMax}`
-  //     });
-
-  //     const result = await response.json();
-
-  //     if (result.success) {
-  //       mostrarMensaje(result.message, 'success');
-
-  //       // Actualizar la interfaz con los nuevos valores
-  //       document.getElementById('rangoActualMin').textContent = result.data.edad_min;
-  //       document.getElementById('rangoActualMax').textContent = result.data.edad_max;
-  //       document.getElementById('rangoConfigurado').textContent = result.data.edad_max - result.data.edad_min;
-
-  //       // Actualizar versión si está disponible
-  //       if (result.data.version) {
-  //         const versionBadge = document.querySelector('.badge.badge-light');
-  //         if (versionBadge) {
-  //           versionBadge.textContent = `Versión ${result.data.version}`;
-  //         }
-
-  //         // Actualizar la caja de versión
-  //         const versionBox = document.querySelector('.small-box.bg-secondary h3');
-  //         if (versionBox) {
-  //           versionBox.textContent = `v${result.data.version}`;
-  //         }
-  //       }
-
-  //       // Recargar estadísticas después de un breve retraso
-  //       setTimeout(async () => {
-  //         await recargarEstadisticas();
-  //       }, 1000);
-
-  //       // Mostrar mensaje de nueva versión
-  //       if (result.data.version) {
-  //         setTimeout(() => {
-  //           mostrarMensaje(`Nueva versión creada: v${result.data.version}. Puedes ver el historial completo.`, 'success');
-  //         }, 1500);
-  //       }
-  //     } else {
-  //       mostrarMensaje(result.message, 'error');
-  //     }
-  //   } catch (error) {
-  //     mostrarMensaje('Error de conexión: ' + error.message, 'error');
-  //   } finally {
-  //     boton.disabled = false;
-  //     boton.innerHTML = botonOriginal;
-  //   }
-  // }
+        mostrarMensaje('Configuración recargada correctamente', 'success');
+        await recargarEstadisticas();
+      } else {
+        mostrarMensaje('Error al recargar configuración', 'error');
+      }
+    } catch (error) {
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
+    }
+  }
 
   async function recargarEstadisticas() {
     try {
@@ -595,8 +477,6 @@ try {
   function actualizarTablaDistribucion(estadisticas) {
     const tbody = document.getElementById('tablaDistribucion');
     const totalEstudiantes = estadisticas.reduce((sum, item) => sum + parseInt(item.cantidad), 0);
-    const edadMin = parseInt(document.getElementById('edad_min').value);
-    const edadMax = parseInt(document.getElementById('edad_max').value);
 
     if (estadisticas.length === 0) {
       tbody.innerHTML = `
@@ -612,6 +492,8 @@ try {
 
     tbody.innerHTML = estadisticas.map(estadistica => {
       const porcentaje = totalEstudiantes > 0 ? (estadistica.cantidad / totalEstudiantes) * 100 : 0;
+      const edadMin = parseInt(document.getElementById('edad_min').value);
+      const edadMax = parseInt(document.getElementById('edad_max').value);
       const enRango = estadistica.edad >= edadMin && estadistica.edad <= edadMax;
 
       return `

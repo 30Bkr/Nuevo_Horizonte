@@ -241,7 +241,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 
-          <?php if (PermissionManager::canViewAny(['admin/configuraciones/index.php'])) { ?>
+          <?php if (PermissionManager::canViewAny(['views/grados/grados_list_solo_lectura.php'])) { ?>
             <li class="nav-item ">
               <a href="#" class="nav-link">
                 <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
