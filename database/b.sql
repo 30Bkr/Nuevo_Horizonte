@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-01-2026 a las 19:36:33
+-- Tiempo de generación: 18-01-2026 a las 22:32:10
 -- Versión del servidor: 11.7.2-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -183,13 +183,18 @@ CREATE TABLE `estudiantes_representantes` (
 
 CREATE TABLE `globales` (
     `id_globales` int(11) NOT NULL,
+    `version` int(11) NOT NULL DEFAULT 1,
     `edad_min` int(11) NOT NULL,
     `edad_max` int(11) NOT NULL,
     `nom_instituto` varchar(50) NOT NULL,
     `id_periodo` int(11) NOT NULL,
     `nom_directora` varchar(100) DEFAULT NULL,
     `ci_directora` varchar(8) DEFAULT NULL,
-    `direccion` varchar(255) DEFAULT NULL
+    `direccion` varchar(255) DEFAULT NULL,
+    `es_activo` tinyint(1) NOT NULL DEFAULT 1,
+    `id_usuario_modificacion` int(11) DEFAULT NULL,
+    `motivo_cambio` text DEFAULT NULL,
+    `fecha_modificacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
 
 -- --------------------------------------------------------
@@ -564,7 +569,10 @@ ADD KEY `fk_est_rep_parentesco` (`id_parentesco`);
 --
 ALTER TABLE `globales`
 ADD PRIMARY KEY (`id_globales`),
-ADD KEY `id_periodo` (`id_periodo`);
+ADD KEY `id_periodo` (`id_periodo`),
+ADD KEY `idx_globales_activo` (`es_activo`),
+ADD KEY `idx_globales_version` (`version`),
+ADD KEY `fk_globales_usuario` (`id_usuario_modificacion`);
 
 --
 -- Indices de la tabla `inscripciones`
@@ -831,7 +839,8 @@ MODIFY `id_representante` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT de la tabla `roles`
 --
-ALTER TABLE `roles` MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `roles`
+MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `roles_permisos`
@@ -907,6 +916,7 @@ ADD CONSTRAINT `fk_estudiantes_representantes_representantes` FOREIGN KEY (`id_r
 -- Filtros para la tabla `globales`
 --
 ALTER TABLE `globales`
+ADD CONSTRAINT `fk_globales_usuario` FOREIGN KEY (`id_usuario_modificacion`) REFERENCES `usuarios` (`id_usuario`),
 ADD CONSTRAINT `globales_ibfk_1` FOREIGN KEY (`id_periodo`) REFERENCES `periodos` (`id_periodo`);
 
 --
