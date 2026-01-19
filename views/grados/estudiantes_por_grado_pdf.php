@@ -63,8 +63,8 @@ try {
         <style>
             body { 
                 font-family: DejaVu Sans, Arial, sans-serif; 
-                font-size: 11px;
-                line-height: 1.3;
+                font-size: 10px;
+                line-height: 1.2;
                 margin: 0;
                 padding: 0;
             }
@@ -76,62 +76,62 @@ try {
             .cintillo-imagen {
                 width: 100%;
                 text-align: center;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
             }
             .cintillo-img {
                 max-width: 100%;
-                height: 60px;
+                height: 55px;
             }
             .cintillo-texto {
                 text-align: center;
                 font-weight: bold;
-                font-size: 14px;
+                font-size: 13px;
                 color: #003366;
-                padding: 10px;
+                padding: 8px;
                 background-color: #f8f9fa;
                 border: 1px solid #003366;
-                margin-bottom: 15px;
+                margin-bottom: 12px;
             }
             /* TÍTULO DEL REPORTE */
             .report-title {
                 text-align: center;
                 color: #003366;
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: bold;
-                margin: 5px 0 10px 0;
-                padding-bottom: 5px;
-                border-bottom: 2px solid #003366;
+                margin: 3px 0 8px 0;
+                padding-bottom: 3px;
+                border-bottom: 1.5px solid #003366;
             }
             /* INFORMACIÓN DEL GRADO */
             .grado-info { 
                 text-align: center;
-                margin-bottom: 10px;
-                font-size: 11px;
+                margin-bottom: 8px;
+                font-size: 9px;
                 background-color: #f8f9fa;
-                padding: 8px;
-                border-radius: 4px;
+                padding: 6px;
+                border-radius: 3px;
                 border: 1px solid #dee2e6;
             }
             /* TABLA */
             table { 
                 width: 100%; 
                 border-collapse: collapse; 
-                margin-top: 10px;
-                font-size: 9px;
+                margin-top: 8px;
+                font-size: 8px;
             }
             th { 
                 background-color: #003366; 
                 color: white;
                 border: 1px solid #ddd;
-                padding: 8px;
+                padding: 5px 3px;
                 text-align: center;
                 font-weight: bold;
-                font-size: 9px;
+                font-size: 8px;
             }
             td { 
                 border: 1px solid #ddd; 
-                padding: 6px;
-                font-size: 9px;
+                padding: 4px 3px;
+                font-size: 8px;
             }
             .text-center { text-align: center; }
             .text-left { text-align: left; }
@@ -144,40 +144,53 @@ try {
             }
             /* ESTADÍSTICAS AL FINAL */
             .stats-final {
-                margin-top: 15px;
-                padding: 10px;
+                margin-top: 12px;
+                padding: 8px;
                 background-color: #f8f9fa;
                 border: 1px solid #ddd;
                 border-radius: 3px;
-                font-size: 10px;
+                font-size: 9px;
             }
             .stats-final h3 {
-                margin: 0 0 8px 0;
+                margin: 0 0 6px 0;
                 color: #003366;
-                font-size: 11px;
+                font-size: 10px;
                 border-bottom: 1px solid #ccc;
-                padding-bottom: 3px;
+                padding-bottom: 2px;
             }
             /* PIE DE PÁGINA */
             .footer {
-                margin-top: 20px;
+                margin-top: 15px;
                 text-align: center;
-                font-size: 8px;
+                font-size: 7px;
                 color: #666;
                 border-top: 1px solid #ccc;
-                padding-top: 5px;
+                padding-top: 3px;
             }
             .no-data {
                 text-align: center;
-                padding: 30px;
+                padding: 20px;
                 color: #666;
-                font-size: 12px;
+                font-size: 11px;
                 font-style: italic;
             }
+            /* NUEVO: Contenedor para centrar contenido */
+            .content-wrapper {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            /* NUEVO: Ajustar distribución de columnas */
+            .col-numero { width: 4%; }
+            .col-cedula { width: 11%; }
+            .col-nombre { width: 30%; }
+            .col-sexo { width: 7%; }
+            .col-edad { width: 6%; }
+            .col-fecha { width: 11%; }
+            .col-representante { width: 31%; }
         </style>
     </head>
     <body>
-        <div class="container">
+        <div class="content-wrapper">
             <!-- CINTILLO CON IMAGEN OFICIAL O TEXTO ALTERNATIVO -->
             ' . ($cintillo_base64 ? '
             <div class="cintillo-imagen">
@@ -205,13 +218,13 @@ try {
             <table>
                 <thead>
                     <tr>
-                        <th width="5%">#</th>
-                        <th width="12%">CÉDULA</th>
-                        <th width="28%">NOMBRE COMPLETO</th>
-                        <th width="8%">SEXO</th>
-                        <th width="8%">EDAD</th>
-                        <th width="12%">FECHA INSCRIPCIÓN</th>
-                        <th width="27%">REPRESENTANTE</th>
+                        <th class="col-numero">#</th>
+                        <th class="col-cedula">CÉDULA</th>
+                        <th class="col-nombre">NOMBRE COMPLETO</th>
+                        <th class="col-sexo">SEXO</th>
+                        <th class="col-edad">EDAD</th>
+                        <th class="col-fecha">FECHA INSCRIPCIÓN</th>
+                        <th class="col-representante">REPRESENTANTE</th>
                     </tr>
                 </thead>
                 <tbody>';
@@ -259,13 +272,13 @@ try {
             
             $html .= '
                     <tr class="' . $rowClass . '">
-                        <td class="text-center">' . $contador . '</td>
-                        <td class="text-center">' . htmlspecialchars($estudiante['cedula']) . '</td>
-                        <td class="text-left">' . htmlspecialchars($nombreCompleto) . '</td>
-                        <td class="text-center">' . htmlspecialchars($sexo) . '</td>
-                        <td class="text-center">' . $edad . ' años</td>
-                        <td class="text-center">' . date('d/m/Y', strtotime($estudiante['fecha_inscripcion'])) . '</td>
-                        <td class="text-left">' . $representante . '</td>
+                        <td class="text-center col-numero">' . $contador . '</td>
+                        <td class="text-center col-cedula">' . htmlspecialchars($estudiante['cedula']) . '</td>
+                        <td class="text-left col-nombre">' . htmlspecialchars($nombreCompleto) . '</td>
+                        <td class="text-center col-sexo">' . htmlspecialchars($sexo) . '</td>
+                        <td class="text-center col-edad">' . $edad . ' años</td>
+                        <td class="text-center col-fecha">' . date('d/m/Y', strtotime($estudiante['fecha_inscripcion'])) . '</td>
+                        <td class="text-left col-representante">' . $representante . '</td>
                     </tr>';
             
             $contador++;
@@ -287,16 +300,16 @@ try {
                 <h3>RESUMEN ESTADÍSTICO</h3>
                 <table style="width: 100%; border: none; background: transparent;">
                     <tr>
-                        <td style="border: none; padding: 2px;"><strong>Total Estudiantes:</strong></td>
-                        <td style="border: none; padding: 2px;">' . $totalEstudiantes . ' estudiantes</td>
-                        <td style="border: none; padding: 2px;"><strong>Capacidad Total:</strong></td>
-                        <td style="border: none; padding: 2px;">' . $info_grado['capacidad'] . ' estudiantes</td>
+                        <td style="border: none; padding: 1px;"><strong>Total Estudiantes:</strong></td>
+                        <td style="border: none; padding: 1px;">' . $totalEstudiantes . ' estudiantes</td>
+                        <td style="border: none; padding: 1px;"><strong>Capacidad Total:</strong></td>
+                        <td style="border: none; padding: 1px;">' . $info_grado['capacidad'] . ' estudiantes</td>
                     </tr>
                     <tr>
-                        <td style="border: none; padding: 2px;"><strong>Ocupación:</strong></td>
-                        <td style="border: none; padding: 2px;">' . number_format($porcentajeOcupacion, 1) . '%</td>
-                        <td style="border: none; padding: 2px;"><strong>Cupos Disponibles:</strong></td>
-                        <td style="border: none; padding: 2px;">' . $cuposDisponibles . ' cupos</td>
+                        <td style="border: none; padding: 1px;"><strong>Ocupación:</strong></td>
+                        <td style="border: none; padding: 1px;">' . number_format($porcentajeOcupacion, 1) . '%</td>
+                        <td style="border: none; padding: 1px;"><strong>Cupos Disponibles:</strong></td>
+                        <td style="border: none; padding: 1px;">' . $cuposDisponibles . ' cupos</td>
                     </tr>
                 </table>
             </div>';
@@ -311,7 +324,8 @@ try {
     </body>
     </html>';
 
-    // Configurar y generar PDF con márgenes de 2.54 cm (equivalente a 1 pulgada)
+    // Configurar y generar PDF con márgenes de 2.54 cm (25.4 mm)
+    // Los márgenes se establecen en el constructor: array(izquierda, arriba, derecha, abajo)
     $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(25.4, 25.4, 25.4, 25.4));
     $html2pdf->setDefaultFont('dejavusans');
     $html2pdf->setTestTdInOnePage(false);
