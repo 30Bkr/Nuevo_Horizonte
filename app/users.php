@@ -154,4 +154,124 @@ class Usuarios
       echo "Error al establecer conexion Acaa info:" . $th->getMessage();
     }
   }
+
+  // Agrega estos métodos dentro de la clase Usuarios:
+
+  /**
+   * Obtiene información del usuario por ID
+   */
+  public function getById($id)
+  {
+    try {
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+
+      $sql = "SELECT * FROM usuarios WHERE id_usuario = :id";
+      $stmt = $objConexion->prepare($sql);
+      $stmt->bindParam(':id', $id);
+      $stmt->execute();
+
+      return $stmt->fetch(PDO::FETCH_OBJ);
+    } catch (PDOException $e) {
+      error_log("Error en getById: " . $e->getMessage());
+      return null;
+    }
+  }
+
+  /**
+   * Cambia la contraseña del usuario
+   */
+  public function cambiarContrasena($userId, $newPassword)
+  {
+    try {
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+
+      // Crear nuevo hash BCRYPT
+      $newHash = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+
+      $sql = "UPDATE usuarios 
+                SET contrasena = :new_hash, 
+                    contrasena_migrada = 1,
+                    fecha_ultimo_cambio = NOW(),
+                    requiere_cambio_contrasena = 0
+                WHERE id_usuario = :id";
+
+      $stmt = $objConexion->prepare($sql);
+      $stmt->bindParam(':new_hash', $newHash);
+      $stmt->bindParam(':id', $userId);
+
+      return $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error en cambiarContrasena: " . $e->getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Verifica si el usuario requiere cambio de contraseña
+   */
+  public function requiereCambioContrasena($userId)
+  {
+    try {
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+
+      $sql = "SELECT requiere_cambio_contrasena FROM usuarios WHERE id_usuario = :id";
+      $stmt = $objConexion->prepare($sql);
+      $stmt->bindParam(':id', $userId);
+      $stmt->execute();
+
+      $result = $stmt->fetch(PDO::FETCH_OBJ);
+      return $result ? $result->requiere_cambio_contrasena : 0;
+    } catch (PDOException $e) {
+      error_log("Error en requiereCambioContrasena: " . $e->getMessage());
+      return 0;
+    }
+  }
+
+  /**
+   * Marca que el usuario requiere cambio de contraseña
+   */
+  public function marcarRequiereCambio($userId)
+  {
+    try {
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+
+      $sql = "UPDATE usuarios 
+                SET requiere_cambio_contrasena = 1 
+                WHERE id_usuario = :id";
+
+      $stmt = $objConexion->prepare($sql);
+      $stmt->bindParam(':id', $userId);
+
+      return $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error en marcarRequiereCambio: " . $e->getMessage());
+      return false;
+    }
+  }
+
+  /**
+   * Verifica si el usuario ha migrado su contraseña
+   */
+  public function contrasenaMigrada($userId)
+  {
+    try {
+      $conexion = new Conexion();
+      $objConexion = $conexion->conectar();
+
+      $sql = "SELECT contrasena_migrada FROM usuarios WHERE id_usuario = :id";
+      $stmt = $objConexion->prepare($sql);
+      $stmt->bindParam(':id', $userId);
+      $stmt->execute();
+
+      $result = $stmt->fetch(PDO::FETCH_OBJ);
+      return $result ? $result->contrasena_migrada : 0;
+    } catch (PDOException $e) {
+      error_log("Error en contrasenaMigrada: " . $e->getMessage());
+      return 0;
+    }
+  }
 }

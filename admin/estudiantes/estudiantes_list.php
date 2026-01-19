@@ -94,7 +94,6 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                                             echo '<table id="tablaEstudiantes" class="table table-bordered table-striped">
                                                 <thead>
                                                     <tr>
-                                                        <th>N°</th>
                                                         <th>Cédula</th>
                                                         <th>Nombre Completo</th>
                                                         <th>Teléfono</th>
@@ -145,7 +144,6 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                                                 </button>';
 
                                                 echo "<tr>";
-                                                echo "<td></td>";
                                                 echo "<td>{$row['cedula']}</td>";
                                                 echo "<td>{$nombreCompleto}</td>";
                                                 echo "<td>{$row['telefono']}</td>";

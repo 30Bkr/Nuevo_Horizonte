@@ -328,6 +328,37 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
+
+          <?php if (isset($_SESSION['usuario_id']) && $_SESSION['usuario_rol_id'] != 1): ?>
+            <li class="nav-item ">
+              <a href="#" class="nav-link">
+                <!-- <i class="nav-icon fas fa-tachometer-alt"></i> -->
+                <i class="nav-icon fas bi bi-person-rolodex">
+                  <img src="<?= URL; ?>/public/images/profesor.svg" alt="Inscripcion">
+                </i>
+
+                <p>
+                  Usuario
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL ?>/views/usuarios/cambiar_contrasena.php" class="nav-link">
+                    <i class="nav-icon fas fa-key"></i>
+                    <p>Cambiar Contraseña</p>
+                  </a>
+                </li>
+                <!-- <li class="nav-item">
+                    <a href="/project/admin/roles/index.php" class="nav-link active">
+                      <i class="far fa-circle nav-icon"></i>
+                      <p>Asignar materias</p>
+                    </a>
+                  </li> -->
+              </ul>
+            </li>
+          <?php endif; ?>
+
           <li class="nav-item">
             <a href="<?= URL; ?>/login/logout.php" class="nav-link active" style="background-color: #c40c0cff;">
               <!-- <img src="../../public/images/door-open.svg" alt="" class="nav-icon"> -->

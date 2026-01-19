@@ -1,5 +1,10 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 include_once('../global/utils.php');
+require_once '/xampp/htdocs/final/global/notifications.php';
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -18,6 +23,7 @@ include_once('../global/utils.php');
 </head>
 
 <body>
+  <?php Notification::show(); ?>
   <div class="login-container">
     <!-- Sección de imagen (60%) -->
     <div class="image-section">
