@@ -230,18 +230,22 @@ try {
                 días del mes de <strong>' . strtoupper($mes_inscripcion_espanol) . '</strong> de <strong>' . $datos['anio_inscripcion'] . '</strong>.
             </div>
             
-                       <!-- SECCIÓN DE FIRMA - CORREGIDA -->
+                                   <!-- SECCIÓN DE FIRMA - CORREGIDA -->
             <div class="firma-section">
                 <table align="center" style="width: 350px; border-collapse: collapse;">
                     <tr>
                         <td style="border-top: 1px solid #000; text-align: center; padding-top: 5px;">
+                            <!-- Línea de firma -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center; padding-top: 8px;">
                             <div style="font-weight: bold; font-size: 14px; margin-bottom: 2px;">' . $directora_nombre_mayusculas . '</div>
                             <div style="font-style: italic; font-size: 12px; color: #666;">DIRECTOR(A)</div>
                         </td>
                     </tr>
                 </table>
             </div>
-            
             
             <!-- INFORMACIÓN INSTITUCIONAL - MÁS ESPACIO -->
             <div class="info-institucional">
