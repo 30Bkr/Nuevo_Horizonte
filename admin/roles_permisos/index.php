@@ -1,12 +1,41 @@
 <?php
 // admin/roles_permisos/index.php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+
+
+error_log("DEBUG index.php - Sesión: " . print_r($_SESSION, true));
+
+
+
+
 
 // Establecer título de página
 $_SESSION['page_title'] = 'Gestión de Roles y Permisos';
 
+if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'Administrador') {
+  // Incluir Notification para mostrar mensaje
+  require_once '/xampp/htdocs/final/global/notifications.php';
+  Notification::set("No tienes permisos para acceder a esta sección", "error");
+  header('Location: ' . URL . '/admin/index.php');
+  exit();
+}
+
 // Proteger el acceso
 require_once '/xampp/htdocs/final/global/protect.php';
+require_once '/xampp/htdocs/final/global/notifications.php';
+
+
+echo "<!-- DEBUG: Antes de Notification::show() -->";
+Notification::show();
+echo "<!-- DEBUG: Después de Notification::show() -->";
+
 require_once '/xampp/htdocs/final/layout/layaout1.php';
+
+
+
 
 // Incluir modelo
 require_once '/xampp/htdocs/final/app/controllers/roles/roles_permisos_model.php';
@@ -28,6 +57,7 @@ $tipoMensaje = 'info';
 
 <div class="content-wrapper" style="margin-left: 250px;">
   <div class="content-header">
+    <?php Notification::show(); ?>
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">

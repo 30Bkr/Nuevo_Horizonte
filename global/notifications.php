@@ -1,229 +1,254 @@
 <?php
-// global/notifications.php - Versión 100% NATIVA
+// global/notifications.php - Sistema NATIVO de notificaciones con fondos personalizados
 
 class Notification
 {
-  public static function show()
-  {
-    if (session_status() === PHP_SESSION_NONE) {
-      session_start();
+    /**
+     * Establece una notificación
+     */
+    public static function set($mensaje, $tipo = 'info')
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $_SESSION['mensaje'] = $mensaje;
+        $_SESSION['icono'] = $tipo;
     }
 
-    if (isset($_SESSION['mensaje']) && !empty($_SESSION['mensaje'])) {
-      $mensaje = $_SESSION['mensaje'];
-      $tipo = $_SESSION['icono'] ?? 'info';
+    /**
+     * Muestra la notificación si existe
+     */
+    public static function show()
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-      // Determinar color según el tipo de mensaje
-      $colores = [
-        'success' => '#28a745',  // Verde
-        'error' => '#dc3545',    // Rojo
-        'warning' => '#ffc107',  // Amarillo
-        'info' => '#17a2b8'      // Azul
-      ];
+        if (!isset($_SESSION['mensaje']) || empty($_SESSION['mensaje'])) {
+            return;
+        }
 
-      $color = $colores[$tipo] ?? '#17a2b8';
-      $icono = self::getIcono($tipo);
-      $titulo = self::getTitulo($tipo);
+        $mensaje = $_SESSION['mensaje'];
+        $tipo = $_SESSION['icono'] ?? 'info';
 
-      // ID único para la notificación
-      $idNotificacion = 'notif-' . uniqid();
+        // Colores según tipo - versión MEJORADA con gradientes
+        $colores = [
+            'success' => [
+                'header' => '#28a745',    // Verde brillante para encabezado
+                'body' => '#e8f5e9',      // Verde muy claro para cuerpo
+                'text' => '#155724',      // Verde oscuro para texto
+                'border' => '#1e7e34'     // Verde más oscuro para borde
+            ],
+            'error' => [
+                'header' => '#dc3545',    // Rojo brillante
+                'body' => '#f8d7da',      // Rojo muy claro
+                'text' => '#721c24',      // Rojo oscuro
+                'border' => '#c82333'     // Rojo más oscuro
+            ],
+            'warning' => [
+                'header' => '#ffc107',    // Amarillo brillante
+                'body' => '#fff3cd',      // Amarillo muy claro
+                'text' => '#856404',      // Amarillo oscuro/marrón
+                'border' => '#e0a800'     // Amarillo más oscuro
+            ],
+            'info' => [
+                'header' => '#17a2b8',    // Azul brillante
+                'body' => '#d1ecf1',      // Azul muy claro
+                'text' => '#0c5460',      // Azul oscuro
+                'border' => '#117a8b'     // Azul más oscuro
+            ]
+        ];
 
-      // Generar HTML de la notificación
-      echo '<div id="' . $idNotificacion . '" class="notificacion-toast">';
-      echo '<div class="notificacion-cabecera" style="background: ' . $color . ';">';
-      echo '<div class="notificacion-titulo">';
-      echo '<span class="notificacion-icono">' . $icono . '</span>';
-      echo '<strong>' . $titulo . '</strong>';
-      echo '</div>';
-      echo '<button class="notificacion-cerrar" onclick="cerrarNotificacion(\'' . $idNotificacion . '\')">&times;</button>';
-      echo '</div>';
-      echo '<div class="notificacion-cuerpo">';
-      echo htmlspecialchars($mensaje);
-      echo '</div>';
-      echo '</div>';
+        // Color por defecto si el tipo no existe
+        $default_colors = [
+            'header' => '#17a2b8',
+            'body' => '#f8f9fa',
+            'text' => '#212529',
+            'border' => '#6c757d'
+        ];
 
-      // CSS embebido para la notificación
-      echo '<style>
-            .notificacion-toast {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 9999;
-                width: 350px;
-                background: #fe4053ff;
-                border-left: 4px solid ' . $color . ';
-                border-radius: 6px;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                animation: deslizarEntrada 0.4s ease, desvanecerSalida 0.4s ease 4.6s;
-                animation-fill-mode: forwards;
-                overflow: hidden;
-                font-family: Arial, sans-serif;
-            }
-            
-            .notificacion-cabecera {
-                padding: 12px 16px;
-                color: white;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                font-size: 16px;
-            }
-            
-            .notificacion-titulo {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-            
-            .notificacion-icono {
-                font-size: 18px;
-                font-weight: bold;
-            }
-            
-            .notificacion-cerrar {
-                background: rgba(255,255,255,0.2);
-                border: none;
-                color: white;
-                font-size: 22px;
-                cursor: pointer;
-                width: 28px;
-                height: 28px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background 0.3s;
-            }
-            
-            .notificacion-cerrar:hover {
-                background: rgba(255,255,255,0.3);
-            }
-            
-            .notificacion-cuerpo {
-                padding: 16px;
-                color: #333;
-                font-size: 14px;
-                line-height: 1.5;
-            }
-            
-            @keyframes deslizarEntrada {
-                from { 
-                    transform: translateX(100%); 
-                    opacity: 0; 
-                }
-                to { 
-                    transform: translateX(0); 
-                    opacity: 1; 
-                }
-            }
-            
-            @keyframes desvanecerSalida {
-                from { 
-                    transform: translateX(0); 
-                    opacity: 1; 
-                }
-                to { 
-                    transform: translateX(100%); 
-                    opacity: 0; 
-                }
-            }
-            
-            /* Responsive */
-            @media (max-width: 768px) {
-                .notificacion-toast {
-                    width: 90%;
-                    left: 5%;
-                    right: 5%;
-                    top: 10px;
-                }
-                
-                @keyframes deslizarEntrada {
-                    from { 
-                        transform: translateY(-100%); 
-                        opacity: 0; 
-                    }
-                    to { 
-                        transform: translateY(0); 
-                        opacity: 1; 
-                    }
-                }
-                
-                @keyframes desvanecerSalida {
-                    from { 
-                        transform: translateY(0); 
-                        opacity: 1; 
-                    }
-                    to { 
-                        transform: translateY(-100%); 
-                        opacity: 0; 
-                    }
-                }
-            }
-            </style>';
+        $colors = $colores[$tipo] ?? $default_colors;
 
-      // JavaScript para manejar la notificación
-      echo '<script>
-            function cerrarNotificacion(id) {
-                var elemento = document.getElementById(id);
-                if (elemento) {
-                    elemento.style.animation = "desvanecerSalida 0.4s ease forwards";
-                    setTimeout(function() {
-                        if (elemento.parentNode) {
-                            elemento.parentNode.removeChild(elemento);
-                        }
-                    }, 400);
-                }
-            }
-            
-            // Auto-eliminar después de 5 segundos
-            setTimeout(function() {
-                cerrarNotificacion("' . $idNotificacion . '");
-            }, 5000);
-            </script>';
+        $icono = self::getIcono($tipo);
+        $titulo = self::getTitulo($tipo);
+        $idNotificacion = 'notif-' . uniqid();
+        $mensajeSeguro = htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8');
 
-      // Limpiar el mensaje después de mostrarlo
-      unset($_SESSION['mensaje']);
-      unset($_SESSION['icono']);
+        // HTML de la notificación MEJORADA
+        echo <<<HTML
+    <div id="{$idNotificacion}" class="global-notification" style="
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      z-index: 1050;
+      width: 350px;
+      background: {$colors['body']};
+      border-left: 4px solid {$colors['border']};
+      border-radius: 6px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      animation: slideIn 0.4s ease;
+      margin-bottom: 10px;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      border: 1px solid rgba(0,0,0,0.1);
+    ">
+      <!-- Encabezado con color fuerte -->
+      <div style="
+        padding: 12px 16px;
+        background: {$colors['header']};
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 500;
+      ">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 18px; font-weight: bold; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));">{$icono}</span>
+          <strong style="font-size: 16px; text-shadow: 0 1px 1px rgba(0,0,0,0.1);">{$titulo}</strong>
+        </div>
+        <button onclick="cerrarNotificacion('{$idNotificacion}')" style="
+          background: rgba(255,255,255,0.2);
+          border: none;
+          color: white;
+          font-size: 20px;
+          cursor: pointer;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+          line-height: 1;
+          padding: 0;
+        " onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.1)'" 
+          onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">
+          &times;
+        </button>
+      </div>
+      
+      <!-- Cuerpo con color suave que coincide con el tipo -->
+      <div style="
+        padding: 16px;
+        color: {$colors['text']};
+        font-size: 14px;
+        line-height: 1.5;
+        background: {$colors['body']};
+        border-top: 1px solid rgba(0,0,0,0.05);
+      ">
+        {$mensajeSeguro}
+      </div>
+    </div>
+    
+    <style>
+      @keyframes slideIn {
+        from { 
+          transform: translateX(100%); 
+          opacity: 0; 
+        }
+        to { 
+          transform: translateX(0); 
+          opacity: 1; 
+        }
+      }
+      
+      @keyframes fadeOut {
+        from { 
+          opacity: 1; 
+          transform: translateX(0);
+        }
+        to { 
+          opacity: 0; 
+          transform: translateX(100%);
+        }
+      }
+      
+      /* Mejora para móviles */
+      @media (max-width: 768px) {
+        .global-notification {
+          width: calc(100% - 40px) !important;
+          left: 20px !important;
+          right: 20px !important;
+          top: 20px !important;
+        }
+        
+        @keyframes slideIn {
+          from { 
+            transform: translateY(-20px); 
+            opacity: 0; 
+          }
+          to { 
+            transform: translateY(0); 
+            opacity: 1; 
+          }
+        }
+        
+        @keyframes fadeOut {
+          from { 
+            opacity: 1; 
+            transform: translateY(0);
+          }
+          to { 
+            opacity: 0; 
+            transform: translateY(-20px);
+          }
+        }
+      }
+    </style>
+    
+    <script>
+      function cerrarNotificacion(id) {
+        var elemento = document.getElementById(id);
+        if (elemento) {
+          elemento.style.animation = 'fadeOut 0.4s ease forwards';
+          setTimeout(function() {
+            if (elemento.parentNode) {
+              elemento.parentNode.removeChild(elemento);
+            }
+          }, 400);
+        }
+      }
+      
+      // Auto-eliminar después de 5 segundos
+      setTimeout(function() {
+        cerrarNotificacion('{$idNotificacion}');
+      }, 5000);
+      
+      // Cerrar al hacer clic fuera (opcional)
+      document.addEventListener('click', function(e) {
+        var notif = document.getElementById('{$idNotificacion}');
+        if (notif && !notif.contains(e.target)) {
+          cerrarNotificacion('{$idNotificacion}');
+        }
+      });
+    </script>
+HTML;
+
+        // Limpiar después de mostrar
+        unset($_SESSION['mensaje']);
+        unset($_SESSION['icono']);
     }
-  }
 
-  private static function getIcono($tipo)
-  {
-    $iconos = [
-      'success' => '✓',
-      'error' => '✗',
-      'warning' => '⚠',
-      'info' => 'ℹ'
-    ];
-
-    return $iconos[$tipo] ?? 'ℹ';
-  }
-
-  private static function getTitulo($tipo)
-  {
-    $titulos = [
-      'success' => 'Éxito',
-      'error' => 'Error',
-      'warning' => 'Advertencia',
-      'info' => 'Información'
-    ];
-
-    return $titulos[$tipo] ?? 'Notificación';
-  }
-
-  public static function set($mensaje, $tipo = 'info')
-  {
-    if (session_status() === PHP_SESSION_NONE) {
-      session_start();
+    private static function getIcono($tipo)
+    {
+        $iconos = [
+            'success' => '✓',
+            'error' => '✗',
+            'warning' => '⚠',
+            'info' => 'ℹ'
+        ];
+        return $iconos[$tipo] ?? 'ℹ';
     }
 
-    $_SESSION['mensaje'] = $mensaje;
-    $_SESSION['icono'] = $tipo;
-  }
-
-  // Método para mostrar notificaciones múltiples
-  public static function mostrarTodas()
-  {
-    self::show();
-  }
+    private static function getTitulo($tipo)
+    {
+        $titulos = [
+            'success' => 'Éxito',
+            'error' => 'Error',
+            'warning' => 'Advertencia',
+            'info' => 'Información'
+        ];
+        return $titulos[$tipo] ?? 'Notificación';
+    }
 }

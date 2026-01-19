@@ -3,13 +3,11 @@ include_once('/xampp/htdocs/final/global/utils.php');
 include_once('/xampp/htdocs/final/app/users.php');
 require_once '/xampp/htdocs/final/global/check_permissions.php';
 require_once '/xampp/htdocs/final/global/protect.php';
-require_once '/xampp/htdocs/final/global/notifications.php';
 
 
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
-
 
 $esto = $_SESSION['usuario_email'];
 $user = new Usuarios;
@@ -46,6 +44,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
 </head>
 
 <body class="hold-transition sidebar-mini">
+  <?php
+  // Incluir y mostrar notificaciones JUSTO DESPUÉS DE <body>
+  require_once '/xampp/htdocs/final/global/notifications.php';
+  Notification::show();
+  ?>
   <div class="wrapper">
 
     <!-- Navbar -->
@@ -342,6 +345,3 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- /.sidebar -->
     </aside>
     <!-- Notificaciones -->
-    <div class="container-fluid mt-3" style="margin-left: 250px;">
-      <?php Notification::show(); ?>
-    </div>

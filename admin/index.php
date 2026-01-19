@@ -672,7 +672,6 @@ try {
 
   <?php
   include_once("/xampp/htdocs/final/layout/layaout2.php");
-  include_once("/xampp/htdocs/final/layout/mensajes.php");
   ?>
 
   <!-- TABLA DE PARENTEZCO  PARA PARENTEZCO DEL REPRESENTANTE ESTUDIANTE -->
