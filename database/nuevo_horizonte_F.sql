@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-01-2026 a las 02:23:48
+-- Tiempo de generación: 19-01-2026 a las 15:40:51
 -- Versión del servidor: 11.7.2-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -165,7 +165,7 @@ VALUES (
         'Av Principal',
         'Casa 123',
         '2025-11-11 20:02:31',
-        NULL,
+        '2026-01-18 23:12:12',
         1
     ),
     (
@@ -245,7 +245,7 @@ VALUES (
         'K',
         'MONTALBAN 3',
         '2025-11-20 04:38:27',
-        '2025-12-02 00:33:33',
+        '2026-01-18 23:08:15',
         1
     ),
     (
@@ -1189,7 +1189,7 @@ VALUES (
         29,
         2,
         '2025-11-24 03:28:17',
-        NULL,
+        '2026-01-18 23:08:02',
         1
     ),
     (
@@ -1414,7 +1414,7 @@ VALUES (
         1,
         1,
         '2025-11-11 20:02:31',
-        NULL,
+        '2026-01-18 23:12:12',
         1
     ),
     (
@@ -1468,7 +1468,7 @@ VALUES (
         15,
         1,
         '2025-11-20 04:38:27',
-        NULL,
+        '2026-01-18 23:08:15',
         1
     ),
     (
@@ -1714,13 +1714,18 @@ VALUES (
 
 CREATE TABLE `globales` (
     `id_globales` int(11) NOT NULL,
+    `version` int(11) NOT NULL DEFAULT 1,
     `edad_min` int(11) NOT NULL,
     `edad_max` int(11) NOT NULL,
     `nom_instituto` varchar(50) NOT NULL,
     `id_periodo` int(11) NOT NULL,
     `nom_directora` varchar(100) DEFAULT NULL,
     `ci_directora` varchar(8) DEFAULT NULL,
-    `direccion` varchar(255) DEFAULT NULL
+    `direccion` varchar(255) DEFAULT NULL,
+    `es_activo` tinyint(1) NOT NULL DEFAULT 1,
+    `id_usuario_modificacion` int(11) DEFAULT NULL,
+    `motivo_cambio` text DEFAULT NULL,
+    `fecha_modificacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
 
 --
@@ -1730,23 +1735,78 @@ CREATE TABLE `globales` (
 INSERT INTO
     `globales` (
         `id_globales`,
+        `version`,
         `edad_min`,
         `edad_max`,
         `nom_instituto`,
         `id_periodo`,
         `nom_directora`,
         `ci_directora`,
-        `direccion`
+        `direccion`,
+        `es_activo`,
+        `id_usuario_modificacion`,
+        `motivo_cambio`,
+        `fecha_modificacion`
     )
 VALUES (
         1,
+        1,
+        4,
+        19,
+        'Nuevo Horizonte',
+        2,
+        'Mariday Castaño',
+        '15412654',
+        'Distrito Capital, Parroquia Sucre, Catia, Gramoven - Barrio Nuevo Horizonte, Calle Principal La Parada, Edificio U.E.N “Nuevo Horizonte”',
+        0,
+        NULL,
+        NULL,
+        '2026-01-18 21:16:43'
+    ),
+    (
+        2,
+        2,
+        3,
+        19,
+        'Nuevo Horizonte',
+        6,
+        'Mariday Castaño',
+        '1541265',
+        'Distrito Capital, Parroquia Sucre, Catia, Gramoven - Barrio Nuevo Horizonte, Calle Principal La Parada, Edificio U.E.N “Nuevo Horizonte”',
+        0,
+        1,
+        'Actualización de información institucional',
+        '2026-01-18 21:13:14'
+    ),
+    (
+        3,
+        3,
         4,
         19,
         'Nuevo Horizonte',
         6,
         'Mariday Castaño',
-        '15412654',
-        'Distrito Capital, Parroquia Sucre, Catia, Gramoven - Barrio Nuevo Horizonte, Calle Principal La Parada, Edificio U.E.N “Nuevo Horizonte”'
+        '1541265',
+        'Distrito Capital, Parroquia Sucre, Catia, Gramoven - Barrio Nuevo Horizonte, Calle Principal La Parada, Edificio U.E.N “Nuevo Horizonte”',
+        0,
+        1,
+        'Ajuste de rango de edades: de 3-19 a 4-19 años',
+        '2026-01-18 21:22:41'
+    ),
+    (
+        4,
+        4,
+        4,
+        19,
+        'Nuevo Horizonte',
+        1,
+        'Mariday Castaño',
+        '1541265',
+        'Distrito Capital, Parroquia Sucre, Catia, Gramoven - Barrio Nuevo Horizonte, Calle Principal La Parada, Edificio U.E.N “Nuevo Horizonte”',
+        1,
+        1,
+        'Cambio de periodo académico activo a: Año Escolar 2024-2025',
+        '2026-01-18 21:22:41'
     );
 
 -- --------------------------------------------------------
@@ -14860,8 +14920,8 @@ VALUES (
         '2024-09-01',
         '2025-07-15',
         '2025-11-10 06:17:16',
-        '2025-12-07 17:01:15',
-        0
+        '2026-01-18 17:22:41',
+        1
     ),
     (
         2,
@@ -14869,7 +14929,7 @@ VALUES (
         '2023-09-01',
         '2024-07-15',
         '2025-11-20 05:11:53',
-        '2025-12-02 14:59:46',
+        '2026-01-18 17:16:43',
         0
     ),
     (
@@ -14879,7 +14939,7 @@ VALUES (
         '2026-07-15',
         '2025-11-26 02:02:37',
         '2025-12-07 18:59:50',
-        1
+        0
     );
 
 -- --------------------------------------------------------
@@ -15100,6 +15160,24 @@ VALUES (
         '2026-01-14 03:14:26',
         NULL,
         1
+    ),
+    (
+        22,
+        'historial_institucion',
+        'admin/configuraciones/configuracion/historial_institucion.php',
+        'Ver historial de cambios institucionales',
+        '2026-01-19 04:40:38',
+        NULL,
+        1
+    ),
+    (
+        23,
+        'cambiar_contrasena',
+        'views/usuarios/cambiar_contrasena.php',
+        'Cambiar contraseña de usuario',
+        '2026-01-19 04:40:39',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -15306,10 +15384,10 @@ VALUES (
     (
         8,
         1,
-        'Carmen',
-        'Elena',
-        'González',
-        'Pérez',
+        'CARMEN',
+        'ELENA',
+        'GONZÁLEZ',
+        'PÉREZ',
         '15678901',
         '04141234568',
         '02127788992',
@@ -15321,7 +15399,7 @@ VALUES (
         'Femenino',
         'Venezolano',
         '2025-11-10 06:17:16',
-        '2025-12-02 17:30:40',
+        '2026-01-18 23:12:12',
         1
     ),
     (
@@ -15537,22 +15615,22 @@ VALUES (
     (
         27,
         16,
-        'Aharon',
-        'Orlando',
-        'Stojs',
-        'Shein',
+        'AHARON',
+        'ORLANDO',
+        'STOJS',
+        'SHEIN',
         '123456783',
         '04149015229',
         '02127788992',
         'aharon@gmail.com',
         NULL,
         NULL,
-        'El paraiso',
+        'EL PARAISO',
         '1879-12-30',
-        'Femenino',
-        'Venezolano',
+        'FEMENINO',
+        'VENEZOLANO',
         '2025-11-11 20:02:31',
-        NULL,
+        '2026-01-18 23:12:12',
         1
     ),
     (
@@ -15762,28 +15840,28 @@ VALUES (
         'Masculino',
         'Venezolano',
         '2025-11-20 04:38:27',
-        '2025-12-02 00:33:33',
+        '2026-01-18 23:08:15',
         1
     ),
     (
         38,
         30,
         'A',
-        'a',
-        'a',
-        'm',
+        'A',
+        'A',
+        'M',
         '201123151',
         '04149015229',
         '04149105229',
         'ak@gmial.com',
         NULL,
         NULL,
-        'El paraisoe',
+        'EL PARAISOE',
         '2020-12-02',
-        'Femenino',
-        'Venezolano',
+        'MASCULINO',
+        'VENEZOLANO',
         '2025-11-20 04:38:27',
-        NULL,
+        '2026-01-18 23:08:15',
         1
     ),
     (
@@ -16703,10 +16781,10 @@ INSERT INTO
 VALUES (
         1,
         8,
-        'Ingeniero Civil',
-        'Constructora Nacional',
+        'INGENIERO CIVIL',
+        'CONSTRUCTORA NACIONAL',
         '2025-11-10 06:17:16',
-        '2025-12-02 17:30:40',
+        '2026-01-18 23:12:12',
         1,
         10
     ),
@@ -16816,7 +16894,7 @@ VALUES (
         'MECANICO',
         'MERCEDES',
         '2025-11-20 04:38:27',
-        '2025-12-02 00:33:33',
+        '2026-01-18 23:08:15',
         1,
         28
     ),
@@ -16999,7 +17077,7 @@ VALUES (
         2,
         1,
         '2025-12-31 21:19:07',
-        NULL,
+        '2026-01-18 22:35:47',
         1
     ),
     (
@@ -17007,7 +17085,7 @@ VALUES (
         2,
         4,
         '2025-12-31 21:19:07',
-        NULL,
+        '2026-01-18 22:35:47',
         1
     ),
     (
@@ -17015,7 +17093,7 @@ VALUES (
         2,
         7,
         '2025-12-31 21:19:07',
-        NULL,
+        '2026-01-18 22:35:47',
         1
     ),
     (
@@ -17039,6 +17117,38 @@ VALUES (
         1,
         11,
         '2026-01-06 03:33:27',
+        NULL,
+        1
+    ),
+    (
+        22,
+        2,
+        3,
+        '2026-01-19 01:39:03',
+        '2026-01-18 22:35:47',
+        0
+    ),
+    (
+        23,
+        2,
+        14,
+        '2026-01-19 01:45:55',
+        '2026-01-18 22:35:47',
+        0
+    ),
+    (
+        24,
+        2,
+        11,
+        '2026-01-19 02:27:05',
+        '2026-01-18 22:35:47',
+        1
+    ),
+    (
+        25,
+        2,
+        23,
+        '2026-01-19 04:40:59',
         NULL,
         1
     );
@@ -17180,13 +17290,13 @@ VALUES (
         87,
         2,
         '38881133',
-        '$2y$12$ekRqNFVyeCV.P9xtNWEy4eT8RHq.YB9dU3ORFzwx9lcNRDZeiVyu.',
+        '$2y$12$UxamiM.POsdhB5AAR4fQ3e.s4ULfbhY00l703vQf3LdpEXalOTVxi',
         '2026-01-07 01:56:09',
         NULL,
         1,
         1,
         0,
-        '2026-01-07 01:56:43'
+        '2026-01-19 04:48:12'
     );
 
 -- --------------------------------------------------------
@@ -17345,7 +17455,10 @@ ADD KEY `fk_est_rep_parentesco` (`id_parentesco`);
 --
 ALTER TABLE `globales`
 ADD PRIMARY KEY (`id_globales`),
-ADD KEY `id_periodo` (`id_periodo`);
+ADD KEY `id_periodo` (`id_periodo`),
+ADD KEY `idx_globales_activo` (`es_activo`),
+ADD KEY `idx_globales_version` (`version`),
+ADD KEY `fk_globales_usuario` (`id_usuario_modificacion`);
 
 --
 -- Indices de la tabla `inscripciones`
@@ -17544,7 +17657,7 @@ AUTO_INCREMENT = 55;
 --
 ALTER TABLE `globales`
 MODIFY `id_globales` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 2;
+AUTO_INCREMENT = 5;
 
 --
 -- AUTO_INCREMENT de la tabla `inscripciones`
@@ -17607,7 +17720,7 @@ AUTO_INCREMENT = 7;
 --
 ALTER TABLE `permisos`
 MODIFY `id_permiso` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 22;
+AUTO_INCREMENT = 24;
 
 --
 -- AUTO_INCREMENT de la tabla `personas`
@@ -17642,7 +17755,7 @@ AUTO_INCREMENT = 3;
 --
 ALTER TABLE `roles_permisos`
 MODIFY `id_rol_permiso` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 22;
+AUTO_INCREMENT = 26;
 
 --
 -- AUTO_INCREMENT de la tabla `secciones`
@@ -17714,6 +17827,7 @@ ADD CONSTRAINT `fk_estudiantes_representantes_representantes` FOREIGN KEY (`id_r
 -- Filtros para la tabla `globales`
 --
 ALTER TABLE `globales`
+ADD CONSTRAINT `fk_globales_usuario` FOREIGN KEY (`id_usuario_modificacion`) REFERENCES `usuarios` (`id_usuario`),
 ADD CONSTRAINT `globales_ibfk_1` FOREIGN KEY (`id_periodo`) REFERENCES `periodos` (`id_periodo`);
 
 --

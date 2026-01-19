@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-01-2026 a las 05:12:23
+-- Tiempo de generación: 17-01-2026 a las 02:23:48
 -- Versión del servidor: 11.7.2-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -337,6 +337,16 @@ VALUES (
         '2025-12-02 21:30:40',
         NULL,
         1
+    ),
+    (
+        41,
+        88,
+        '23 de enero ',
+        '4',
+        '4-h',
+        '2026-01-07 01:56:09',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -459,6 +469,14 @@ VALUES (
         NULL,
         1,
         12
+    ),
+    (
+        4,
+        87,
+        '2026-01-07 01:56:09',
+        NULL,
+        1,
+        25
     );
 
 -- --------------------------------------------------------
@@ -14992,6 +15010,96 @@ VALUES (
         '2026-01-06 03:33:19',
         NULL,
         1
+    ),
+    (
+        12,
+        'institucion_config',
+        'admin/configuraciones/configuracion/institucion.php',
+        'Configuración de información institucional',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        13,
+        'periodos_config',
+        'admin/configuraciones/configuracion/periodos.php',
+        'Configuración de períodos académicos',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        14,
+        'edades_config',
+        'admin/configuraciones/configuracion/edades.php',
+        'Configuración de rangos de edades',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        15,
+        'discapacidades_config',
+        'admin/configuraciones/configuracion/discapacidades.php',
+        'Gestión de discapacidades',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        16,
+        'grados_editar',
+        'views/grados/grados_list.php',
+        'Editar niveles y grados (no solo lectura)',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        17,
+        'profesiones_config',
+        'admin/configuraciones/configuracion/profesiones.php',
+        'Gestión de profesiones',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        18,
+        'ubicacion_config',
+        'admin/configuraciones/configuracion/ubicacion.php',
+        'Configuración de ubicación geográfica',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        19,
+        'patologias_config',
+        'admin/configuraciones/configuracion/patologias.php',
+        'Gestión de patologías médicas',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        20,
+        'parentesco_config',
+        'admin/configuraciones/configuracion/parentesco.php',
+        'Gestión de tipos de parentesco',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
+    ),
+    (
+        21,
+        'docentes_dashboard',
+        'admin-docentes/index.php',
+        'Panel principal para docentes',
+        '2026-01-14 03:14:26',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -16286,6 +16394,27 @@ VALUES (
         '2025-12-02 19:33:46',
         NULL,
         1
+    ),
+    (
+        87,
+        41,
+        'MARIELA',
+        'FERNANDA',
+        'RONDON',
+        'PAEZ',
+        '38881133',
+        '04141234567',
+        '02121234567',
+        'marielapaez@gmail.com',
+        NULL,
+        NULL,
+        'EL PARAISO',
+        '1996-11-30',
+        'FEMENINO',
+        'VENEZOLANO',
+        '2026-01-07 01:56:09',
+        NULL,
+        1
     );
 
 -- --------------------------------------------------------
@@ -17045,6 +17174,19 @@ VALUES (
         0,
         0,
         NULL
+    ),
+    (
+        4,
+        87,
+        2,
+        '38881133',
+        '$2y$12$ekRqNFVyeCV.P9xtNWEy4eT8RHq.YB9dU3ORFzwx9lcNRDZeiVyu.',
+        '2026-01-07 01:56:09',
+        NULL,
+        1,
+        1,
+        0,
+        '2026-01-07 01:56:43'
     );
 
 -- --------------------------------------------------------
@@ -17334,7 +17476,7 @@ ADD KEY `id_rol` (`id_rol`);
 --
 ALTER TABLE `direcciones`
 MODIFY `id_direccion` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 41;
+AUTO_INCREMENT = 42;
 
 --
 -- AUTO_INCREMENT de la tabla `discapacidades`
@@ -17348,7 +17490,7 @@ AUTO_INCREMENT = 7;
 --
 ALTER TABLE `docentes`
 MODIFY `id_docente` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 4;
+AUTO_INCREMENT = 5;
 
 --
 -- AUTO_INCREMENT de la tabla `docentes_especialidades`
@@ -17465,14 +17607,14 @@ AUTO_INCREMENT = 7;
 --
 ALTER TABLE `permisos`
 MODIFY `id_permiso` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 12;
+AUTO_INCREMENT = 22;
 
 --
 -- AUTO_INCREMENT de la tabla `personas`
 --
 ALTER TABLE `personas`
 MODIFY `id_persona` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 87;
+AUTO_INCREMENT = 88;
 
 --
 -- AUTO_INCREMENT de la tabla `profesiones`
@@ -17514,7 +17656,7 @@ AUTO_INCREMENT = 5;
 --
 ALTER TABLE `usuarios`
 MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
-AUTO_INCREMENT = 4;
+AUTO_INCREMENT = 5;
 
 --
 -- Restricciones para tablas volcadas
