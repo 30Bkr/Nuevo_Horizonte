@@ -105,6 +105,13 @@ try {
 
     case 'obtener_todas':
       $discapacidades = $discapacidadController->obtenerTodasLasDiscapacidades();
+
+      // Agregar información de uso a cada discapacidad
+      foreach ($discapacidades as &$discapacidad) {
+        $discapacidad['en_uso'] = $discapacidadController->discapacidadEnUso($discapacidad['id_discapacidad']);
+        $discapacidad['conteo_usos'] = $discapacidadController->obtenerConteoUsosDiscapacidad($discapacidad['id_discapacidad']);
+      }
+
       echo json_encode(['success' => true, 'data' => $discapacidades]);
       break;
 

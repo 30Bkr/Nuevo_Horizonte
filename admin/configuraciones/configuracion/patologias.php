@@ -1,7 +1,25 @@
 <?php
-include_once("/xampp/htdocs/final/layout/layaout1.php");
-include_once("/xampp/htdocs/final/app/conexion.php");
-include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
+// admin/configuraciones/patologias.php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+// Establecer título de página
+$_SESSION['page_title'] = 'Gestión de Patologías';
+
+// Incluir archivos necesarios
+require_once '/xampp/htdocs/final/global/protect.php';
+require_once '/xampp/htdocs/final/global/check_permissions.php';
+require_once '/xampp/htdocs/final/global/notifications.php';
+require_once '/xampp/htdocs/final/app/conexion.php';
+require_once '/xampp/htdocs/final/app/controllers/patologias/patologias.php';
+
+// Verificar permisos
+if (!PermissionManager::canViewAny(['admin/configuraciones/index.php'])) {
+  Notification::set("No tienes permisos para acceder a esta sección", "error");
+  header('Location: ' . URL . '/admin/index.php');
+  exit();
+}
 
 // Obtener datos iniciales
 try {
@@ -9,21 +27,51 @@ try {
   $pdo = $conexion->conectar();
   $patologiaController = new PatologiaController($pdo);
 
-  $patologias = $patologiaController->obtenerPatologias();
+  // Usar el método para obtener todas las patologías
+  $patologias = $patologiaController->obtenerTodasLasPatologias();
+  foreach ($patologias as &$patologia) {
+    $patologia['en_uso'] = $patologiaController->patologiaEnUso($patologia['id_patologia']);
+    $patologia['conteo_usos'] = $patologiaController->obtenerConteoUsosPatologia($patologia['id_patologia']);
+  }
   $totalAsignaciones = $patologiaController->contarAsignacionesEstudiantes();
 } catch (Exception $e) {
   $patologias = [];
   $totalAsignaciones = 0;
-  $_SESSION['mensaje'] = $e->getMessage();
-  $_SESSION['tipo_mensaje'] = 'error';
+  Notification::set("Error al cargar patologías: " . $e->getMessage(), "error");
 }
+
+// Incluir layout1.php al inicio
+require_once '/xampp/htdocs/final/layout/layaout1.php';
 ?>
 
-<div class="content-wrapper">
-  <div class="content">
+<div class="content-wrapper" style="margin-left: 250px;">
+  <!-- Content Header -->
+  <div class="content-header">
+    <?php
+    // Mostrar notificaciones
+    Notification::show();
+    ?>
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Gestión de Patologías</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/index.php">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/configuraciones/index.php">Configuraciones</a></li>
+            <li class="breadcrumb-item active">Patologías</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
     <div class="container-fluid">
       <!-- Header -->
-      <div class="row mb-4">
+      <div class="row mb-4 p-2">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
@@ -34,14 +82,13 @@ try {
               <p class="text-muted">Administra el catálogo de patologías y condiciones médicas</p>
             </div>
             <div>
-              <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
+              <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
               <button class="btn btn-primary" onclick="abrirModalAgregar()">
                 <i class="fas fa-plus mr-1"></i> Agregar Patología
               </button>
             </div>
-
           </div>
         </div>
       </div>
@@ -182,11 +229,12 @@ try {
                             </button>
                             <?php if ($patologia['estatus'] == 1): ?>
                               <?php if ($en_uso): ?>
-                                <button type="button"
-                                  class="btn btn-sm btn-secondary"
+                                <!-- Permite desactivar pero con advertencia -->
+                                <button class="btn btn-sm btn-outline-warning"
                                   data-toggle="tooltip"
-                                  title="No se puede desactivar porque está en uso en <?php echo $conteo_usos; ?> estudiante(s)">
-                                  <i class="fas fa-lock mr-1"></i> Bloqueado
+                                  title="Desactivar (en uso en <?php echo $conteo_usos; ?> estudiante(s))"
+                                  onclick="cambiarEstatusConAdvertencia(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 0, <?php echo $conteo_usos; ?>)">
+                                  <i class="fas fa-exclamation-triangle"></i>
                                 </button>
                               <?php else: ?>
                                 <button class="btn btn-sm btn-outline-danger"
@@ -225,7 +273,7 @@ try {
           <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> Información Importante</h5>
             <ul class="mb-0">
-              <li><strong>Patologías en uso:</strong> No se pueden desactivar porque están siendo utilizadas por estudiantes</li>
+              <li><strong>Patologías en uso:</strong> Se pueden desactivar pero aparecerán advertencias ya que están siendo utilizadas por estudiantes</li>
               <li><strong>Patologías sin uso:</strong> Se pueden desactivar sin problemas</li>
               <li><strong>Patologías inactivas:</strong> No aparecerán en los formularios de nuevos registros</li>
               <li>Los registros existentes que ya usen la patología no se verán afectados al desactivarla</li>
@@ -265,7 +313,7 @@ try {
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>
 
 <!-- Modal Agregar Patología -->
@@ -407,18 +455,33 @@ try {
   // Variables globales
   let patologiaSeleccionada = null;
 
-  // Funciones para abrir modales
-  function abrirModalAgregar() {
-    $('#modalAgregar').modal('show');
+  // Nueva función para desactivar con advertencia cuando está en uso
+  function cambiarEstatusConAdvertencia(id, nombre, nuevoEstatus, conteoUsos) {
+    patologiaSeleccionada = {
+      id,
+      nombre,
+      nuevoEstatus
+    };
+
+    const mensaje = nuevoEstatus == 1 ?
+      'Los estudiantes podrán ser asignados a esta patología nuevamente.' :
+      `ADVERTENCIA: Esta patología está en uso por ${conteoUsos} estudiante(s).<br><br>` +
+      `Al desactivarla:<br>` +
+      `✓ No aparecerá en los formularios de nuevos registros<br>` +
+      `✓ Los estudiantes que ya la tienen asignada conservarán la asignación<br>` +
+      `✓ No afectará los registros existentes`;
+
+    $('#mensajeConfirmacion').html(
+      `¿Estás seguro de que deseas <strong>${nuevoEstatus == 1 ? 'activar' : 'desactivar'}</strong> la patología:<br><strong>"${nombre}"</strong>?<br><br>` +
+      `<div style="background-color: ${nuevoEstatus == 1 ? '#d4edda' : '#fff3cd'}; padding: 10px; border-radius: 5px; border-left: 4px solid ${nuevoEstatus == 1 ? '#28a745' : '#ffc107'};">` +
+      `<small>${mensaje}</small>` +
+      `</div>`
+    );
+
+    $('#modalConfirmacion').modal('show');
   }
 
-  function editarPatologia(id, nombre, estatus) {
-    $('#id_patologia_edit').val(id);
-    $('#nombre_patologia_edit').val(nombre);
-    $('#estatus_patologia').val(estatus);
-    $('#modalEditar').modal('show');
-  }
-
+  // Actualiza la función cambiarEstatus para casos normales (sin uso)
   function cambiarEstatus(id, nombre, nuevoEstatus) {
     patologiaSeleccionada = {
       id,
@@ -439,6 +502,18 @@ try {
     $('#modalConfirmacion').modal('show');
   }
 
+  // Funciones para abrir modales
+  function abrirModalAgregar() {
+    $('#modalAgregar').modal('show');
+  }
+
+  function editarPatologia(id, nombre, estatus) {
+    $('#id_patologia_edit').val(id);
+    $('#nombre_patologia_edit').val(nombre);
+    $('#estatus_patologia').val(estatus);
+    $('#modalEditar').modal('show');
+  }
+
   async function agregarPatologia(event) {
     event.preventDefault();
 
@@ -446,7 +521,7 @@ try {
     const nombre = formData.get('nombre_patologia').trim();
 
     if (!nombre) {
-      mostrarMensaje('El nombre de la patología es requerido', 'error');
+      mostrarNotificacion('El nombre de la patología es requerido', 'error');
       return;
     }
 
@@ -455,26 +530,26 @@ try {
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
 
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('<?= URL; ?>/app/controllers/patologias/accionesPatologias.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: `action=agregar&nombre=${encodeURIComponent(nombre)}`
       });
+
       const result = await response.json();
 
       if (result.success) {
-        mostrarMensaje(result.message, 'success');
+        mostrarNotificacion(result.message, 'success');
         $('#modalAgregar').modal('hide');
         event.target.reset();
         recargarPatologias();
       } else {
-        mostrarMensaje(result.message, 'error');
+        mostrarNotificacion(result.message, 'error');
       }
     } catch (error) {
-      mostrarMensaje('Error de conexión: ' + error.message, 'error');
-
+      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Patología';
@@ -490,7 +565,7 @@ try {
     const estatus = formData.get('estatus');
 
     if (!nombre) {
-      mostrarMensaje('El nombre de la patología es requerido', 'error');
+      mostrarNotificacion('El nombre de la patología es requerido', 'error');
       return;
     }
 
@@ -499,7 +574,7 @@ try {
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Actualizando...';
 
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('<?= URL; ?>/app/controllers/patologias/accionesPatologias.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -510,15 +585,14 @@ try {
       const result = await response.json();
 
       if (result.success) {
-        mostrarMensaje(result.message, 'success');
+        mostrarNotificacion(result.message, 'success');
         $('#modalEditar').modal('hide');
         recargarPatologias();
       } else {
-        mostrarMensaje(result.message, 'error');
+        mostrarNotificacion(result.message, 'error');
       }
     } catch (error) {
-      mostrarMensaje('Error de conexión: ' + error.message, 'error');
-
+      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Actualizar Patología';
@@ -535,7 +609,7 @@ try {
     } = patologiaSeleccionada;
 
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('<?= URL; ?>/app/controllers/patologias/accionesPatologias.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -546,36 +620,45 @@ try {
       const result = await response.json();
 
       if (result.success) {
-        mostrarMensaje(result.message, 'success');
+        mostrarNotificacion(result.message, 'success');
         $('#modalConfirmacion').modal('hide');
         recargarPatologias();
       } else {
-        mostrarMensaje(result.message, 'error');
+        mostrarNotificacion(result.message, 'error');
       }
     } catch (error) {
-      mostrarMensaje('Error de conexión: ' + error.message, 'error');
+      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
     }
   }
 
   async function recargarPatologias() {
     try {
-      const response = await fetch('../../../app/controllers/patologias/accionesPatologias.php', {
+      const response = await fetch('<?= URL; ?>/app/controllers/patologias/accionesPatologias.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: 'action=obtener_todas'
       });
-      const result = await response.json();
+
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        console.error('Error parseando JSON:', e);
+        mostrarNotificacion('Error al cargar patologías: Respuesta no válida del servidor', 'error');
+        return;
+      }
 
       if (result.success) {
         actualizarTabla(result.data);
         actualizarEstadisticas(result.data);
       } else {
-        mostrarMensaje('Error al cargar patologías', 'error');
+        mostrarNotificacion('Error al cargar patologías: ' + result.message, 'error');
       }
     } catch (error) {
-      mostrarMensaje('Error de conexión: ' + error.message, 'error');
+      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
     }
   }
 
@@ -594,45 +677,62 @@ try {
       return;
     }
 
-    tbody.innerHTML = patologias.map(patologia => `
-        <tr id="patologia-${patologia.id_patologia}">
-            <td>${patologia.id_patologia}</td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-stethoscope text-primary mr-2"></i>
-                    <span id="nombre-${patologia.id_patologia}">${escapeHtml(patologia.nom_patologia)}</span>
-                </div>
-            </td>
-            <td>
-                <span class="badge badge-${patologia.estatus == 1 ? 'success' : 'danger'}" 
-                      id="estatus-${patologia.id_patologia}">
-                    ${patologia.estatus == 1 ? 'Activa' : 'Inactiva'}
-                </span>
-            </td>
-            <td>${formatFecha(patologia.creacion)}</td>
-            <td>${patologia.actualizacion ? formatFecha(patologia.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-            <td>
-                <div class="btn-group">
-                    <button class="btn btn-sm btn-outline-primary" 
-                            onclick="editarPatologia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', ${patologia.estatus})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    ${patologia.estatus == 1 ? 
-                        `<button class="btn btn-sm btn-outline-danger"
-                                onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0)">
-                            <i class="fas fa-pause"></i>
-                        </button>` :
-                        `<button class="btn btn-sm btn-outline-success"
-                                onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 1)">
-                            <i class="fas fa-play"></i>
-                        </button>`
-                    }
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    // Construir la tabla con la información de uso que ya viene del servidor
+    tbody.innerHTML = patologias.map(patologia => {
+      const enUso = patologia.en_uso || false;
+      const conteoUsos = patologia.conteo_usos || 0;
+
+      return `
+            <tr id="patologia-${patologia.id_patologia}">
+                <td>${patologia.id_patologia}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-stethoscope text-primary mr-2"></i>
+                        <span id="nombre-${patologia.id_patologia}">${escapeHtml(patologia.nom_patologia)}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge badge-${patologia.estatus == 1 ? 'success' : 'danger'}" 
+                          id="estatus-${patologia.id_patologia}">
+                        ${patologia.estatus == 1 ? 'Activa' : 'Inactiva'}
+                    </span>
+                </td>
+                <td>${formatFecha(patologia.creacion)}</td>
+                <td>${patologia.actualizacion ? formatFecha(patologia.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" 
+                                onclick="editarPatologia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', ${patologia.estatus})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ${patologia.estatus == 1 ? 
+                            (enUso ? 
+                                `<button class="btn btn-sm btn-outline-warning"
+                                        data-toggle="tooltip"
+                                        title="Desactivar (en uso en ${conteoUsos} estudiante(s))"
+                                        onclick="cambiarEstatusConAdvertencia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0, ${conteoUsos})">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>` :
+                                `<button class="btn btn-sm btn-outline-danger"
+                                        onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0)">
+                                    <i class="fas fa-pause"></i>
+                                </button>`
+                            ) :
+                            `<button class="btn btn-sm btn-outline-success"
+                                    onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 1)">
+                                <i class="fas fa-play"></i>
+                            </button>`
+                        }
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 
     document.getElementById('contadorPatologias').textContent = patologias.length;
+
+    // Re-inicializar tooltips
+    $('[data-toggle="tooltip"]').tooltip();
   }
 
   function actualizarEstadisticas(patologias) {
@@ -666,10 +766,109 @@ try {
     return fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES');
   }
 
-  function mostrarMensaje(mensaje, tipo) {
-    // Aquí puedes integrar con tu sistema de mensajes existente
-    alert(`${tipo.toUpperCase()}: ${mensaje}`);
+  function mostrarNotificacion(mensaje, tipo = 'info', tiempo = 5000) {
+    const iconos = {
+      'success': '✓',
+      'error': '✗',
+      'warning': '⚠',
+      'info': 'ℹ'
+    };
+
+    const titulos = {
+      'success': 'Éxito',
+      'error': 'Error',
+      'warning': 'Advertencia',
+      'info': 'Información'
+    };
+
+    const colores = {
+      'success': {
+        bg: '#28a745',
+        border: '#1e7e34'
+      },
+      'error': {
+        bg: '#dc3545',
+        border: '#c82333'
+      },
+      'warning': {
+        bg: '#ffc107',
+        border: '#e0a800'
+      },
+      'info': {
+        bg: '#17a2b8',
+        border: '#117a8b'
+      }
+    };
+
+    const color = colores[tipo] || colores.info;
+
+    // Crear elemento de notificación
+    const notificacion = document.createElement('div');
+    const idNotificacion = 'notificacion-' + Date.now();
+    notificacion.id = idNotificacion;
+    notificacion.className = 'global-notification';
+    notificacion.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: ${color.bg};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-left: 4px solid ${color.border};
+        animation: slideIn 0.3s ease;
+        min-width: 300px;
+        max-width: 400px;
+    `;
+
+    notificacion.innerHTML = `
+        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
+                <span style="font-size: 20px; font-weight: bold; margin-top: 2px;">${iconos[tipo]}</span>
+                <div style="flex: 1;">
+                    <strong style="font-size: 16px; display: block; margin-bottom: 5px;">${titulos[tipo]}</strong>
+                    <span style="font-size: 14px; word-wrap: break-word;">${mensaje}</span>
+                </div>
+            </div>
+            <button onclick="document.getElementById('${idNotificacion}').remove()" 
+                    style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; margin-left: 10px; flex-shrink: 0;">
+                &times;
+            </button>
+        </div>
+    `;
+
+    // Remover notificaciones antiguas si hay muchas
+    const notificaciones = document.querySelectorAll('.global-notification');
+    if (notificaciones.length > 3) {
+      notificaciones[0].remove();
+    }
+
+    document.body.appendChild(notificacion);
+
+    // Auto-eliminar después del tiempo especificado
+    setTimeout(() => {
+      if (document.getElementById(idNotificacion)) {
+        notificacion.style.animation = 'slideOut 0.3s ease forwards';
+        setTimeout(() => notificacion.remove(), 300);
+      }
+    }, tiempo);
   }
+
+  // Añadir estilos CSS para animaciones
+  const estilo = document.createElement('style');
+  estilo.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+  document.head.appendChild(estilo);
 
   // Event Listeners
   document.addEventListener('DOMContentLoaded', function() {
@@ -681,12 +880,12 @@ try {
       document.getElementById('formAgregar').reset();
     });
 
-    // Inicializar tooltips
+    // Inicializar tooltips de Bootstrap
     $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
 
 <?php
-include_once("/xampp/htdocs/final/layout/layaout2.php");
-include_once("/xampp/htdocs/final/layout/mensajes.php");
+// Incluir layout2.php al final
+require_once '/xampp/htdocs/final/layout/layaout2.php';
 ?>

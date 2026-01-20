@@ -29,6 +29,10 @@ try {
 
   // Usar el nuevo método para obtener todas las discapacidades
   $discapacidades = $discapacidadController->obtenerTodasLasDiscapacidades();
+  foreach ($discapacidades as &$discapacidad) {
+    $discapacidad['en_uso'] = $discapacidadController->discapacidadEnUso($discapacidad['id_discapacidad']);
+    $discapacidad['conteo_usos'] = $discapacidadController->obtenerConteoUsosDiscapacidad($discapacidad['id_discapacidad']);
+  }
   $totalAsignaciones = $discapacidadController->contarAsignacionesEstudiantes();
 } catch (Exception $e) {
   $discapacidades = [];
@@ -656,13 +660,22 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         },
         body: 'action=obtener_todas'
       });
-      const result = await response.json();
+
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        console.error('Error parseando JSON:', e);
+        mostrarNotificacion('Error al cargar discapacidades: Respuesta no válida del servidor', 'error');
+        return;
+      }
 
       if (result.success) {
         actualizarTabla(result.data);
         actualizarEstadisticas(result.data);
       } else {
-        mostrarNotificacion('Error al cargar discapacidades', 'error');
+        mostrarNotificacion('Error al cargar discapacidades: ' + result.message, 'error');
       }
     } catch (error) {
       mostrarNotificacion('Error de conexión: ' + error.message, 'error');
@@ -674,17 +687,22 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
     if (discapacidades.length === 0) {
       tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No hay discapacidades registradas</p>
-                    </td>
-                </tr>
-            `;
+            <tr>
+                <td colspan="6" class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay discapacidades registradas</p>
+                </td>
+            </tr>
+        `;
       return;
     }
 
-    tbody.innerHTML = discapacidades.map(discapacidad => `
+    // Construir la tabla con la información de uso que ya viene del servidor
+    tbody.innerHTML = discapacidades.map(discapacidad => {
+      const enUso = discapacidad.en_uso || false;
+      const conteoUsos = discapacidad.conteo_usos || 0;
+
+      return `
             <tr id="discapacidad-${discapacidad.id_discapacidad}">
                 <td>${discapacidad.id_discapacidad}</td>
                 <td>
@@ -708,10 +726,18 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                             <i class="fas fa-edit"></i>
                         </button>
                         ${discapacidad.estatus == 1 ? 
-                            `<button class="btn btn-sm btn-outline-danger"
-                                    onclick="cambiarEstatus(${discapacidad.id_discapacidad}, '${escapeHtml(discapacidad.nom_discapacidad)}', 0)">
-                                <i class="fas fa-pause"></i>
-                            </button>` :
+                            (enUso ? 
+                                `<button class="btn btn-sm btn-outline-warning"
+                                        data-toggle="tooltip"
+                                        title="Desactivar (en uso en ${conteoUsos} estudiante(s))"
+                                        onclick="cambiarEstatusConAdvertencia(${discapacidad.id_discapacidad}, '${escapeHtml(discapacidad.nom_discapacidad)}', 0, ${conteoUsos})">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </button>` :
+                                `<button class="btn btn-sm btn-outline-danger"
+                                        onclick="cambiarEstatus(${discapacidad.id_discapacidad}, '${escapeHtml(discapacidad.nom_discapacidad)}', 0)">
+                                    <i class="fas fa-pause"></i>
+                                </button>`
+                            ) :
                             `<button class="btn btn-sm btn-outline-success"
                                     onclick="cambiarEstatus(${discapacidad.id_discapacidad}, '${escapeHtml(discapacidad.nom_discapacidad)}', 1)">
                                 <i class="fas fa-play"></i>
@@ -720,9 +746,13 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `;
+    }).join('');
 
     document.getElementById('contadorDiscapacidades').textContent = discapacidades.length;
+
+    // Re-inicializar tooltips
+    $('[data-toggle="tooltip"]').tooltip();
   }
 
   function actualizarEstadisticas(discapacidades) {
