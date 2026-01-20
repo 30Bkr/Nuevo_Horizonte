@@ -1,102 +1,134 @@
 <?php
-
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
+
 // configuracion/institucion.php
 include_once("/xampp/htdocs/final/app/conexion.php");
-
-
-// Incluir el controlador
-
 include_once("/xampp/htdocs/final/app/controllers/globales/globales.php");
+
 $conexion = new Conexion();
 $pdo = $conexion->conectar();
-// Crear instancia del controlador
 $globalesController = new GlobalesController($pdo);
 
-// Obtener datos actuales de la institución
-$institucionData = $globalesController->obtenerVariablesGlobales();
-$institucion = $institucionData['success'] ? $institucionData['data'] : null;
-
-// Obtener información adicional de globales (campos específicos)
+// Obtener la versión activa actual
 $infoInstitucion = [];
 try {
-  $sql = "SELECT nom_instituto, nom_directora, ci_directora, direccion FROM globales ORDER BY id_globales DESC LIMIT 1";
+  $sql = "SELECT g.*, 
+                   u.usuario,
+                   CONCAT(p.primer_nombre, ' ', p.primer_apellido) as nombre_usuario
+            FROM globales g
+            LEFT JOIN usuarios u ON g.id_usuario_modificacion = u.id_usuario
+            LEFT JOIN personas p ON u.id_persona = p.id_persona
+            WHERE g.es_activo = 1 
+            ORDER BY g.version DESC 
+            LIMIT 1";
+
   $stmt = $pdo->prepare($sql);
   $stmt->execute();
   $infoInstitucion = $stmt->fetch(PDO::FETCH_ASSOC);
+
+  // Si no hay registro activo, obtener el último
+  if (!$infoInstitucion) {
+    $sql = "SELECT g.*, 
+                       u.usuario,
+                       CONCAT(p.primer_nombre, ' ', p.primer_apellido) as nombre_usuario
+                FROM globales g
+                LEFT JOIN usuarios u ON g.id_usuario_modificacion = u.id_usuario
+                LEFT JOIN personas p ON u.id_persona = p.id_persona
+                ORDER BY g.version DESC 
+                LIMIT 1";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $infoInstitucion = $stmt->fetch(PDO::FETCH_ASSOC);
+  }
 } catch (PDOException $e) {
-  $error = "Error al cargar información de la institución: " . $e->getMessage();
+  $error = "Error al cargar información: " . $e->getMessage();
+  $infoInstitucion = [];
 }
 
-// Procesar el formulario si se envió
+// Procesar el formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $nom_instituto = trim($_POST['nom_instituto'] ?? '');
   $nom_directora = trim($_POST['nom_directora'] ?? '');
   $ci_directora = trim($_POST['ci_directora'] ?? '');
   $direccion = trim($_POST['direccion'] ?? '');
+  $motivo_cambio = trim($_POST['motivo_cambio'] ?? 'Actualización de información institucional');
 
-  // Validaciones básicas
+  // Obtener ID del usuario actual DESDE LA SESIÓN
+  $id_usuario_actual = $_SESSION['usuario_id'] ?? 0;
+  $nombre_usuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
+
   if (empty($nom_instituto)) {
     $error_msg = "El nombre de la institución es obligatorio";
+  } elseif (empty($motivo_cambio)) {
+    $error_msg = "Debe especificar un motivo para el cambio";
   } else {
     try {
-      // Verificar si ya existe un registro en globales
-      $checkSql = "SELECT id_globales FROM globales LIMIT 1";
-      $checkStmt = $pdo->prepare($checkSql);
-      $checkStmt->execute();
-      $exists = $checkStmt->fetch();
+      // Iniciar transacción
+      $pdo->beginTransaction();
 
-      if ($exists) {
-        // Actualizar el registro existente
-        $sql = "UPDATE globales SET 
-                        nom_instituto = ?, 
-                        nom_directora = ?, 
-                        ci_directora = ?, 
-                        direccion = ?
-                        WHERE id_globales = 1";
-      } else {
-        // Insertar nuevo registro con valores por defecto para otros campos
-        $sql = "INSERT INTO globales (nom_instituto, nom_directora, ci_directora, direccion, 
-                        edad_min, edad_max, id_periodo) 
-                        VALUES (?, ?, ?, ?, 3, 19, 1)";
+      // 1. Desactivar registro actual (si existe)
+      $updateSql = "UPDATE globales SET es_activo = 0 WHERE es_activo = 1";
+      $updateStmt = $pdo->prepare($updateSql);
+      $updateStmt->execute();
+
+      // 2. Obtener siguiente versión
+      $versionSql = "SELECT COALESCE(MAX(version), 0) + 1 as nueva_version FROM globales";
+      $versionStmt = $pdo->prepare($versionSql);
+      $versionStmt->execute();
+      $nuevaVersion = $versionStmt->fetchColumn();
+
+      // 3. Verificar periodo activo
+      $periodoSql = "SELECT id_periodo FROM periodos WHERE estatus = 1 LIMIT 1";
+      $periodoStmt = $pdo->prepare($periodoSql);
+      $periodoStmt->execute();
+      $id_periodo = $periodoStmt->fetchColumn();
+
+      if (!$id_periodo) {
+        // Crear periodo por defecto si no existe
+        $periodoDefault = "SELECT id_periodo FROM periodos ORDER BY id_periodo DESC LIMIT 1";
+        $stmtPeriodo = $pdo->prepare($periodoDefault);
+        $stmtPeriodo->execute();
+        $id_periodo = $stmtPeriodo->fetchColumn() ?: 1;
       }
 
-      $stmt = $pdo->prepare($sql);
+      // 4. Insertar nueva versión
+      $insertSql = "INSERT INTO globales (
+                nom_instituto, nom_directora, ci_directora, direccion,
+                edad_min, edad_max, id_periodo,
+                version, es_activo, id_usuario_modificacion, motivo_cambio, fecha_modificacion
+            ) VALUES (?, ?, ?, ?, 3, 19, ?, ?, 1, ?, ?, NOW())";
 
-      if ($exists) {
-        $success = $stmt->execute([
-          $nom_instituto,
-          $nom_directora,
-          $ci_directora,
-          $direccion
-        ]);
-      } else {
-        $success = $stmt->execute([
-          $nom_instituto,
-          $nom_directora,
-          $ci_directora,
-          $direccion
-        ]);
-      }
+      $insertStmt = $pdo->prepare($insertSql);
+      $success = $insertStmt->execute([
+        $nom_instituto,
+        $nom_directora,
+        $ci_directora,
+        $direccion,
+        $id_periodo,
+        $nuevaVersion,
+        $id_usuario_actual,
+        $motivo_cambio
+      ]);
 
       if ($success) {
-        $_SESSION['success_msg'] = "Información de la institución actualizada correctamente";
-        // Recargar datos
+        $pdo->commit();
+        $_SESSION['success_msg'] = "✅ Información actualizada correctamente (Versión $nuevaVersion)";
         header("Location: " . $_SERVER['PHP_SELF']);
         exit();
       } else {
-        $error_msg = "Error al actualizar la información";
+        $error_msg = "Error al guardar la nueva versión";
+        $pdo->rollBack();
       }
     } catch (PDOException $e) {
+      $pdo->rollBack();
       $error_msg = "Error en la base de datos: " . $e->getMessage();
     }
   }
 }
 
 include_once("/xampp/htdocs/final/layout/layaout1.php");
-
 ?>
 
 <div class="content-wrapper">
@@ -104,11 +136,21 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
     <div class="container-fluid">
       <div class="row mb-4">
         <div class="col-12">
-          <h1 class="mb-0">
-            <i class="fas fa-school mr-2"></i>
-            Configuración de la Institución
-          </h1>
-          <p class="text-muted">Administra la información general de la institución educativa</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="mb-0">
+                <i class="fas fa-school mr-2"></i>
+                Configuración de la Institución
+              </h1>
+              <p class="text-muted">Administra la información general de la institución educativa</p>
+            </div>
+            <div>
+              <a href="historial_institucion.php" class="btn btn-info">
+                <i class="fas fa-history mr-2"></i>
+                Ver Historial de Cambios
+              </a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -136,6 +178,9 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
               <h3 class="card-title">
                 <i class="fas fa-info-circle mr-2"></i>
                 Información General
+                <?php if (isset($infoInstitucion['version'])): ?>
+                  <span class="badge badge-light ml-2">Versión <?php echo $infoInstitucion['version']; ?></span>
+                <?php endif; ?>
               </h3>
             </div>
             <form method="POST" action="">
@@ -200,11 +245,42 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                     placeholder="Ej: Av. Principal #123, Sector El Paraíso, Caracas"><?php echo htmlspecialchars($infoInstitucion['direccion'] ?? ''); ?></textarea>
                   <small class="text-muted">Dirección completa de la institución</small>
                 </div>
+
+                <div class="form-group">
+                  <label for="motivo_cambio">
+                    <i class="fas fa-sticky-note mr-1"></i>
+                    Motivo del Cambio *
+                  </label>
+                  <textarea class="form-control"
+                    id="motivo_cambio"
+                    name="motivo_cambio"
+                    rows="2"
+                    placeholder="Ej: Cambio de directora, Actualización de datos, Corrección de información, etc."
+                    required><?php echo htmlspecialchars($infoInstitucion['motivo_cambio'] ?? 'Actualización de información institucional'); ?></textarea>
+                  <small class="text-muted">Explique brevemente por qué realiza este cambio</small>
+                </div>
+
+                <?php if (isset($infoInstitucion['nombre_usuario']) && isset($infoInstitucion['fecha_modificacion'])): ?>
+                  <div class="alert alert-light border mt-3">
+                    <small>
+                      <i class="fas fa-info-circle mr-1"></i>
+                      <strong>Información de la versión actual:</strong><br>
+                      <i class="fas fa-user-edit mr-1"></i>
+                      Última modificación por: <strong><?php echo htmlspecialchars($infoInstitucion['nombre_usuario']); ?></strong><br>
+                      <i class="fas fa-calendar-alt mr-1"></i>
+                      Fecha: <?php echo date('d/m/Y H:i', strtotime($infoInstitucion['fecha_modificacion'])); ?><br>
+                      <?php if (!empty($infoInstitucion['motivo_cambio'])): ?>
+                        <i class="fas fa-sticky-note mr-1"></i>
+                        Motivo: <?php echo htmlspecialchars($infoInstitucion['motivo_cambio']); ?>
+                      <?php endif; ?>
+                    </small>
+                  </div>
+                <?php endif; ?>
               </div>
               <div class="card-footer">
                 <button type="submit" class="btn btn-primary">
                   <i class="fas fa-save mr-2"></i>
-                  Guardar Cambios
+                  Guardar Nueva Versión
                 </button>
                 <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-default">
                   <i class="fas fa-times mr-2"></i>
@@ -220,35 +296,46 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
             <div class="card-header">
               <h3 class="card-title">
                 <i class="fas fa-lightbulb mr-2"></i>
-                Información Importante
+                Sistema de Versiones
               </h3>
             </div>
             <div class="card-body">
-              <p><strong>Nombre de la Institución:</strong> Aparecerá en:</p>
-              <ul>
-                <li>Reportes e impresiones</li>
-                <li>Comunicados oficiales</li>
-                <li>Certificados y constancias</li>
-                <li>Interfaz del sistema</li>
+              <p><strong>¿Cómo funciona?</strong></p>
+              <ul class="mb-3">
+                <li>✅ Cada cambio crea una nueva versión</li>
+                <li>✅ Se mantiene el historial completo</li>
+                <li>✅ Solo la última versión está activa</li>
+                <li>✅ Puedes ver cambios anteriores</li>
               </ul>
 
               <hr>
 
-              <p><strong>Datos de la Directora:</strong> Se utilizarán para:</p>
-              <ul>
-                <li>Firmas en documentos oficiales</li>
-                <li>Autorizaciones</li>
-                <li>Comunicaciones formales</li>
+              <p><strong>Beneficios:</strong></p>
+              <ul class="mb-3">
+                <li>📋 Auditoría de cambios</li>
+                <li>↩️ Recuperación de versiones anteriores</li>
+                <li>👤 Control de quién modificó qué</li>
+                <li>📝 Registro de motivos de cambio</li>
               </ul>
 
               <hr>
 
-              <p><strong>Dirección:</strong> Es importante para:</p>
-              <ul>
-                <li>Comunicaciones postales</li>
-                <li>Ubicación en documentos</li>
-                <li>Referencia para padres y representantes</li>
-              </ul>
+              <p><strong>Usuario actual:</strong></p>
+              <div class="alert alert-secondary py-2">
+                <i class="fas fa-user mr-2"></i>
+                <strong><?php echo htmlspecialchars($_SESSION['usuario_nombre'] ?? 'Usuario'); ?></strong>
+                <small class="d-block text-muted mt-1">
+                  <i class="fas fa-id-card mr-1"></i>
+                  ID: <?php echo $_SESSION['usuario_id'] ?? 'N/A'; ?>
+                </small>
+              </div>
+
+              <div class="text-center mt-3">
+                <a href="historial_institucion.php" class="btn btn-outline-info btn-block">
+                  <i class="fas fa-history mr-1"></i>
+                  Explorar Historial Completo
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -280,7 +367,13 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
   textarea.form-control {
     resize: vertical;
-    min-height: 100px;
+    min-height: 80px;
+  }
+
+  .badge-light {
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
   }
 </style>
 

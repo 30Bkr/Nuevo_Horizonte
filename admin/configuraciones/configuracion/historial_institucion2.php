@@ -1,24 +1,17 @@
 <?php
-// admin/configuraciones/configuracion/historial_institucion.php
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
-// Establecer título de página
-$_SESSION['page_title'] = 'Historial de Cambios Institucionales';
-
-// Incluir archivos necesarios
-require_once '/xampp/htdocs/final/global/protect.php';
-require_once '/xampp/htdocs/final/global/check_permissions.php';
-require_once '/xampp/htdocs/final/global/notifications.php';
-require_once '/xampp/htdocs/final/app/conexion.php';
-
-// Verificar permisos específicos para esta página
-if (!PermissionManager::canViewAny(['admin/configuraciones/configuracion/historial_institucion.php'])) {
-  Notification::set("No tienes permisos para acceder a esta sección", "error");
-  header('Location: ' . URL . '/admin/index.php');
+// Verificar permisos de usuario
+if (!isset($_SESSION['usuario_id'])) {
+  $_SESSION['mensaje'] = "Debe iniciar sesión para acceder a esta página";
+  header('Location: /final/login/index.php');
   exit();
 }
+
+// configuracion/historial_institucion.php
+include_once("/xampp/htdocs/final/app/conexion.php");
 
 $conexion = new Conexion();
 $pdo = $conexion->conectar();
@@ -61,7 +54,7 @@ try {
     $versionActiva = $historial[0]['version'];
   }
 } catch (PDOException $e) {
-  Notification::set("Error al cargar el historial: " . $e->getMessage(), "error");
+  $error = "Error al cargar el historial: " . $e->getMessage();
 }
 
 // Restaurar versión (si se solicita)
@@ -113,51 +106,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['restaurar_version']))
       ]);
 
       $pdo->commit();
-      Notification::set("✅ Versión $version_a_restaurar restaurada correctamente como versión $nuevaVersion", "success");
+      $_SESSION['success_msg'] = "✅ Versión $version_a_restaurar restaurada correctamente como versión $nuevaVersion";
       header("Location: " . $_SERVER['PHP_SELF']);
       exit();
     } else {
-      Notification::set("Versión no encontrada", "error");
+      $error_msg = "Versión no encontrada";
       $pdo->rollBack();
     }
   } catch (PDOException $e) {
     $pdo->rollBack();
-    Notification::set("Error al restaurar versión: " . $e->getMessage(), "error");
+    $error_msg = "Error al restaurar versión: " . $e->getMessage();
   }
 }
 
-// Incluir layout1.php al inicio
-require_once '/xampp/htdocs/final/layout/layaout1.php';
+include_once("/xampp/htdocs/final/layout/layaout1.php");
 ?>
 
-<div class="content-wrapper" style="margin-left: 250px;">
-  <!-- Content Header -->
-  <div class="content-header">
-    <?php
-    // Mostrar notificaciones
-    Notification::show();
-    ?>
+<div class="content-wrapper">
+  <div class="content">
     <div class="container-fluid">
-      <div class="row mb-2">
-        <div class="col-sm-6">
-          <h1 class="m-0">Historial de Cambios</h1>
-        </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/index.php">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/configuraciones/index.php">Configuraciones</a></li>
-            <li class="breadcrumb-item"><a href="institucion.php">Institución</a></li>
-            <li class="breadcrumb-item active">Historial</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main content -->
-  <section class="content">
-    <div class="container-fluid">
-      <!-- Header -->
       <div class="row mb-4">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
@@ -169,7 +136,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
               <p class="text-muted">Registro completo de todas las modificaciones realizadas</p>
             </div>
             <div>
-              <a href="institucion.php" class="btn btn-primary">
+              <a href="javascript:history.back()" class="btn btn-primary">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Volver a Configuración
               </a>
@@ -177,6 +144,23 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
           </div>
         </div>
       </div>
+
+      <?php if (isset($error_msg)): ?>
+        <div class="alert alert-danger alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+          <i class="icon fas fa-ban"></i>
+          <?php echo htmlspecialchars($error_msg); ?>
+        </div>
+      <?php endif; ?>
+
+      <?php if (isset($_SESSION['success_msg'])): ?>
+        <div class="alert alert-success alert-dismissible">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+          <i class="icon fas fa-check"></i>
+          <?php echo htmlspecialchars($_SESSION['success_msg']); ?>
+        </div>
+        <?php unset($_SESSION['success_msg']); ?>
+      <?php endif; ?>
 
       <!-- Panel de estadísticas -->
       <div class="row mb-4">
@@ -348,15 +332,15 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                               </button>
 
                               <?php if (!$esActivo): ?>
-                                <button type="button"
-                                  class="btn btn-sm btn-outline-warning btn-restaurar-version"
-                                  data-version="<?php echo $registro['version']; ?>"
-                                  data-institucion="<?php echo htmlspecialchars($registro['nom_instituto']); ?>"
-                                  data-motivo="<?php echo htmlspecialchars($registro['motivo_cambio'] ?? 'No especificado'); ?>"
-                                  data-fecha="<?php echo date('d/m/Y H:i:s', strtotime($registro['fecha_modificacion'])); ?>"
-                                  title="Restaurar esta versión">
-                                  <i class="fas fa-undo"></i>
-                                </button>
+                                <form method="POST" action="" style="display: inline;">
+                                  <input type="hidden" name="restaurar_version" value="<?php echo $registro['version']; ?>">
+                                  <button type="submit"
+                                    class="btn btn-sm btn-outline-warning"
+                                    onclick="return confirm('¿Restaurar esta versión?\\n\\nVersión: v<?php echo $registro['version']; ?>\\nInstitución: <?php echo htmlspecialchars($registro['nom_instituto']); ?>\\n\\nLa versión actual pasará al historial y esta será la nueva versión activa.')"
+                                    title="Restaurar esta versión">
+                                    <i class="fas fa-undo"></i>
+                                  </button>
+                                </form>
                               <?php endif; ?>
                             </div>
                           </td>
@@ -448,14 +432,15 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                                   Cerrar
                                 </button>
                                 <?php if (!$esActivo): ?>
-                                  <button type="button" class="btn btn-warning btn-restaurar-version"
-                                    data-version="<?php echo $registro['version']; ?>"
-                                    data-institucion="<?php echo htmlspecialchars($registro['nom_instituto']); ?>"
-                                    data-motivo="<?php echo htmlspecialchars($registro['motivo_cambio'] ?? 'No especificado'); ?>"
-                                    data-fecha="<?php echo date('d/m/Y H:i:s', strtotime($registro['fecha_modificacion'])); ?>">
-                                    <i class="fas fa-undo mr-2"></i>
-                                    Restaurar esta Versión
-                                  </button>
+                                  <form method="POST" action="">
+                                    <input type="hidden" name="restaurar_version" value="<?php echo $registro['version']; ?>">
+                                    <button type="submit"
+                                      class="btn btn-warning"
+                                      onclick="return confirm('¿Restaurar esta versión?\\n\\nLa versión actual pasará al historial y esta será la nueva versión activa.')">
+                                      <i class="fas fa-undo mr-2"></i>
+                                      Restaurar esta Versión
+                                    </button>
+                                  </form>
                                 <?php endif; ?>
                               </div>
                             </div>
@@ -475,7 +460,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                 </small>
               </div>
               <div class="float-right">
-                <a href="institucion.php" class="btn btn-primary btn-sm">
+                <a href="javascript:history.back()" class="btn btn-primary btn-sm">
                   <i class="fas fa-edit mr-1"></i>
                   Crear Nueva Versión
                 </a>
@@ -512,84 +497,6 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Modal de confirmación para restaurar versión -->
-  <div class="modal fade" id="modalConfirmarRestauracion" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header bg-warning">
-          <h5 class="modal-title text-white">
-            <i class="fas fa-exclamation-triangle mr-2"></i>
-            Confirmar Restauración
-          </h5>
-          <button type="button" class="close text-white" data-dismiss="modal">
-            <span>&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning">
-            <i class="fas fa-info-circle mr-2"></i>
-            <strong>ADVERTENCIA:</strong> Esta acción no se puede deshacer
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header bg-light">
-              <h6 class="mb-0"><i class="fas fa-code-branch mr-2"></i>Información de la Versión</h6>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-6">
-                  <p class="mb-1"><strong>Versión:</strong></p>
-                  <h5><span class="badge badge-secondary" id="restaurarVersionNumero">v0</span></h5>
-                </div>
-                <div class="col-6">
-                  <p class="mb-1"><strong>Fecha:</strong></p>
-                  <span id="restaurarVersionFecha">No disponible</span>
-                </div>
-              </div>
-              <div class="row mt-2">
-                <div class="col-12">
-                  <p class="mb-1"><strong>Institución:</strong></p>
-                  <p id="restaurarVersionInstitucion" class="mb-0"></p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header bg-light">
-              <h6 class="mb-0"><i class="fas fa-sticky-note mr-2"></i>Detalles del Cambio</h6>
-            </div>
-            <div class="card-body">
-              <p id="restaurarVersionMotivo" class="mb-0"></p>
-            </div>
-          </div>
-
-          <div class="alert alert-info">
-            <h6><i class="fas fa-sync-alt mr-2"></i>¿Qué pasará?</h6>
-            <ul class="mb-0">
-              <li>La versión actual pasará al historial como versión anterior</li>
-              <li>La versión seleccionada se activará como la versión actual</li>
-              <li>Se creará un nuevo registro en el historial</li>
-              <li>El sistema usará la información restaurada</li>
-            </ul>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">
-            <i class="fas fa-times mr-2"></i>
-            Cancelar
-          </button>
-          <form id="formRestaurarVersion" method="POST" action="">
-            <input type="hidden" name="restaurar_version" id="restaurarVersionId" value="">
-            <button type="submit" class="btn btn-warning">
-              <i class="fas fa-undo mr-2"></i>
-              Sí, Restaurar esta Versión
-            </button>
-          </form>
         </div>
       </div>
     </div>
@@ -632,159 +539,32 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
   .modal-lg {
     max-width: 800px;
   }
-
-  .content-wrapper {
-    transition: margin-left 0.3s ease;
-  }
-
-  /* Animaciones para mejor UX */
-  .animate__animated {
-    animation-duration: 0.5s;
-  }
-
-  /* Estilos para el modal de confirmación */
-  .modal-header.bg-warning {
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-  }
-
-  /* Efectos hover en botones */
-  .btn-outline-warning:hover {
-    background-color: #ffc107;
-    color: #212529;
-    transform: translateY(-2px);
-    transition: all 0.3s ease;
-  }
-
-  /* Estilos para filas de la tabla */
-  .table-hover tbody tr {
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .table-hover tbody tr:hover {
-    transform: translateX(5px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Estilos para tarjetas dentro de modales */
-  .modal .card {
-    border: 1px solid #dee2e6;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-
-  .modal .card-header {
-    background-color: #f8f9fa;
-    font-weight: 600;
-  }
-
-  /* Responsividad mejorada */
-  @media (max-width: 576px) {
-    .modal-dialog {
-      margin: 10px;
-    }
-
-    .info-box {
-      margin-bottom: 10px;
-    }
-
-    .btn-group {
-      flex-wrap: wrap;
-    }
-  }
 </style>
 
 <script>
   // Script para mejorar la experiencia
   document.addEventListener('DOMContentLoaded', function() {
-    // Variables para el modal de restauración
-    let versionSeleccionada = null;
-
     // Agregar tooltips a los botones
     $('[title]').tooltip();
 
-    // Evento para botones de restaurar versión
-    $('.btn-restaurar-version').on('click', function(e) {
-      e.preventDefault();
-
-      // Obtener datos de la versión
-      versionSeleccionada = {
-        version: $(this).data('version'),
-        institucion: $(this).data('institucion'),
-        motivo: $(this).data('motivo'),
-        fecha: $(this).data('fecha')
-      };
-
-      // Actualizar contenido del modal
-      $('#restaurarVersionNumero').text('v' + versionSeleccionada.version);
-      $('#restaurarVersionInstitucion').text(versionSeleccionada.institucion);
-      $('#restaurarVersionMotivo').text(versionSeleccionada.motivo);
-      $('#restaurarVersionFecha').text(versionSeleccionada.fecha);
-      $('#restaurarVersionId').val(versionSeleccionada.version);
-
-      // Cerrar modal de detalles si está abierto
-      $('.modal.show').modal('hide');
-
-      // Mostrar modal de confirmación
-      setTimeout(function() {
-        $('#modalConfirmarRestauracion').modal('show');
-      }, 300);
-    });
-
-    // Confirmación antes de restaurar desde modal de detalles
-    $('form#formRestaurarVersion').on('submit', function(e) {
-      if (!versionSeleccionada) {
+    // Confirmación antes de restaurar
+    $('form[action=""] button[type="submit"]').on('click', function(e) {
+      if (!confirm('¿Está seguro de restaurar esta versión?\n\nEsta acción no se puede deshacer.')) {
         e.preventDefault();
-        return false;
-      }
-
-      // Agregar indicador de procesamiento
-      $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin mr-2"></i> Procesando...').prop('disabled', true);
-
-      // La solicitud continuará normalmente
-      return true;
-    });
-
-    // Configurar modal para restablecer botón al cerrar
-    $('#modalConfirmarRestauracion').on('hidden.bs.modal', function() {
-      versionSeleccionada = null;
-      $('#formRestaurarVersion button[type="submit"]').html('<i class="fas fa-undo mr-2"></i> Sí, Restaurar esta Versión').prop('disabled', false);
-    });
-
-    // Animar las filas al pasar el mouse
-    $('table tbody tr').hover(
-      function() {
-        $(this).addClass('animate__animated animate__pulse animate__faster');
-      },
-      function() {
-        $(this).removeClass('animate__animated animate__pulse animate__faster');
-      }
-    );
-
-    // Agregar efecto al hacer clic en filas
-    $('table tbody tr').on('click', function(e) {
-      if (!$(e.target).is('button, a, input, select, textarea')) {
-        $(this).addClass('animate__animated animate__flash animate__faster');
-        setTimeout(() => {
-          $(this).removeClass('animate__animated animate__flash animate__faster');
-        }, 1000);
       }
     });
 
-    // Mejorar experiencia en dispositivos móviles
-    if ($(window).width() < 768) {
-      $('.card-body').addClass('p-1');
-      $('.table-responsive').addClass('small');
-    }
-
-    // Mostrar notificación de éxito si existe
-    setTimeout(function() {
-      $('.global-notification').addClass('animate__animated animate__fadeInRight');
-    }, 100);
+    // Mostrar mensaje si hay éxito
+    <?php if (isset($_SESSION['success_msg'])): ?>
+      setTimeout(function() {
+        $('.alert-success').fadeOut(1000);
+      }, 5000);
+    <?php endif; ?>
   });
 </script>
 
 <?php
-// Incluir layout2.php al final
-require_once '/xampp/htdocs/final/layout/layaout2.php';
+include_once("/xampp/htdocs/final/layout/layaout2.php");
+include_once("/xampp/htdocs/final/layout/mensajes.php");
+
 ?>

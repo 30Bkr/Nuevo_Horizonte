@@ -1,11 +1,27 @@
 <?php
+// admin/configuraciones/configuracion/institucion.php
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
-// configuracion/institucion.php
-include_once("/xampp/htdocs/final/app/conexion.php");
-include_once("/xampp/htdocs/final/app/controllers/globales/globales.php");
+// Establecer título de página
+$_SESSION['page_title'] = 'Configuración de la Institución';
+
+// Incluir archivos necesarios
+require_once '/xampp/htdocs/final/global/protect.php';
+require_once '/xampp/htdocs/final/global/check_permissions.php';
+require_once '/xampp/htdocs/final/global/notifications.php';
+require_once '/xampp/htdocs/final/app/conexion.php';
+
+// Verificar permisos específicos para esta página
+if (!PermissionManager::canViewAny(['admin/configuraciones/configuracion/institucion.php'])) {
+  Notification::set("No tienes permisos para acceder a esta sección", "error");
+  header('Location: ' . URL . '/admin/index.php');
+  exit();
+}
+
+// Incluir controlador de globales
+require_once '/xampp/htdocs/final/app/controllers/globales/globales.php';
 
 $conexion = new Conexion();
 $pdo = $conexion->conectar();
@@ -43,7 +59,7 @@ try {
     $infoInstitucion = $stmt->fetch(PDO::FETCH_ASSOC);
   }
 } catch (PDOException $e) {
-  $error = "Error al cargar información: " . $e->getMessage();
+  Notification::set("Error al cargar información: " . $e->getMessage(), "error");
   $infoInstitucion = [];
 }
 
@@ -60,9 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $nombre_usuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
 
   if (empty($nom_instituto)) {
-    $error_msg = "El nombre de la institución es obligatorio";
+    Notification::set("El nombre de la institución es obligatorio", "error");
   } elseif (empty($motivo_cambio)) {
-    $error_msg = "Debe especificar un motivo para el cambio";
+    Notification::set("Debe especificar un motivo para el cambio", "error");
   } else {
     try {
       // Iniciar transacción
@@ -114,26 +130,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       if ($success) {
         $pdo->commit();
-        $_SESSION['success_msg'] = "✅ Información actualizada correctamente (Versión $nuevaVersion)";
+        Notification::set("✅ Información actualizada correctamente (Versión $nuevaVersion)", "success");
         header("Location: " . $_SERVER['PHP_SELF']);
         exit();
       } else {
-        $error_msg = "Error al guardar la nueva versión";
+        Notification::set("Error al guardar la nueva versión", "error");
         $pdo->rollBack();
       }
     } catch (PDOException $e) {
       $pdo->rollBack();
-      $error_msg = "Error en la base de datos: " . $e->getMessage();
+      Notification::set("Error en la base de datos: " . $e->getMessage(), "error");
     }
   }
 }
 
-include_once("/xampp/htdocs/final/layout/layaout1.php");
+// Incluir layout1.php al inicio
+require_once '/xampp/htdocs/final/layout/layaout1.php';
 ?>
 
-<div class="content-wrapper">
-  <div class="content">
+<div class="content-wrapper" style="margin-left: 250px;">
+  <!-- Content Header -->
+  <div class="content-header">
+    <?php
+    // Mostrar notificaciones
+    Notification::show();
+    ?>
     <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Configuración de la Institución</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/index.php">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/configuraciones/index.php">Configuraciones</a></li>
+            <li class="breadcrumb-item active">Institución</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <!-- Header -->
       <div class="row mb-4">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
@@ -149,27 +190,14 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 <i class="fas fa-history mr-2"></i>
                 Ver Historial de Cambios
               </a>
+              <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary ml-2">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+              </a>
             </div>
           </div>
         </div>
       </div>
-
-      <?php if (isset($error_msg)): ?>
-        <div class="alert alert-danger alert-dismissible">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-          <i class="icon fas fa-ban"></i>
-          <?php echo htmlspecialchars($error_msg); ?>
-        </div>
-      <?php endif; ?>
-
-      <?php if (isset($_SESSION['success_msg'])): ?>
-        <div class="alert alert-success alert-dismissible">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-          <i class="icon fas fa-check"></i>
-          <?php echo htmlspecialchars($_SESSION['success_msg']); ?>
-        </div>
-        <?php unset($_SESSION['success_msg']); ?>
-      <?php endif; ?>
 
       <div class="row">
         <div class="col-md-8">
@@ -282,10 +310,10 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                   <i class="fas fa-save mr-2"></i>
                   Guardar Nueva Versión
                 </button>
-                <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-default">
-                  <i class="fas fa-times mr-2"></i>
-                  Cancelar
-                </a>
+                <button type="reset" class="btn btn-default">
+                  <i class="fas fa-undo mr-2"></i>
+                  Limpiar
+                </button>
               </div>
             </form>
           </div>
@@ -341,7 +369,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </div>
 
 <style>
@@ -375,9 +403,13 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
     color: #495057;
     border: 1px solid #dee2e6;
   }
+
+  .content-wrapper {
+    transition: margin-left 0.3s ease;
+  }
 </style>
 
 <?php
-include_once("/xampp/htdocs/final/layout/layaout2.php");
-include_once("/xampp/htdocs/final/layout/mensajes.php");
+// Incluir layout2.php al final
+require_once '/xampp/htdocs/final/layout/layaout2.php';
 ?>
