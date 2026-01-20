@@ -780,7 +780,16 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
   }
 </style>
 
+<!-- Cargar jQuery si no está cargado -->
 <script>
+if (typeof jQuery === 'undefined') {
+    document.write('<script src="/final/public/plugins/jquery/jquery.min.js"><\/script>');
+    console.log('jQuery cargado mediante document.write');
+}
+</script>
+
+<script>
+
   $(function() {
     // Inicializar Select2 para todos los selects CON SCROLL MEJORADO
     $('.select2').select2({
