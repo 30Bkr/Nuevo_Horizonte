@@ -1,95 +1,154 @@
 <?php
+// admin/configuraciones/configuracion/accionesParentesco.php
 session_start();
+header('Content-Type: application/json');
 
-// Buffer para evitar salidas no deseadas
-ob_start();
-
-// Incluir archivos necesarios
-if (!file_exists("../../conexion.php")) {
-  die(json_encode(['success' => false, 'message' => 'Error: No se encontró conexion.php']));
-}
-
-if (!file_exists("parentesco.php")) {
-  die(json_encode(['success' => false, 'message' => 'Error: No se encontró parentesco.php']));
-}
-
-include_once("../../conexion.php");
-include_once("parentesco.php");
-
-// Configurar cabecera JSON
-header('Content-Type: application/json; charset=utf-8');
-
-// Verificar que se reciba una acción
-if (!isset($_POST['action'])) {
-  echo json_encode(['success' => false, 'message' => 'No se especificó acción']);
-  exit;
-}
+include_once '/xampp/htdocs/final/app/conexion.php';
+include_once("parentescoController.php");
 
 try {
-  // Crear conexión y controlador
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
-  $controller = new ParentescoController($pdo);
+  $parentescoController = new ParentescoController($pdo);
 
-  $action = $_POST['action'];
-  $response = ['success' => false, 'message' => 'Acción no implementada'];
+  $action = $_POST['action'] ?? '';
 
-  // Procesar acciones
   switch ($action) {
     case 'agregar':
       $nombre = trim($_POST['nombre'] ?? '');
+
       if (empty($nombre)) {
-        $response = ['success' => false, 'message' => 'El nombre del parentesco es requerido'];
-      } else {
-        $response = $controller->agregarParentesco($nombre);
+        echo json_encode(['success' => false, 'message' => 'El nombre del parentesco es requerido']);
+        exit;
       }
+
+      // Validar longitud mínima
+      if (strlen($nombre) < 3) {
+        echo json_encode(['success' => false, 'message' => 'El nombre debe tener al menos 3 caracteres']);
+        exit;
+      }
+
+      // Verificar si ya existe
+      $sql = "SELECT COUNT(*) as count FROM parentesco WHERE parentesco = ?";
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute([$nombre]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if ($result['count'] > 0) {
+        echo json_encode([
+          'success' => false,
+          'message' => 'Ya existe un parentesco con ese nombre',
+          'duplicate' => true
+        ]);
+        exit;
+      }
+
+      $result = $parentescoController->agregarParentesco($nombre);
+      echo json_encode($result);
       break;
 
     case 'actualizar':
-      $id = $_POST['id'] ?? 0;
+      $id = $_POST['id'] ?? '';
       $nombre = trim($_POST['nombre'] ?? '');
       $estatus = $_POST['estatus'] ?? 1;
 
       if (empty($id) || empty($nombre)) {
-        $response = ['success' => false, 'message' => 'Datos incompletos'];
-      } else {
-        $response = $controller->actualizarParentesco($id, $nombre, $estatus);
+        echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+        exit;
       }
+
+      // Validar longitud mínima
+      if (strlen($nombre) < 3) {
+        echo json_encode(['success' => false, 'message' => 'El nombre debe tener al menos 3 caracteres']);
+        exit;
+      }
+
+      // Verificar si ya existe (para otro registro)
+      $sql = "SELECT COUNT(*) as count FROM parentesco WHERE parentesco = ? AND id_parentesco != ?";
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute([$nombre, $id]);
+      $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if ($result['count'] > 0) {
+        echo json_encode([
+          'success' => false,
+          'message' => 'Ya existe otro parentesco con ese nombre',
+          'duplicate' => true
+        ]);
+        exit;
+      }
+
+      // ACTUALIZACIÓN IMPORTANTE: Permitir desactivar incluso si está en uso
+      $result = $parentescoController->actualizarParentesco($id, $nombre, $estatus);
+
+      // Si se desactivó y está en uso, agregar mensaje informativo
+      if ($result['success'] && $estatus == 0) {
+        $en_uso = $parentescoController->parentescoEnUso($id);
+        if ($en_uso) {
+          $conteo = $parentescoController->obtenerConteoUsosParentesco($id);
+          $result['message'] = "Parentesco desactivado exitosamente. NOTA: Está en uso en $conteo relación(es), pero no aparecerá en nuevos registros.";
+        }
+      }
+
+      echo json_encode($result);
       break;
 
     case 'obtener_todos':
-      $parentescos = $controller->obtenerTodosLosParentescos();
-      $response = ['success' => true, 'data' => $parentescos];
+      $parentescos = $parentescoController->obtenerTodosLosParentescos();
+
+      // Agregar información de uso a cada parentesco
+      foreach ($parentescos as &$parentesco) {
+        $parentesco['en_uso'] = $parentescoController->parentescoEnUso($parentesco['id_parentesco']);
+        $parentesco['conteo_usos'] = $parentescoController->obtenerConteoUsosParentesco($parentesco['id_parentesco']);
+      }
+
+      echo json_encode(['success' => true, 'data' => $parentescos]);
       break;
 
     case 'verificar_uso':
-      $id = $_POST['id'] ?? 0;
+      $id = $_POST['id'] ?? '';
       if (empty($id)) {
-        $response = ['success' => false, 'message' => 'ID no proporcionado'];
-      } else {
-        $en_uso = $controller->parentescoEnUso($id);
-        $conteo = $controller->obtenerConteoUsosParentesco($id);
-        $response = [
-          'success' => true,
-          'en_uso' => $en_uso,
-          'conteo' => $conteo
-        ];
+        echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
+        exit;
       }
+
+      $en_uso = $parentescoController->parentescoEnUso($id);
+      $conteo = $parentescoController->obtenerConteoUsosParentesco($id);
+      echo json_encode([
+        'success' => true,
+        'en_uso' => $en_uso,
+        'conteo' => $conteo
+      ]);
+      break;
+
+    case 'obtener_por_id':
+      $id = $_POST['id'] ?? '';
+      if (empty($id)) {
+        echo json_encode(['success' => false, 'message' => 'ID requerido']);
+        exit;
+      }
+
+      $sql = "SELECT * FROM parentesco WHERE id_parentesco = ?";
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute([$id]);
+      $parentesco = $stmt->fetch(PDO::FETCH_ASSOC);
+      echo json_encode(['success' => true, 'data' => $parentesco]);
       break;
 
     default:
-      $response = ['success' => false, 'message' => 'Acción no reconocida: ' . $action];
+      echo json_encode(['success' => false, 'message' => 'Acción no válida']);
       break;
   }
 } catch (Exception $e) {
-  $response = [
-    'success' => false,
-    'message' => 'Error interno: ' . $e->getMessage(),
-    'trace' => $e->getTraceAsString()
-  ];
-}
+  // Log del error para debug
+  error_log("Error en accionesParentesco.php: " . $e->getMessage());
 
-// Limpiar buffer y enviar respuesta
-ob_end_clean();
-echo json_encode($response, JSON_UNESCAPED_UNICODE);
-exit;
+  echo json_encode([
+    'success' => false,
+    'message' => 'Error del servidor: ' . $e->getMessage()
+  ]);
+} finally {
+  if (isset($conexion)) {
+    $conexion->desconectar();
+  }
+}

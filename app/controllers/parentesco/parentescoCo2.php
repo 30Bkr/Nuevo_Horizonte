@@ -61,6 +61,7 @@ class ParentescoController
     }
   }
 
+  // ¡ESTE ES EL MÉTODO QUE FALTA!
   public function actualizarParentesco($id, $nombre, $estatus)
   {
     try {
@@ -77,34 +78,9 @@ class ParentescoController
         ];
       }
 
-      // Actualizar el nombre del parentesco
-      $stmt = $this->conn->prepare("UPDATE parentesco SET parentesco = ?, actualizacion = NOW() WHERE id_parentesco = ?");
-      $nombreActualizado = $stmt->execute([trim($nombre), $id]);
-
-      // Cambiar el estatus (siempre se permite, incluso si está en uso)
-      $stmt = $this->conn->prepare("UPDATE parentesco SET estatus = ?, actualizacion = NOW() WHERE id_parentesco = ?");
-      $estatusActualizado = $stmt->execute([$estatus, $id]);
-
-      if ($nombreActualizado || $estatusActualizado) {
-        $mensaje = 'Parentesco actualizado correctamente';
-
-        // Si se desactivó y está en uso, mostrar mensaje informativo
-        if ($estatus == 0) {
-          $en_uso = $this->parentescoEnUso($id);
-          if ($en_uso) {
-            $conteo = $this->obtenerConteoUsosParentesco($id);
-            $mensaje = "Parentesco desactivado exitosamente. NOTA: Está en uso en $conteo relación(es), pero no aparecerá en nuevos registros.";
-          }
-        }
-
-        return [
-          'success' => true,
-          'message' => $mensaje,
-          'estatus' => $estatus
-        ];
-      } else {
-        return ['success' => false, 'message' => 'Error al actualizar parentesco'];
-      }
+      $stmt = $this->conn->prepare("UPDATE parentesco SET parentesco = ?, estatus = ?, actualizacion = NOW() WHERE id_parentesco = ?");
+      $stmt->execute([trim($nombre), $estatus, $id]);
+      return ['success' => true, 'message' => 'Parentesco actualizado correctamente'];
     } catch (PDOException $e) {
       // Manejo específico para error de duplicado
       if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') !== false) {
@@ -123,7 +99,7 @@ class ParentescoController
   public function contarUsosParentesco()
   {
     try {
-      $sql = "SELECT COUNT(*) as total FROM estudiantes_representantes WHERE id_parentesco IS NOT NULL AND estatus = 1";
+      $sql = "SELECT COUNT(*) as total FROM estudiantes_representantes WHERE id_parentesco IS NOT NULL";
       $stmt = $this->conn->prepare($sql);
       $stmt->execute();
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -138,7 +114,7 @@ class ParentescoController
   public function obtenerTodosLosParentescos()
   {
     try {
-      $sql = "SELECT * FROM parentesco ORDER BY parentesco ASC";
+      $sql = "SELECT * FROM parentesco ORDER BY creacion DESC";
       $stmt = $this->conn->prepare($sql);
       $stmt->execute();
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -151,7 +127,7 @@ class ParentescoController
   public function parentescoEnUso($id_parentesco)
   {
     try {
-      $sql = "SELECT COUNT(*) as count FROM estudiantes_representantes WHERE id_parentesco = ? AND estatus = 1";
+      $sql = "SELECT COUNT(*) as count FROM estudiantes_representantes WHERE id_parentesco = ?";
       $stmt = $this->conn->prepare($sql);
       $stmt->execute([$id_parentesco]);
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -166,7 +142,7 @@ class ParentescoController
   public function obtenerConteoUsosParentesco($id_parentesco)
   {
     try {
-      $sql = "SELECT COUNT(*) as count FROM estudiantes_representantes WHERE id_parentesco = ? AND estatus = 1";
+      $sql = "SELECT COUNT(*) as count FROM estudiantes_representantes WHERE id_parentesco = ?";
       $stmt = $this->conn->prepare($sql);
       $stmt->execute([$id_parentesco]);
       $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -217,37 +193,6 @@ class ParentescoController
     } catch (PDOException $e) {
       error_log("Error en obtenerParentescosActivos: " . $e->getMessage());
       return [];
-    }
-  }
-
-  /**
-   * Crea un nuevo parentesco
-   */
-  public function crearParentesco($parentesco)
-  {
-    try {
-      $sql = "INSERT INTO parentesco (parentesco) VALUES (?)";
-      $stmt = $this->conn->prepare($sql);
-      $stmt->execute([$parentesco]);
-      return $this->conn->lastInsertId();
-    } catch (PDOException $e) {
-      error_log("Error en crearParentesco: " . $e->getMessage());
-      return false;
-    }
-  }
-
-  /**
-   * Actualiza solo el nombre del parentesco
-   */
-  public function actualizarNombreParentesco($id_parentesco, $parentesco)
-  {
-    try {
-      $sql = "UPDATE parentesco SET parentesco = ?, actualizacion = NOW() WHERE id_parentesco = ?";
-      $stmt = $this->conn->prepare($sql);
-      return $stmt->execute([$parentesco, $id_parentesco]);
-    } catch (PDOException $e) {
-      error_log("Error en actualizarNombreParentesco: " . $e->getMessage());
-      return false;
     }
   }
 }

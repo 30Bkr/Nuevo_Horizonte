@@ -1,25 +1,7 @@
 <?php
-// admin/configuraciones/configuracion/parentesco.php
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-
-// Establecer título de página
-$_SESSION['page_title'] = 'Gestión de Parentescos';
-
-// Incluir archivos necesarios
-require_once '/xampp/htdocs/final/global/protect.php';
-require_once '/xampp/htdocs/final/global/check_permissions.php';
-require_once '/xampp/htdocs/final/global/notifications.php';
-require_once '/xampp/htdocs/final/app/conexion.php';
-require_once '/xampp/htdocs/final/app/controllers/parentesco/parentescoController.php';
-
-// Verificar permisos
-if (!PermissionManager::canViewAny(['admin/configuraciones/configuracion/parentesco.php'])) {
-  Notification::set("No tienes permisos para acceder a esta sección", "error");
-  header('Location: ' . URL . '/admin/index.php');
-  exit();
-}
+include_once("/xampp/htdocs/final/layout/layaout1.php");
+include_once("/xampp/htdocs/final/app/conexion.php");
+include_once("/xampp/htdocs/final/app/controllers/parentesco/parentescoController.php");
 
 // Obtener datos iniciales
 try {
@@ -29,46 +11,17 @@ try {
 
   // Usar el nuevo método para obtener todas los parentescos
   $parentescos = $parentescoController->obtenerTodosLosParentescos();
-  foreach ($parentescos as &$parentesco) {
-    $parentesco['en_uso'] = $parentescoController->parentescoEnUso($parentesco['id_parentesco']);
-    $parentesco['conteo_usos'] = $parentescoController->obtenerConteoUsosParentesco($parentesco['id_parentesco']);
-  }
   $totalUsos = $parentescoController->contarUsosParentesco();
 } catch (Exception $e) {
   $parentescos = [];
   $totalUsos = 0;
-  Notification::set("Error al cargar parentescos: " . $e->getMessage(), "error");
+  $_SESSION['mensaje'] = $e->getMessage();
+  $_SESSION['tipo_mensaje'] = 'error';
 }
-
-// Incluir layout1.php al inicio
-require_once '/xampp/htdocs/final/layout/layaout1.php';
 ?>
 
-<div class="content-wrapper" style="margin-left: 250px;">
-  <!-- Content Header -->
-  <div class="content-header">
-    <?php
-    // Mostrar notificaciones
-    Notification::show();
-    ?>
-    <div class="container-fluid">
-      <div class="row mb-2">
-        <div class="col-sm-6">
-          <h1 class="m-0">Gestión de Parentescos</h1>
-        </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/index.php">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/configuraciones/index.php">Configuraciones</a></li>
-            <li class="breadcrumb-item active">Parentescos</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main content -->
-  <section class="content">
+<div class="content-wrapper">
+  <div class="content">
     <div class="container-fluid">
       <!-- Header -->
       <div class="row mb-4 p-2">
@@ -82,7 +35,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
               <p class="text-muted">Administra el catálogo de parentescos familiares</p>
             </div>
             <div>
-              <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary">
+              <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
               <button class="btn btn-primary" onclick="abrirModalAgregar()">
@@ -229,12 +182,11 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                             </button>
                             <?php if ($parentesco['estatus'] == 1): ?>
                               <?php if ($en_uso): ?>
-                                <!-- Permite desactivar pero con advertencia -->
-                                <button class="btn btn-sm btn-outline-warning"
+                                <button type="button"
+                                  class="btn btn-sm btn-secondary"
                                   data-toggle="tooltip"
-                                  title="Desactivar (en uso en <?php echo $conteo_usos; ?> registro(s))"
-                                  onclick="cambiarEstatusConAdvertencia(<?php echo $parentesco['id_parentesco']; ?>, '<?php echo htmlspecialchars($parentesco['parentesco']); ?>', 0, <?php echo $conteo_usos; ?>)">
-                                  <i class="fas fa-exclamation-triangle"></i>
+                                  title="No se puede desactivar porque está en uso en <?php echo $conteo_usos; ?> registro(s)">
+                                  <i class="fas fa-lock mr-1"></i> Bloqueado
                                 </button>
                               <?php else: ?>
                                 <button class="btn btn-sm btn-outline-danger"
@@ -273,7 +225,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
           <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> Información Importante</h5>
             <ul class="mb-0">
-              <li><strong>Parentescos en uso:</strong> Se pueden desactivar pero aparecerán advertencias ya que están siendo utilizados en las relaciones estudiantes-representantes</li>
+              <li><strong>Parentescos en uso:</strong> No se pueden desactivar porque están siendo utilizados en las relaciones estudiantes-representantes</li>
               <li><strong>Parentescos sin uso:</strong> Se pueden desactivar sin problemas</li>
               <li><strong>Parentescos inactivos:</strong> No aparecerán en los formularios de nuevos registros</li>
               <li>Los registros existentes que ya usen el parentesco no se verán afectados al desactivarlo</li>
@@ -313,7 +265,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </div>
 
 <!-- Modal Agregar Parentesco -->
@@ -455,33 +407,18 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
   // Variables globales
   let parentescoSeleccionado = null;
 
-  // Nueva función para desactivar con advertencia cuando está en uso
-  function cambiarEstatusConAdvertencia(id, nombre, nuevoEstatus, conteoUsos) {
-    parentescoSeleccionado = {
-      id,
-      nombre,
-      nuevoEstatus
-    };
-
-    const mensaje = nuevoEstatus == 1 ?
-      'Podrá ser asignado a estudiantes y representantes nuevamente.' :
-      `ADVERTENCIA: Este parentesco está en uso en ${conteoUsos} registro(s).<br><br>` +
-      `Al desactivarlo:<br>` +
-      `✓ No aparecerá en los formularios de nuevos registros<br>` +
-      `✓ Las relaciones que ya lo usan conservarán el parentesco<br>` +
-      `✓ No afectará los registros existentes`;
-
-    $('#mensajeConfirmacion').html(
-      `¿Estás seguro de que deseas <strong>${nuevoEstatus == 1 ? 'activar' : 'desactivar'}</strong> el parentesco:<br><strong>"${nombre}"</strong>?<br><br>` +
-      `<div style="background-color: ${nuevoEstatus == 1 ? '#d4edda' : '#fff3cd'}; padding: 10px; border-radius: 5px; border-left: 4px solid ${nuevoEstatus == 1 ? '#28a745' : '#ffc107'};">` +
-      `<small>${mensaje}</small>` +
-      `</div>`
-    );
-
-    $('#modalConfirmacion').modal('show');
+  // Funciones para abrir modales
+  function abrirModalAgregar() {
+    $('#modalAgregar').modal('show');
   }
 
-  // Actualiza la función cambiarEstatus para casos normales (sin uso)
+  function editarParentesco(id, nombre, estatus) {
+    $('#id_parentesco_edit').val(id);
+    $('#nombre_parentesco_edit').val(nombre);
+    $('#estatus_parentesco').val(estatus);
+    $('#modalEditar').modal('show');
+  }
+
   function cambiarEstatus(id, nombre, nuevoEstatus) {
     parentescoSeleccionado = {
       id,
@@ -501,19 +438,6 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
     $('#modalConfirmacion').modal('show');
   }
-
-  // Funciones para abrir modales
-  function abrirModalAgregar() {
-    $('#modalAgregar').modal('show');
-  }
-
-  function editarParentesco(id, nombre, estatus) {
-    $('#id_parentesco_edit').val(id);
-    $('#nombre_parentesco_edit').val(nombre);
-    $('#estatus_parentesco').val(estatus);
-    $('#modalEditar').modal('show');
-  }
-
   async function agregarParentesco(event) {
     event.preventDefault();
 
@@ -521,7 +445,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     const nombre = formData.get('nombre_parentesco').trim();
 
     if (!nombre) {
-      mostrarNotificacion('El nombre del parentesco es requerido', 'error');
+      mostrarMensaje('El nombre del parentesco es requerido', 'error');
       return;
     }
 
@@ -530,7 +454,9 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/parentesco/accionesParentesco.php', {
+      console.log('Agregando parentesco:', nombre);
+
+      const response = await fetch('../../../app/controllers/parentesco/accionesParentesco.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -538,29 +464,88 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         body: `action=agregar&nombre=${encodeURIComponent(nombre)}`
       });
 
-      const result = await response.json();
+      // Depuración
+      const responseText = await response.text();
+      console.log('Respuesta cruda:', responseText);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error('Error parseando JSON:', jsonError);
+        console.error('Respuesta HTML:', responseText.substring(0, 500)); // Solo primeros 500 chars
+        throw new Error('Respuesta inválida del servidor');
+      }
+
+      console.log('Resultado parseado:', result);
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalAgregar').modal('hide');
         event.target.reset();
         recargarParentescos();
       } else {
-        // Si es duplicado, no cerramos el modal para que corrija
-        if (result.duplicate) {
-          mostrarNotificacion(result.message, 'warning');
-        } else {
-          mostrarNotificacion(result.message, 'error');
+        const esDuplicado = result.duplicate || false;
+        mostrarMensaje(result.message, 'error', esDuplicado);
+        if (!esDuplicado) {
           $('#modalAgregar').modal('hide');
         }
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      console.error('Error completo:', error);
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Parentesco';
     }
   }
+  // async function agregarParentesco(event) {
+  //   event.preventDefault();
+
+  //   const formData = new FormData(event.target);
+  //   const nombre = formData.get('nombre_parentesco').trim();
+
+  //   if (!nombre) {
+  //     mostrarMensaje('El nombre del parentesco es requerido', 'error');
+  //     return;
+  //   }
+
+  //   const boton = event.target.querySelector('button[type="submit"]');
+  //   boton.disabled = true;
+  //   boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
+
+  //   try {
+  //     const response = await fetch('../../../app/controllers/parentesco/accionesParentesco.php', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/x-www-form-urlencoded',
+  //       },
+  //       body: `action=agregar&nombre=${encodeURIComponent(nombre)}`
+  //     });
+
+  //     const result = await response.json();
+
+  //     if (result.success) {
+  //       mostrarMensaje(result.message, 'success');
+  //       $('#modalAgregar').modal('hide');
+  //       event.target.reset();
+  //       recargarParentescos();
+  //     } else {
+  //       const esDuplicado = result.duplicate || false;
+  //       mostrarMensaje(result.message, 'error', esDuplicado);
+  //       if (!esDuplicado) {
+  //         $('#modalAgregar').modal('hide');
+  //       }
+  //     }
+  //   } catch (error) {
+  //     mostrarMensaje('Error de conexión: ' + error.message, 'error');
+  //   } finally {
+  //     boton.disabled = false;
+  //     boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Parentesco';
+  //   }
+  // }
+
+  // En el archivo index.php, actualiza la función actualizarParentesco:
 
   async function actualizarParentesco(event) {
     event.preventDefault();
@@ -571,7 +556,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     const estatus = formData.get('estatus');
 
     if (!nombre) {
-      mostrarNotificacion('El nombre del parentesco es requerido', 'error');
+      mostrarMensaje('El nombre del parentesco es requerido', 'error');
       return;
     }
 
@@ -580,7 +565,13 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Actualizando...';
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/parentesco/accionesParentesco.php', {
+      console.log('Enviando datos:', {
+        id,
+        nombre,
+        estatus
+      });
+
+      const response = await fetch('../../../app/controllers/parentesco/accionesParentesco.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -588,27 +579,82 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         body: `action=actualizar&id=${id}&nombre=${encodeURIComponent(nombre)}&estatus=${estatus}`
       });
 
-      const result = await response.json();
+      // Primero obtener el texto para depuración
+      const responseText = await response.text();
+      console.log('Respuesta cruda:', responseText);
+
+      // Intentar parsear como JSON
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error('Error parseando JSON:', jsonError);
+        console.error('Respuesta HTML recibida:', responseText);
+        throw new Error('Respuesta inválida del servidor');
+      }
+
+      console.log('Resultado parseado:', result);
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalEditar').modal('hide');
         recargarParentescos();
       } else {
-        // Si es duplicado, mantenemos abierto el modal
-        if (result.duplicate) {
-          mostrarNotificacion(result.message, 'warning');
-        } else {
-          mostrarNotificacion(result.message, 'error');
-        }
+        const esDuplicado = result.duplicate || false;
+        mostrarMensaje(result.message, 'error', esDuplicado);
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      console.error('Error completo:', error);
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Actualizar Parentesco';
     }
   }
+
+  // async function actualizarParentesco(event) {
+  //   event.preventDefault();
+
+  //   const formData = new FormData(event.target);
+  //   const id = formData.get('id_parentesco');
+  //   const nombre = formData.get('nombre_parentesco').trim();
+  //   const estatus = formData.get('estatus');
+
+  //   if (!nombre) {
+  //     mostrarMensaje('El nombre del parentesco es requerido', 'error');
+  //     return;
+  //   }
+
+  //   const boton = event.target.querySelector('button[type="submit"]');
+  //   boton.disabled = true;
+  //   boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Actualizando...';
+
+  //   try {
+  //     const response = await fetch('../../../app/controllers/parentesco/accionesParentesco.php', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/x-www-form-urlencoded',
+  //       },
+  //       body: `action=actualizar&id=${id}&nombre=${encodeURIComponent(nombre)}&estatus=${estatus}`
+  //     });
+
+  //     const result = await response.json();
+
+  //     if (result.success) {
+  //       mostrarMensaje(result.message, 'success');
+  //       $('#modalEditar').modal('hide');
+  //       recargarParentescos();
+  //     } else {
+  //       const esDuplicado = result.duplicate || false;
+  //       mostrarMensaje(result.message, 'error', esDuplicado);
+  //     }
+  //   } catch (error) {
+  //     mostrarMensaje('Error de conexión: ' + error.message, 'error');
+  //   } finally {
+  //     boton.disabled = false;
+  //     boton.innerHTML = '<i class="fas fa-save mr-1"></i> Actualizar Parentesco';
+  //   }
+  // }
 
   async function confirmarCambioEstatus() {
     if (!parentescoSeleccionado) return;
@@ -620,7 +666,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     } = parentescoSeleccionado;
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/parentesco/accionesParentesco.php', {
+      const response = await fetch('../../../app/controllers/parentesco/accionesParentesco.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -631,21 +677,22 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       const result = await response.json();
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalConfirmacion').modal('hide');
         recargarParentescos();
       } else {
-        mostrarNotificacion(result.message, 'error');
+        const esDuplicado = result.duplicate || false;
+        mostrarMensaje(result.message, 'error', esDuplicado);
         $('#modalConfirmacion').modal('hide');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     }
   }
 
   async function recargarParentescos() {
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/parentesco/accionesParentesco.php', {
+      const response = await fetch('../../../app/controllers/parentesco/accionesParentesco.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -653,24 +700,16 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         body: 'action=obtener_todos'
       });
 
-      const text = await response.text();
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch (e) {
-        console.error('Error parseando JSON:', e);
-        mostrarNotificacion('Error al cargar parentescos: Respuesta no válida del servidor', 'error');
-        return;
-      }
+      const result = await response.json();
 
       if (result.success) {
         actualizarTabla(result.data);
         actualizarEstadisticas(result.data);
       } else {
-        mostrarNotificacion('Error al cargar parentescos: ' + result.message, 'error');
+        mostrarMensaje('Error al cargar parentescos', 'error');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     }
   }
 
@@ -680,21 +719,42 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     if (parentescos.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center py-4">
-            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-            <p class="text-muted">No hay parentescos registrados</p>
-          </td>
+            <td colspan="6" class="text-center py-4">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No hay parentescos registrados</p>
+            </td>
         </tr>
       `;
       return;
     }
 
-    // Construir la tabla con la información de uso que ya viene del servidor
-    tbody.innerHTML = parentescos.map(parentesco => {
-      const enUso = parentesco.en_uso || false;
-      const conteoUsos = parentesco.conteo_usos || 0;
+    // Para cada parentesco, necesitamos verificar si está en uso
+    const promises = parentescos.map(async (parentesco) => {
+      try {
+        const response = await fetch('../../../app/controllers/parentesco/accionesParentesco.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=verificar_uso&id=${parentesco.id_parentesco}`
+        });
+        const result = await response.json();
+        return {
+          ...parentesco,
+          en_uso: result.success ? result.en_uso : false,
+          conteo: result.success ? result.conteo : 0
+        };
+      } catch (error) {
+        return {
+          ...parentesco,
+          en_uso: false,
+          conteo: 0
+        };
+      }
+    });
 
-      return `
+    Promise.all(promises).then((parentescosConUso) => {
+      tbody.innerHTML = parentescosConUso.map(parentesco => `
         <tr id="parentesco-${parentesco.id_parentesco}">
           <td>${parentesco.id_parentesco}</td>
           <td>
@@ -718,16 +778,16 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                 <i class="fas fa-edit"></i>
               </button>
               ${parentesco.estatus == 1 ? 
-                (enUso ? 
-                  `<button class="btn btn-sm btn-outline-warning"
+                (parentesco.en_uso ?
+                  `<button type="button"
+                          class="btn btn-sm btn-secondary"
                           data-toggle="tooltip"
-                          title="Desactivar (en uso en ${conteoUsos} registro(s))"
-                          onclick="cambiarEstatusConAdvertencia(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', 0, ${conteoUsos})">
-                      <i class="fas fa-exclamation-triangle"></i>
+                          title="No se puede desactivar porque está en uso en ${parentesco.conteo} registro(s)">
+                    <i class="fas fa-lock mr-1"></i> Bloqueado
                   </button>` :
                   `<button class="btn btn-sm btn-outline-danger"
                           onclick="cambiarEstatus(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', 0)">
-                      <i class="fas fa-pause"></i>
+                    <i class="fas fa-pause"></i>
                   </button>`
                 ) :
                 `<button class="btn btn-sm btn-outline-success"
@@ -738,13 +798,52 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
             </div>
           </td>
         </tr>
-      `;
-    }).join('');
+      `).join('');
 
-    document.getElementById('contadorParentescos').textContent = parentescos.length;
+      document.getElementById('contadorParentescos').textContent = parentescos.length;
+    }).catch(error => {
+      console.error('Error al cargar datos de uso:', error);
+      // Si hay error, mostrar la tabla sin verificación de uso
+      tbody.innerHTML = parentescos.map(parentesco => `
+        <tr id="parentesco-${parentesco.id_parentesco}">
+          <td>${parentesco.id_parentesco}</td>
+          <td>
+            <div class="d-flex align-items-center">
+              <i class="fas fa-user-friends text-primary mr-2"></i>
+              <span id="nombre-${parentesco.id_parentesco}">${escapeHtml(parentesco.parentesco)}</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-${parentesco.estatus == 1 ? 'success' : 'danger'}" 
+                  id="estatus-${parentesco.id_parentesco}">
+              ${parentesco.estatus == 1 ? 'Activo' : 'Inactivo'}
+            </span>
+          </td>
+          <td>${formatFecha(parentesco.creacion)}</td>
+          <td>${parentesco.actualizacion ? formatFecha(parentesco.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" 
+                      onclick="editarParentesco(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', ${parentesco.estatus})">
+                <i class="fas fa-edit"></i>
+              </button>
+              ${parentesco.estatus == 1 ? 
+                `<button class="btn btn-sm btn-outline-danger"
+                        onclick="cambiarEstatus(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', 0)">
+                  <i class="fas fa-pause"></i>
+                </button>` :
+                `<button class="btn btn-sm btn-outline-success"
+                        onclick="cambiarEstatus(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', 1)">
+                  <i class="fas fa-play"></i>
+                </button>`
+              }
+            </div>
+          </td>
+        </tr>
+      `).join('');
 
-    // Re-inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+      document.getElementById('contadorParentescos').textContent = parentescos.length;
+    });
   }
 
   function actualizarEstadisticas(parentescos) {
@@ -778,109 +877,89 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     return fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES');
   }
 
-  function mostrarNotificacion(mensaje, tipo = 'info', tiempo = 5000) {
-    const iconos = {
-      'success': '✓',
-      'error': '✗',
-      'warning': '⚠',
-      'info': 'ℹ'
-    };
+  function mostrarMensaje(mensaje, tipo, esDuplicado = false) {
+    // Determinar la clase de Bootstrap según el tipo
+    let alertClass = '';
+    let icono = '';
 
-    const titulos = {
-      'success': 'Éxito',
-      'error': 'Error',
-      'warning': 'Advertencia',
-      'info': 'Información'
-    };
+    if (tipo === 'success') {
+      alertClass = 'alert-success';
+      icono = '<i class="fas fa-check-circle mr-2"></i>';
+    } else if (esDuplicado) {
+      alertClass = 'alert-warning';
+      icono = '<i class="fas fa-exclamation-triangle mr-2"></i>';
+    } else {
+      alertClass = 'alert-danger';
+      icono = '<i class="fas fa-exclamation-circle mr-2"></i>';
+    }
 
-    const colores = {
-      'success': {
-        bg: '#28a745',
-        border: '#1e7e34'
-      },
-      'error': {
-        bg: '#dc3545',
-        border: '#c82333'
-      },
-      'warning': {
-        bg: '#ffc107',
-        border: '#e0a800'
-      },
-      'info': {
-        bg: '#17a2b8',
-        border: '#117a8b'
-      }
-    };
-
-    const color = colores[tipo] || colores.info;
-
-    // Crear elemento de notificación
-    const notificacion = document.createElement('div');
-    const idNotificacion = 'notificacion-' + Date.now();
-    notificacion.id = idNotificacion;
-    notificacion.className = 'global-notification';
-    notificacion.style.cssText = `
+    // Crear elemento de alerta de Bootstrap
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+    alertDiv.style.cssText = `
       position: fixed;
-      top: 20px;
+      top: 80px;
       right: 20px;
       z-index: 9999;
-      background: ${color.bg};
-      color: white;
-      padding: 15px 20px;
-      border-radius: 5px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      border-left: 4px solid ${color.border};
-      animation: slideIn 0.3s ease;
-      min-width: 300px;
-      max-width: 400px;
+      min-width: 350px;
+      max-width: 500px;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      border-left: 4px solid ${esDuplicado ? '#ffc107' : tipo === 'success' ? '#28a745' : '#dc3545'};
     `;
 
-    notificacion.innerHTML = `
-      <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-        <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
-          <span style="font-size: 20px; font-weight: bold; margin-top: 2px;">${iconos[tipo]}</span>
-          <div style="flex: 1;">
-            <strong style="font-size: 16px; display: block; margin-bottom: 5px;">${titulos[tipo]}</strong>
-            <span style="font-size: 14px; word-wrap: break-word;">${mensaje}</span>
-          </div>
+    // Título según el tipo
+    let titulo = '';
+    if (tipo === 'success') {
+      titulo = 'Éxito';
+    } else if (esDuplicado) {
+      titulo = 'Advertencia';
+    } else {
+      titulo = 'Error';
+    }
+
+    alertDiv.innerHTML = `
+      <div class="d-flex align-items-center">
+        ${icono}
+        <div class="flex-grow-1">
+          <strong class="d-block">${titulo}</strong>
+          <span class="small">${mensaje}</span>
         </div>
-        <button onclick="document.getElementById('${idNotificacion}').remove()" 
-                style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; margin-left: 10px; flex-shrink: 0;">
-          &times;
-        </button>
       </div>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
     `;
 
-    // Remover notificaciones antiguas si hay muchas
-    const notificaciones = document.querySelectorAll('.global-notification');
-    if (notificaciones.length > 3) {
-      notificaciones[0].remove();
-    }
+    // Agregar al cuerpo del documento
+    document.body.appendChild(alertDiv);
 
-    document.body.appendChild(notificacion);
-
-    // Auto-eliminar después del tiempo especificado
+    // Auto-eliminar después de 5 segundos
     setTimeout(() => {
-      if (document.getElementById(idNotificacion)) {
-        notificacion.style.animation = 'slideOut 0.3s ease forwards';
-        setTimeout(() => notificacion.remove(), 300);
+      if (alertDiv.parentNode) {
+        // Agregar animación de salida
+        alertDiv.classList.remove('show');
+        alertDiv.classList.add('fade');
+        setTimeout(() => {
+          if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+          }
+        }, 150);
       }
-    }, tiempo);
-  }
+    }, 5000);
 
-  // Añadir estilos CSS para animaciones
-  const estilo = document.createElement('style');
-  estilo.textContent = `
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-      from { transform: translateX(0); opacity: 1; }
-      to { transform: translateX(100%); opacity: 0; }
-    }
-  `;
-  document.head.appendChild(estilo);
+    // También permitir cerrar haciendo click
+    alertDiv.addEventListener('click', function(e) {
+      if (e.target === this || e.target.classList.contains('close')) {
+        this.classList.remove('show');
+        this.classList.add('fade');
+        setTimeout(() => {
+          if (this.parentNode) {
+            this.parentNode.removeChild(this);
+          }
+        }, 150);
+      }
+    });
+  }
 
   // Event Listeners
   document.addEventListener('DOMContentLoaded', function() {
@@ -892,12 +971,12 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       document.getElementById('formAgregar').reset();
     });
 
-    // Inicializar tooltips de Bootstrap
+    // Inicializar tooltips
     $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
 
 <?php
-// Incluir layout2.php al final
-require_once '/xampp/htdocs/final/layout/layaout2.php';
+include_once("/xampp/htdocs/final/layout/layaout2.php");
+include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>
