@@ -1,25 +1,7 @@
 <?php
-// admin/configuraciones/discapacidades.php
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-
-// Establecer título de página
-$_SESSION['page_title'] = 'Gestión de Discapacidades';
-
-// Incluir archivos necesarios
-require_once '/xampp/htdocs/final/global/protect.php';
-require_once '/xampp/htdocs/final/global/check_permissions.php';
-require_once '/xampp/htdocs/final/global/notifications.php';
-require_once '/xampp/htdocs/final/app/conexion.php';
-require_once '/xampp/htdocs/final/app/controllers/discapacidades/discapacidades.php';
-
-// Verificar permisos - ajusta según tus necesidades
-if (!PermissionManager::canViewAny(['admin/configuraciones/index.php'])) {
-  Notification::set("No tienes permisos para acceder a esta sección", "error");
-  header('Location: ' . URL . '/admin/index.php');
-  exit();
-}
+include_once("/xampp/htdocs/final/layout/layaout1.php");
+include_once("/xampp/htdocs/final/app/conexion.php");
+include_once("/xampp/htdocs/final/app/controllers/discapacidades/discapacidades.php");
 
 // Obtener datos iniciales
 try {
@@ -33,38 +15,13 @@ try {
 } catch (Exception $e) {
   $discapacidades = [];
   $totalAsignaciones = 0;
-  Notification::set("Error al cargar discapacidades: " . $e->getMessage(), "error");
+  $_SESSION['mensaje'] = $e->getMessage();
+  $_SESSION['tipo_mensaje'] = 'error';
 }
-
-// Incluir layout1.php al inicio
-require_once '/xampp/htdocs/final/layout/layaout1.php';
 ?>
 
-<div class="content-wrapper" style="margin-left: 250px;">
-  <!-- Content Header -->
-  <div class="content-header">
-    <?php
-    // Mostrar notificaciones
-    Notification::show();
-    ?>
-    <div class="container-fluid">
-      <div class="row mb-2">
-        <div class="col-sm-6">
-          <h1 class="m-0">Gestión de Discapacidades</h1>
-        </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/index.php">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/configuraciones/index.php">Configuraciones</a></li>
-            <li class="breadcrumb-item active">Discapacidades</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main content -->
-  <section class="content">
+<div class="content-wrapper">
+  <div class="content ">
     <div class="container-fluid">
       <!-- Header -->
       <div class="row mb-4 p-2">
@@ -78,13 +35,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
               <p class="text-muted">Administra el catálogo de discapacidades y condiciones especiales</p>
             </div>
             <div>
-              <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary">
+              <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
               <button class="btn btn-primary" onclick="abrirModalAgregar()">
                 <i class="fas fa-plus mr-1"></i> Agregar Discapacidad
               </button>
             </div>
+
           </div>
         </div>
       </div>
@@ -225,12 +183,11 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                             </button>
                             <?php if ($discapacidad['estatus'] == 1): ?>
                               <?php if ($en_uso): ?>
-                                <!-- Permite desactivar pero con advertencia -->
-                                <button class="btn btn-sm btn-outline-warning"
+                                <button type="button"
+                                  class="btn btn-sm btn-secondary"
                                   data-toggle="tooltip"
-                                  title="Desactivar (en uso en <?php echo $conteo_usos; ?> estudiante(s))"
-                                  onclick="cambiarEstatusConAdvertencia(<?php echo $discapacidad['id_discapacidad']; ?>, '<?php echo htmlspecialchars($discapacidad['nom_discapacidad']); ?>', 0, <?php echo $conteo_usos; ?>)">
-                                  <i class="fas fa-exclamation-triangle"></i>
+                                  title="No se puede desactivar porque está en uso en <?php echo $conteo_usos; ?> estudiante(s)">
+                                  <i class="fas fa-lock mr-1"></i> Bloqueado
                                 </button>
                               <?php else: ?>
                                 <button class="btn btn-sm btn-outline-danger"
@@ -309,7 +266,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </div>
 
 <!-- Modal Agregar Discapacidad -->
@@ -451,53 +408,6 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
   // Variables globales
   let discapacidadSeleccionada = null;
 
-  // Nueva función para desactivar con advertencia cuando está en uso
-  function cambiarEstatusConAdvertencia(id, nombre, nuevoEstatus, conteoUsos) {
-    discapacidadSeleccionada = {
-      id,
-      nombre,
-      nuevoEstatus
-    };
-
-    const mensaje = nuevoEstatus == 1 ?
-      'Los estudiantes podrán ser asignados a esta discapacidad nuevamente.' :
-      `ADVERTENCIA: Esta discapacidad está en uso por ${conteoUsos} estudiante(s).<br><br>` +
-      `Al desactivarla:<br>` +
-      `✓ No aparecerá en los formularios de nuevos registros<br>` +
-      `✓ Los estudiantes que ya la tienen asignada conservarán la asignación<br>` +
-      `✓ No afectará los registros existentes`;
-
-    $('#mensajeConfirmacion').html(
-      `¿Estás seguro de que deseas <strong>${nuevoEstatus == 1 ? 'activar' : 'desactivar'}</strong> la discapacidad:<br><strong>"${nombre}"</strong>?<br><br>` +
-      `<div style="background-color: ${nuevoEstatus == 1 ? '#d4edda' : '#fff3cd'}; padding: 10px; border-radius: 5px; border-left: 4px solid ${nuevoEstatus == 1 ? '#28a745' : '#ffc107'};">` +
-      `<small>${mensaje}</small>` +
-      `</div>`
-    );
-
-    $('#modalConfirmacion').modal('show');
-  }
-
-  // Actualiza la función cambiarEstatus para casos normales (sin uso)
-  function cambiarEstatus(id, nombre, nuevoEstatus) {
-    discapacidadSeleccionada = {
-      id,
-      nombre,
-      nuevoEstatus
-    };
-
-    const accion = nuevoEstatus == 1 ? 'activar' : 'desactivar';
-    const mensaje = nuevoEstatus == 1 ?
-      'Los estudiantes podrán ser asignados a esta discapacidad nuevamente.' :
-      'Los estudiantes ya no podrán ser asignados a esta discapacidad.';
-
-    $('#mensajeConfirmacion').html(
-      `¿Estás seguro de que deseas <strong>${accion}</strong> la discapacidad:<br><strong>"${nombre}"</strong>?<br><br>` +
-      `<small class="text-muted">${mensaje}</small>`
-    );
-
-    $('#modalConfirmacion').modal('show');
-  }
-
   // Funciones para abrir modales
   function abrirModalAgregar() {
     $('#modalAgregar').modal('show');
@@ -537,7 +447,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     const nombre = formData.get('nombre_discapacidad').trim();
 
     if (!nombre) {
-      mostrarNotificacion('El nombre de la discapacidad es requerido', 'error');
+      mostrarMensaje('El nombre de la discapacidad es requerido', 'error');
       return;
     }
 
@@ -546,7 +456,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/discapacidades/accionesDiscapacidades.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -557,15 +467,15 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       const result = await response.json();
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalAgregar').modal('hide');
         event.target.reset();
         recargarDiscapacidades();
       } else {
-        mostrarNotificacion(result.message, 'error');
+        mostrarMensaje(result.message, 'error');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Discapacidad';
@@ -581,7 +491,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     const estatus = formData.get('estatus');
 
     if (!nombre) {
-      mostrarNotificacion('El nombre de la discapacidad es requerido', 'error');
+      mostrarMensaje('El nombre de la discapacidad es requerido', 'error');
       return;
     }
 
@@ -590,7 +500,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Actualizando...';
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/discapacidades/accionesDiscapacidades.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -601,14 +511,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       const result = await response.json();
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalEditar').modal('hide');
         recargarDiscapacidades();
       } else {
-        mostrarNotificacion(result.message, 'error');
+        mostrarMensaje(result.message, 'error');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Actualizar Discapacidad';
@@ -625,7 +535,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     } = discapacidadSeleccionada;
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/discapacidades/accionesDiscapacidades.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -636,20 +546,20 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       const result = await response.json();
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalConfirmacion').modal('hide');
         recargarDiscapacidades();
       } else {
-        mostrarNotificacion(result.message, 'error');
+        mostrarMensaje(result.message, 'error');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     }
   }
 
   async function recargarDiscapacidades() {
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/discapacidades/accionesDiscapacidades.php', {
+      const response = await fetch('../../../app/controllers/discapacidades/accionesDiscapacidades.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -662,10 +572,10 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         actualizarTabla(result.data);
         actualizarEstadisticas(result.data);
       } else {
-        mostrarNotificacion('Error al cargar discapacidades', 'error');
+        mostrarMensaje('Error al cargar discapacidades', 'error');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     }
   }
 
@@ -756,109 +666,10 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     return fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES');
   }
 
-  function mostrarNotificacion(mensaje, tipo = 'info', tiempo = 5000) {
-    const iconos = {
-      'success': '✓',
-      'error': '✗',
-      'warning': '⚠',
-      'info': 'ℹ'
-    };
-
-    const titulos = {
-      'success': 'Éxito',
-      'error': 'Error',
-      'warning': 'Advertencia',
-      'info': 'Información'
-    };
-
-    const colores = {
-      'success': {
-        bg: '#28a745',
-        border: '#1e7e34'
-      },
-      'error': {
-        bg: '#dc3545',
-        border: '#c82333'
-      },
-      'warning': {
-        bg: '#ffc107',
-        border: '#e0a800'
-      },
-      'info': {
-        bg: '#17a2b8',
-        border: '#117a8b'
-      }
-    };
-
-    const color = colores[tipo] || colores.info;
-
-    // Crear elemento de notificación
-    const notificacion = document.createElement('div');
-    const idNotificacion = 'notificacion-' + Date.now();
-    notificacion.id = idNotificacion;
-    notificacion.className = 'global-notification';
-    notificacion.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        background: ${color.bg};
-        color: white;
-        padding: 15px 20px;
-        border-radius: 5px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border-left: 4px solid ${color.border};
-        animation: slideIn 0.3s ease;
-        min-width: 300px;
-        max-width: 400px;
-    `;
-
-    notificacion.innerHTML = `
-        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-            <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
-                <span style="font-size: 20px; font-weight: bold; margin-top: 2px;">${iconos[tipo]}</span>
-                <div style="flex: 1;">
-                    <strong style="font-size: 16px; display: block; margin-bottom: 5px;">${titulos[tipo]}</strong>
-                    <span style="font-size: 14px; word-wrap: break-word;">${mensaje}</span>
-                </div>
-            </div>
-            <button onclick="document.getElementById('${idNotificacion}').remove()" 
-                    style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; margin-left: 10px; flex-shrink: 0;">
-                &times;
-            </button>
-        </div>
-    `;
-
-    // Remover notificaciones antiguas si hay muchas
-    const notificaciones = document.querySelectorAll('.global-notification');
-    if (notificaciones.length > 3) {
-      notificaciones[0].remove();
-    }
-
-    document.body.appendChild(notificacion);
-
-    // Auto-eliminar después del tiempo especificado
-    setTimeout(() => {
-      if (document.getElementById(idNotificacion)) {
-        notificacion.style.animation = 'slideOut 0.3s ease forwards';
-        setTimeout(() => notificacion.remove(), 300);
-      }
-    }, tiempo);
+  function mostrarMensaje(mensaje, tipo) {
+    // Aquí puedes integrar con tu sistema de mensajes existente
+    alert(`${tipo.toUpperCase()}: ${mensaje}`);
   }
-
-  // Añadir estilos CSS para animaciones
-  const estilo = document.createElement('style');
-  estilo.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-  document.head.appendChild(estilo);
 
   // Event Listeners
   document.addEventListener('DOMContentLoaded', function() {
@@ -869,13 +680,10 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     $('#modalAgregar').on('hidden.bs.modal', function() {
       document.getElementById('formAgregar').reset();
     });
-
-    // Inicializar tooltips de Bootstrap
-    $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
 
 <?php
-// Incluir layout2.php al final
-require_once '/xampp/htdocs/final/layout/layaout2.php';
+include_once("/xampp/htdocs/final/layout/layaout2.php");
+include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>
