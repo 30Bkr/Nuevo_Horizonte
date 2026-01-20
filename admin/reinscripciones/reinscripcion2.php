@@ -203,7 +203,7 @@ try {
                   <div class="row">
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="nacionalidad_r">Nacionalidad</label>
+                        <label for="nacionalidad_r">Nacionalidad <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <select name="nacionalidad_r" id="nacionalidad_r" class="form-control" required>
                           <option value="">Seleccionar</option>
                           <option value="Venezolano">Venezolano</option>
@@ -213,13 +213,13 @@ try {
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="cedula_r">Cédula de Identidad</label>
+                        <label for="cedula_r">Cédula de Identidad <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="number" name="cedula_r" id="cedula_r" class="form-control" required readonly>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="sexo_r">Sexo</label>
+                        <label for="sexo_r">Sexo <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <select name="sexo_r" id="sexo_r" class="form-control" required>
                           <option value="">Seleccionar</option>
                           <option value="Masculino">Masculino</option>
@@ -229,7 +229,7 @@ try {
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="fecha_nac_r">Fecha de Nacimiento</label>
+                        <label for="fecha_nac_r">Fecha de Nacimiento <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="date" name="fecha_nac_r" id="fecha_nac_r" class="form-control" required>
                       </div>
                     </div>
@@ -238,7 +238,7 @@ try {
                   <div class="row">
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="primer_nombre_r">Primer Nombre</label>
+                        <label for="primer_nombre_r">Primer Nombre <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="primer_nombre_r" id="primer_nombre_r" class="form-control" required>
                       </div>
                     </div>
@@ -250,7 +250,7 @@ try {
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="primer_apellido_r">Primer Apellido</label>
+                        <label for="primer_apellido_r">Primer Apellido <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="primer_apellido_r" id="primer_apellido_r" class="form-control" required>
                       </div>
                     </div>
@@ -265,19 +265,19 @@ try {
                   <div class="row">
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="lugar_nac_r">Lugar de Nacimiento</label>
+                        <label for="lugar_nac_r">Lugar de Nacimiento <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="lugar_nac_r" id="lugar_nac_r" class="form-control" required>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="correo_r">Correo Electrónico</label>
+                        <label for="correo_r">Correo Electrónico <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="email" name="correo_r" id="correo_r" class="form-control" required>
                       </div>
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="telefono_r">Teléfono Móvil</label>
+                        <label for="telefono_r">Teléfono Móvil <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="telefono_r" id="telefono_r" class="form-control" required>
                       </div>
                     </div>
@@ -292,7 +292,7 @@ try {
                   <div class="row">
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="profesion_r">Profesión</label>
+                        <label for="profesion_r">Profesión <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <select name="profesion_r" id="profesion_r" class="form-control" required>
                           <option value="">Seleccione Profesión</option>
                           <?php
@@ -305,7 +305,7 @@ try {
                     </div>
                     <div class="col-md-3">
                       <div class="form-group">
-                        <label for="ocupacion_r">Ocupación</label>
+                        <label for="ocupacion_r">Ocupación <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                         <input type="text" name="ocupacion_r" id="ocupacion_r" class="form-control" required>
                       </div>
                     </div>
@@ -325,7 +325,7 @@ try {
                     <div class="row">
                       <div class="col-md-3">
                         <div class="form-group">
-                          <label for="estado_r">Estado</label>
+                          <label for="estado_r">Estado <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                           <select name="estado_r" id="estado_r" class="form-control" required>
                             <option value="">Seleccionar Estado</option>
                             <?php
@@ -338,7 +338,7 @@ try {
                       </div>
                       <div class="col-md-3">
                         <div class="form-group">
-                          <label for="municipio_r">Municipio</label>
+                          <label for="municipio_r">Municipio <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                           <select name="municipio_r" id="municipio_r" class="form-control" required disabled>
                             <option value="">Primero seleccione un estado</option>
                           </select>
@@ -346,7 +346,7 @@ try {
                       </div>
                       <div class="col-md-3">
                         <div class="form-group">
-                          <label for="parroquia_r">Parroquia</label>
+                          <label for="parroquia_r">Parroquia <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                           <select name="parroquia_r" id="parroquia_r" class="form-control" required disabled>
                             <option value="">Primero seleccione un municipio</option>
                           </select>
@@ -354,7 +354,7 @@ try {
                       </div>
                       <div class="col-md-3">
                         <div class="form-group">
-                          <label for="direccion_r">Dirección Completa</label>
+                          <label for="direccion_r">Dirección Completa <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                           <input type="text" name="direccion_r" id="direccion_r" class="form-control" required>
                         </div>
                       </div>
@@ -1669,7 +1669,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
             const select = document.getElementById('parroquia_r');
             select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
             data.forEach(parroquia => {
-              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+              select.innerHTML += `<option value="${parroquia['id_parroquia']}">${parroquia['nom_parroquia']}</option>`;
             });
             select.disabled = false;
             resolve();
@@ -1691,7 +1691,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
           const select = document.getElementById('municipio_e');
           select.innerHTML = '<option value="">Seleccionar Municipio</option>';
           data.forEach(municipio => {
-            select.innerHTML += `<option value="${municipio.id_municipio}">${municipio.nom_municipio}</option>`;
+            select.innerHTML += `<option value="${municipio['id_municipio']}">${municipio['nom_municipio']}</option>`;
           });
           select.disabled = false;
         });
@@ -1711,7 +1711,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
             const select = document.getElementById('parroquia_e');
             select.innerHTML = '<option value="">Seleccionar Parroquia</option>';
             data.forEach(parroquia => {
-              select.innerHTML += `<option value="${parroquia.id_parroquia}">${parroquia.nom_parroquia}</option>`;
+              select.innerHTML += `<option value="${parroquia['id_parroquia']}">${parroquia['nom_parroquia']}</option>`;
             });
             select.disabled = false;
             resolve();
