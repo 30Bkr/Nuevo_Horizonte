@@ -361,7 +361,7 @@ CREATE TABLE `discapacidades` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `discapacidades`
@@ -506,7 +506,7 @@ CREATE TABLE `especialidades` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -520,7 +520,7 @@ CREATE TABLE `estados` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `estados`
@@ -722,7 +722,7 @@ CREATE TABLE `estudiantes` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `estudiantes`
@@ -1044,7 +1044,7 @@ CREATE TABLE `estudiantes_discapacidades` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `estudiantes_discapacidades`
@@ -1105,7 +1105,7 @@ CREATE TABLE `estudiantes_patologias` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `estudiantes_patologias`
@@ -1311,7 +1311,7 @@ CREATE TABLE `estudiantes_representantes` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `estudiantes_representantes`
@@ -1726,7 +1726,7 @@ CREATE TABLE `globales` (
     `id_usuario_modificacion` int(11) DEFAULT NULL,
     `motivo_cambio` text DEFAULT NULL,
     `fecha_modificacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `globales`
@@ -1826,7 +1826,7 @@ CREATE TABLE `inscripciones` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `inscripciones`
@@ -2615,7 +2615,7 @@ CREATE TABLE `municipios` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `municipios`
@@ -5332,7 +5332,7 @@ CREATE TABLE `niveles` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `niveles`
@@ -5450,7 +5450,7 @@ CREATE TABLE `niveles_secciones` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `niveles_secciones`
@@ -5542,7 +5542,7 @@ CREATE TABLE `parentesco` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `parentesco`
@@ -5612,7 +5612,7 @@ CREATE TABLE `parroquias` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `parroquias`
@@ -14834,7 +14834,7 @@ CREATE TABLE `patologias` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `patologias`
@@ -14898,7 +14898,7 @@ CREATE TABLE `periodos` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `periodos`
@@ -14956,7 +14956,7 @@ CREATE TABLE `permisos` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `permisos`
@@ -15206,7 +15206,7 @@ CREATE TABLE `personas` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `personas`
@@ -16507,7 +16507,7 @@ CREATE TABLE `profesiones` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `profesiones`
@@ -16761,7 +16761,7 @@ CREATE TABLE `representantes` (
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1,
     `id_profesion` int(11) DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `representantes`
@@ -16951,7 +16951,7 @@ CREATE TABLE `roles` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `roles`
@@ -16993,7 +16993,7 @@ CREATE TABLE `roles_permisos` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `roles_permisos`
@@ -17165,7 +17165,7 @@ CREATE TABLE `secciones` (
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
     `actualizacion` varchar(255) DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `secciones`
@@ -17226,7 +17226,7 @@ CREATE TABLE `usuarios` (
     `contrasena_migrada` tinyint(1) DEFAULT 0,
     `requiere_cambio_contrasena` tinyint(1) DEFAULT 0,
     `fecha_ultimo_cambio` timestamp NULL DEFAULT NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_spanish_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
@@ -17309,12 +17309,12 @@ CREATE TABLE `usuarios_backup_20251231` (
     `id_usuario` int(11) NOT NULL DEFAULT 0,
     `id_persona` int(11) NOT NULL,
     `id_rol` int(11) NOT NULL,
-    `usuario` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
-    `contrasena` text CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci NOT NULL,
+    `usuario` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+    `contrasena` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
     `creacion` timestamp NOT NULL DEFAULT current_timestamp(),
-    `actualizacion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_spanish_ci DEFAULT NULL,
+    `actualizacion` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
     `estatus` tinyint(4) DEFAULT 1
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios_backup_20251231`

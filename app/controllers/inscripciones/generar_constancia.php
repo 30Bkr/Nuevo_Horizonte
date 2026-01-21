@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-// Usar ruta absoluta
+// CONFIGURACIÓN DE RUTAS
 $autoloadPath = 'C:/xampp/htdocs/final/vendor/autoload.php';
 if (!file_exists($autoloadPath)) {
-    die("Error: No se encuentra Composer autoload. Ejecuta 'composer install' en la carpeta del proyecto.");
+    die("Error: No se encuentra Composer autoload.");
 }
 require_once $autoloadPath;
 
@@ -12,39 +12,34 @@ use Spipu\Html2Pdf\Html2Pdf;
 use Spipu\Html2Pdf\Exception\Html2PdfException;
 use Spipu\Html2Pdf\Exception\ExceptionFormatter;
 
-// Incluir conexión a la base de datos
+// CONEXIÓN BD
 include_once __DIR__ . '/../../conexion.php';
 
 try {
-    // Obtener ID de la inscripción
+    // 1. OBTENER ID
     $id_inscripcion = $_GET['id_inscripcion'] ?? $_POST['id_inscripcion'] ?? 0;
     
-    if ($id_inscripcion == 0) {
-        throw new Exception("No se proporcionó un ID de inscripción válido");
-    }
+    if ($id_inscripcion == 0) throw new Exception("ID de inscripción inválido.");
 
-    // Configurar zona horaria de Venezuela
+    // Configuración Regional
     date_default_timezone_set('America/Caracas');
-    $fecha_actual = date('d/m/Y H:i:s');
+    $fecha_actual = date('d/m/Y h:i:s A'); // Formato con AM/PM
 
-    // Conectar a la base de datos
+    // 2. CONECTAR Y CONSULTAR DATOS
     $database = new Conexion();
     $db = $database->conectar();
 
-    // OBTENER DATOS DE LA DIRECTORA DESDE LA TABLA GLOBALES
+    // Datos Directora
     $sql_globales = "SELECT nom_directora, ci_directora FROM globales WHERE id_globales = 1";
     $stmt_globales = $db->prepare($sql_globales);
     $stmt_globales->execute();
     $directora = $stmt_globales->fetch(PDO::FETCH_ASSOC);
 
-    if (!$directora) {
-        throw new Exception("No se encontraron datos de la directora en la tabla globales");
-    }
+    if (!$directora) throw new Exception("Faltan datos de la directora.");
 
-    // CONVERTIR NOMBRE DE DIRECTORA A MAYÚSCULAS
-    $directora_nombre_mayusculas = mb_strtoupper($directora['nom_directora'], 'UTF-8');
+    $directora_nombre = mb_strtoupper($directora['nom_directora'], 'UTF-8');
 
-    // CONSULTA PARA OBTENER DATOS DE LA INSCRIPCIÓN (ACTUALIZADA)
+    // Datos Inscripción
     $sql_inscripcion = "
         SELECT
             I.id_inscripcion,
@@ -52,7 +47,6 @@ try {
             UPPER(CONCAT(PE.primer_nombre, ' ', COALESCE(PE.segundo_nombre, ''), ' ', PE.primer_apellido, ' ', COALESCE(PE.segundo_apellido, ''))) AS nombre_estudiante,
             DATE_FORMAT(PE.fecha_nac, '%d/%m/%Y') AS fecha_nacimiento,
             UPPER(PE.lugar_nac) AS lugar_nacimiento,
-            I.fecha_inscripcion,
             UPPER(PEE.descripcion_periodo) AS periodo_escolar,
             UPPER(N.nom_nivel) AS nivel_nombre,
             UPPER(S.nom_seccion) AS seccion_nombre,
@@ -60,227 +54,125 @@ try {
             DATE_FORMAT(I.fecha_inscripcion, '%d') AS dia_inscripcion,
             DATE_FORMAT(I.fecha_inscripcion, '%m') AS mes_inscripcion,
             DATE_FORMAT(I.fecha_inscripcion, '%Y') AS anio_inscripcion
-        FROM
-            inscripciones I
+        FROM inscripciones I
         JOIN estudiantes E ON I.id_estudiante = E.id_estudiante
         JOIN personas PE ON E.id_persona = PE.id_persona
         JOIN periodos PEE ON I.id_periodo = PEE.id_periodo
         LEFT JOIN niveles_secciones NS ON I.id_nivel_seccion = NS.id_nivel_seccion
         LEFT JOIN niveles N ON NS.id_nivel = N.id_nivel
         LEFT JOIN secciones S ON NS.id_seccion = S.id_seccion
-        WHERE
-            I.id_inscripcion = :id_inscripcion;
+        WHERE I.id_inscripcion = :id_inscripcion;
     ";
 
     $stmt = $db->prepare($sql_inscripcion);
     $stmt->execute([':id_inscripcion' => $id_inscripcion]);
     $datos = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$datos) {
-        throw new Exception("No se encontraron datos de inscripción para el ID: " . $id_inscripcion);
-    }
+    if (!$datos) throw new Exception("Inscripción no encontrada.");
 
-    // Función para obtener nombre del mes en español
-    function obtener_nombre_mes_espanol($numero) {
-        $meses = array(
-            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-        );
-        return $meses[$numero - 1];
+    // Meses
+    function get_mes($n) {
+        $meses = ['', 'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+        return $meses[(int)$n];
     }
-
-    // Procesar datos para la presentación
-    $mes_numero = (int)$datos['mes_inscripcion'];
-    $mes_inscripcion_espanol = obtener_nombre_mes_espanol($mes_numero);
-    
-    // Determinar tipo de nivel
+    $mes_texto = get_mes($datos['mes_inscripcion']);
     $tipo_nivel = (stripos($datos['nivel_nombre'], 'GRADO') !== false) ? 'Primaria' : 'Secundaria';
 
-    // Datos estáticos de la institución
-    $NOMBRE_INSTITUCION = 'U.E.N NUEVO HORIZONTE';
-    $PARROQUIA_INSTITUCION = 'Sucre';
-    $MUNICIPIO_INSTITUCION = 'Libertador';
-    $CIUDAD_EXPEDICION = 'Caracas'; // Ciudad fija para "Constancia que se expide en..."
+    // Datos Fijos
+    $INSTITUCION = 'U.E.N NUEVO HORIZONTE';
+    $PARROQUIA = 'Sucre';
+    $MUNICIPIO = 'Libertador';
+    $CIUDAD = 'Caracas'; 
 
-    // Ruta de la imagen del cintillo
-   $ruta_cintillo = $_SERVER['DOCUMENT_ROOT'] . '/final/public/images/cintillo_oficial.png';
-    $cintillo_base64 = '';
+    // Imagen Cintillo
+    $ruta_cintillo = $_SERVER['DOCUMENT_ROOT'] . '/final/public/images/cintillo_oficial.png';
+    $cintillo_html = '<div style="padding:20px; text-align:center; font-weight:bold;">' . $INSTITUCION . '</div>';
     
-    // Convertir imagen a base64 para incluirla en el HTML
     if (file_exists($ruta_cintillo)) {
-        $image_data = file_get_contents($ruta_cintillo);
-        $cintillo_base64 = 'data:image/png;base64,' . base64_encode($image_data);
-    } else {
-        // Si no existe la imagen, mostrar mensaje de debug
-        error_log("No se encontró la imagen del cintillo en: " . $ruta_cintillo);
+        $img_data = file_get_contents($ruta_cintillo);
+        $base64 = 'data:image/png;base64,' . base64_encode($img_data);
+        $cintillo_html = '<img src="' . $base64 . '" style="width: 700px; height: auto;" alt="Cintillo">';
     }
 
-    // Crear contenido HTML para el PDF
+    // 3. HTML ESTRUCTURADO CON ETIQUETAS <PAGE>
     $html = '
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Constancia de Inscripción</title>
-        <style>
-            body { 
-                font-family: DejaVu Sans, Arial, sans-serif; 
-                font-size: 12px;
-                line-height: 1.4;
-                margin: 0;
-                padding: 0;
-            }
-            .container {
-                width: 100%;
-                margin: 0 auto;
-            }
-            .cintillo-imagen {
-                width: 100%;
-                text-align: center;
-                margin-bottom: 15px;
-            }
-            .cintillo-img {
-                max-width: 100%;
-                height: 70px;
-            }
-            .cintillo-texto {
-                text-align: center;
-                font-weight: bold;
-                font-size: 16px;
-                color: #003366;
-                padding: 12px;
-                background-color: #f8f9fa;
-                border: 2px solid #003366;
-                margin-bottom: 20px;
-                border-radius: 5px;
-            }
-            .document-title {
-                text-align: center;
-                color: #003366;
-                font-size: 18px;
-                font-weight: bold;
-                margin: 15px 0 25px 0;
-                padding-bottom: 10px;
-                border-bottom: 3px solid #003366;
-            }
-            .constancia-content {
-                text-align: justify;
-                margin: 20px 0;
-                font-size: 13px;
-                line-height: 1.6;
-            }
-            .constancia-content strong {
-                color: #003366;
-            }
-            /* SECCIÓN DE FIRMA */
-            .firma-section {
-                width: 100%;
-                margin-top: 80px;
-                margin-bottom: 40px;
-                text-align: center; 
-            }
-            .info-institucional {
-                text-align: center;
-                margin: 20px 0 10px 0;
-                font-size: 11px;
-                color: #666;
-                border-top: 1px solid #ccc;
-                padding-top: 10px;
-            }
-            .footer {
-                margin-top: 20px;
-                text-align: center;
-                font-size: 8px;
-                color: #666;
-                border-top: 1px solid #ccc;
-                padding-top: 5px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <!-- CINTILLO CON IMAGEN OFICIAL O TEXTO ALTERNATIVO -->
-            ' . ($cintillo_base64 ? '
-            <div class="cintillo-imagen">
-                <img src="' . $cintillo_base64 . '" class="cintillo-img" alt="Cintillo Oficial">
-            </div>' : '
-            <div class="cintillo-texto">
-                UNIDAD EDUCATIVA NACIONAL "NUEVO HORIZONTE"
-            </div>') . '
+    <style>
+        .titulo {
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 16pt; 
+            color: #003366;
             
-            <!-- TÍTULO DEL DOCUMENTO -->
-            <div class="document-title">
-                CONSTANCIA DE INSCRIPCIÓN
-            </div>
-            
-            <!-- CONTENIDO DE LA CONSTANCIA -->
-            <div class="constancia-content">
-                Quien suscribe <strong>' . $directora_nombre_mayusculas . '</strong>, titular de la Cédula
-                de Identidad Nº <strong>' . ($directora['ci_directora'] ?: 'No especificada') . '</strong>, en su condición de Director(a) de la 
-                <strong>'. $NOMBRE_INSTITUCION . '</strong>, ubicada en el municipio ' . $MUNICIPIO_INSTITUCION . ', 
-                parroquia <strong>' . $PARROQUIA_INSTITUCION . '</strong>, certifica por medio de la presente que 
-                el (la) estudiante <strong>' . $datos['nombre_estudiante'] . '</strong>, titular de la 
-                Cédula Escolar Nº, Cédula de Identidad Nº o Pasaporte Nº <strong>' . $datos['cedula_estudiante'] . '</strong>,
-                nacido (a) en <strong>' . $datos['lugar_nacimiento'] . '</strong> en fecha <strong>' . $datos['fecha_nacimiento'] . '</strong>, 
-                ha sido inscrito en esta institución para cursar el <strong>' . $datos['nivel_seccion'] . '</strong> 
-                de Educación ' . $tipo_nivel . ' durante el período escolar <strong>' . $datos['periodo_escolar'] . '</strong>, 
-                previo cumplimiento de los requisitos exigidos en la normativa legal vigente.
-                <br><br>
-                Constancia que se expide en <strong>' . $CIUDAD_EXPEDICION . '</strong>, a los <strong>' . $datos['dia_inscripcion'] . '</strong> 
-                días del mes de <strong>' . strtoupper($mes_inscripcion_espanol) . '</strong> de <strong>' . $datos['anio_inscripcion'] . '</strong>.
-            </div>
-            
-                                   <!-- SECCIÓN DE FIRMA - CORREGIDA -->
-            <div class="firma-section">
-                <table align="center" style="width: 350px; border-collapse: collapse;">
-                    <tr>
-                        <td style="border-top: 1px solid #000; text-align: center; padding-top: 5px;">
-                            <!-- Línea de firma -->
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: center; padding-top: 8px;">
-                            <div style="font-weight: bold; font-size: 14px; margin-bottom: 2px;">' . $directora_nombre_mayusculas . '</div>
-                            <div style="font-style: italic; font-size: 12px; color: #666;">DIRECTOR(A)</div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            
-            <!-- INFORMACIÓN INSTITUCIONAL - MÁS ESPACIO -->
-            <div class="info-institucional">
-                ' . $NOMBRE_INSTITUCION . ' | ' . $MUNICIPIO_INSTITUCION . ' - ' . $PARROQUIA_INSTITUCION . '
-                <br>Constancia generada el ' . $fecha_actual . '
-            </div>
+            /* AQUÍ ESTÁ EL TRUCO PARA LA LÍNEA GRUESA */
+            border-bottom: 3px solid #003366;  /* 3px de grosor hace que se vea "tosca" y firme */
+            padding-bottom: 8px;               /* Espacio entre las letras y la barra */
+            margin: 20px 0 40px 0;             /* Espacio debajo de la barra */
+        }
+        .texto-cuerpo {
+            text-align: justify; text-justify: inter-word;
+            font-size: 13pt; line-height: 1.6; margin-bottom: 20px;
+        }
+        .negrita { font-weight: bold; color: #003366; }
+    </style>
 
-            <!-- PIE DE PÁGINA -->
-            <div class="footer">
-                Unidad Educativa Nacional "Nuevo Horizonte"<br>
-                Página <span style="color: #003366; font-weight: bold;">[[page_cu]]</span> de <span style="color: #003366; font-weight: bold;">[[page_nb]]</span>
+    <page backtop="20mm" backbottom="20mm" backleft="20mm" backright="20mm">
+
+        <page_footer>
+            <div style="text-align: center; font-size: 9pt; color: #555; border-top: 1px solid #ccc; padding-top: 5px; width: 100%;">
+                ' . $INSTITUCION . ' | ' . $MUNICIPIO . ' - ' . $PARROQUIA . '<br>
+                Generado el: ' . $fecha_actual . '<br>
+                Página [[page_cu]] de [[page_nb]]
             </div>
+        </page_footer>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            ' . $cintillo_html . '
         </div>
-    </body>
-    </html>';
 
-    // Configurar y generar PDF
-    $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(25.4, 25.4, 25.4, 25.4));
-    $html2pdf->setDefaultFont('dejavusans');
-    $html2pdf->setTestTdInOnePage(false);
+        <div class="titulo">CONSTANCIA DE INSCRIPCIÓN</div>
+
+        <div class="texto-cuerpo">
+            Quien suscribe <span class="negrita">' . $directora_nombre . '</span>, titular de la Cédula
+            de Identidad Nº <span class="negrita">' . $directora['ci_directora'] . '</span>, en su condición de Director(a) de la 
+            <span class="negrita">'. $INSTITUCION . '</span>, ubicada en el municipio ' . $MUNICIPIO . ', 
+            parroquia <span class="negrita">' . $PARROQUIA . '</span>, certifica por medio de la presente que 
+            el (la) estudiante <span class="negrita">' . $datos['nombre_estudiante'] . '</span>, titular de la 
+            Cédula Escolar Nº, Cédula de Identidad Nº o Pasaporte Nº <span class="negrita">' . $datos['cedula_estudiante'] . '</span>,
+            nacido (a) en <span class="negrita">' . $datos['lugar_nacimiento'] . '</span> en fecha <span class="negrita">' . $datos['fecha_nacimiento'] . '</span>, 
+            ha sido inscrito en esta institución para cursar el <span class="negrita">' . $datos['nivel_seccion'] . '</span> 
+            de Educación ' . $tipo_nivel . ' durante el período escolar <span class="negrita">' . $datos['periodo_escolar'] . '</span>, 
+            previo cumplimiento de los requisitos exigidos en la normativa legal vigente.
+            <br><br>
+            Constancia que se expide en <span class="negrita">' . $CIUDAD . '</span>, a los <span class="negrita">' . $datos['dia_inscripcion'] . '</span> 
+            días del mes de <span class="negrita">' . $mes_texto . '</span> de <span class="negrita">' . $datos['anio_inscripcion'] . '</span>.
+        </div>
+
+        <div style="margin-top: 80px; text-align: center; width: 100%;">
+            <table align="center" style="margin: 0 auto;">
+                <tr>
+                    <td style="width: 300px; border-top: 1px solid #000; text-align: center; padding-top: 5px;">
+                        <span style="font-weight: bold; font-size: 14px;">' . $directora_nombre . '</span><br>
+                        <span style="font-style: italic; font-size: 12px; color: #666;">DIRECTOR(A)</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </page>';
+
+    // 4. GENERAR PDF
+    // OJO: Quitamos los márgenes del array final porque ya los definimos en <page>
+    $html2pdf = new Html2Pdf('P', 'LETTER', 'es', true, 'UTF-8', array(0, 0, 0, 0));
+    $html2pdf->setDefaultFont('arial');
     $html2pdf->writeHTML($html);
     
-    // En lugar de descargar automáticamente, mostrar en el navegador
-    $filename = 'constancia_inscripcion_' . $datos['cedula_estudiante'] . '_' . date('Y-m-d') . '.pdf';
-    
-    // Mostrar en el navegador (I = inline)
-    $html2pdf->output($filename, 'I');
+    $nombre_archivo = 'Constancia_' . $datos['cedula_estudiante'] . '.pdf';
+    $html2pdf->output($nombre_archivo, 'I');
 
 } catch (Html2PdfException $e) {
-    // Manejar errores de HTML2PDF
     $formatter = new ExceptionFormatter($e);
     echo $formatter->getHtmlMessage();
-    
 } catch (Exception $e) {
-    // Manejar otros errores
-    echo "<div class='alert alert-danger'>Error al generar la constancia: " . $e->getMessage() . "</div>";
+    echo "Error: " . $e->getMessage();
 }
 ?>
