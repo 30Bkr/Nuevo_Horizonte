@@ -12,6 +12,8 @@ header('Content-Type: application/json');
 // Desactivar todo output posible
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
+// ========== AGREGAR INCLUSIÓN DE NOTIFICACIONES ==========
+include_once("/xampp/htdocs/final/global/notifications.php");
 
 include_once("/xampp/htdocs/final/app/conexion.php");
 include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
@@ -75,7 +77,16 @@ try {
 
   foreach ($camposRequeridos as $campo) {
     if (empty($_POST[$campo])) {
-      throw new Exception("El campo $campo es requerido");
+      // ⭐⭐ USAR NOTIFICACIÓN PARA ERRORES DE CAMPOS REQUERIDOS ⭐⭐
+      Notification::set("El campo {$campo} es requerido", "warning");
+
+      echo json_encode([
+        'success' => false,
+        'message' => "El campo {$campo} es requerido",
+        'notification' => true,
+        'field' => $campo
+      ]);
+      exit();
     }
   }
 
@@ -541,6 +552,8 @@ try {
   $pdo->commit();
 
   // Respuesta de éxito con el ID de inscripción
+
+  Notification::set("✅ Inscripción completada exitosamente", "success");
   error_log("Inscripción completada exitosamente");
 
   // ENVIAR RESPUESTA JSON - ESTO ES LO ÚNICO QUE DEBE SALIR
@@ -550,7 +563,8 @@ try {
     'id_inscripcion' => $id_inscripcion,
     'id_estudiante' => $id_estudiante,
     'id_representante' => $id_representante,
-    'tipo_persona' => $tipo_persona
+    'tipo_persona' => $tipo_persona,
+    'notification' => true
   ]);
 } catch (Exception $e) {
   // Revertir transacción en caso de error
@@ -560,6 +574,7 @@ try {
   }
 
   error_log("Error en inscripción: " . $e->getMessage());
+  Notification::set("❌ Error en la inscripción: " . $e->getMessage(), "error");
 
   // ENVIAR ERROR EN JSON
   http_response_code(400);

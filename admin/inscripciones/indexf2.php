@@ -1,8 +1,18 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+
+// INCLUIR EL SISTEMA DE NOTIFICACIONES
+require_once '/xampp/htdocs/final/global/notifications.php';
+
+// MOSTRAR NOTIFICACIONES EXISTENTES (si hay alguna de procesos anteriores)
+Notification::show();
 // Incluir los controladores necesarios
 include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
 include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
@@ -841,6 +851,177 @@ try {
 <!-- Aca validamos los cupos disponbiles de las secciones disponibles correspondientes a cada año o grado -->
 
 <script>
+  // ========== FUNCIÓN PARA MOSTRAR NOTIFICACIONES LOCALES ==========
+  function mostrarNotificacionLocal(titulo, mensaje, tipo = 'info') {
+    // Eliminar notificaciones existentes
+    document.querySelectorAll('.notificacion-local').forEach(n => n.remove());
+
+    // Definir colores según tipo (igual que en PHP)
+    const colores = {
+      'success': {
+        'header': '#28a745',
+        'body': '#e8f5e9',
+        'text': '#155724',
+        'border': '#1e7e34'
+      },
+      'error': {
+        'header': '#dc3545',
+        'body': '#f8d7da',
+        'text': '#721c24',
+        'border': '#c82333'
+      },
+      'warning': {
+        'header': '#ffc107',
+        'body': '#fff3cd',
+        'text': '#856404',
+        'border': '#e0a800'
+      },
+      'info': {
+        'header': '#17a2b8',
+        'body': '#d1ecf1',
+        'text': '#0c5460',
+        'border': '#117a8b'
+      }
+    };
+
+    const iconos = {
+      'success': '✓',
+      'error': '✗',
+      'warning': '⚠',
+      'info': 'ℹ'
+    };
+
+    const titulos = {
+      'success': 'Éxito',
+      'error': 'Error',
+      'warning': 'Advertencia',
+      'info': 'Información'
+    };
+
+    const colors = colores[tipo] || colores.info;
+    const icono = iconos[tipo] || 'ℹ';
+    const tituloNotif = titulos[tipo] || 'Notificación';
+    const idNotificacion = 'notif-local-' + Date.now();
+
+    // Crear elemento de notificación
+    const notificacion = document.createElement('div');
+    notificacion.id = idNotificacion;
+    notificacion.className = 'notificacion-local';
+    notificacion.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        z-index: 1050;
+        width: 350px;
+        background: ${colors.body};
+        border-left: 4px solid ${colors.border};
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        animation: slideIn 0.4s ease;
+        margin-bottom: 10px;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border: 1px solid rgba(0,0,0,0.1);
+    `;
+
+    notificacion.innerHTML = `
+        <div style="
+            padding: 12px 16px;
+            background: ${colors.header};
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 18px; font-weight: bold;">${icono}</span>
+                <strong style="font-size: 16px;">${tituloNotif}</strong>
+            </div>
+            <button onclick="document.getElementById('${idNotificacion}').remove()" style="
+                background: rgba(255,255,255,0.2);
+                border: none;
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                line-height: 1;
+                padding: 0;
+            ">
+                &times;
+            </button>
+        </div>
+        
+        <div style="
+            padding: 16px;
+            color: ${colors.text};
+            font-size: 14px;
+            line-height: 1.5;
+            background: ${colors.body};
+            border-top: 1px solid rgba(0,0,0,0.05);
+        ">
+            ${mensaje}
+        </div>
+    `;
+
+    document.body.appendChild(notificacion);
+
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+      if (notificacion.parentNode) {
+        notificacion.style.animation = 'fadeOut 0.4s ease forwards';
+        setTimeout(() => {
+          if (notificacion.parentNode) {
+            notificacion.remove();
+          }
+        }, 400);
+      }
+    }, 5000);
+  }
+
+  // Agregar estilos CSS para animaciones
+  if (!document.querySelector('#notificacion-estilos')) {
+    const style = document.createElement('style');
+    style.id = 'notificacion-estilos';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+        
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            .notificacion-local {
+                left: 20px !important;
+                right: 20px !important;
+                width: calc(100% - 40px) !important;
+                top: 20px !important;
+            }
+            
+            @keyframes slideIn {
+                from { transform: translateY(-20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-20px); }
+            }
+        }
+    `;
+    document.head.appendChild(style);
+  }
   // ========== SISTEMA INTEGRADO: VALIDACIÓN DE EDAD + CUPOS ==========
   document.addEventListener('DOMContentLoaded', function() {
     console.log('🔧 Inicializando sistema de inscripción...');
@@ -1771,7 +1952,19 @@ try {
         refreshTabStyles();
 
       } else {
-        alert('Por favor complete todos los campos requeridos del representante.');
+        mostrarNotificacionLocal(
+          '⚠️ Campos Incompletos',
+          'Por favor complete todos los campos requeridos del representante.',
+          'warning'
+        );
+
+        if (primerError) {
+          primerError.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+          primerError.focus();
+        }
       }
     });
 
@@ -1863,7 +2056,12 @@ try {
     document.getElementById('btn-validar-representante').addEventListener('click', function() {
       const cedula = document.getElementById('cedula_representante').value;
       if (!cedula) {
-        alert('Por favor ingrese la cédula del representante');
+        mostrarNotificacionLocal(
+          '📋 Campo Requerido',
+          'Por favor ingrese la cédula del representante',
+          'warning'
+        );
+        return;
         return;
       }
       validarRepresentante(cedula);
@@ -1878,7 +2076,11 @@ try {
 
         const cedula = this.value;
         if (!cedula) {
-          alert('Por favor ingrese la cédula del representante');
+          mostrarNotificacionLocal(
+            '📋 Campo Requerido',
+            'Por favor ingrese la cédula del representante',
+            'warning'
+          );
           return;
         }
 
@@ -3119,7 +3321,11 @@ try {
       });
 
       if (!valid) {
-        alert('Por favor complete todos los campos requeridos del representante.');
+        mostrarNotificacionLocal(
+          '⚠️ Campos Incompletos',
+          'Por favor complete todos los campos requeridos del representante.',
+          'warning'
+        );
         return;
       }
 
@@ -3129,7 +3335,11 @@ try {
         if (!emailRepre || !validarEmail(emailRepre)) {
           correoRepresentante.classList.add('is-invalid');
           mostrarError(correoRepresentante, 'Por favor ingrese un correo electrónico válido antes de continuar');
-          alert('Por favor corrija el correo electrónico del representante antes de continuar.');
+          mostrarNotificacionLocal(
+            '📧 Correo Inválido',
+            'Por favor corrija el correo electrónico del representante antes de continuar.',
+            'warning'
+          );
           return;
         }
       }
@@ -3295,6 +3505,9 @@ try {
     });
   });
   //});
+
+
+  // ========== FUNCIÓN PARA MOSTRAR NOTIFICACIONES LOCALES ==========
 </script>
 
 <?php
