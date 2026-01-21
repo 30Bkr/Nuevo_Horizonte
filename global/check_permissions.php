@@ -156,6 +156,16 @@ class PermissionManager
       return false;
     }
 
+    $urlBloqueadaAdmin = 'views/grados/grados_list_solo_lectura.php';
+
+    // Si alguna de las URLs es la bloqueada para admin
+    if (in_array($urlBloqueadaAdmin, $urls)) {
+      // Admin NUNCA puede ver esta página
+      if (self::isAdmin()) {
+        return false;
+      }
+    }
+
     // Si es admin, puede ver todo
     if (self::isAdmin()) {
       return true;

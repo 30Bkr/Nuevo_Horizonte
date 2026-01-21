@@ -1,19 +1,29 @@
 <?php
+// representantes_list.php CORREGIDO
 
-// Incluir archivos
-include_once __DIR__ . '/../../app/conexion.php';
-include_once __DIR__ . '/../../app/controllers/representantes/RepresentanteController.php';
-include_once("/xampp/htdocs/final/layout/layaout1.php");
-
-
+session_start();
 require_once '/xampp/htdocs/final/global/check_permissions.php';
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 PermissionManager::requirePermission();
 
+// Incluir solo lo necesario ANTES del layout
+require_once __DIR__ . '/../../app/conexion.php';
+require_once __DIR__ . '/../../app/controllers/representantes/RepresentanteController.php';
+
+// Obtener datos
+$database = new Conexion();
+$db = $database->conectar();
+$controller = new RepresentanteController($db);
+
+try {
+    $stmt = $controller->listar();
+    $representantes = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+} catch (Exception $e) {
+    $error = $e->getMessage();
+    $representantes = [];
+}
+
+// Incluir layout PRIMERO
+include_once("/xampp/htdocs/final/layout/layaout1.php");
 ?>
 
 <!-- Content Wrapper -->
@@ -62,48 +72,34 @@ PermissionManager::requirePermission();
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Listado de Representantes</h3>
-                            <div class="card-tools">
-                                <!-- Botón de Nuevo Representante comentado en el original
-                                <a href="representante_nuevo.php" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Nuevo Representante
-                                </a>
-                                -->
-                            </div>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body">
-                            <?php
-                            try {
-                                $database = new Conexion();
-                                $db = $database->conectar();
-
-                                if ($db) {
-                                    $controller = new RepresentanteController($db);
-                                    $stmt = $controller->listar();
-
-                                    if ($stmt) {
-                                        if ($stmt->rowCount() > 0) {
-                                            echo '<table id="tablaRepresentantes" class="table table-bordered table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Nº</th> <!-- Corregido para usar numeración secuencial -->
-                                                            <th>Cédula</th>
-                                                            <th>Nombre Completo</th>
-                                                            <th>Teléfono</th>
-                                                            <th>Correo</th>
-                                                            <th>Profesión</th>
-                                                            <th>Ocupación</th>
-                                                            <th>Estudiantes</th>
-                                                            <th>Estado</th>
-                                                            <th>Acciones</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>';
-
-                                            // INICIAMOS EL CONTADOR DE NUMERACIÓN
-                                            $contador = 1;
-
-                                            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            <?php if (isset($error)): ?>
+                                <div class="alert alert-danger">Error: <?php echo htmlspecialchars($error); ?></div>
+                            <?php elseif (empty($representantes)): ?>
+                                <div class='alert alert-info'>No hay representantes registrados en el sistema.</div>
+                            <?php else: ?>
+                                <div class="table-responsive">
+                                    <table id="tablaRepresentantes" class="table table-bordered table-striped" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th width="5%">Nº</th>
+                                                <th width="10%">Cédula</th>
+                                                <th width="20%">Nombre Completo</th>
+                                                <th width="10%">Teléfono</th>
+                                                <th width="15%">Correo</th>
+                                                <th width="10%">Profesión</th>
+                                                <th width="10%">Ocupación</th>
+                                                <th width="5%">Estudiantes</th>
+                                                <th width="5%">Estado</th>
+                                                <th width="10%">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php $contador = 1; ?>
+                                            <?php foreach ($representantes as $row): ?>
+                                                <?php
                                                 $nombreCompleto = $row['primer_nombre'] . ' ' .
                                                     ($row['segundo_nombre'] ? $row['segundo_nombre'] . ' ' : '') .
                                                     $row['primer_apellido'] . ' ' .
@@ -119,54 +115,39 @@ PermissionManager::requirePermission();
 
                                                 $boton_estado = $row['estatus'] == 1 ?
                                                     '<button type="button" class="btn btn-danger btn-sm" title="Inhabilitar" onclick="cambiarEstado(' . $row['id_representante'] . ', 0)">
-                                                                <i class="fas fa-ban"></i>
-                                                            </button>' :
+                                                        <i class="fas fa-ban"></i>
+                                                    </button>' :
                                                     '<button type="button" class="btn btn-success btn-sm" title="Habilitar" onclick="cambiarEstado(' . $row['id_representante'] . ', 1)">
-                                                                <i class="fas fa-check"></i>
-                                                            </button>';
-
-                                                echo "<tr>";
-                                                // MOSTRAMOS EL CONTADOR
-                                                echo "<td>{$contador}</td>";
-                                                echo "<td>{$row['cedula']}</td>";
-                                                echo "<td>{$nombreCompleto}</td>";
-                                                echo "<td>{$row['telefono']}</td>";
-                                                echo "<td>{$row['correo']}</td>";
-                                                echo "<td>{$row['profesion']}</td>";
-                                                echo "<td>{$row['ocupacion']}</td>";
-                                                echo "<td>{$estudiantes_badge}</td>";
-                                                echo "<td>{$estado_badge}</td>"; // El estado de Activo/Inactivo se movió aquí
-                                                echo "<td>
-                                                            <div class='btn-group'>
-                                                                <a href='representante_editar.php?id={$row['id_representante']}' class='btn btn-warning btn-sm' title='Editar'>
-                                                                    <i class='fas fa-edit'></i>
-                                                                </a>
-                                                                <a href='representante_ver.php?id={$row['id_representante']}' class='btn btn-primary btn-sm' title='Ver'>
-                                                                    <i class='fas fa-eye'></i>
-                                                                </a>
-                                                                {$boton_estado}
-                                                            </div>
-                                                        </td>";
-                                                echo "</tr>";
-
-                                                // INCREMENTAMOS EL CONTADOR
-                                                $contador++;
-                                            }
-
-                                            echo '</tbody></table>';
-                                        } else {
-                                            echo "<div class='alert alert-info'>No hay representantes registrados en el sistema.</div>";
-                                        }
-                                    } else {
-                                        echo "<div class='alert alert-warning'>No se pudo obtener la lista de representantes.</div>";
-                                    }
-                                } else {
-                                    echo "<div class='alert alert-danger'>✗ Error de conexión a la base de datos</div>";
-                                }
-                            } catch (Exception $e) {
-                                echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
-                            }
-                            ?>
+                                                        <i class="fas fa-check"></i>
+                                                    </button>';
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo $contador++; ?></td>
+                                                    <td><?php echo htmlspecialchars($row['cedula']); ?></td>
+                                                    <td><?php echo htmlspecialchars($nombreCompleto); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['telefono']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['correo']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['profesion']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['ocupacion']); ?></td>
+                                                    <td class="text-center"><?php echo $estudiantes_badge; ?></td>
+                                                    <td class="text-center"><?php echo $estado_badge; ?></td>
+                                                    <td class="text-center">
+                                                        <div class='btn-group'>
+                                                            <a href='representante_editar.php?id=<?php echo $row['id_representante']; ?>' class='btn btn-warning btn-sm' title='Editar'>
+                                                                <i class='fas fa-edit'></i>
+                                                            </a>
+                                                            <a href='representante_ver.php?id=<?php echo $row['id_representante']; ?>' class='btn btn-primary btn-sm' title='Ver'>
+                                                                <i class='fas fa-eye'></i>
+                                                            </a>
+                                                            <?php echo $boton_estado; ?>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         <!-- /.card-body -->
                     </div>
@@ -182,54 +163,106 @@ PermissionManager::requirePermission();
 </div>
 <!-- /.content-wrapper -->
 
-<!-- jQuery -->
-<script src="/final/public/plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="/final/public/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- DataTables -->
-<script src="/final/public/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-<!-- AdminLTE App -->
-<script src="/final/public/dist/js/adminlte.min.js"></script>
-
+<!-- Script para DataTables - VERSIÓN CORREGIDA -->
 <script>
-    $(function() {
-        $('#tablaRepresentantes').DataTable({
-            "responsive": true,
-            "autoWidth": false,
-            "language": {
-                "decimal": "",
-                "emptyTable": "No hay datos disponibles en la tabla",
-                "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
-                "infoEmpty": "Mostrando 0 a 0 de 0 registros",
-                "infoFiltered": "(filtrado de _MAX_ registros totales)",
-                "infoPostFix": "",
-                "thousands": ",",
-                "lengthMenu": "Mostrar _MENU_ registros",
-                "loadingRecords": "Cargando...",
-                "processing": "Procesando...",
-                "search": "Buscar:",
-                "zeroRecords": "No se encontraron registros coincidentes",
-                "paginate": {
-                    "first": "Primero",
-                    "last": "Último",
-                    "next": "Siguiente",
-                    "previous": "Anterior"
-                },
-                "aria": {
-                    "sortAscending": ": activar para ordenar ascendente",
-                    "sortDescending": ": activar para ordenar descendente"
-                }
-            },
-            // Ordena por el Nombre Completo (índice de columna 2)
-            "order": [
-                [2, "asc"]
-            ]
-        });
+    // Esperar a que TODO esté completamente cargado
+    window.addEventListener('load', function() {
+        // Pequeña pausa para asegurar que todos los scripts estén listos
+        setTimeout(function() {
+            inicializarDataTable();
+        }, 100);
     });
 
+    function inicializarDataTable() {
+        // Verificar si jQuery está disponible
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery no está disponible');
+            return;
+        }
+
+        // Verificar si DataTables está disponible
+        if (typeof $.fn.DataTable === 'undefined') {
+            console.error('DataTables no está disponible');
+            // Intentar cargar DataTables dinámicamente
+            cargarDataTablesDinamicamente();
+            return;
+        }
+
+        // Inicializar DataTable
+        try {
+            $('#tablaRepresentantes').DataTable({
+                "responsive": true,
+                "autoWidth": false,
+                "pageLength": 10,
+                "lengthMenu": [
+                    [10, 25, 50, 100, -1],
+                    [10, 25, 50, 100, "Todos"]
+                ],
+                "language": {
+                    "decimal": "",
+                    "emptyTable": "No hay datos disponibles en la tabla",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 registros",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "Mostrar _MENU_ registros",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "No se encontraron registros coincidentes",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    },
+                    "aria": {
+                        "sortAscending": ": activar para ordenar ascendente",
+                        "sortDescending": ": activar para ordenar descendente"
+                    }
+                },
+                "order": [
+                    [2, "asc"]
+                ],
+                "drawCallback": function(settings) {
+                    // Asegurarse de que los controles sean visibles
+                    $('.dataTables_length, .dataTables_filter').show();
+                }
+            });
+
+            console.log('DataTable inicializado correctamente');
+        } catch (error) {
+            console.error('Error al inicializar DataTable:', error);
+        }
+    }
+
+    function cargarDataTablesDinamicamente() {
+        // Verificar si ya están cargados
+        if (typeof $.fn.DataTable !== 'undefined') {
+            inicializarDataTable();
+            return;
+        }
+
+        console.log('Cargando DataTables dinámicamente...');
+
+        // Cargar DataTables JS
+        var script = document.createElement('script');
+        script.src = '/final/public/plugins/datatables/jquery.dataTables.min.js';
+        script.onload = function() {
+            // Cargar DataTables Bootstrap 4 JS
+            var script2 = document.createElement('script');
+            script2.src = '/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js';
+            script2.onload = function() {
+                console.log('DataTables cargado dinámicamente');
+                inicializarDataTable();
+            };
+            document.body.appendChild(script2);
+        };
+        document.body.appendChild(script);
+    }
+
     function cambiarEstado(id_representante, nuevo_estado) {
-        // Nota: En un entorno de Canvas, se recomienda reemplazar 'confirm()' y 'alert()' por modales de UI.
         const accion = nuevo_estado ? 'habilitar' : 'inhabilitar';
 
         if (confirm(`¿Está seguro de que desea ${accion} este representante?`)) {
@@ -256,7 +289,66 @@ PermissionManager::requirePermission();
         }
     }
 </script>
+
+<!-- CSS adicional para DataTables -->
+<style>
+    /* Asegurar que los controles de DataTables sean visibles */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        display: block !important;
+        margin: 10px 0;
+    }
+
+    /* Asegurar que el buscador sea visible */
+    .dataTables_filter {
+        float: right !important;
+        margin-bottom: 10px !important;
+    }
+
+    .dataTables_filter label {
+        margin: 0 !important;
+    }
+
+    .dataTables_filter input {
+        margin-left: 5px !important;
+        display: inline-block !important;
+    }
+
+    /* Asegurar que la paginación sea visible */
+    .dataTables_paginate {
+        float: right !important;
+        margin-top: 10px !important;
+    }
+
+    /* Fix para la tabla responsive */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Asegurar que la tabla ocupe el 100% */
+    #tablaRepresentantes {
+        width: 100% !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Estilos para botones de acción */
+    .btn-group {
+        display: flex !important;
+        justify-content: center !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .btn-group .btn {
+        margin: 0 2px !important;
+        padding: 3px 8px !important;
+        font-size: 12px !important;
+    }
+</style>
+
 <?php
+// Cerrar el layout
 include_once("/xampp/htdocs/final/layout/layaout2.php");
-include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>

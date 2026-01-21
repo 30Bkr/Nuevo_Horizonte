@@ -1,5 +1,6 @@
 <?php
 include_once("/xampp/htdocs/final/app/conexion.php");
+require_once '/xampp/htdocs/final/global/notifications.php';
 
 class ReinscripcionController
 {
@@ -86,6 +87,7 @@ class ReinscripcionController
       $id_inscripcion = $this->crearInscripcion($datos);
 
       $this->pdo->commit();
+      Notification::set("Reinscripción completada exitosamente para el estudiante", "success");
       return [
         'success' => true,
         'message' => 'Reinscripción realizada exitosamente',
@@ -93,6 +95,8 @@ class ReinscripcionController
       ];
     } catch (Exception $e) {
       $this->pdo->rollBack();
+      Notification::set("Reinscripción no completada", "error");
+
       return [
         'success' => false,
         'message' => $e->getMessage()
@@ -292,16 +296,16 @@ class ReinscripcionController
     }
   }
 
- private function crearInscripcion($datos)
-{
+  private function crearInscripcion($datos)
+  {
     // ✅ VALIDACIÓN CRÍTICA: Verificar que id_seccion existe y es válido
     if (!isset($datos['id_seccion']) || empty($datos['id_seccion'])) {
-        throw new Exception("Error: No se ha seleccionado una sección válida para la inscripción.");
+      throw new Exception("Error: No se ha seleccionado una sección válida para la inscripción.");
     }
 
     // ✅ Validar que id_seccion sea numérico
     if (!is_numeric($datos['id_seccion'])) {
-        throw new Exception("Error: El ID de sección no es válido.");
+      throw new Exception("Error: El ID de sección no es válido.");
     }
 
     // ✅ DEBUG: Registrar los datos que se van a insertar
@@ -317,29 +321,28 @@ class ReinscripcionController
             ) VALUES (?, ?, ?, ?, CURDATE(), ?, NOW())";
 
     $stmt = $this->pdo->prepare($sql);
-    
-    try {
-        $stmt->execute([
-            $datos['id_estudiante_existente'],
-            $datos['id_periodo'],
-            $datos['id_seccion'],
-            $_SESSION['id_usuario'] ?? 1,
-            $datos['observaciones'] ?? null
-        ]);
 
-        $id_inscripcion = $this->pdo->lastInsertId();
-        
-        // ✅ DEBUG: Confirmar que se creó la inscripción
-        error_log("✅ Inscripción creada exitosamente con ID: " . $id_inscripcion);
-        
-        return $id_inscripcion;
-        
+    try {
+      $stmt->execute([
+        $datos['id_estudiante_existente'],
+        $datos['id_periodo'],
+        $datos['id_seccion'],
+        $_SESSION['id_usuario'] ?? 1,
+        $datos['observaciones'] ?? null
+      ]);
+
+      $id_inscripcion = $this->pdo->lastInsertId();
+
+      // ✅ DEBUG: Confirmar que se creó la inscripción
+      error_log("✅ Inscripción creada exitosamente con ID: " . $id_inscripcion);
+
+      return $id_inscripcion;
     } catch (PDOException $e) {
-        // ✅ Capturar error específico de la base de datos
-        error_log("❌ Error al crear inscripción: " . $e->getMessage());
-        throw new Exception("Error al guardar la inscripción en la base de datos: " . $e->getMessage());
+      // ✅ Capturar error específico de la base de datos
+      error_log("❌ Error al crear inscripción: " . $e->getMessage());
+      throw new Exception("Error al guardar la inscripción en la base de datos: " . $e->getMessage());
     }
-}
+  }
 }
 
 // Procesar la reinscripción
@@ -351,18 +354,17 @@ if ($_POST) {
     $reinscripcionController = new ReinscripcionController($pdo);
 
     $resultado = $reinscripcionController->realizarReinscripcion($_POST);
-    
+
     // ✅ EN LUGAR DE REDIRIGIR, ENVIAR RESPUESTA JSON AL JAVASCRIPT
     header('Content-Type: application/json');
     echo json_encode($resultado);
     exit();
-    
   } catch (Exception $e) {
     // ✅ EN CASO DE ERROR, TAMBIÉN ENVIAR RESPUESTA JSON
     header('Content-Type: application/json');
     echo json_encode([
-        'success' => false,
-        'message' => 'Error: ' . $e->getMessage()
+      'success' => false,
+      'message' => 'Error: ' . $e->getMessage()
     ]);
     exit();
   }

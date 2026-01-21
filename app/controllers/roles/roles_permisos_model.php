@@ -41,17 +41,44 @@ class RolesPermisosModel
     }
   }
 
-  // Obtener todos los permisos
+  // Obtener todos los permisos ordenados por tipo
   public function getPermisos()
   {
     try {
-      $sql = "SELECT * FROM permisos WHERE estatus = 1 ORDER BY nom_url";
+      $sql = "SELECT * FROM permisos WHERE estatus = 1 ORDER BY tipo, nom_url";
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute();
       return $stmt->fetchAll(PDO::FETCH_OBJ);
     } catch (PDOException $e) {
       error_log("Error en getPermisos: " . $e->getMessage());
       return [];
+    }
+  }
+
+  // Obtener permisos agrupados por tipo
+  public function getPermisosAgrupadosPorTipo()
+  {
+    try {
+      $sql = "SELECT * FROM permisos WHERE estatus = 1 ORDER BY tipo, nom_url";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+      $permisos = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+      // Agrupar por tipo
+      $agrupados = [
+        'vista' => [],
+        'edicion' => [],
+        'eliminacion' => []
+      ];
+
+      foreach ($permisos as $permiso) {
+        $agrupados[$permiso->tipo][] = $permiso;
+      }
+
+      return $agrupados;
+    } catch (PDOException $e) {
+      error_log("Error en getPermisosAgrupadosPorTipo: " . $e->getMessage());
+      return ['vista' => [], 'edicion' => [], 'eliminacion' => []];
     }
   }
 
@@ -65,7 +92,7 @@ class RolesPermisosModel
                     WHERE rp.id_rol = :id_rol 
                       AND rp.estatus = 1
                       AND p.estatus = 1
-                    ORDER BY p.nom_url";
+                    ORDER BY p.tipo, p.nom_url";
 
       $stmt = $this->pdo->prepare($sql);
       $stmt->bindParam(':id_rol', $id_rol);
