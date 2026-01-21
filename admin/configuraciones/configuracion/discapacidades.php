@@ -33,6 +33,7 @@ try {
     $discapacidad['en_uso'] = $discapacidadController->discapacidadEnUso($discapacidad['id_discapacidad']);
     $discapacidad['conteo_usos'] = $discapacidadController->obtenerConteoUsosDiscapacidad($discapacidad['id_discapacidad']);
   }
+  unset($discapacidad);
   $totalAsignaciones = $discapacidadController->contarAsignacionesEstudiantes();
 } catch (Exception $e) {
   $discapacidades = [];
@@ -183,16 +184,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                       </td>
                     </tr>
                   <?php else: ?>
-                    <?php foreach ($discapacidades as $discapacidad):
-                      // Verificar si la discapacidad está en uso
-                      try {
-                        $en_uso = $discapacidadController->discapacidadEnUso($discapacidad['id_discapacidad']);
-                        $conteo_usos = $discapacidadController->obtenerConteoUsosDiscapacidad($discapacidad['id_discapacidad']);
-                      } catch (Exception $e) {
-                        $en_uso = false;
-                        $conteo_usos = 0;
-                      }
-                    ?>
+                    <?php foreach ($discapacidades as $discapacidad): ?>
                       <tr id="discapacidad-<?php echo $discapacidad['id_discapacidad']; ?>">
                         <td><?php echo $discapacidad['id_discapacidad']; ?></td>
                         <td>
@@ -228,12 +220,12 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                               <i class="fas fa-edit"></i>
                             </button>
                             <?php if ($discapacidad['estatus'] == 1): ?>
-                              <?php if ($en_uso): ?>
+                              <?php if ($discapacidad['en_uso']): ?>
                                 <!-- Permite desactivar pero con advertencia -->
                                 <button class="btn btn-sm btn-outline-warning"
                                   data-toggle="tooltip"
-                                  title="Desactivar (en uso en <?php echo $conteo_usos; ?> estudiante(s))"
-                                  onclick="cambiarEstatusConAdvertencia(<?php echo $discapacidad['id_discapacidad']; ?>, '<?php echo htmlspecialchars($discapacidad['nom_discapacidad']); ?>', 0, <?php echo $conteo_usos; ?>)">
+                                  title="Desactivar (en uso en <?php echo $discapacidad['conteo_usos']; ?> estudiante(s))"
+                                  onclick="cambiarEstatusConAdvertencia(<?php echo $discapacidad['id_discapacidad']; ?>, '<?php echo htmlspecialchars($discapacidad['nom_discapacidad']); ?>', 0, <?php echo $discapacidad['conteo_usos']; ?>)">
                                   <i class="fas fa-exclamation-triangle"></i>
                                 </button>
                               <?php else: ?>
@@ -273,7 +265,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
           <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> Información Importante</h5>
             <ul class="mb-0">
-              <li><strong>Discapacidades en uso:</strong> No se pueden desactivar porque están siendo utilizadas por estudiantes</li>
+              <!-- <li><strong>Discapacidades en uso:</strong> No se pueden desactivar porque están siendo utilizadas por estudiantes</li> -->
               <li><strong>Discapacidades sin uso:</strong> Se pueden desactivar sin problemas</li>
               <li><strong>Discapacidades inactivas:</strong> No aparecerán en los formularios de nuevos registros</li>
               <li>Los registros existentes que ya usen la discapacidad no se verán afectados al desactivarla</li>
@@ -299,14 +291,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                   <span class="badge badge-danger mr-2">Inactiva</span>
                   <small>No disponible para nuevos registros</small>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                   <span class="badge badge-info mr-2">En uso</span>
                   <small>Usada por estudiantes activos</small>
                 </div>
                 <div class="col-md-3">
                   <span class="badge badge-secondary mr-2">Sin uso</span>
                   <small>No usada por estudiantes</small>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
