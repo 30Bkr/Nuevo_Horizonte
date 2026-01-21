@@ -1,7 +1,11 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
 
 // Incluir los controladores necesarios
 include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
@@ -14,7 +18,9 @@ include_once("/xampp/htdocs/final/app/controllers/patologias/patologias.php");
 include_once("/xampp/htdocs/final/app/controllers/discapacidades/discapacidades.php");
 include_once("/xampp/htdocs/final/app/controllers/cupos/cupos.php");
 include_once("/xampp/htdocs/final/app/conexion.php");
+require_once '/xampp/htdocs/final/global/notifications.php';
 
+Notification::show();
 try {
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
@@ -803,11 +809,6 @@ try {
 </div>
 
 
-
-<?php
-include_once("/xampp/htdocs/final/layout/layaout2.php");
-include_once("/xampp/htdocs/final/layout/mensajes.php");
-?>
 
 <script>
   // ========== SISTEMA DE NAVEGACIÓN ==========
@@ -2730,5 +2731,4 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
 
 <?php
 include_once("/xampp/htdocs/final/layout/layaout2.php");
-include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>
