@@ -131,7 +131,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
           <!-- // Docentes  -->
 
-          <?php if (PermissionManager::canViewAny(['admin/configuraciones/index.php'])) { ?>
+          <?php if (PermissionManager::canViewAny(['views/docentes/docentes_list.php'])) { ?>
 
             <li class="nav-item ">
               <a href="#" class="nav-link">
@@ -294,7 +294,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <?php endif; ?>
 
 
-          <?php if (PermissionManager::canViewAny(['admin/configuraciones/index.php'])) { ?>
+          <?php if (PermissionManager::canViewAny(['admin/representantes/representantes_list.php'])) { ?>
 
             <li class="nav-item ">
               <a href="#" class="nav-link">

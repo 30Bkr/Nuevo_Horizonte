@@ -1,17 +1,11 @@
 <?php
 // admin/roles_permisos/eliminar_rol.php
 
-// Iniciar sesión si no está iniciada
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-
 require_once '/xampp/htdocs/final/global/protect.php';
-require_once '/xampp/htdocs/final/global/notifications.php';
-require_once '/xampp/htdocs/final/app/controllers/roles/roles_permisos_model.php';
+require_once '/xampp/htdocs/final/app/roles_permisos_model.php';
 
 // Verificar que solo administradores puedan acceder
-if (!isset($_SESSION['usuario_rol']) || $_SESSION['usuario_rol'] !== 'Administrador') {
+if (!isset($_SESSION['usuario_rol_nombre']) || $_SESSION['usuario_rol_nombre'] !== 'Administrador') {
   Notification::set("No tienes permisos para gestionar roles", "error");
   header('Location: ' . URL . '/admin/roles_permisos/index.php');
   exit();
