@@ -194,19 +194,20 @@ class Grado
     }
 
     // Actualizar grado
+    // Actualizar grado - VERSIÓN CORREGIDA
     public function actualizar()
     {
         $idPeriodoActivo = $this->obtenerPeriodoActivo();
 
-        // Validar que la capacidad no sea menor a los estudiantes registrados
+        // Opción 1: Usar solo parámetros nombrados
         $query_check = "SELECT COUNT(*) as total_estudiantes 
-                           FROM inscripciones 
-                           WHERE id_nivel_seccion = ? 
-                           AND estatus = 1
-                           AND id_periodo = :id_periodo";
+                       FROM inscripciones 
+                       WHERE id_nivel_seccion = :id_nivel_seccion 
+                       AND estatus = 1
+                       AND id_periodo = :id_periodo";
 
         $stmt_check = $this->conn->prepare($query_check);
-        $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->bindParam(":id_nivel_seccion", $this->id_nivel_seccion, PDO::PARAM_INT);
         $stmt_check->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt_check->execute();
         $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
@@ -218,8 +219,8 @@ class Grado
         }
 
         $query = "UPDATE " . $this->table_name . " 
-                      SET capacidad = :capacidad
-                      WHERE id_nivel_seccion = :id_nivel_seccion";
+                  SET capacidad = :capacidad
+                  WHERE id_nivel_seccion = :id_nivel_seccion";
 
         $stmt = $this->conn->prepare($query);
 
@@ -242,13 +243,13 @@ class Grado
 
         // Verificar si hay estudiantes inscritos
         $query_check = "SELECT COUNT(*) as total 
-                           FROM inscripciones 
-                           WHERE id_nivel_seccion = ? 
-                           AND estatus = 1
-                           AND id_periodo = :id_periodo";
+                       FROM inscripciones 
+                       WHERE id_nivel_seccion = :id_nivel_seccion 
+                       AND estatus = 1
+                       AND id_periodo = :id_periodo";
 
         $stmt_check = $this->conn->prepare($query_check);
-        $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->bindParam(":id_nivel_seccion", $this->id_nivel_seccion, PDO::PARAM_INT);
         $stmt_check->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt_check->execute();
         $row = $stmt_check->fetch(PDO::FETCH_ASSOC);
@@ -258,11 +259,11 @@ class Grado
         }
 
         $query = "UPDATE " . $this->table_name . " 
-                      SET estatus = 0 
-                      WHERE id_nivel_seccion = ?";
+                  SET estatus = 0 
+                  WHERE id_nivel_seccion = :id_nivel_seccion";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->id_nivel_seccion);
+        $stmt->bindParam(":id_nivel_seccion", $this->id_nivel_seccion, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             return true;
@@ -510,18 +511,51 @@ class Grado
      * Inhabilitar un grado/sección
      * @return bool True si se inhabilitó correctamente
      */
+    // public function inhabilitar()
+    // {
+    //     $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
+    //     // Verificar si hay estudiantes inscritos activos
+    //     $query_check = "SELECT COUNT(*) as total FROM inscripciones 
+    //                        WHERE id_nivel_seccion = ? 
+    //                        AND estatus = 1
+    //                        AND id_periodo = :id_periodo";
+
+    //     $stmt_check = $this->conn->prepare($query_check);
+    //     $stmt_check->bindParam(1, $this->id_nivel_seccion);
+    //     $stmt_check->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
+    //     $stmt_check->execute();
+    //     $row = $stmt_check->fetch(PDO::FETCH_ASSOC);
+
+    //     if ($row['total'] > 0) {
+    //         // No se puede inhabilitar si hay estudiantes activos
+    //         return false;
+    //     }
+
+    //     $query = "UPDATE " . $this->table_name . " 
+    //                   SET estatus = 0 
+    //                   WHERE id_nivel_seccion = ?";
+
+    //     $stmt = $this->conn->prepare($query);
+    //     $stmt->bindParam(1, $this->id_nivel_seccion);
+
+    //     if ($stmt->execute()) {
+    //         return true;
+    //     }
+    //     return false;
+    // }
     public function inhabilitar()
     {
         $idPeriodoActivo = $this->obtenerPeriodoActivo();
 
         // Verificar si hay estudiantes inscritos activos
         $query_check = "SELECT COUNT(*) as total FROM inscripciones 
-                           WHERE id_nivel_seccion = ? 
-                           AND estatus = 1
-                           AND id_periodo = :id_periodo";
+                       WHERE id_nivel_seccion = :id_nivel_seccion 
+                       AND estatus = 1
+                       AND id_periodo = :id_periodo";
 
         $stmt_check = $this->conn->prepare($query_check);
-        $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->bindParam(":id_nivel_seccion", $this->id_nivel_seccion, PDO::PARAM_INT);
         $stmt_check->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt_check->execute();
         $row = $stmt_check->fetch(PDO::FETCH_ASSOC);
@@ -532,11 +566,11 @@ class Grado
         }
 
         $query = "UPDATE " . $this->table_name . " 
-                      SET estatus = 0 
-                      WHERE id_nivel_seccion = ?";
+                  SET estatus = 0 
+                  WHERE id_nivel_seccion = :id_nivel_seccion";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->id_nivel_seccion);
+        $stmt->bindParam(":id_nivel_seccion", $this->id_nivel_seccion, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             return true;

@@ -1,4 +1,10 @@
 <?php
+// Eliminar cualquier BOM u output previo
+if (ob_get_length()) ob_clean();
+ob_start();
+
+// Forzar UTF-8
+header('Content-Type: text/html; charset=utf-8');
 session_start();
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 
@@ -33,8 +39,23 @@ if (!$info_grado) {
     exit();
 }
 
-// Obtener estudiantes del grado/sección (SOLO del período activo)
-$estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
+// Obtener estudiantes del grado/sección y guardarlos en array
+$datosEstudiantes = [];
+try {
+    $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
+
+    // Guardar todos los resultados en un array
+    while ($estudiante = $estudiantes->fetch(PDO::FETCH_ASSOC)) {
+        $datosEstudiantes[] = $estudiante;
+    }
+
+    // Debug opcional (comentario HTML)
+    echo "<!-- DEBUG: Total estudiantes encontrados = " . count($datosEstudiantes) . " -->";
+} catch (Exception $e) {
+    $error = "Error al cargar estudiantes: " . $e->getMessage();
+    echo "<!-- DEBUG: $error -->";
+}
+
 ?>
 
 <!-- Content Wrapper -->
@@ -43,12 +64,12 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Estudiantes de <?php echo $info_grado['nombre_grado'] . ' - ' . $info_grado['seccion']; ?></h1>
+                    <h1>Estudiantes de <?php echo htmlspecialchars($info_grado['nombre_grado']) . ' - ' . htmlspecialchars($info_grado['seccion']); ?></h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                        <li class="breadcrumb-item"><a href="<?php echo $volver_a; ?>">Grados</a></li>
+                        <li class="breadcrumb-item"><a href="<?php echo htmlspecialchars($volver_a); ?>">Grados</a></li>
                         <li class="breadcrumb-item active">Estudiantes</li>
                     </ol>
                 </div>
@@ -76,19 +97,27 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                 </div>
             <?php endif; ?>
 
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
+                    <?php echo htmlspecialchars($error); ?>
+                </div>
+            <?php endif; ?>
+
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">
                         Lista de Estudiantes -
-                        <?php echo $info_grado['nombre_grado'] . ' - ' . $info_grado['seccion']; ?>
-                        (Capacidad: <?php echo $info_grado['capacidad']; ?> estudiantes)
+                        <?php echo htmlspecialchars($info_grado['nombre_grado']) . ' - ' . htmlspecialchars($info_grado['seccion']); ?>
+                        (Capacidad: <?php echo htmlspecialchars($info_grado['capacidad']); ?> estudiantes)
                     </h3>
                     <div class="card-tools">
-                        <a href="estudiantes_por_grado_pdf.php?id_nivel_seccion=<?php echo $id_nivel_seccion; ?>"
+                        <a href="estudiantes_por_grado_pdf.php?id_nivel_seccion=<?php echo urlencode($id_nivel_seccion); ?>"
                             class="btn btn-success btn-sm" target="_blank">
                             <i class="fas fa-print"></i> Imprimir Lista
                         </a>
-                        <a href="<?php echo $volver_a; ?>" class="btn btn-default btn-sm">
+                        <a href="<?php echo htmlspecialchars($volver_a); ?>" class="btn btn-default btn-sm">
                             <i class="fas fa-arrow-left"></i> Volver
                         </a>
                     </div>
@@ -100,12 +129,12 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                 <span class="info-box-icon"><i class="fas fa-users"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Total Estudiantes</span>
-                                    <span class="info-box-number"><?php echo $estudiantes->rowCount(); ?></span>
+                                    <span class="info-box-number"><?php echo count($datosEstudiantes); ?></span>
                                     <div class="progress">
-                                        <div class="progress-bar" style="width: <?php echo $info_grado['capacidad'] > 0 ? ($estudiantes->rowCount() / $info_grado['capacidad']) * 100 : 0; ?>%"></div>
+                                        <div class="progress-bar" style="width: <?php echo $info_grado['capacidad'] > 0 ? (count($datosEstudiantes) / $info_grado['capacidad']) * 100 : 0; ?>%"></div>
                                     </div>
                                     <span class="progress-description">
-                                        <?php echo number_format(($estudiantes->rowCount() / $info_grado['capacidad']) * 100, 1); ?>% de ocupación
+                                        <?php echo number_format(($info_grado['capacidad'] > 0 ? (count($datosEstudiantes) / $info_grado['capacidad']) * 100 : 0), 1); ?>% de ocupación
                                     </span>
                                 </div>
                             </div>
@@ -115,7 +144,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                 <span class="info-box-icon"><i class="fas fa-door-open"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Cupos Disponibles</span>
-                                    <span class="info-box-number"><?php echo $info_grado['capacidad'] - $estudiantes->rowCount(); ?></span>
+                                    <span class="info-box-number"><?php echo $info_grado['capacidad'] - count($datosEstudiantes); ?></span>
                                 </div>
                             </div>
                         </div>
@@ -137,9 +166,9 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                         </thead>
                         <tbody>
                             <?php
-                            if ($estudiantes->rowCount() > 0):
+                            if (!empty($datosEstudiantes)):
                                 $contador = 1;
-                                while ($estudiante = $estudiantes->fetch(PDO::FETCH_ASSOC)):
+                                foreach ($datosEstudiantes as $estudiante):
                                     $edad = $estudiante['fecha_nac'] ? floor((time() - strtotime($estudiante['fecha_nac'])) / 31556926) : 'N/A';
                                     $nombre_completo_estudiante = htmlspecialchars(
                                         $estudiante['primer_nombre'] . ' ' .
@@ -147,9 +176,9 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                             $estudiante['primer_apellido'] . ' ' .
                                             ($estudiante['segundo_apellido'] ? $estudiante['segundo_apellido'] : '')
                                     );
-                                    $nombre_completo_representante = $estudiante['representante_nombre'] ? 
-                                        htmlspecialchars($estudiante['representante_nombre']) . 
-                                        ($estudiante['parentesco'] ? ' (' . htmlspecialchars($estudiante['parentesco']) . ')' : '') : 
+                                    $nombre_completo_representante = $estudiante['representante_nombre'] ?
+                                        htmlspecialchars($estudiante['representante_nombre']) .
+                                        ($estudiante['parentesco'] ? ' (' . htmlspecialchars($estudiante['parentesco']) . ')' : '') :
                                         'No asignado';
                                     $discapacidades = $estudiante['discapacidades'] ? htmlspecialchars($estudiante['discapacidades']) : 'Ninguna';
                             ?>
@@ -173,24 +202,24 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                                         <td>
                                             <div class="btn-group">
                                                 <!-- Botón para ver ficha del estudiante -->
-                                                <button type="button" class="btn btn-info btn-sm" 
-                                                        onclick="verFichaEstudiante('<?php echo $estudiante['cedula']; ?>')"
-                                                        title="Ver Ficha del Estudiante">
+                                                <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="verFichaEstudiante('<?php echo htmlspecialchars($estudiante['cedula']); ?>')"
+                                                    title="Ver Ficha del Estudiante">
                                                     <i class="fas fa-user"></i> Estudiante
                                                 </button>
-                                                
+
                                                 <!-- Botón para ver ficha del representante -->
                                                 <?php if ($estudiante['representante_nombre']): ?>
-                                                <button type="button" class="btn btn-warning btn-sm" 
-                                                        onclick="verFichaRepresentante('<?php echo $estudiante['cedula']; ?>')"
+                                                    <button type="button" class="btn btn-warning btn-sm"
+                                                        onclick="verFichaRepresentante('<?php echo htmlspecialchars($estudiante['cedula']); ?>')"
                                                         title="Ver Ficha del Representante">
-                                                    <i class="fas fa-user-tie"></i> Representante
-                                                </button>
+                                                        <i class="fas fa-user-tie"></i> Representante
+                                                    </button>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>
-                                <?php endwhile; ?>
+                                <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
                                     <td colspan="9" class="text-center">No hay estudiantes inscritos en este grado/año/sección</td>
@@ -259,7 +288,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                 <form id="formSubirFoto" enctype="multipart/form-data">
                     <input type="hidden" id="fotoCedula" name="cedula">
                     <input type="hidden" id="fotoTipo" name="tipo">
-                    
+
                     <div class="form-group">
                         <label for="fotoArchivo">Seleccionar imagen:</label>
                         <div class="custom-file">
@@ -268,7 +297,7 @@ $estudiantes = $grado->obtenerEstudiantesPorGrado($id_nivel_seccion);
                         </div>
                         <small class="form-text text-muted">Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB. Recomendado: 150x180px</small>
                     </div>
-                    
+
                     <div class="text-center mt-3">
                         <img id="previewFoto" src="" alt="Vista previa" class="img-thumbnail d-none" style="max-width: 150px; max-height: 180px; object-fit: cover;">
                     </div>
@@ -347,7 +376,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                     $('#previewFoto').addClass('d-none').attr('src', '');
                     return;
                 }
-                
+
                 // Validar tipo de archivo
                 var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
                 if (!allowedTypes.includes(file.type)) {
@@ -357,7 +386,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                     $('#previewFoto').addClass('d-none').attr('src', '');
                     return;
                 }
-                
+
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     $('#previewFoto').attr('src', e.target.result).removeClass('d-none');
@@ -379,12 +408,12 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                 alert('Por favor, seleccione una imagen');
                 return;
             }
-            
+
             var formData = new FormData($('#formSubirFoto')[0]);
-            
+
             // Mostrar indicador de carga
             $(this).html('<i class="fas fa-spinner fa-spin"></i> Subiendo...').prop('disabled', true);
-            
+
             $.ajax({
                 url: 'subir_foto.php',
                 type: 'POST',
@@ -398,7 +427,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                             // Mostrar mensaje de éxito
                             alert('¡Foto subida correctamente!');
                             $('#modalSubirFoto').modal('hide');
-                            
+
                             // Recargar la ficha correspondiente después de un breve delay
                             setTimeout(function() {
                                 if ($('#fotoTipo').val() === 'estudiante') {
@@ -407,9 +436,9 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
                                     verFichaRepresentante($('#fotoCedula').val());
                                 }
                             }, 500);
-                            
+
                         } else {
-                            alert('Error: ' + result.message);
+                            alert('Error: '.result.message);
                         }
                     } catch (e) {
                         console.error('Error parsing response:', e, response);
@@ -434,7 +463,7 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
             $('#previewFoto').addClass('d-none').attr('src', '');
             $('#btnSubirFoto').prop('disabled', false);
         });
-        
+
         // También limpiar al abrir
         $('#modalSubirFoto').on('show.bs.modal', function() {
             $('#formSubirFoto')[0].reset();
@@ -448,11 +477,13 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
     function verFichaEstudiante(cedula) {
         $('#contenidoFichaEstudiante').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Cargando información...</div>');
         $('#modalFichaEstudiante').modal('show');
-        
+
         $.ajax({
             url: 'ficha_estudiante.php',
             type: 'GET',
-            data: { cedula: cedula },
+            data: {
+                cedula: cedula
+            },
             success: function(response) {
                 $('#contenidoFichaEstudiante').html(response);
             },
@@ -467,11 +498,13 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
     function verFichaRepresentante(cedulaEstudiante) {
         $('#contenidoFichaRepresentante').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Cargando información...</div>');
         $('#modalFichaRepresentante').modal('show');
-        
+
         $.ajax({
             url: 'ficha_representante.php',
             type: 'GET',
-            data: { cedula_estudiante: cedulaEstudiante },
+            data: {
+                cedula_estudiante: cedulaEstudiante
+            },
             success: function(response) {
                 $('#contenidoFichaRepresentante').html(response);
             },
@@ -486,22 +519,21 @@ include_once("/xampp/htdocs/final/layout/mensajes.php");
     function abrirModalFoto(cedula, tipo) {
         $('#fotoCedula').val(cedula);
         $('#fotoTipo').val(tipo);
-        
+
         // Configurar título del modal según el tipo
         var titulo = (tipo === 'estudiante') ? 'Subir Foto del Estudiante' : 'Subir Foto del Representante';
         $('#modalSubirFotoLabel').text(titulo);
-        
+
         // Resetear formulario y mostrar modal
         $('#formSubirFoto')[0].reset();
         $('.custom-file-label').html('Seleccionar archivo...');
         $('#previewFoto').addClass('d-none').attr('src', '');
         $('#btnSubirFoto').prop('disabled', false);
         $('#modalSubirFoto').modal('show');
-        
+
         // Enfocar el input file después de que el modal se muestre
         setTimeout(function() {
             $('#fotoArchivo').focus();
         }, 500);
     }
 </script>
-?>
