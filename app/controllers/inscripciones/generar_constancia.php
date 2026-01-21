@@ -98,8 +98,15 @@ try {
     $html = '
     <style>
         .titulo {
-            text-align: center; font-weight: bold; font-size: 16pt; color: #003366;
-            text-decoration: underline; margin: 20px 0 40px 0;
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 16pt; 
+            color: #003366;
+            
+            /* AQUÍ ESTÁ EL TRUCO PARA LA LÍNEA GRUESA */
+            border-bottom: 3px solid #003366;  /* 3px de grosor hace que se vea "tosca" y firme */
+            padding-bottom: 8px;               /* Espacio entre las letras y la barra */
+            margin: 20px 0 40px 0;             /* Espacio debajo de la barra */
         }
         .texto-cuerpo {
             text-align: justify; text-justify: inter-word;
