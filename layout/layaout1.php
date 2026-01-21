@@ -299,27 +299,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           }
           ?>
 
-          <?php if (PermissionManager::canViewAny(['admin/roles_permisos/index.php']) && PermissionManager::isAdmin()): ?>
-            <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon fas bi bi-shield-lock">
-                  <img src="<?= URL; ?>/public/images/shield.svg" alt="Seguridad">
-                </i>
-                <p>
-                  Seguridad
-                  <i class="right fas fa-angle-left"></i>
-                </p>
-              </a>
-              <ul class="nav nav-treeview">
-                <li class="nav-item">
-                  <a href="<?= URL; ?>/admin/roles_permisos/index.php" class="nav-link">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Roles y Permisos</p>
-                  </a>
-                </li>
-              </ul>
-            </li>
-          <?php endif; ?>
+
 
 
           <?php if (PermissionManager::canViewAny(['admin/representantes/representantes_list.php'])) { ?>
@@ -355,6 +335,27 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <?php
           }
           ?>
+          <?php if (PermissionManager::canViewAny(['admin/roles_permisos/index.php']) && PermissionManager::isAdmin()): ?>
+            <li class="nav-item">
+              <a href="#" class="nav-link">
+                <i class="nav-icon fas bi bi-shield-lock">
+                  <img src="<?= URL; ?>/public/images/shield.svg" alt="Seguridad">
+                </i>
+                <p>
+                  Seguridad
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/roles_permisos/index.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Roles y Permisos</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          <?php endif; ?>
 
 
           <?php if (isset($_SESSION['usuario_id']) && $_SESSION['usuario_rol_id'] != 1): ?>
