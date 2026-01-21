@@ -1,125 +1,114 @@
 <?php
 class ProfesionController
 {
-  private $conn;
+  private $pdo;
 
-  public function __construct($conn)
+  public function __construct($pdo)
   {
-    $this->conn = $conn;
+    $this->pdo = $pdo;
   }
 
-  public function obtenerProfesiones()
+  /**
+   * Obtiene todas las profesiones activas
+   */
+  public function obtenerProfesionesActivas()
   {
     try {
-      $stmt = $this->conn->prepare("SELECT * FROM profesiones ORDER BY creacion DESC");
+      $sql = "SELECT * FROM profesiones WHERE estatus = 1 ORDER BY profesion";
+      $stmt = $this->pdo->prepare($sql);
       $stmt->execute();
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-      throw new Exception("Error al obtener profesiones: " . $e->getMessage());
+      error_log("Error en obtenerProfesionesActivas: " . $e->getMessage());
+      return [];
     }
   }
 
-  public function verificarProfesionExistente($nombre)
+  /**
+   * Obtiene una profesión por ID
+   */
+  public function obtenerProfesionPorId($id_profesion)
   {
     try {
-      $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM profesiones WHERE profesion = ?");
-      $stmt->execute([trim($nombre)]);
-      $result = $stmt->fetch(PDO::FETCH_ASSOC);
-      return $result['total'] > 0;
+      $sql = "SELECT * FROM profesiones WHERE id_profesion = ?";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$id_profesion]);
+      return $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
+      error_log("Error en obtenerProfesionPorId: " . $e->getMessage());
+      return null;
+    }
+  }
+
+  /**
+   * Crea una nueva profesión
+   */
+  public function crearProfesion($profesion)
+  {
+    try {
+      $sql = "INSERT INTO profesiones (profesion) VALUES (?)";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute([$profesion]);
+      return $this->pdo->lastInsertId();
+    } catch (PDOException $e) {
+      error_log("Error en crearProfesion: " . $e->getMessage());
       return false;
     }
   }
 
-  public function agregarProfesion($nombre)
+  /**
+   * Actualiza una profesión
+   */
+  public function actualizarProfesion($id_profesion, $profesion)
   {
     try {
-      // Primero verificamos si ya existe
-      if ($this->verificarProfesionExistente($nombre)) {
-        return [
-          'success' => false,
-          'message' => "No se puede agregar la profesión \"$nombre\" porque ya se encuentra registrada.",
-          'duplicate' => true
-        ];
-      }
-
-      $stmt = $this->conn->prepare("INSERT INTO profesiones (profesion) VALUES (?)");
-      $stmt->execute([trim($nombre)]);
-      return ['success' => true, 'message' => 'Profesión agregada correctamente'];
+      $sql = "UPDATE profesiones SET profesion = ?, actualizacion = NOW() WHERE id_profesion = ?";
+      $stmt = $this->pdo->prepare($sql);
+      return $stmt->execute([$profesion, $id_profesion]);
     } catch (PDOException $e) {
-      // Manejo específico para error de duplicado
-      if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') !== false) {
-        return [
-          'success' => false,
-          'message' => "No se puede agregar la profesión \"$nombre\" porque ya se encuentra registrada.",
-          'duplicate' => true
-        ];
-      }
-      return ['success' => false, 'message' => 'Error al agregar profesión: ' . $e->getMessage()];
+      error_log("Error en actualizarProfesion: " . $e->getMessage());
+      return false;
     }
   }
 
-  public function actualizarProfesion($id, $nombre, $estatus)
-  {
-    try {
-      // Verificar si el nuevo nombre ya existe en otro registro
-      $stmt = $this->conn->prepare("SELECT COUNT(*) as total FROM profesiones WHERE profesion = ? AND id_profesion != ?");
-      $stmt->execute([trim($nombre), $id]);
-      $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-      if ($result['total'] > 0) {
-        return [
-          'success' => false,
-          'message' => "No se puede actualizar la profesión a \"$nombre\" porque ya existe otra profesión con ese nombre.",
-          'duplicate' => true
-        ];
-      }
-
-      $stmt = $this->conn->prepare("UPDATE profesiones SET profesion = ?, estatus = ?, actualizacion = NOW() WHERE id_profesion = ?");
-      $stmt->execute([trim($nombre), $estatus, $id]);
-      return ['success' => true, 'message' => 'Profesión actualizada correctamente'];
-    } catch (PDOException $e) {
-      // Manejo específico para error de duplicado
-      if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') !== false) {
-        return [
-          'success' => false,
-          'message' => "No se puede actualizar la profesión a \"$nombre\" porque ya existe otra profesión con ese nombre.",
-          'duplicate' => true
-        ];
-      }
-      return ['success' => false, 'message' => 'Error al actualizar profesión: ' . $e->getMessage()];
-    }
-  }
-
-  public function contarUsosProfesion()
-  {
-    try {
-      // Contar uso en representantes
-      $stmtRep = $this->conn->prepare("SELECT COUNT(*) as total FROM representantes WHERE id_profesion IS NOT NULL");
-      $stmtRep->execute();
-      $repCount = $stmtRep->fetch(PDO::FETCH_ASSOC)['total'];
-
-      // Contar uso en docentes
-      $stmtDoc = $this->conn->prepare("SELECT COUNT(*) as total FROM docentes WHERE id_profesion IS NOT NULL");
-      $stmtDoc->execute();
-      $docCount = $stmtDoc->fetch(PDO::FETCH_ASSOC)['total'];
-
-      return $repCount + $docCount;
-    } catch (PDOException $e) {
-      return 0;
-    }
-  }
-
+  /**
+   * Obtiene todas las profesiones (incluyendo inactivas) para administración
+   */
   public function obtenerTodasLasProfesiones()
   {
     try {
-      $sql = "SELECT * FROM profesiones ORDER BY creacion DESC";
-      $stmt = $this->conn->prepare($sql);
+      $sql = "SELECT * FROM profesiones ORDER BY profesion";
+      $stmt = $this->pdo->prepare($sql);
       $stmt->execute();
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
       error_log("Error en obtenerTodasLasProfesiones: " . $e->getMessage());
       return [];
+    }
+  }
+
+  /**
+   * Cuenta las asignaciones de profesiones a representantes y docentes
+   */
+  public function contarAsignaciones()
+  {
+    try {
+      // Contar uso en representantes
+      $sqlRep = "SELECT COUNT(*) as total FROM representantes WHERE id_profesion IS NOT NULL";
+      $stmtRep = $this->pdo->prepare($sqlRep);
+      $stmtRep->execute();
+      $repResult = $stmtRep->fetch(PDO::FETCH_ASSOC);
+
+      // Contar uso en docentes
+      $sqlDoc = "SELECT COUNT(*) as total FROM docentes WHERE id_profesion IS NOT NULL";
+      $stmtDoc = $this->pdo->prepare($sqlDoc);
+      $stmtDoc->execute();
+      $docResult = $stmtDoc->fetch(PDO::FETCH_ASSOC);
+
+      return ($repResult['total'] + $docResult['total']);
+    } catch (PDOException $e) {
+      error_log("Error en contarAsignaciones: " . $e->getMessage());
+      return 0;
     }
   }
 
@@ -130,12 +119,14 @@ class ProfesionController
   {
     try {
       // Verificar uso en representantes
-      $stmtRep = $this->conn->prepare("SELECT COUNT(*) as count FROM representantes WHERE id_profesion = ?");
+      $sqlRep = "SELECT COUNT(*) as count FROM representantes WHERE id_profesion = ?";
+      $stmtRep = $this->pdo->prepare($sqlRep);
       $stmtRep->execute([$id_profesion]);
       $repResult = $stmtRep->fetch(PDO::FETCH_ASSOC);
 
       // Verificar uso en docentes
-      $stmtDoc = $this->conn->prepare("SELECT COUNT(*) as count FROM docentes WHERE id_profesion = ?");
+      $sqlDoc = "SELECT COUNT(*) as count FROM docentes WHERE id_profesion = ?";
+      $stmtDoc = $this->pdo->prepare($sqlDoc);
       $stmtDoc->execute([$id_profesion]);
       $docResult = $stmtDoc->fetch(PDO::FETCH_ASSOC);
 
@@ -153,12 +144,14 @@ class ProfesionController
   {
     try {
       // Contar uso en representantes
-      $stmtRep = $this->conn->prepare("SELECT COUNT(*) as count FROM representantes WHERE id_profesion = ?");
+      $sqlRep = "SELECT COUNT(*) as count FROM representantes WHERE id_profesion = ?";
+      $stmtRep = $this->pdo->prepare($sqlRep);
       $stmtRep->execute([$id_profesion]);
       $repResult = $stmtRep->fetch(PDO::FETCH_ASSOC);
 
       // Contar uso en docentes
-      $stmtDoc = $this->conn->prepare("SELECT COUNT(*) as count FROM docentes WHERE id_profesion = ?");
+      $sqlDoc = "SELECT COUNT(*) as count FROM docentes WHERE id_profesion = ?";
+      $stmtDoc = $this->pdo->prepare($sqlDoc);
       $stmtDoc->execute([$id_profesion]);
       $docResult = $stmtDoc->fetch(PDO::FETCH_ASSOC);
 
@@ -176,7 +169,7 @@ class ProfesionController
   {
     try {
       $sql = "UPDATE profesiones SET estatus = ?, actualizacion = NOW() WHERE id_profesion = ?";
-      $stmt = $this->conn->prepare($sql);
+      $stmt = $this->pdo->prepare($sql);
       return $stmt->execute([$estatus, $id_profesion]);
     } catch (PDOException $e) {
       error_log("Error en cambiarEstatusProfesion: " . $e->getMessage());
@@ -195,7 +188,7 @@ class ProfesionController
               SUM(CASE WHEN estatus = 1 THEN 1 ELSE 0 END) as activas,
               SUM(CASE WHEN estatus = 0 THEN 1 ELSE 0 END) as inactivas
               FROM profesiones";
-      $stmt = $this->conn->prepare($sql);
+      $stmt = $this->pdo->prepare($sql);
       $stmt->execute();
       return $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {

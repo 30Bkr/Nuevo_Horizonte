@@ -1,25 +1,7 @@
 <?php
-// admin/configuraciones/configuracion/profesiones.php
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-
-// Establecer título de página
-$_SESSION['page_title'] = 'Gestión de Profesiones';
-
-// Incluir archivos necesarios
-require_once '/xampp/htdocs/final/global/protect.php';
-require_once '/xampp/htdocs/final/global/check_permissions.php';
-require_once '/xampp/htdocs/final/global/notifications.php';
-require_once '/xampp/htdocs/final/app/conexion.php';
-require_once '/xampp/htdocs/final/app/controllers/profesiones/profesiones.php';
-
-// Verificar permisos
-if (!PermissionManager::canViewAny(['admin/configuraciones/index.php'])) {
-  Notification::set("No tienes permisos para acceder a esta sección", "error");
-  header('Location: ' . URL . '/admin/index.php');
-  exit();
-}
+include_once("/xampp/htdocs/final/layout/layaout1.php");
+include_once("/xampp/htdocs/final/app/conexion.php");
+include_once("/xampp/htdocs/final/app/controllers/profesiones/profesiones.php");
 
 // Obtener datos iniciales
 try {
@@ -27,48 +9,19 @@ try {
   $pdo = $conexion->conectar();
   $profesionController = new ProfesionController($pdo);
 
-  // Usar el método para obtener todas las profesiones
+  // Usar el nuevo método para obtener todas las profesiones
   $profesiones = $profesionController->obtenerTodasLasProfesiones();
-  foreach ($profesiones as &$profesion) {
-    $profesion['en_uso'] = $profesionController->profesionEnUso($profesion['id_profesion']);
-    $profesion['conteo_usos'] = $profesionController->obtenerConteoUsosProfesion($profesion['id_profesion']);
-  }
-  $totalAsignaciones = $profesionController->contarAsignaciones();
+  $totalUsos = $profesionController->contarUsosProfesion();
 } catch (Exception $e) {
   $profesiones = [];
-  $totalAsignaciones = 0;
-  Notification::set("Error al cargar profesiones: " . $e->getMessage(), "error");
+  $totalUsos = 0;
+  $_SESSION['mensaje'] = $e->getMessage();
+  $_SESSION['tipo_mensaje'] = 'error';
 }
-
-// Incluir layout1.php al inicio
-require_once '/xampp/htdocs/final/layout/layaout1.php';
 ?>
 
-<div class="content-wrapper" style="margin-left: 250px;">
-  <!-- Content Header -->
-  <div class="content-header">
-    <?php
-    // Mostrar notificaciones
-    Notification::show();
-    ?>
-    <div class="container-fluid">
-      <div class="row mb-2">
-        <div class="col-sm-6">
-          <h1 class="m-0">Gestión de Profesiones</h1>
-        </div>
-        <div class="col-sm-6">
-          <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/index.php">Inicio</a></li>
-            <li class="breadcrumb-item"><a href="<?= URL; ?>/admin/configuraciones/index.php">Configuraciones</a></li>
-            <li class="breadcrumb-item active">Profesiones</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main content -->
-  <section class="content">
+<div class="content-wrapper">
+  <div class="content">
     <div class="container-fluid">
       <!-- Header -->
       <div class="row mb-4 p-2">
@@ -82,13 +35,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
               <p class="text-muted">Administra el catálogo de profesiones y oficios</p>
             </div>
             <div>
-              <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary">
+              <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
               <button class="btn btn-primary" onclick="abrirModalAgregar()">
                 <i class="fas fa-plus mr-1"></i> Agregar Profesión
               </button>
             </div>
+
           </div>
         </div>
       </div>
@@ -135,7 +89,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         <div class="col-lg-3 col-6">
           <div class="small-box bg-secondary">
             <div class="inner">
-              <h3><?php echo $totalAsignaciones; ?></h3>
+              <h3><?php echo $totalUsos; ?></h3>
               <p>Usos en el Sistema</p>
             </div>
             <div class="icon">
@@ -175,15 +129,15 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                   </tr>
                 </thead>
                 <tbody id="tablaProfesiones">
-                  <?php if (empty($profesiones)) : ?>
+                  <?php if (empty($profesiones)): ?>
                     <tr>
                       <td colspan="6" class="text-center py-4">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                         <p class="text-muted">No hay profesiones registradas</p>
                       </td>
                     </tr>
-                  <?php else : ?>
-                    <?php foreach ($profesiones as $profesion) :
+                  <?php else: ?>
+                    <?php foreach ($profesiones as $profesion):
                       // Verificar si la profesión está en uso
                       try {
                         $en_uso = $profesionController->profesionEnUso($profesion['id_profesion']);
@@ -204,7 +158,8 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                           </div>
                         </td>
                         <td>
-                          <span class="badge badge-<?php echo $profesion['estatus'] == 1 ? 'success' : 'danger'; ?>" id="estatus-<?php echo $profesion['id_profesion']; ?>">
+                          <span class="badge badge-<?php echo $profesion['estatus'] == 1 ? 'success' : 'danger'; ?>"
+                            id="estatus-<?php echo $profesion['id_profesion']; ?>">
                             <?php echo $profesion['estatus'] == 1 ? 'Activa' : 'Inactiva'; ?>
                           </span>
                         </td>
@@ -222,22 +177,27 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                         </td>
                         <td>
                           <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-primary" onclick="editarProfesion(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', <?php echo $profesion['estatus']; ?>)">
+                            <button class="btn btn-sm btn-outline-primary"
+                              onclick="editarProfesion(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', <?php echo $profesion['estatus']; ?>)">
                               <i class="fas fa-edit"></i>
                             </button>
-                            <?php if ($profesion['estatus'] == 1) : ?>
-                              <?php if ($en_uso) : ?>
-                                <!-- Permite desactivar pero con advertencia -->
-                                <button class="btn btn-sm btn-outline-warning" data-toggle="tooltip" title="Desactivar (en uso en <?php echo $conteo_usos; ?> registro(s))" onclick="cambiarEstatusConAdvertencia(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0, <?php echo $conteo_usos; ?>)">
-                                  <i class="fas fa-exclamation-triangle"></i>
+                            <?php if ($profesion['estatus'] == 1): ?>
+                              <?php if ($en_uso): ?>
+                                <button type="button"
+                                  class="btn btn-sm btn-secondary"
+                                  data-toggle="tooltip"
+                                  title="No se puede desactivar porque está en uso en <?php echo $conteo_usos; ?> registro(s)">
+                                  <i class="fas fa-lock mr-1"></i> Bloqueado
                                 </button>
-                              <?php else : ?>
-                                <button class="btn btn-sm btn-outline-danger" onclick="cambiarEstatus(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0)">
+                              <?php else: ?>
+                                <button class="btn btn-sm btn-outline-danger"
+                                  onclick="cambiarEstatus(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0)">
                                   <i class="fas fa-pause"></i>
                                 </button>
                               <?php endif; ?>
-                            <?php else : ?>
-                              <button class="btn btn-sm btn-outline-success" onclick="cambiarEstatus(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 1)">
+                            <?php else: ?>
+                              <button class="btn btn-sm btn-outline-success"
+                                onclick="cambiarEstatus(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 1)">
                                 <i class="fas fa-play"></i>
                               </button>
                             <?php endif; ?>
@@ -266,7 +226,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
           <div class="alert alert-info">
             <h5><i class="icon fas fa-info"></i> Información Importante</h5>
             <ul class="mb-0">
-              <li><strong>Profesiones en uso:</strong> Pueden desactivarse pero con advertencia - están siendo utilizadas por representantes o docentes</li>
+              <li><strong>Profesiones en uso:</strong> No se pueden desactivar porque están siendo utilizadas por representantes o docentes</li>
               <li><strong>Profesiones sin uso:</strong> Se pueden desactivar sin problemas</li>
               <li><strong>Profesiones inactivas:</strong> No aparecerán en los formularios de nuevos registros</li>
               <li>Los registros existentes que ya usen la profesión no se verán afectados al desactivarla</li>
@@ -306,7 +266,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </div>
 
 <!-- Modal Agregar Profesión -->
@@ -326,7 +286,8 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         <div class="modal-body">
           <div class="form-group">
             <label for="nombre_profesion">Nombre de la Profesión:</label>
-            <input type="text" class="form-control" id="nombre_profesion" name="nombre_profesion" placeholder="Ej: Ingeniero, Médico, Abogado, Carpintero..." required>
+            <input type="text" class="form-control" id="nombre_profesion" name="nombre_profesion"
+              placeholder="Ej: Ingeniero, Médico, Abogado, Carpintero..." required>
             <small class="form-text text-muted">
               Ingresa el nombre completo de la profesión u oficio
             </small>
@@ -441,77 +402,11 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     border-radius: 0.5rem;
   }
-
-  @keyframes slideIn {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideOut {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-
-    to {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-  }
-
-  .global-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    background: #28a745;
-    color: white;
-    padding: 15px 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-left: 4px solid #1e7e34;
-    animation: slideIn 0.3s ease;
-    min-width: 300px;
-    max-width: 400px;
-  }
 </style>
 
 <script>
   // Variables globales
   let profesionSeleccionada = null;
-
-  // Nueva función para desactivar con advertencia cuando está en uso
-  function cambiarEstatusConAdvertencia(id, nombre, nuevoEstatus, conteoUsos) {
-    profesionSeleccionada = {
-      id,
-      nombre,
-      nuevoEstatus
-    };
-
-    const mensaje = nuevoEstatus == 1 ?
-      'Los representantes/docentes podrán ser asignados a esta profesión nuevamente.' :
-      `ADVERTENCIA: Esta profesión está en uso por ${conteoUsos} registro(s).<br><br>` +
-      `Al desactivarla:<br>` +
-      `✓ No aparecerá en los formularios de nuevos registros<br>` +
-      `✓ Los registros que ya la tienen asignada conservarán la asignación<br>` +
-      `✓ No afectará los registros existentes`;
-
-    $('#mensajeConfirmacion').html(
-      `¿Estás seguro de que deseas <strong>${nuevoEstatus == 1 ? 'activar' : 'desactivar'}</strong> la profesión:<br><strong>"${nombre}"</strong>?<br><br>` +
-      `<div style="background-color: ${nuevoEstatus == 1 ? '#d4edda' : '#fff3cd'}; padding: 10px; border-radius: 5px; border-left: 4px solid ${nuevoEstatus == 1 ? '#28a745' : '#ffc107'};">` +
-      `<small>${mensaje}</small>` +
-      `</div>`
-    );
-
-    $('#modalConfirmacion').modal('show');
-  }
 
   // Funciones para abrir modales
   function abrirModalAgregar() {
@@ -534,7 +429,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
     const accion = nuevoEstatus == 1 ? 'activar' : 'desactivar';
     const mensaje = nuevoEstatus == 1 ?
-      'Los representantes/docentes podrán ser asignados a esta profesión nuevamente.' :
+      'Podrá ser asignada a representantes y docentes nuevamente.' :
       'No podrá ser asignada a nuevos representantes o docentes.';
 
     $('#mensajeConfirmacion').html(
@@ -552,7 +447,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     const nombre = formData.get('nombre_profesion').trim();
 
     if (!nombre) {
-      mostrarNotificacion('El nombre de la profesión es requerido', 'error');
+      mostrarMensaje('El nombre de la profesión es requerido', 'error');
       return;
     }
 
@@ -561,7 +456,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...';
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/profesiones/accionesProfesiones.php', {
+      const response = await fetch('../../../app/controllers/profesiones/accionesProfesiones.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -572,15 +467,19 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       const result = await response.json();
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalAgregar').modal('hide');
         event.target.reset();
         recargarProfesiones();
       } else {
-        mostrarNotificacion(result.message, 'error');
+        const esDuplicado = result.duplicate || false;
+        mostrarMensaje(result.message, 'error', esDuplicado);
+        if (!esDuplicado) {
+          $('#modalAgregar').modal('hide');
+        }
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar Profesión';
@@ -596,7 +495,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     const estatus = formData.get('estatus');
 
     if (!nombre) {
-      mostrarNotificacion('El nombre de la profesión es requerido', 'error');
+      mostrarMensaje('El nombre de la profesión es requerido', 'error');
       return;
     }
 
@@ -605,7 +504,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     boton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Actualizando...';
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/profesiones/accionesProfesiones.php', {
+      const response = await fetch('../../../app/controllers/profesiones/accionesProfesiones.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -616,14 +515,15 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       const result = await response.json();
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalEditar').modal('hide');
         recargarProfesiones();
       } else {
-        mostrarNotificacion(result.message, 'error');
+        const esDuplicado = result.duplicate || false;
+        mostrarMensaje(result.message, 'error', esDuplicado);
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     } finally {
       boton.disabled = false;
       boton.innerHTML = '<i class="fas fa-save mr-1"></i> Actualizar Profesión';
@@ -640,7 +540,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     } = profesionSeleccionada;
 
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/profesiones/accionesProfesiones.php', {
+      const response = await fetch('../../../app/controllers/profesiones/accionesProfesiones.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -651,20 +551,22 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       const result = await response.json();
 
       if (result.success) {
-        mostrarNotificacion(result.message, 'success');
+        mostrarMensaje(result.message, 'success');
         $('#modalConfirmacion').modal('hide');
         recargarProfesiones();
       } else {
-        mostrarNotificacion(result.message, 'error');
+        const esDuplicado = result.duplicate || false;
+        mostrarMensaje(result.message, 'error', esDuplicado);
+        $('#modalConfirmacion').modal('hide');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     }
   }
 
   async function recargarProfesiones() {
     try {
-      const response = await fetch('<?= URL; ?>/app/controllers/profesiones/accionesProfesiones.php', {
+      const response = await fetch('../../../app/controllers/profesiones/accionesProfesiones.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -672,24 +574,16 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         body: 'action=obtener_todas'
       });
 
-      const text = await response.text();
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch (e) {
-        console.error('Error parseando JSON:', e);
-        mostrarNotificacion('Error al cargar profesiones: Respuesta no válida del servidor', 'error');
-        return;
-      }
+      const result = await response.json();
 
       if (result.success) {
         actualizarTabla(result.data);
         actualizarEstadisticas(result.data);
       } else {
-        mostrarNotificacion('Error al cargar profesiones: ' + result.message, 'error');
+        mostrarMensaje('Error al cargar profesiones', 'error');
       }
     } catch (error) {
-      mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+      mostrarMensaje('Error de conexión: ' + error.message, 'error');
     }
   }
 
@@ -698,72 +592,132 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
     if (profesiones.length === 0) {
       tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No hay profesiones registradas</p>
-                    </td>
-                </tr>
-            `;
+        <tr>
+            <td colspan="6" class="text-center py-4">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No hay profesiones registradas</p>
+            </td>
+        </tr>
+      `;
       return;
     }
 
-    // Construir la tabla con la información de uso que ya viene del servidor
-    tbody.innerHTML = profesiones.map(profesion => {
-      const enUso = profesion.en_uso || false;
-      const conteoUsos = profesion.conteo_usos || 0;
+    // Para cada profesión, necesitamos verificar si está en uso
+    const promises = profesiones.map(async (profesion) => {
+      try {
+        const response = await fetch('../../../app/controllers/profesiones/accionesProfesiones.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `action=verificar_uso&id=${profesion.id_profesion}`
+        });
+        const result = await response.json();
+        return {
+          ...profesion,
+          en_uso: result.success ? result.en_uso : false,
+          conteo: result.success ? result.conteo : 0
+        };
+      } catch (error) {
+        return {
+          ...profesion,
+          en_uso: false,
+          conteo: 0
+        };
+      }
+    });
 
-      return `
-                <tr id="profesion-${profesion.id_profesion}">
-                    <td>${profesion.id_profesion}</td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-user-tie text-primary mr-2"></i>
-                            <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
-                              id="estatus-${profesion.id_profesion}">
-                            ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
-                        </span>
-                    </td>
-                    <td>${formatFecha(profesion.creacion)}</td>
-                    <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-                    <td>
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-primary" 
-                                    onclick="editarProfesion(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', ${profesion.estatus})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ${profesion.estatus == 1 ?
-                    (enUso ?
-                        `<button class="btn btn-sm btn-outline-warning"
-                                data-toggle="tooltip"
-                                title="Desactivar (en uso en ${conteoUsos} registro(s))"
-                                onclick="cambiarEstatusConAdvertencia(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0, ${conteoUsos})">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </button>` :
-                        `<button class="btn btn-sm btn-outline-danger"
-                                onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0)">
-                            <i class="fas fa-pause"></i>
-                        </button>`
-                    ) :
-                    `<button class="btn btn-sm btn-outline-success"
-                            onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 1)">
-                        <i class="fas fa-play"></i>
-                    </button>`
-                }
-                        </div>
-                    </td>
-                </tr>
-            `;
-    }).join('');
+    Promise.all(promises).then((profesionesConUso) => {
+      tbody.innerHTML = profesionesConUso.map(profesion => `
+        <tr id="profesion-${profesion.id_profesion}">
+          <td>${profesion.id_profesion}</td>
+          <td>
+            <div class="d-flex align-items-center">
+              <i class="fas fa-user-tie text-primary mr-2"></i>
+              <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
+                  id="estatus-${profesion.id_profesion}">
+              ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
+            </span>
+          </td>
+          <td>${formatFecha(profesion.creacion)}</td>
+          <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" 
+                      onclick="editarProfesion(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', ${profesion.estatus})">
+                <i class="fas fa-edit"></i>
+              </button>
+              ${profesion.estatus == 1 ? 
+                (profesion.en_uso ?
+                  `<button type="button"
+                          class="btn btn-sm btn-secondary"
+                          data-toggle="tooltip"
+                          title="No se puede desactivar porque está en uso en ${profesion.conteo} registro(s)">
+                    <i class="fas fa-lock mr-1"></i> Bloqueado
+                  </button>` :
+                  `<button class="btn btn-sm btn-outline-danger"
+                          onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0)">
+                    <i class="fas fa-pause"></i>
+                  </button>`
+                ) :
+                `<button class="btn btn-sm btn-outline-success"
+                        onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 1)">
+                  <i class="fas fa-play"></i>
+                </button>`
+              }
+            </div>
+          </td>
+        </tr>
+      `).join('');
 
-    document.getElementById('contadorProfesiones').textContent = profesiones.length;
+      document.getElementById('contadorProfesiones').textContent = profesiones.length;
+    }).catch(error => {
+      console.error('Error al cargar datos de uso:', error);
+      // Si hay error, mostrar la tabla sin verificación de uso
+      tbody.innerHTML = profesiones.map(profesion => `
+        <tr id="profesion-${profesion.id_profesion}">
+          <td>${profesion.id_profesion}</td>
+          <td>
+            <div class="d-flex align-items-center">
+              <i class="fas fa-user-tie text-primary mr-2"></i>
+              <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
+                  id="estatus-${profesion.id_profesion}">
+              ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
+            </span>
+          </td>
+          <td>${formatFecha(profesion.creacion)}</td>
+          <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+          <td>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" 
+                      onclick="editarProfesion(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', ${profesion.estatus})">
+                <i class="fas fa-edit"></i>
+              </button>
+              ${profesion.estatus == 1 ? 
+                `<button class="btn btn-sm btn-outline-danger"
+                        onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0)">
+                  <i class="fas fa-pause"></i>
+                </button>` :
+                `<button class="btn btn-sm btn-outline-success"
+                        onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 1)">
+                  <i class="fas fa-play"></i>
+                </button>`
+              }
+            </div>
+          </td>
+        </tr>
+      `).join('');
 
-    // Re-inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+      document.getElementById('contadorProfesiones').textContent = profesiones.length;
+    });
   }
 
   function actualizarEstadisticas(profesiones) {
@@ -797,94 +751,88 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     return fecha.toLocaleDateString('es-ES') + ' ' + fecha.toLocaleTimeString('es-ES');
   }
 
-  function mostrarNotificacion(mensaje, tipo = 'info', tiempo = 5000) {
-    const iconos = {
-      'success': '✓',
-      'error': '✗',
-      'warning': '⚠',
-      'info': 'ℹ'
-    };
+  function mostrarMensaje(mensaje, tipo, esDuplicado = false) {
+    // Determinar la clase de Bootstrap según el tipo
+    let alertClass = '';
+    let icono = '';
 
-    const titulos = {
-      'success': 'Éxito',
-      'error': 'Error',
-      'warning': 'Advertencia',
-      'info': 'Información'
-    };
-
-    const colores = {
-      'success': {
-        bg: '#28a745',
-        border: '#1e7e34'
-      },
-      'error': {
-        bg: '#dc3545',
-        border: '#c82333'
-      },
-      'warning': {
-        bg: '#ffc107',
-        border: '#e0a800'
-      },
-      'info': {
-        bg: '#17a2b8',
-        border: '#117a8b'
-      }
-    };
-
-    const color = colores[tipo] || colores.info;
-
-    // Crear elemento de notificación
-    const notificacion = document.createElement('div');
-    const idNotificacion = 'notificacion-' + Date.now();
-    notificacion.id = idNotificacion;
-    notificacion.className = 'global-notification';
-    notificacion.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            background: ${color.bg};
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-left: 4px solid ${color.border};
-            animation: slideIn 0.3s ease;
-            min-width: 300px;
-            max-width: 400px;
-        `;
-
-    notificacion.innerHTML = `
-            <div style="display: flex; align-items: flex-start; justify-content: space-between;">
-                <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1;">
-                    <span style="font-size: 20px; font-weight: bold; margin-top: 2px;">${iconos[tipo]}</span>
-                    <div style="flex: 1;">
-                        <strong style="font-size: 16px; display: block; margin-bottom: 5px;">${titulos[tipo]}</strong>
-                        <span style="font-size: 14px; word-wrap: break-word;">${mensaje}</span>
-                    </div>
-                </div>
-                <button onclick="document.getElementById('${idNotificacion}').remove()" 
-                        style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; margin-left: 10px; flex-shrink: 0;">
-                    &times;
-                </button>
-            </div>
-        `;
-
-    // Remover notificaciones antiguas si hay muchas
-    const notificaciones = document.querySelectorAll('.global-notification');
-    if (notificaciones.length > 3) {
-      notificaciones[0].remove();
+    if (tipo === 'success') {
+      alertClass = 'alert-success';
+      icono = '<i class="fas fa-check-circle mr-2"></i>';
+    } else if (esDuplicado) {
+      alertClass = 'alert-warning';
+      icono = '<i class="fas fa-exclamation-triangle mr-2"></i>';
+    } else {
+      alertClass = 'alert-danger';
+      icono = '<i class="fas fa-exclamation-circle mr-2"></i>';
     }
 
-    document.body.appendChild(notificacion);
+    // Crear elemento de alerta de Bootstrap
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+    alertDiv.style.cssText = `
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 350px;
+      max-width: 500px;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      border-left: 4px solid ${esDuplicado ? '#ffc107' : tipo === 'success' ? '#28a745' : '#dc3545'};
+    `;
 
-    // Auto-eliminar después del tiempo especificado
+    // Título según el tipo
+    let titulo = '';
+    if (tipo === 'success') {
+      titulo = 'Éxito';
+    } else if (esDuplicado) {
+      titulo = 'Advertencia';
+    } else {
+      titulo = 'Error';
+    }
+
+    alertDiv.innerHTML = `
+      <div class="d-flex align-items-center">
+        ${icono}
+        <div class="flex-grow-1">
+          <strong class="d-block">${titulo}</strong>
+          <span class="small">${mensaje}</span>
+        </div>
+      </div>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    `;
+
+    // Agregar al cuerpo del documento
+    document.body.appendChild(alertDiv);
+
+    // Auto-eliminar después de 5 segundos
     setTimeout(() => {
-      if (document.getElementById(idNotificacion)) {
-        notificacion.style.animation = 'slideOut 0.3s ease forwards';
-        setTimeout(() => notificacion.remove(), 300);
+      if (alertDiv.parentNode) {
+        // Agregar animación de salida
+        alertDiv.classList.remove('show');
+        alertDiv.classList.add('fade');
+        setTimeout(() => {
+          if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+          }
+        }, 150);
       }
-    }, tiempo);
+    }, 5000);
+
+    // También permitir cerrar haciendo click
+    alertDiv.addEventListener('click', function(e) {
+      if (e.target === this || e.target.classList.contains('close')) {
+        this.classList.remove('show');
+        this.classList.add('fade');
+        setTimeout(() => {
+          if (this.parentNode) {
+            this.parentNode.removeChild(this);
+          }
+        }, 150);
+      }
+    });
   }
 
   // Event Listeners
@@ -897,12 +845,12 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       document.getElementById('formAgregar').reset();
     });
 
-    // Inicializar tooltips de Bootstrap
+    // Inicializar tooltips
     $('[data-toggle="tooltip"]').tooltip();
   });
 </script>
 
 <?php
-// Incluir layout2.php al final
-require_once '/xampp/htdocs/final/layout/layaout2.php';
+include_once("/xampp/htdocs/final/layout/layaout2.php");
+include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>
