@@ -108,7 +108,7 @@ class PatologiaController
   public function obtenerTodasLasPatologias()
   {
     try {
-      $sql = "SELECT * FROM patologias ORDER BY nom_patologia";
+      $sql = "SELECT * FROM patologias ORDER BY id_patologia ASC";
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute();
       return $stmt->fetchAll(PDO::FETCH_ASSOC);

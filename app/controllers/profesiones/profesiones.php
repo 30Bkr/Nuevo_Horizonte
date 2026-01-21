@@ -77,7 +77,7 @@ class ProfesionController
   public function obtenerTodasLasProfesiones()
   {
     try {
-      $sql = "SELECT * FROM profesiones ORDER BY profesion";
+      $sql = "SELECT * FROM profesiones ORDER BY id_profesion ASC";
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute();
       return $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -33,6 +33,7 @@ try {
     $parentesco['en_uso'] = $parentescoController->parentescoEnUso($parentesco['id_parentesco']);
     $parentesco['conteo_usos'] = $parentescoController->obtenerConteoUsosParentesco($parentesco['id_parentesco']);
   }
+  unset($parentesco);
   $totalUsos = $parentescoController->contarUsosParentesco();
 } catch (Exception $e) {
   $parentescos = [];
@@ -183,16 +184,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                       </td>
                     </tr>
                   <?php else: ?>
-                    <?php foreach ($parentescos as $parentesco):
-                      // Verificar si el parentesco está en uso
-                      try {
-                        $en_uso = $parentescoController->parentescoEnUso($parentesco['id_parentesco']);
-                        $conteo_usos = $parentescoController->obtenerConteoUsosParentesco($parentesco['id_parentesco']);
-                      } catch (Exception $e) {
-                        $en_uso = false;
-                        $conteo_usos = 0;
-                      }
-                    ?>
+                    <?php foreach ($parentescos as $parentesco): ?>
                       <tr id="parentesco-<?php echo $parentesco['id_parentesco']; ?>">
                         <td><?php echo $parentesco['id_parentesco']; ?></td>
                         <td>
@@ -228,12 +220,12 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                               <i class="fas fa-edit"></i>
                             </button>
                             <?php if ($parentesco['estatus'] == 1): ?>
-                              <?php if ($en_uso): ?>
+                              <?php if ($parentesco['en_uso']): ?>
                                 <!-- Permite desactivar pero con advertencia -->
                                 <button class="btn btn-sm btn-outline-warning"
                                   data-toggle="tooltip"
-                                  title="Desactivar (en uso en <?php echo $conteo_usos; ?> registro(s))"
-                                  onclick="cambiarEstatusConAdvertencia(<?php echo $parentesco['id_parentesco']; ?>, '<?php echo htmlspecialchars($parentesco['parentesco']); ?>', 0, <?php echo $conteo_usos; ?>)">
+                                  title="Desactivar (en uso en <?php echo $parentesco['conteo_usos']; ?> registro(s))"
+                                  onclick="cambiarEstatusConAdvertencia(<?php echo $parentesco['id_parentesco']; ?>, '<?php echo htmlspecialchars($parentesco['parentesco']); ?>', 0, <?php echo $parentesco['conteo_usos']; ?>)">
                                   <i class="fas fa-exclamation-triangle"></i>
                                 </button>
                               <?php else: ?>
@@ -299,14 +291,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                   <span class="badge badge-danger mr-2">Inactivo</span>
                   <small>No disponible para nuevos registros</small>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                   <span class="badge badge-info mr-2">En uso</span>
                   <small>Usado en relaciones estudiantes-representantes</small>
                 </div>
                 <div class="col-md-3">
                   <span class="badge badge-secondary mr-2">Sin uso</span>
                   <small>No usado en el sistema</small>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -691,54 +683,52 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
     // Construir la tabla con la información de uso que ya viene del servidor
     tbody.innerHTML = parentescos.map(parentesco => {
-      const enUso = parentesco.en_uso || false;
-      const conteoUsos = parentesco.conteo_usos || 0;
 
       return `
-        <tr id="parentesco-${parentesco.id_parentesco}">
-          <td>${parentesco.id_parentesco}</td>
-          <td>
-            <div class="d-flex align-items-center">
-              <i class="fas fa-user-friends text-primary mr-2"></i>
-              <span id="nombre-${parentesco.id_parentesco}">${escapeHtml(parentesco.parentesco)}</span>
-            </div>
-          </td>
-          <td>
-            <span class="badge badge-${parentesco.estatus == 1 ? 'success' : 'danger'}" 
-                  id="estatus-${parentesco.id_parentesco}">
-              ${parentesco.estatus == 1 ? 'Activo' : 'Inactivo'}
-            </span>
-          </td>
-          <td>${formatFecha(parentesco.creacion)}</td>
-          <td>${parentesco.actualizacion ? formatFecha(parentesco.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-          <td>
-            <div class="btn-group">
-              <button class="btn btn-sm btn-outline-primary" 
-                      onclick="editarParentesco(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', ${parentesco.estatus})">
-                <i class="fas fa-edit"></i>
-              </button>
-              ${parentesco.estatus == 1 ? 
-                (enUso ? 
-                  `<button class="btn btn-sm btn-outline-warning"
-                          data-toggle="tooltip"
-                          title="Desactivar (en uso en ${conteoUsos} registro(s))"
-                          onclick="cambiarEstatusConAdvertencia(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', 0, ${conteoUsos})">
-                      <i class="fas fa-exclamation-triangle"></i>
-                  </button>` :
-                  `<button class="btn btn-sm btn-outline-danger"
-                          onclick="cambiarEstatus(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', 0)">
-                      <i class="fas fa-pause"></i>
-                  </button>`
-                ) :
-                `<button class="btn btn-sm btn-outline-success"
-                        onclick="cambiarEstatus(${parentesco.id_parentesco}, '${escapeHtml(parentesco.parentesco)}', 1)">
-                  <i class="fas fa-play"></i>
+      <tr id="parentesco-${parentesco.id_parentesco}">
+        <td>${parentesco.id_parentesco}</td>
+        <td>
+          <div class="d-flex align-items-center">
+            <i class="fas fa-user-friends text-primary mr-2"></i>
+            <span id="nombre-${parentesco.id_parentesco}">${escapeHtml(parentesco.parentesco)}</span>
+          </div>
+        </td>
+        <td>
+          <span class="badge badge-${parentesco.estatus == 1 ? 'success' : 'danger'}" 
+                id="estatus-${parentesco.id_parentesco}">
+            ${parentesco.estatus == 1 ? 'Activo' : 'Inactivo'}
+          </span>
+        </td>
+        <td>${formatFecha(parentesco.creacion)}</td>
+        <td>${parentesco.actualizacion ? formatFecha(parentesco.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+        <td>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-primary" 
+                    onclick="editarParentesco(${parentesco.id_parentesco}, ${JSON.stringify(parentesco.parentesco)}, ${parentesco.estatus})">
+              <i class="fas fa-edit"></i>
+            </button>
+            ${parentesco.estatus == 1 ? 
+              (parentesco.en_uso ?  <!-- Usa parentesco.en_uso directamente -->
+                `<button class="btn btn-sm btn-outline-warning"
+                        data-toggle="tooltip"
+                        title="Desactivar (en uso en ${parentesco.conteo_usos} registro(s))"
+                        onclick="cambiarEstatusConAdvertencia(${parentesco.id_parentesco}, ${JSON.stringify(parentesco.parentesco)}, 0, ${parentesco.conteo_usos})">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </button>` :
+                `<button class="btn btn-sm btn-outline-danger"
+                        onclick="cambiarEstatus(${parentesco.id_parentesco}, ${JSON.stringify(parentesco.parentesco)}, 0)">
+                  <i class="fas fa-pause"></i>
                 </button>`
-              }
-            </div>
-          </td>
-        </tr>
-      `;
+              ) :
+              `<button class="btn btn-sm btn-outline-success"
+                      onclick="cambiarEstatus(${parentesco.id_parentesco}, ${JSON.stringify(parentesco.parentesco)}, 1)">
+                <i class="fas fa-play"></i>
+              </button>`
+            }
+          </div>
+        </td>
+      </tr>
+    `;
     }).join('');
 
     document.getElementById('contadorParentescos').textContent = parentescos.length;

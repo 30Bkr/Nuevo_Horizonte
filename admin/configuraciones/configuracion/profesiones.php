@@ -33,6 +33,7 @@ try {
     $profesion['en_uso'] = $profesionController->profesionEnUso($profesion['id_profesion']);
     $profesion['conteo_usos'] = $profesionController->obtenerConteoUsosProfesion($profesion['id_profesion']);
   }
+  unset($profesion);
   $totalAsignaciones = $profesionController->contarAsignaciones();
 } catch (Exception $e) {
   $profesiones = [];
@@ -183,16 +184,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                       </td>
                     </tr>
                   <?php else : ?>
-                    <?php foreach ($profesiones as $profesion) :
-                      // Verificar si la profesión está en uso
-                      try {
-                        $en_uso = $profesionController->profesionEnUso($profesion['id_profesion']);
-                        $conteo_usos = $profesionController->obtenerConteoUsosProfesion($profesion['id_profesion']);
-                      } catch (Exception $e) {
-                        $en_uso = false;
-                        $conteo_usos = 0;
-                      }
-                    ?>
+                    <?php foreach ($profesiones as $profesion) : ?>
                       <tr id="profesion-<?php echo $profesion['id_profesion']; ?>">
                         <td><?php echo $profesion['id_profesion']; ?></td>
                         <td>
@@ -226,7 +218,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                               <i class="fas fa-edit"></i>
                             </button>
                             <?php if ($profesion['estatus'] == 1) : ?>
-                              <?php if ($en_uso) : ?>
+                              <?php if ($profesion['en_uso']) : ?>
                                 <!-- Permite desactivar pero con advertencia -->
                                 <button class="btn btn-sm btn-outline-warning" data-toggle="tooltip" title="Desactivar (en uso en <?php echo $conteo_usos; ?> registro(s))" onclick="cambiarEstatusConAdvertencia(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0, <?php echo $conteo_usos; ?>)">
                                   <i class="fas fa-exclamation-triangle"></i>
@@ -292,14 +284,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                   <span class="badge badge-danger mr-2">Inactiva</span>
                   <small>No disponible para nuevos registros</small>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                   <span class="badge badge-info mr-2">En uso</span>
                   <small>Usada por representantes o docentes</small>
                 </div>
                 <div class="col-md-3">
                   <span class="badge badge-secondary mr-2">Sin uso</span>
                   <small>No usada en el sistema</small>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -710,54 +702,52 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
     // Construir la tabla con la información de uso que ya viene del servidor
     tbody.innerHTML = profesiones.map(profesion => {
-      const enUso = profesion.en_uso || false;
-      const conteoUsos = profesion.conteo_usos || 0;
 
       return `
-                <tr id="profesion-${profesion.id_profesion}">
-                    <td>${profesion.id_profesion}</td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-user-tie text-primary mr-2"></i>
-                            <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
-                              id="estatus-${profesion.id_profesion}">
-                            ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
-                        </span>
-                    </td>
-                    <td>${formatFecha(profesion.creacion)}</td>
-                    <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-                    <td>
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-primary" 
-                                    onclick="editarProfesion(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', ${profesion.estatus})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            ${profesion.estatus == 1 ?
-                    (enUso ?
-                        `<button class="btn btn-sm btn-outline-warning"
-                                data-toggle="tooltip"
-                                title="Desactivar (en uso en ${conteoUsos} registro(s))"
-                                onclick="cambiarEstatusConAdvertencia(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0, ${conteoUsos})">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </button>` :
-                        `<button class="btn btn-sm btn-outline-danger"
-                                onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 0)">
-                            <i class="fas fa-pause"></i>
-                        </button>`
-                    ) :
-                    `<button class="btn btn-sm btn-outline-success"
-                            onclick="cambiarEstatus(${profesion.id_profesion}, '${escapeHtml(profesion.profesion)}', 1)">
-                        <i class="fas fa-play"></i>
-                    </button>`
-                }
-                        </div>
-                    </td>
-                </tr>
-            `;
+      <tr id="profesion-${profesion.id_profesion}">
+        <td>${profesion.id_profesion}</td>
+        <td>
+          <div class="d-flex align-items-center">
+            <i class="fas fa-user-tie text-primary mr-2"></i>
+            <span id="nombre-${profesion.id_profesion}">${escapeHtml(profesion.profesion)}</span>
+          </div>
+        </td>
+        <td>
+          <span class="badge badge-${profesion.estatus == 1 ? 'success' : 'danger'}" 
+                id="estatus-${profesion.id_profesion}">
+            ${profesion.estatus == 1 ? 'Activa' : 'Inactiva'}
+          </span>
+        </td>
+        <td>${formatFecha(profesion.creacion)}</td>
+        <td>${profesion.actualizacion ? formatFecha(profesion.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+        <td>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-outline-primary" 
+                    onclick="editarProfesion(${profesion.id_profesion}, ${JSON.stringify(profesion.profesion)}, ${profesion.estatus})">
+              <i class="fas fa-edit"></i>
+            </button>
+            ${profesion.estatus == 1 ?
+              (profesion.en_uso ?  <!-- Usa profesion.en_uso directamente -->
+                `<button class="btn btn-sm btn-outline-warning"
+                        data-toggle="tooltip"
+                        title="Desactivar (en uso en ${profesion.conteo_usos} registro(s))"
+                        onclick="cambiarEstatusConAdvertencia(${profesion.id_profesion}, ${JSON.stringify(profesion.profesion)}, 0, ${profesion.conteo_usos})">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </button>` :
+                `<button class="btn btn-sm btn-outline-danger"
+                        onclick="cambiarEstatus(${profesion.id_profesion}, ${JSON.stringify(profesion.profesion)}, 0)">
+                  <i class="fas fa-pause"></i>
+                </button>`
+              ) :
+              `<button class="btn btn-sm btn-outline-success"
+                      onclick="cambiarEstatus(${profesion.id_profesion}, ${JSON.stringify(profesion.profesion)}, 1)">
+                <i class="fas fa-play"></i>
+              </button>`
+            }
+          </div>
+        </td>
+      </tr>
+    `;
     }).join('');
 
     document.getElementById('contadorProfesiones').textContent = profesiones.length;
@@ -789,7 +779,10 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
-    return div.innerHTML;
+    // Convertir comillas simples y dobles
+    return div.innerHTML
+      .replace(/'/g, '&#39;')
+      .replace(/"/g, '&quot;');
   }
 
   function formatFecha(fechaString) {

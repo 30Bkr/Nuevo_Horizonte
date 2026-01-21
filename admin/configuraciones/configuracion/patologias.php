@@ -33,6 +33,7 @@ try {
     $patologia['en_uso'] = $patologiaController->patologiaEnUso($patologia['id_patologia']);
     $patologia['conteo_usos'] = $patologiaController->obtenerConteoUsosPatologia($patologia['id_patologia']);
   }
+  unset($patologia);
   $totalAsignaciones = $patologiaController->contarAsignacionesEstudiantes();
 } catch (Exception $e) {
   $patologias = [];
@@ -183,16 +184,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                       </td>
                     </tr>
                   <?php else: ?>
-                    <?php foreach ($patologias as $patologia):
-                      // Verificar si la patología está en uso
-                      try {
-                        $en_uso = $patologiaController->patologiaEnUso($patologia['id_patologia']);
-                        $conteo_usos = $patologiaController->obtenerConteoUsosPatologia($patologia['id_patologia']);
-                      } catch (Exception $e) {
-                        $en_uso = false;
-                        $conteo_usos = 0;
-                      }
-                    ?>
+                    <?php foreach ($patologias as $patologia): ?>
                       <tr id="patologia-<?php echo $patologia['id_patologia']; ?>">
                         <td><?php echo $patologia['id_patologia']; ?></td>
                         <td>
@@ -224,21 +216,21 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                         <td>
                           <div class="btn-group">
                             <button class="btn btn-sm btn-outline-primary"
-                              onclick="editarPatologia(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', <?php echo $patologia['estatus']; ?>)">
+                              onclick="editarPatologia(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia'], ENT_QUOTES); ?>', <?php echo $patologia['estatus']; ?>)">
                               <i class="fas fa-edit"></i>
                             </button>
                             <?php if ($patologia['estatus'] == 1): ?>
-                              <?php if ($en_uso): ?>
+                              <?php if ($patologia['en_uso']): ?>
                                 <!-- Permite desactivar pero con advertencia -->
                                 <button class="btn btn-sm btn-outline-warning"
                                   data-toggle="tooltip"
-                                  title="Desactivar (en uso en <?php echo $conteo_usos; ?> estudiante(s))"
-                                  onclick="cambiarEstatusConAdvertencia(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 0, <?php echo $conteo_usos; ?>)">
+                                  title="Desactivar (en uso en <?php echo $patologia['conteo_usos']; ?> estudiante(s))"
+                                  onclick="cambiarEstatusConAdvertencia(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia'], ENT_QUOTES); ?>', 0, <?php echo $patologia['conteo_usos']; ?>)">
                                   <i class="fas fa-exclamation-triangle"></i>
                                 </button>
                               <?php else: ?>
                                 <button class="btn btn-sm btn-outline-danger"
-                                  onclick="cambiarEstatus(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia']); ?>', 0)">
+                                  onclick="cambiarEstatus(<?php echo $patologia['id_patologia']; ?>, '<?php echo htmlspecialchars($patologia['nom_patologia'], ENT_QUOTES); ?>', 0)">
                                   <i class="fas fa-pause"></i>
                                 </button>
                               <?php endif; ?>
@@ -299,14 +291,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                   <span class="badge badge-danger mr-2">Inactiva</span>
                   <small>No disponible para nuevos registros</small>
                 </div>
-                <div class="col-md-3">
+                <!-- <div class="col-md-3">
                   <span class="badge badge-info mr-2">En uso</span>
                   <small>Usada por estudiantes activos</small>
                 </div>
                 <div class="col-md-3">
                   <span class="badge badge-secondary mr-2">Sin uso</span>
                   <small>No usada por estudiantes</small>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -679,54 +671,52 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
     // Construir la tabla con la información de uso que ya viene del servidor
     tbody.innerHTML = patologias.map(patologia => {
-      const enUso = patologia.en_uso || false;
-      const conteoUsos = patologia.conteo_usos || 0;
 
       return `
-            <tr id="patologia-${patologia.id_patologia}">
-                <td>${patologia.id_patologia}</td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-stethoscope text-primary mr-2"></i>
-                        <span id="nombre-${patologia.id_patologia}">${escapeHtml(patologia.nom_patologia)}</span>
-                    </div>
-                </td>
-                <td>
-                    <span class="badge badge-${patologia.estatus == 1 ? 'success' : 'danger'}" 
-                          id="estatus-${patologia.id_patologia}">
-                        ${patologia.estatus == 1 ? 'Activa' : 'Inactiva'}
-                    </span>
-                </td>
-                <td>${formatFecha(patologia.creacion)}</td>
-                <td>${patologia.actualizacion ? formatFecha(patologia.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
-                <td>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-outline-primary" 
-                                onclick="editarPatologia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', ${patologia.estatus})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        ${patologia.estatus == 1 ? 
-                            (enUso ? 
-                                `<button class="btn btn-sm btn-outline-warning"
-                                        data-toggle="tooltip"
-                                        title="Desactivar (en uso en ${conteoUsos} estudiante(s))"
-                                        onclick="cambiarEstatusConAdvertencia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0, ${conteoUsos})">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </button>` :
-                                `<button class="btn btn-sm btn-outline-danger"
-                                        onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0)">
-                                    <i class="fas fa-pause"></i>
-                                </button>`
-                            ) :
-                            `<button class="btn btn-sm btn-outline-success"
-                                    onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 1)">
-                                <i class="fas fa-play"></i>
-                            </button>`
-                        }
-                    </div>
-                </td>
-            </tr>
-        `;
+    <tr id="patologia-${patologia.id_patologia}">
+        <td>${patologia.id_patologia}</td>
+        <td>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-stethoscope text-primary mr-2"></i>
+                <span id="nombre-${patologia.id_patologia}">${escapeHtml(patologia.nom_patologia)}</span>
+            </div>
+        </td>
+        <td>
+            <span class="badge badge-${patologia.estatus == 1 ? 'success' : 'danger'}" 
+                  id="estatus-${patologia.id_patologia}">
+                ${patologia.estatus == 1 ? 'Activa' : 'Inactiva'}
+            </span>
+        </td>
+        <td>${formatFecha(patologia.creacion)}</td>
+        <td>${patologia.actualizacion ? formatFecha(patologia.actualizacion) : '<span class="text-muted">Sin actualizar</span>'}</td>
+        <td>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-outline-primary" 
+                        onclick="editarPatologia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', ${patologia.estatus})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                ${patologia.estatus == 1 ? 
+                    (patologia.en_uso ? 
+                        `<button class="btn btn-sm btn-outline-warning"
+                                data-toggle="tooltip"
+                                title="Desactivar (en uso en ${patologia.conteo_usos} estudiante(s))"
+                                onclick="cambiarEstatusConAdvertencia(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0, ${patologia.conteo_usos})">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </button>` :
+                        `<button class="btn btn-sm btn-outline-danger"
+                                onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 0)">
+                            <i class="fas fa-pause"></i>
+                        </button>`
+                    ) :
+                    `<button class="btn btn-sm btn-outline-success"
+                            onclick="cambiarEstatus(${patologia.id_patologia}, '${escapeHtml(patologia.nom_patologia)}', 1)">
+                        <i class="fas fa-play"></i>
+                    </button>`
+                }
+            </div>
+        </td>
+    </tr>
+`;
     }).join('');
 
     document.getElementById('contadorPatologias').textContent = patologias.length;
@@ -758,7 +748,10 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
-    return div.innerHTML;
+    // Convertir comillas simples y dobles
+    return div.innerHTML
+      .replace(/'/g, '&#39;')
+      .replace(/"/g, '&quot;');
   }
 
   function formatFecha(fechaString) {
