@@ -108,7 +108,7 @@ class DiscapacidadController
   public function obtenerTodasLasDiscapacidades()
   {
     try {
-      $sql = "SELECT * FROM discapacidades ORDER BY nom_discapacidad";
+      $sql = "SELECT * FROM discapacidades ORDER BY id_discapacidad ASC";
       $stmt = $this->pdo->prepare($sql);
       $stmt->execute();
       return $stmt->fetchAll(PDO::FETCH_ASSOC);
