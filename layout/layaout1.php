@@ -15,6 +15,28 @@ $info = $user->consultar($esto);
 
 $nombreUsuario = $_SESSION['usuario_nombre_completo'] ?? $_SESSION['usuario_email'] ?? 'Usuario';
 $rolUsuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
+
+require_once '/xampp/htdocs/final/app/conexion.php';
+$conexion = new Conexion();
+$pdo = $conexion->conectar();
+
+try {
+  $sql = "SELECT p.descripcion_periodo 
+            FROM periodos p
+            INNER JOIN globales g ON p.id_periodo = g.id_periodo
+            WHERE g.es_activo = 1
+            AND p.estatus = 1
+            LIMIT 1";
+
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute();
+  $periodo = $stmt->fetch(PDO::FETCH_OBJ);
+
+  $periodoTexto = $periodo ? $periodo->descripcion_periodo : "No activo";
+} catch (PDOException $e) {
+  error_log("Error obteniendo periodo activo: " . $e->getMessage());
+  $periodoTexto = "Error";
+}
 ?>
 <!DOCTYPE html>
 <!--
@@ -65,6 +87,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
       <!-- Right navbar links -->
       <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <span class="nav-link periodo-activo">
+            <i class="fas fa-calendar-alt mr-1"></i>
+            <?= htmlspecialchars($periodoTexto); ?>
+          </span>
+        </li>
         <li class="nav-item">
           <a class="nav-link" data-widget="fullscreen" href="#" role="button">
             <i class="fas fa-expand-arrows-alt"></i>

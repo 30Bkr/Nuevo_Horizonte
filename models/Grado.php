@@ -1,36 +1,63 @@
 <?php
 // app/models/Grado.php
-class Grado {
+class Grado
+{
     private $conn;
     private $table_name = "niveles_secciones";
+
+    // Variable para almacenar el período activo (cache)
+    private $periodoActivo = null;
 
     public $id_nivel_seccion;
     public $id_nivel;
     public $id_seccion;
     public $capacidad;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
+    // ========== MÉTODO AUXILIAR PARA OBTENER PERÍODO ACTIVO ==========
+    /**
+     * Obtiene el ID del período académico activo
+     * @return int ID del período activo
+     */
+    private function obtenerPeriodoActivo()
+    {
+        if ($this->periodoActivo === null) {
+            $query = "SELECT id_periodo FROM globales WHERE es_activo = 1 LIMIT 1";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $this->periodoActivo = $result ? (int)$result['id_periodo'] : 1;
+        }
+
+        return $this->periodoActivo;
+    }
+
+    // ========== MÉTODOS CRUD ==========
+
     // Crear nuevo grado/sección
-    public function crear() {
+    public function crear()
+    {
         $query = "INSERT INTO " . $this->table_name . " 
-                 (id_nivel, id_seccion, capacidad) 
-                 VALUES (:id_nivel, :id_seccion, :capacidad)";
-        
+                     (id_nivel, id_seccion, capacidad) 
+                     VALUES (:id_nivel, :id_seccion, :capacidad)";
+
         $stmt = $this->conn->prepare($query);
-        
+
         // Limpiar datos
         $this->id_nivel = htmlspecialchars(strip_tags($this->id_nivel));
         $this->id_seccion = htmlspecialchars(strip_tags($this->id_seccion));
         $this->capacidad = htmlspecialchars(strip_tags($this->capacidad));
-        
+
         // Bind parameters
         $stmt->bindParam(":id_nivel", $this->id_nivel);
         $stmt->bindParam(":id_seccion", $this->id_seccion);
         $stmt->bindParam(":capacidad", $this->capacidad);
-        
+
         if ($stmt->execute()) {
             return true;
         }
@@ -41,27 +68,31 @@ class Grado {
      * Listar todos los grados con conteo de alumnos SOLO del período activo
      * @return PDOStatement Lista de grados con información de alumnos
      */
-    public function listarGradosConAlumnos() {
+    public function listarGradosConAlumnos()
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         $query = "SELECT 
-                    ns.id_nivel_seccion,
-                    n.nom_nivel as nombre_grado,
-                    s.nom_seccion as seccion,
-                    ns.capacidad,
-                    ns.estatus,
-                    COUNT(i.id_inscripcion) as total_alumnos
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
-                    AND i.estatus = 1
-                    AND i.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
-                  WHERE n.estatus = 1 AND s.estatus = 1  -- Solo niveles y secciones activos
-                  GROUP BY ns.id_nivel_seccion
-                  ORDER BY n.num_nivel, s.nom_seccion";
-        
+                        ns.id_nivel_seccion,
+                        n.nom_nivel as nombre_grado,
+                        s.nom_seccion as seccion,
+                        ns.capacidad,
+                        ns.estatus,
+                        COUNT(i.id_inscripcion) as total_alumnos
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                      LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+                        AND i.estatus = 1
+                        AND i.id_periodo = :id_periodo
+                      WHERE ns.estatus = 1
+                      GROUP BY ns.id_nivel_seccion
+                      ORDER BY n.num_nivel, s.nom_seccion";
+
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         return $stmt;
     }
 
@@ -69,37 +100,42 @@ class Grado {
      * Listar grados que tienen inscripciones en el período activo
      * @return PDOStatement Lista de grados activos en el período actual
      */
-    public function listarGradosPeriodoActivo() {
+    public function listarGradosPeriodoActivo()
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         $query = "SELECT DISTINCT
-                    ns.id_nivel_seccion,
-                    n.nom_nivel as nombre_grado,
-                    s.nom_seccion as seccion,
-                    ns.capacidad,
-                    ns.estatus,
-                    COUNT(i.id_inscripcion) as total_alumnos,
-                    per.descripcion_periodo
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
-                  INNER JOIN periodos per ON i.id_periodo = per.id_periodo
-                  WHERE n.estatus = 1 
-                    AND s.estatus = 1
-                    AND ns.estatus = 1
-                    AND i.estatus = 1
-                    AND per.estatus = 1  -- Solo períodos activos
-                    AND per.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
-                  GROUP BY ns.id_nivel_seccion
-                  ORDER BY n.num_nivel, s.nom_seccion";
-        
+                        ns.id_nivel_seccion,
+                        n.nom_nivel as nombre_grado,
+                        s.nom_seccion as seccion,
+                        ns.capacidad,
+                        ns.estatus,
+                        COUNT(i.id_inscripcion) as total_alumnos,
+                        per.descripcion_periodo
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                      INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+                      INNER JOIN periodos per ON i.id_periodo = per.id_periodo
+                      WHERE ns.estatus = 1 
+                        AND n.estatus = 1
+                        AND s.estatus = 1
+                        AND i.estatus = 1
+                        AND per.estatus = 1
+                        AND i.id_periodo = :id_periodo
+                      GROUP BY ns.id_nivel_seccion
+                      ORDER BY n.num_nivel, s.nom_seccion";
+
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         return $stmt;
     }
 
     // Obtener todas las secciones disponibles
-    public function obtenerSecciones() {
+    public function obtenerSecciones()
+    {
         $query = "SELECT * FROM secciones WHERE estatus = 1 ORDER BY nom_seccion";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -107,42 +143,45 @@ class Grado {
     }
 
     // Obtener todos los niveles disponibles
-    public function obtenerNiveles() {
+    public function obtenerNiveles()
+    {
         $query = "SELECT * FROM niveles WHERE estatus = 1 ORDER BY num_nivel, nom_nivel";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
 
-    // Verificar si ya existe la combinación nivel-sección (MODIFICADO)
-    public function existeCombinacion($id_nivel, $id_seccion) {
+    // Verificar si ya existe la combinación nivel-sección
+    public function existeCombinacion($id_nivel, $id_seccion)
+    {
         $query = "SELECT ns.id_nivel_seccion 
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  WHERE n.id_nivel = ? AND ns.id_seccion = ? AND ns.estatus = 1 
-                  LIMIT 0,1";
-        
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      WHERE n.id_nivel = ? AND ns.id_seccion = ? AND ns.estatus = 1 
+                      LIMIT 0,1";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id_nivel);
         $stmt->bindParam(2, $id_seccion);
         $stmt->execute();
-        
+
         return $stmt->rowCount() > 0;
     }
 
     // Obtener grado por ID (incluye inactivos)
-    public function obtenerPorId($id) {
+    public function obtenerPorId($id)
+    {
         $query = "SELECT ns.*, n.nom_nivel, s.nom_seccion 
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  WHERE ns.id_nivel_seccion = ? 
-                  LIMIT 0,1";
-        
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                      WHERE ns.id_nivel_seccion = ? 
+                      LIMIT 0,1";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id);
         $stmt->execute();
-        
+
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $this->id_nivel_seccion = $row['id_nivel_seccion'];
@@ -155,35 +194,41 @@ class Grado {
     }
 
     // Actualizar grado
-    public function actualizar() {
+    public function actualizar()
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         // Validar que la capacidad no sea menor a los estudiantes registrados
         $query_check = "SELECT COUNT(*) as total_estudiantes 
-                       FROM inscripciones 
-                       WHERE id_nivel_seccion = ? AND estatus = 1
-                       AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
+                           FROM inscripciones 
+                           WHERE id_nivel_seccion = ? 
+                           AND estatus = 1
+                           AND id_periodo = :id_periodo";
+
         $stmt_check = $this->conn->prepare($query_check);
         $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt_check->execute();
         $result = $stmt_check->fetch(PDO::FETCH_ASSOC);
-        
+
         $total_estudiantes = $result['total_estudiantes'];
-        
+
         if ($this->capacidad < $total_estudiantes) {
             return false; // No se puede actualizar si la capacidad es menor a los estudiantes registrados
         }
-        
+
         $query = "UPDATE " . $this->table_name . " 
-                  SET capacidad = :capacidad
-                  WHERE id_nivel_seccion = :id_nivel_seccion";
-        
+                      SET capacidad = :capacidad
+                      WHERE id_nivel_seccion = :id_nivel_seccion";
+
         $stmt = $this->conn->prepare($query);
-        
+
         $this->capacidad = htmlspecialchars(strip_tags($this->capacidad));
         $this->id_nivel_seccion = htmlspecialchars(strip_tags($this->id_nivel_seccion));
-        
+
         $stmt->bindParam(":capacidad", $this->capacidad);
         $stmt->bindParam(":id_nivel_seccion", $this->id_nivel_seccion);
-        
+
         if ($stmt->execute()) {
             return true;
         }
@@ -191,27 +236,34 @@ class Grado {
     }
 
     // Eliminar grado (cambiar estado) - MANTENIDO POR COMPATIBILIDAD
-    public function eliminar() {
+    public function eliminar()
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         // Verificar si hay estudiantes inscritos
-        $query_check = "SELECT COUNT(*) as total FROM inscripciones 
-                       WHERE id_nivel_seccion = ? AND estatus = 1
-                       AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
+        $query_check = "SELECT COUNT(*) as total 
+                           FROM inscripciones 
+                           WHERE id_nivel_seccion = ? 
+                           AND estatus = 1
+                           AND id_periodo = :id_periodo";
+
         $stmt_check = $this->conn->prepare($query_check);
         $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt_check->execute();
         $row = $stmt_check->fetch(PDO::FETCH_ASSOC);
-        
+
         if ($row['total'] > 0) {
             return false; // No se puede eliminar si hay estudiantes
         }
-        
+
         $query = "UPDATE " . $this->table_name . " 
-                  SET estatus = 0 
-                  WHERE id_nivel_seccion = ?";
-        
+                      SET estatus = 0 
+                      WHERE id_nivel_seccion = ?";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id_nivel_seccion);
-        
+
         if ($stmt->execute()) {
             return true;
         }
@@ -225,19 +277,20 @@ class Grado {
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return array Información del grado/sección
      */
-    public function obtenerGradoPorId($id_nivel_seccion) {
+    public function obtenerGradoPorId($id_nivel_seccion)
+    {
         $query = "SELECT ns.id_nivel_seccion, n.nom_nivel as nombre_grado, 
-                         s.nom_seccion as seccion, ns.capacidad
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  WHERE ns.id_nivel_seccion = :id_nivel_seccion 
-                  AND ns.estatus = 1";
-        
+                             s.nom_seccion as seccion, ns.capacidad
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                      WHERE ns.id_nivel_seccion = :id_nivel_seccion 
+                      AND ns.estatus = 1";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
         $stmt->execute();
-        
+
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -246,47 +299,51 @@ class Grado {
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return PDOStatement Lista de estudiantes
      */
-    public function obtenerEstudiantesPorGrado($id_nivel_seccion) {
+    public function obtenerEstudiantesPorGrado($id_nivel_seccion)
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         $query = "SELECT 
-                    p.cedula,
-                    p.primer_nombre,
-                    p.segundo_nombre,
-                    p.primer_apellido,
-                    p.segundo_apellido,
-                    p.sexo,
-                    p.fecha_nac,
-                    i.fecha_inscripcion,
-                    rp.primer_nombre as rep_primer_nombre,
-                    rp.segundo_nombre as rep_segundo_nombre,
-                    rp.primer_apellido as rep_primer_apellido,
-                    rp.segundo_apellido as rep_segundo_apellido,
-                    par.parentesco, 
-                    CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre,
-                    rp.cedula as rep_cedula,
-                    per.descripcion_periodo,
-                    GROUP_CONCAT(DISTINCT disc.nom_discapacidad SEPARATOR ', ') as discapacidades
-                  FROM inscripciones i
-                  INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
-                  INNER JOIN personas p ON e.id_persona = p.id_persona
-                  INNER JOIN periodos per ON i.id_periodo = per.id_periodo
-                  LEFT JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
-                  LEFT JOIN representantes r ON er.id_representante = r.id_representante
-                  LEFT JOIN personas rp ON r.id_persona = rp.id_persona
-                  LEFT JOIN parentesco par ON er.id_parentesco = par.id_parentesco 
-                  LEFT JOIN estudiantes_discapacidades ed ON e.id_estudiante = ed.id_estudiante
-                  LEFT JOIN discapacidades disc ON ed.id_discapacidad = disc.id_discapacidad
-                  WHERE i.id_nivel_seccion = :id_nivel_seccion 
-                    AND i.estatus = 1 
-                    AND e.estatus = 1
-                    AND per.estatus = 1
-                    AND per.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
-                  GROUP BY p.id_persona
-                  ORDER BY p.primer_apellido, p.primer_nombre";
-        
+                        p.cedula,
+                        p.primer_nombre,
+                        p.segundo_nombre,
+                        p.primer_apellido,
+                        p.segundo_apellido,
+                        p.sexo,
+                        p.fecha_nac,
+                        i.fecha_inscripcion,
+                        rp.primer_nombre as rep_primer_nombre,
+                        rp.segundo_nombre as rep_segundo_nombre,
+                        rp.primer_apellido as rep_primer_apellido,
+                        rp.segundo_apellido as rep_segundo_apellido,
+                        par.parentesco, 
+                        CONCAT(rp.primer_nombre, ' ', rp.primer_apellido) as representante_nombre,
+                        rp.cedula as rep_cedula,
+                        per.descripcion_periodo,
+                        GROUP_CONCAT(DISTINCT disc.nom_discapacidad SEPARATOR ', ') as discapacidades
+                      FROM inscripciones i
+                      INNER JOIN estudiantes e ON i.id_estudiante = e.id_estudiante
+                      INNER JOIN personas p ON e.id_persona = p.id_persona
+                      INNER JOIN periodos per ON i.id_periodo = per.id_periodo
+                      LEFT JOIN estudiantes_representantes er ON e.id_estudiante = er.id_estudiante
+                      LEFT JOIN representantes r ON er.id_representante = r.id_representante
+                      LEFT JOIN personas rp ON r.id_persona = rp.id_persona
+                      LEFT JOIN parentesco par ON er.id_parentesco = par.id_parentesco 
+                      LEFT JOIN estudiantes_discapacidades ed ON e.id_estudiante = ed.id_estudiante
+                      LEFT JOIN discapacidades disc ON ed.id_discapacidad = disc.id_discapacidad
+                      WHERE i.id_nivel_seccion = :id_nivel_seccion 
+                        AND i.estatus = 1 
+                        AND e.estatus = 1
+                        AND per.estatus = 1
+                        AND i.id_periodo = :id_periodo
+                      GROUP BY p.id_persona
+                      ORDER BY p.primer_apellido, p.primer_nombre";
+
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
+        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion, PDO::PARAM_INT);
+        $stmt->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         return $stmt;
     }
 
@@ -295,28 +352,32 @@ class Grado {
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return array Estadísticas del grado
      */
-    public function obtenerEstadisticasGrado($id_nivel_seccion) {
+    public function obtenerEstadisticasGrado($id_nivel_seccion)
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         $query = "SELECT 
-                    ns.capacidad,
-                    COUNT(i.id_inscripcion) as total_estudiantes,
-                    (ns.capacidad - COUNT(i.id_inscripcion)) as cupos_disponibles,
-                    ROUND((COUNT(i.id_inscripcion) / ns.capacidad) * 100, 2) as porcentaje_ocupacion,
-                    COUNT(CASE WHEN p.sexo = 'Masculino' THEN 1 END) as estudiantes_masculinos,
-                    COUNT(CASE WHEN p.sexo = 'Femenino' THEN 1 END) as estudiantes_femeninos
-                  FROM " . $this->table_name . " ns
-                  LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
-                    AND i.estatus = 1
-                    AND i.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
-                  LEFT JOIN estudiantes e ON i.id_estudiante = e.id_estudiante AND e.estatus = 1
-                  LEFT JOIN personas p ON e.id_persona = p.id_persona
-                  WHERE ns.id_nivel_seccion = :id_nivel_seccion 
-                  AND ns.estatus = 1
-                  GROUP BY ns.id_nivel_seccion";
-        
+                        ns.capacidad,
+                        COUNT(i.id_inscripcion) as total_estudiantes,
+                        (ns.capacidad - COUNT(i.id_inscripcion)) as cupos_disponibles,
+                        ROUND((COUNT(i.id_inscripcion) / ns.capacidad) * 100, 2) as porcentaje_ocupacion,
+                        COUNT(CASE WHEN p.sexo = 'Masculino' THEN 1 END) as estudiantes_masculinos,
+                        COUNT(CASE WHEN p.sexo = 'Femenino' THEN 1 END) as estudiantes_femeninos
+                      FROM " . $this->table_name . " ns
+                      LEFT JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion 
+                        AND i.estatus = 1
+                        AND i.id_periodo = :id_periodo
+                      LEFT JOIN estudiantes e ON i.id_estudiante = e.id_estudiante AND e.estatus = 1
+                      LEFT JOIN personas p ON e.id_persona = p.id_persona
+                      WHERE ns.id_nivel_seccion = :id_nivel_seccion 
+                      AND ns.estatus = 1
+                      GROUP BY ns.id_nivel_seccion";
+
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
+        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion, PDO::PARAM_INT);
+        $stmt->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -325,17 +386,21 @@ class Grado {
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return bool True si tiene estudiantes, False si no
      */
-    public function tieneEstudiantes($id_nivel_seccion) {
+    public function tieneEstudiantes($id_nivel_seccion)
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         $query = "SELECT COUNT(*) as total 
-                  FROM inscripciones 
-                  WHERE id_nivel_seccion = :id_nivel_seccion 
-                  AND estatus = 1
-                  AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
-        
+                      FROM inscripciones 
+                      WHERE id_nivel_seccion = :id_nivel_seccion 
+                      AND estatus = 1
+                      AND id_periodo = :id_periodo";
+
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
+        $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion, PDO::PARAM_INT);
+        $stmt->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['total'] > 0;
     }
@@ -344,25 +409,29 @@ class Grado {
      * Obtener todos los grados disponibles para listas desplegables (solo período activo)
      * @return PDOStatement Lista de grados
      */
-    public function obtenerGradosParaSelect() {
+    public function obtenerGradosParaSelect()
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         $query = "SELECT DISTINCT ns.id_nivel_seccion, 
-                     CONCAT(n.nom_nivel, ' - ', s.nom_seccion) as nombre_completo
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion
-                  INNER JOIN periodos p ON i.id_periodo = p.id_periodo
-                  WHERE ns.estatus = 1
-                    AND n.estatus = 1
-                    AND s.estatus = 1
-                    AND i.estatus = 1
-                    AND p.estatus = 1
-                    AND p.id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)
-                  ORDER BY n.num_nivel, s.nom_seccion";
-        
+                         CONCAT(n.nom_nivel, ' - ', s.nom_seccion) as nombre_completo
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                      INNER JOIN inscripciones i ON ns.id_nivel_seccion = i.id_nivel_seccion
+                      INNER JOIN periodos p ON i.id_periodo = p.id_periodo
+                      WHERE ns.estatus = 1
+                        AND n.estatus = 1
+                        AND s.estatus = 1
+                        AND i.estatus = 1
+                        AND p.estatus = 1
+                        AND i.id_periodo = :id_periodo
+                      ORDER BY n.num_nivel, s.nom_seccion";
+
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         return $stmt;
     }
 
@@ -372,46 +441,48 @@ class Grado {
      * @param int $numero_grado Número del grado (1-6)
      * @return bool True si se creó correctamente
      */
-    public function crearNivelConGrado($nombre_nivel, $numero_grado) {
+    public function crearNivelConGrado($nombre_nivel, $numero_grado)
+    {
         // Generar nombre automático del grado
         $nombresGrados = [
             1 => 'Primer Grado',
             2 => 'Segundo Grado',
             3 => 'Tercer Grado',
-            4 => 'Cuarto Grado', 
+            4 => 'Cuarto Grado',
             5 => 'Quinto Grado',
             6 => 'Sexto Grado'
         ];
-        
+
         $nom_nivel = $nombresGrados[$numero_grado] ?? 'Grado ' . $numero_grado;
-        
+
         $query = "INSERT INTO niveles (num_nivel, nom_nivel) VALUES (?, ?)";
         $stmt = $this->conn->prepare($query);
-        
+
         $numero_grado = htmlspecialchars(strip_tags($numero_grado));
         $nom_nivel = htmlspecialchars(strip_tags($nom_nivel));
-        
+
         if ($stmt->execute([$numero_grado, $nom_nivel])) {
             return $this->conn->lastInsertId();
         }
         return false;
     }
 
-    // ========== NUEVOS MÉTODOS PARA HABILITAR/INHABILITAR ==========
+    // ========== MÉTODOS PARA HABILITAR/INHABILITAR ==========
 
     /**
      * Obtener el estado actual de un grado
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return bool True si está activo, False si está inactivo
      */
-    public function obtenerEstadoGrado($id_nivel_seccion) {
+    public function obtenerEstadoGrado($id_nivel_seccion)
+    {
         $query = "SELECT estatus FROM " . $this->table_name . " 
-                  WHERE id_nivel_seccion = :id_nivel_seccion";
-        
+                      WHERE id_nivel_seccion = :id_nivel_seccion";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['estatus'] == 1;
     }
@@ -420,14 +491,15 @@ class Grado {
      * Habilitar un grado/sección
      * @return bool True si se habilitó correctamente
      */
-    public function habilitar() {
+    public function habilitar()
+    {
         $query = "UPDATE " . $this->table_name . " 
-                  SET estatus = 1 
-                  WHERE id_nivel_seccion = ?";
-        
+                      SET estatus = 1 
+                      WHERE id_nivel_seccion = ?";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id_nivel_seccion);
-        
+
         if ($stmt->execute()) {
             return true;
         }
@@ -438,28 +510,34 @@ class Grado {
      * Inhabilitar un grado/sección
      * @return bool True si se inhabilitó correctamente
      */
-    public function inhabilitar() {
+    public function inhabilitar()
+    {
+        $idPeriodoActivo = $this->obtenerPeriodoActivo();
+
         // Verificar si hay estudiantes inscritos activos
         $query_check = "SELECT COUNT(*) as total FROM inscripciones 
-                       WHERE id_nivel_seccion = ? AND estatus = 1
-                       AND id_periodo = (SELECT id_periodo FROM globales WHERE id_globales = 1)";
+                           WHERE id_nivel_seccion = ? 
+                           AND estatus = 1
+                           AND id_periodo = :id_periodo";
+
         $stmt_check = $this->conn->prepare($query_check);
         $stmt_check->bindParam(1, $this->id_nivel_seccion);
+        $stmt_check->bindParam(":id_periodo", $idPeriodoActivo, PDO::PARAM_INT);
         $stmt_check->execute();
         $row = $stmt_check->fetch(PDO::FETCH_ASSOC);
-        
+
         if ($row['total'] > 0) {
             // No se puede inhabilitar si hay estudiantes activos
             return false;
         }
-        
+
         $query = "UPDATE " . $this->table_name . " 
-                  SET estatus = 0 
-                  WHERE id_nivel_seccion = ?";
-        
+                      SET estatus = 0 
+                      WHERE id_nivel_seccion = ?";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id_nivel_seccion);
-        
+
         if ($stmt->execute()) {
             return true;
         }
@@ -471,18 +549,19 @@ class Grado {
      * @param int $id_nivel_seccion ID del nivel_sección
      * @return array Información completa del grado
      */
-    public function obtenerGradoCompletoPorId($id_nivel_seccion) {
+    public function obtenerGradoCompletoPorId($id_nivel_seccion)
+    {
         $query = "SELECT ns.id_nivel_seccion, n.nom_nivel as nombre_grado, 
-                         s.nom_seccion as seccion, ns.capacidad, ns.estatus
-                  FROM " . $this->table_name . " ns
-                  INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
-                  INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
-                  WHERE ns.id_nivel_seccion = :id_nivel_seccion";
-        
+                             s.nom_seccion as seccion, ns.capacidad, ns.estatus
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                      WHERE ns.id_nivel_seccion = :id_nivel_seccion";
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id_nivel_seccion", $id_nivel_seccion);
         $stmt->execute();
-        
+
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -492,14 +571,67 @@ class Grado {
      * @param bool $nuevo_estado True para habilitar, False para inhabilitar
      * @return bool True si se cambió el estado correctamente
      */
-    public function cambiarEstado($id_nivel_seccion, $nuevo_estado) {
+    public function cambiarEstado($id_nivel_seccion, $nuevo_estado)
+    {
         $this->id_nivel_seccion = $id_nivel_seccion;
-        
+
         if ($nuevo_estado) {
             return $this->habilitar();
         } else {
             return $this->inhabilitar();
         }
     }
+
+    // ========== MÉTODOS ADICIONALES UTILES ==========
+
+    /**
+     * Obtener información del período activo
+     * @return array Información del período activo
+     */
+    public function obtenerInfoPeriodoActivo()
+    {
+        $query = "SELECT g.id_periodo, p.descripcion_periodo, 
+                         p.fecha_ini, p.fecha_fin, g.nom_instituto
+                  FROM globales g
+                  INNER JOIN periodos p ON g.id_periodo = p.id_periodo
+                  WHERE g.es_activo = 1
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Obtener todos los grados sin filtrar por período (para administración)
+     * @return PDOStatement Lista completa de grados
+     */
+    public function listarTodosLosGrados()
+    {
+        $query = "SELECT 
+                        ns.id_nivel_seccion,
+                        n.nom_nivel as nombre_grado,
+                        s.nom_seccion as seccion,
+                        ns.capacidad,
+                        ns.estatus,
+                        (SELECT COUNT(*) FROM inscripciones i2 
+                         WHERE i2.id_nivel_seccion = ns.id_nivel_seccion 
+                         AND i2.estatus = 1) as total_alumnos_general
+                      FROM " . $this->table_name . " ns
+                      INNER JOIN niveles n ON ns.id_nivel = n.id_nivel
+                      INNER JOIN secciones s ON ns.id_seccion = s.id_seccion
+                      WHERE ns.estatus = 1
+                      ORDER BY n.num_nivel, s.nom_seccion";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    public function getPeriodoActivo()
+    {
+        return $this->obtenerPeriodoActivo();
+    }
 }
-?>

@@ -7,8 +7,18 @@ $database = new Conexion();
 $db = $database->conectar();
 $grado = new Grado($db);
 
-// Obtener todos los grados (incluyendo los inactivos)
-$stmt = $grado->listarGradosConAlumnos();
+// IMPORTANTE: Primero obtenemos los datos y los guardamos en un array
+$datosGrados = [];
+try {
+    $stmt = $grado->listarGradosConAlumnos();
+
+    // Guardamos todos los resultados en un array
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $datosGrados[] = $row;
+    }
+} catch (Exception $e) {
+    $error = $e->getMessage();
+}
 
 include_once("/xampp/htdocs/final/layout/layaout1.php");
 ?>
@@ -53,6 +63,28 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 </div>
             <?php endif; ?>
 
+            <?php if (isset($error)): ?>
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h5><i class="icon fas fa-ban"></i> ¡Error!</h5>
+                    <?php echo "Error al cargar los grados: " . $error; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Información del período activo (opcional) -->
+            <div class="callout callout-info mb-3">
+                <h5><i class="fas fa-info-circle"></i> Información del Período</h5>
+                <p>
+                    <?php
+                    $infoPeriodo = $grado->obtenerInfoPeriodoActivo();
+                    if ($infoPeriodo) {
+                        echo "Período académico: <strong>" . htmlspecialchars($infoPeriodo['descripcion_periodo']) . "</strong>";
+                        echo "<br>Institución: <strong>" . htmlspecialchars($infoPeriodo['nom_instituto']) . "</strong>";
+                    }
+                    ?>
+                </p>
+            </div>
+
             <div class="row">
                 <div class="col-12">
                     <div class="card">
@@ -66,86 +98,81 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                         </div>
                         <div class="card-body">
                             <?php
-                            try {
-                                if ($stmt->rowCount() > 0) {
-                                    echo '<table id="tablaGrados" class="table table-bordered table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>N°</th>
-                                                    <th>Grado/Año</th>
-                                                    <th>Sección</th>
-                                                    <th>Capacidad</th>
-                                                    <th>Alumnos Registrados</th>
-                                                    <th>Disponibilidad</th>
-                                                    <th>Estado</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>';
-
-                                    $totalCapacidad = 0;
-                                    $totalAlumnos = 0;
-
-                                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                        $porcentaje = $row['capacidad'] > 0 ? ($row['total_alumnos'] / $row['capacidad']) * 100 : 0;
-                                        $clase_progress = $porcentaje >= 90 ? 'bg-danger' : ($porcentaje >= 70 ? 'bg-warning' : 'bg-success');
-                                        $cuposDisponibles = $row['capacidad'] - $row['total_alumnos'];
-
-                                        $totalCapacidad += $row['capacidad'];
-                                        $totalAlumnos += $row['total_alumnos'];
-
-                                        // Obtener el estado actual del grado
-                                        $estado_grado = $grado->obtenerEstadoGrado($row['id_nivel_seccion']);
-                                        $estado_texto = $estado_grado ? 'Activo' : 'Inactivo';
-                                        $estado_clase = $estado_grado ? 'success' : 'danger';
-                                        $estado_icono = $estado_grado ? 'check' : 'times';
-
-                                        echo "<tr>";
-                                        // MODIFICACIÓN: Celda vacía para que DataTables inserte el número de fila.
-                                        echo "<td></td>"; 
-                                        echo "<td>{$row['nombre_grado']}</td>";
-                                        echo "<td>{$row['seccion']}</td>";
-                                        echo "<td>{$row['capacidad']}</td>";
-                                        echo "<td>{$row['total_alumnos']}</td>";
-                                        echo "<td>
-                                            <div class='progress progress-sm'>
-                                                <div class='progress-bar {$clase_progress}' style='width: {$porcentaje}%'></div>
-                                            </div>
-                                            <small>{$cuposDisponibles} cupos disponibles (" . number_format($porcentaje, 1) . "%)</small>
-                                        </td>";
-                                        echo "<td>
-                                            <span class='badge badge-{$estado_clase}'>
-                                                <i class='fas fa-{$estado_icono}'></i> {$estado_texto}
-                                            </span>
-                                        </td>";
-                                        echo "<td>
-                                            <div class='btn-group'>
-                                                <a href='estudiantes_por_grado.php?id_nivel_seccion={$row['id_nivel_seccion']}' 
-                                                    class='btn btn-info btn-sm' title='Ver Estudiantes'>
-                                                    <i class='fas fa-users'></i> Ver Estudiantes
-                                                </a>
-                                            </div>
-                                        </td>";
-                                        echo "</tr>";
-                                    }
-
-                                    echo '</tbody>';
-                                    echo '<tfoot>
+                            if (!empty($datosGrados)) {
+                                echo '<table id="tablaGrados" class="table table-bordered table-striped">
+                                        <thead>
                                             <tr>
-                                                <th colspan="3" class="text-right"><strong>TOTALES:</strong></th>
-                                                <th><strong>' . $totalCapacidad . '</strong></th>
-                                                <th><strong>' . $totalAlumnos . '</strong></th>
-                                                <th colspan="3">
-                                                    <strong>' . ($totalCapacidad - $totalAlumnos) . ' cupos disponibles totales</strong>
-                                                </th>
+                                                <th>N°</th>
+                                                <th>Grado/Año</th>
+                                                <th>Sección</th>
+                                                <th>Capacidad</th>
+                                                <th>Alumnos Registrados</th>
+                                                <th>Disponibilidad</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
                                             </tr>
-                                        </tfoot>';
-                                    echo '</table>';
-                                } else {
-                                    echo "<div class='alert alert-info'>No hay grados/secciones registrados en el sistema.</div>";
+                                        </thead>
+                                        <tbody>';
+
+                                $totalCapacidad = 0;
+                                $totalAlumnos = 0;
+
+                                foreach ($datosGrados as $row) {
+                                    $porcentaje = $row['capacidad'] > 0 ? ($row['total_alumnos'] / $row['capacidad']) * 100 : 0;
+                                    $clase_progress = $porcentaje >= 90 ? 'bg-danger' : ($porcentaje >= 70 ? 'bg-warning' : 'bg-success');
+                                    $cuposDisponibles = $row['capacidad'] - $row['total_alumnos'];
+
+                                    $totalCapacidad += $row['capacidad'];
+                                    $totalAlumnos += $row['total_alumnos'];
+
+                                    // Obtener el estado actual del grado
+                                    $estado_grado = $grado->obtenerEstadoGrado($row['id_nivel_seccion']);
+                                    $estado_texto = $estado_grado ? 'Activo' : 'Inactivo';
+                                    $estado_clase = $estado_grado ? 'success' : 'danger';
+                                    $estado_icono = $estado_grado ? 'check' : 'times';
+
+                                    echo "<tr>";
+                                    echo "<td></td>"; // Para DataTables
+                                    echo "<td>" . htmlspecialchars($row['nombre_grado']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['seccion']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['capacidad']) . "</td>";
+                                    echo "<td>" . htmlspecialchars($row['total_alumnos']) . "</td>";
+                                    echo "<td>
+                                        <div class='progress progress-sm'>
+                                            <div class='progress-bar {$clase_progress}' style='width: {$porcentaje}%'></div>
+                                        </div>
+                                        <small>" . htmlspecialchars($cuposDisponibles) . " cupos disponibles (" . number_format($porcentaje, 1) . "%)</small>
+                                    </td>";
+                                    echo "<td>
+                                        <span class='badge badge-{$estado_clase}'>
+                                            <i class='fas fa-{$estado_icono}'></i> {$estado_texto}
+                                        </span>
+                                    </td>";
+                                    echo "<td>
+                                        <div class='btn-group'>
+                                            <a href='estudiantes_por_grado.php?id_nivel_seccion=" . urlencode($row['id_nivel_seccion']) . "' 
+                                                class='btn btn-info btn-sm' title='Ver Estudiantes'>
+                                                <i class='fas fa-users'></i> Ver Estudiantes
+                                            </a>
+                                        </div>
+                                    </td>";
+                                    echo "</tr>";
                                 }
-                            } catch (Exception $e) {
-                                echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
+
+                                echo '</tbody>';
+                                echo '<tfoot>
+                                        <tr>
+                                            <th colspan="3" class="text-right"><strong>TOTALES:</strong></th>
+                                            <th><strong>' . $totalCapacidad . '</strong></th>
+                                            <th><strong>' . $totalAlumnos . '</strong></th>
+                                            <th colspan="3">
+                                                <strong>' . ($totalCapacidad - $totalAlumnos) . ' cupos disponibles totales</strong>
+                                            </th>
+                                        </tr>
+                                    </tfoot>';
+                                echo '</table>';
+                            } else {
+                                echo "<div class='alert alert-info'>No hay grados/secciones registrados en el sistema para el período actual.</div>";
                             }
                             ?>
                         </div>
@@ -200,17 +227,13 @@ include_once('../../layout/mensajes.php');
                 [1, "asc"],
                 [2, "asc"]
             ],
-            // MODIFICACIÓN: Implementación de la numeración continua
             "drawCallback": function(settings) {
                 var api = this.api();
-                // Obtiene el índice de inicio de la página actual
-                var startIndex = api.page.info().start; 
+                var startIndex = api.page.info().start;
 
-                // Recorre las celdas de la columna 0 (#) en la página actual
                 api.column(0, {
                     page: 'current'
                 }).nodes().each(function(cell, i) {
-                    // Calcula la numeración continua (índice base + índice de fila + 1)
                     cell.innerHTML = startIndex + i + 1;
                 });
             }
