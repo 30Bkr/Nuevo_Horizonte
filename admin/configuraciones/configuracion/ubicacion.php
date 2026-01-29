@@ -87,86 +87,123 @@ try {
               </div>
             </div>
             <div class="card-body">
-              <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                  <thead class="thead-light">
-                    <tr>
-                      <th>ID</th>
-                      <th>Nombre del Estado</th>
-                      <th>Fecha de Creación</th>
-                      <th>Última Actualización</th>
-                      <th>En Uso</th>
-                      <th>Estado</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <?php if (count($estados) > 0): ?>
-                      <?php foreach ($estados as $estado):
-                        try {
-                          $en_uso = $ubicacionController->estadoEnUso($estado['id_estado']);
-                          $conteo_usos = $ubicacionController->obtenerConteoUsosEstado($estado['id_estado']);
-                        } catch (Exception $e) {
-                          $en_uso = false;
-                          $conteo_usos = 0;
-                        }
-                      ?>
-                        <tr>
-                          <td><?php echo $estado['id_estado']; ?></td>
-                          <td><?php echo htmlspecialchars($estado['nom_estado']); ?></td>
-                          <td><?php echo date('d/m/Y H:i', strtotime($estado['creacion'])); ?></td>
-                          <td>
-                            <?php
-                            if ($estado['actualizacion']) {
-                              echo date('d/m/Y H:i', strtotime($estado['actualizacion']));
-                            } else {
-                              echo 'No actualizado';
-                            }
-                            ?>
-                          </td>
-                          <td>
-                            <?php if ($en_uso): ?>
-                              <span class="badge badge-warning" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
-                              </span>
-                            <?php else: ?>
-                              <span class="badge badge-secondary">
-                                <i class="fas fa-check-circle mr-1"></i>Sin uso
-                              </span>
-                            <?php endif; ?>
-                          </td>
-                          <td>
-                            <span class="badge badge-<?php echo $estado['estatus'] == 1 ? 'success' : 'danger'; ?>">
-                              <?php echo $estado['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
-                            </span>
-                          </td>
-                          <td>
-                            <form method="POST" class="d-inline">
-                              <input type="hidden" name="id_estado" value="<?php echo $estado['id_estado']; ?>">
-                              <input type="hidden" name="estatus" value="<?php echo $estado['estatus'] == 1 ? 0 : 1; ?>">
-                              <button type="submit" name="actualizar_estado"
-                                class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?>"
-                                onclick="return confirm('¿Estás seguro de <?php echo $estado['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> este estado?<?php echo $en_uso && $estado['estatus'] == 1 ? '\n\nADVERTENCIA: Este estado está siendo usado en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarlo, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.' : ''; ?>')">
-                                <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
-                                <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
-                              </button>
-                            </form>
-                          </td>
-                        </tr>
-                      <?php endforeach; ?>
-                    <?php else: ?>
+              <!-- Barra de búsqueda en cliente -->
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                      </span>
+                    </div>
+                    <input type="text"
+                      id="filtroEstados"
+                      class="form-control"
+                      placeholder="Filtrar estados por nombre o ID..."
+                      aria-label="Filtrar estados">
+                    <div class="input-group-append">
+                      <button id="limpiarFiltro" class="btn btn-secondary" style="display: none;">
+                        <i class="fas fa-times mr-1"></i> Limpiar
+                      </button>
+                    </div>
+                  </div>
+                  <small class="form-text text-muted">
+                    Escribe para filtrar y ordenar los estados en tiempo real
+                  </small>
+                </div>
+                <div class="col-md-6">
+                  <div id="infoFiltro" class="alert alert-info mb-0 py-2" style="display: none;">
+                    <i class="fas fa-filter mr-2"></i>
+                    Mostrando <span id="contadorResultados">0</span> de <?php echo count($estados); ?> estados
+                    <span id="terminoFiltro"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contenedor de la tabla -->
+              <div id="tablaEstadosContainer">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
                       <tr>
-                        <td colspan="7" class="text-center">No hay estados registrados</td>
+                        <th>ID</th>
+                        <th>Nombre del Estado</th>
+                        <th>Fecha de Creación</th>
+                        <th>Última Actualización</th>
+                        <th>En Uso</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                       </tr>
-                    <?php endif; ?>
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody id="cuerpoTablaEstados">
+                      <?php if (count($estados) > 0): ?>
+                        <?php foreach ($estados as $estado):
+                          try {
+                            $en_uso = $ubicacionController->estadoEnUso($estado['id_estado']);
+                            $conteo_usos = $ubicacionController->obtenerConteoUsosEstado($estado['id_estado']);
+                          } catch (Exception $e) {
+                            $en_uso = false;
+                            $conteo_usos = 0;
+                          }
+                        ?>
+                          <tr data-id="<?php echo $estado['id_estado']; ?>"
+                            data-nombre="<?php echo htmlspecialchars(strtolower($estado['nom_estado'])); ?>"
+                            data-id-texto="<?php echo $estado['id_estado']; ?>">
+                            <td class="col-id"><?php echo $estado['id_estado']; ?></td>
+                            <td class="col-nombre"><?php echo htmlspecialchars($estado['nom_estado']); ?></td>
+                            <td><?php echo date('d/m/Y H:i', strtotime($estado['creacion'])); ?></td>
+                            <td>
+                              <?php
+                              if ($estado['actualizacion']) {
+                                echo date('d/m/Y H:i', strtotime($estado['actualizacion']));
+                              } else {
+                                echo 'No actualizado';
+                              }
+                              ?>
+                            </td>
+                            <td>
+                              <?php if ($en_uso): ?>
+                                <span class="badge badge-warning" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
+                                  <i class="fas fa-exclamation-triangle mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
+                                </span>
+                              <?php else: ?>
+                                <span class="badge badge-secondary">
+                                  <i class="fas fa-check-circle mr-1"></i>Sin uso
+                                </span>
+                              <?php endif; ?>
+                            </td>
+                            <td>
+                              <span class="badge badge-<?php echo $estado['estatus'] == 1 ? 'success' : 'danger'; ?>">
+                                <?php echo $estado['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
+                              </span>
+                            </td>
+                            <td>
+                              <form method="POST" class="d-inline">
+                                <input type="hidden" name="id_estado" value="<?php echo $estado['id_estado']; ?>">
+                                <input type="hidden" name="estatus" value="<?php echo $estado['estatus'] == 1 ? 0 : 1; ?>">
+                                <button type="submit" name="actualizar_estado"
+                                  class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?>"
+                                  onclick="return confirm('¿Estás seguro de <?php echo $estado['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> este estado?<?php echo $en_uso && $estado['estatus'] == 1 ? '\n\nADVERTENCIA: Este estado está siendo usado en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarlo, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.' : ''; ?>')">
+                                  <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
+                                  <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                        <?php endforeach; ?>
+                      <?php else: ?>
+                        <tr>
+                          <td colspan="7" class="text-center">No hay estados registrados</td>
+                        </tr>
+                      <?php endif; ?>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
       <!-- Información adicional -->
       <div class="row mt-4">
         <div class="col-md-3">
@@ -253,93 +290,256 @@ try {
           </div>
         </div>
       </div>
+      <!-- Resto de tu código se mantiene igual -->
+      <!-- ... (secciones de estadísticas, notas y leyenda) ... -->
+
     </div>
   </div>
 </div>
 
-<!-- (Los estilos y scripts se mantienen igual) -->
+<!-- Script para filtro en cliente -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const filtroInput = document.getElementById('filtroEstados');
+    const limpiarBtn = document.getElementById('limpiarFiltro');
+    const infoFiltro = document.getElementById('infoFiltro');
+    const contadorResultados = document.getElementById('contadorResultados');
+    const terminoFiltro = document.getElementById('terminoFiltro');
+    const cuerpoTabla = document.getElementById('cuerpoTablaEstados');
+    const filasOriginales = Array.from(cuerpoTabla.querySelectorAll('tr'));
+    const totalEstados = filasOriginales.length;
+
+    // Guardar los datos originales de cada fila
+    const datosOriginales = filasOriginales.map(fila => {
+      return {
+        elemento: fila,
+        nombre: fila.getAttribute('data-nombre') || '',
+        id: fila.getAttribute('data-id-texto') || '',
+        nombreCompleto: fila.querySelector('.col-nombre')?.textContent || '',
+        idCompleto: fila.querySelector('.col-id')?.textContent || ''
+      };
+    });
+
+    // Función para normalizar texto (quitar acentos, pasar a minúsculas)
+    function normalizarTexto(texto) {
+      return texto
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
+
+    // Función para resaltar texto en los resultados
+    function resaltarTexto(texto, busqueda) {
+      if (!busqueda) return texto;
+
+      const regex = new RegExp(`(${busqueda})`, 'gi');
+      return texto.replace(regex, '<span class="bg-warning text-dark">$1</span>');
+    }
+
+    // Función para aplicar el filtro
+    function aplicarFiltro(termino) {
+      const terminoNormalizado = normalizarTexto(termino);
+      let resultadosFiltrados = [];
+
+      // Filtrar y ordenar
+      if (terminoNormalizado) {
+        resultadosFiltrados = datosOriginales
+          .filter(dato => {
+            // Buscar en nombre y en ID
+            const nombreMatch = normalizarTexto(dato.nombreCompleto).includes(terminoNormalizado);
+            const idMatch = dato.idCompleto.includes(terminoNormalizado);
+            return nombreMatch || idMatch;
+          })
+          .sort((a, b) => {
+            // Ordenar por relevancia
+            const aNombre = normalizarTexto(a.nombreCompleto);
+            const bNombre = normalizarTexto(b.nombreCompleto);
+            const aId = a.idCompleto;
+            const bId = b.idCompleto;
+
+            // Los que empiezan con el término van primero
+            const aEmpiezaCon = aNombre.startsWith(terminoNormalizado) || aId.startsWith(terminoNormalizado);
+            const bEmpiezaCon = bNombre.startsWith(terminoNormalizado) || bId.startsWith(terminoNormalizado);
+
+            if (aEmpiezaCon && !bEmpiezaCon) return -1;
+            if (!aEmpiezaCon && bEmpiezaCon) return 1;
+
+            // Luego orden alfabético por nombre
+            return aNombre.localeCompare(bNombre);
+          });
+      } else {
+        // Sin filtro, orden alfabético original
+        resultadosFiltrados = [...datosOriginales].sort((a, b) =>
+          a.nombre.localeCompare(b.nombre)
+        );
+      }
+
+      // Actualizar la tabla
+      actualizarTabla(resultadosFiltrados, terminoNormalizado);
+
+      // Actualizar información del filtro
+      actualizarInfoFiltro(resultadosFiltrados.length, termino);
+
+      // Mostrar/ocultar botón limpiar
+      limpiarBtn.style.display = terminoNormalizado ? 'block' : 'none';
+    }
+
+    // Función para actualizar la tabla
+    function actualizarTabla(resultados, termino) {
+      // Limpiar tabla
+      cuerpoTabla.innerHTML = '';
+
+      if (resultados.length === 0) {
+        cuerpoTabla.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center">
+                        No se encontraron estados que coincidan con "${termino}"
+                    </td>
+                </tr>
+            `;
+        return;
+      }
+
+      // Agregar filas filtradas y ordenadas
+      resultados.forEach(dato => {
+        const fila = dato.elemento.cloneNode(true);
+
+        // Resaltar el término de búsqueda si existe
+        if (termino) {
+          const celdaNombre = fila.querySelector('.col-nombre');
+          const celdaId = fila.querySelector('.col-id');
+
+          if (celdaNombre) {
+            const nombreOriginal = dato.nombreCompleto;
+            celdaNombre.innerHTML = resaltarTexto(nombreOriginal, termino);
+          }
+
+          if (celdaId) {
+            const idOriginal = dato.idCompleto;
+            celdaId.innerHTML = resaltarTexto(idOriginal, termino);
+          }
+        }
+
+        cuerpoTabla.appendChild(fila);
+      });
+
+      // Re-inicializar tooltips si existen
+      if (typeof $ !== 'undefined' && $.fn.tooltip) {
+        $('[data-toggle="tooltip"]').tooltip();
+      }
+    }
+
+    // Función para actualizar la información del filtro
+    function actualizarInfoFiltro(cantidad, termino) {
+      if (termino) {
+        contadorResultados.textContent = cantidad;
+        terminoFiltro.innerHTML = ` para: <strong>"${termino}"</strong>`;
+        infoFiltro.style.display = 'block';
+      } else {
+        infoFiltro.style.display = 'none';
+      }
+    }
+
+    // Event Listeners
+    filtroInput.addEventListener('input', function() {
+      aplicarFiltro(this.value);
+    });
+
+    filtroInput.addEventListener('keyup', function(e) {
+      // Si presiona ESC, limpiar filtro
+      if (e.key === 'Escape') {
+        this.value = '';
+        aplicarFiltro('');
+      }
+    });
+
+    limpiarBtn.addEventListener('click', function() {
+      filtroInput.value = '';
+      aplicarFiltro('');
+      filtroInput.focus();
+    });
+
+    // Aplicar orden inicial alfabético
+    aplicarFiltro('');
+
+    // Opcional: Permitir ordenar por columnas
+    const cabeceras = document.querySelectorAll('thead th');
+    cabeceras.forEach((cabecera, indice) => {
+      cabecera.style.cursor = 'pointer';
+      cabecera.addEventListener('click', () => {
+        ordenarPorColumna(indice);
+      });
+    });
+
+    // Función para ordenar por columna
+    function ordenarPorColumna(indiceColumna) {
+      const terminoActual = normalizarTexto(filtroInput.value);
+      let resultados = [];
+
+      if (terminoActual) {
+        resultados = datosOriginales.filter(dato =>
+          normalizarTexto(dato.nombreCompleto).includes(terminoActual) ||
+          dato.idCompleto.includes(terminoActual)
+        );
+      } else {
+        resultados = [...datosOriginales];
+      }
+
+      // Ordenar según la columna clickeada
+      resultados.sort((a, b) => {
+        let valorA, valorB;
+
+        switch (indiceColumna) {
+          case 0: // ID
+            valorA = parseInt(a.idCompleto) || 0;
+            valorB = parseInt(b.idCompleto) || 0;
+            return valorA - valorB;
+
+          case 1: // Nombre
+            valorA = normalizarTexto(a.nombreCompleto);
+            valorB = normalizarTexto(b.nombreCompleto);
+            return valorA.localeCompare(valorB);
+
+          case 2: // Fecha Creación
+          case 3: // Fecha Actualización
+            // Aquí podrías implementar orden por fecha si lo necesitas
+            return 0;
+
+          default:
+            return 0;
+        }
+      });
+
+      actualizarTabla(resultados, terminoActual);
+    }
+  });
+</script>
+
 <style>
-  .card-purple {
+  /* Estilos para el filtro */
+  #filtroEstados:focus {
     border-color: #6f42c1;
+    box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
   }
 
-  .card-purple>.card-header {
-    background-color: #6f42c1;
-    color: white;
+  /* Estilo para las cabeceras clickeables */
+  thead th:hover {
+    background-color: #f1f1f1;
   }
 
-  .btn-purple {
-    background-color: #6f42c1;
-    border-color: #6f42c1;
-    color: white;
+  /* Estilo para el resaltado */
+  .bg-warning {
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
   }
 
-  .btn-purple:hover {
-    background-color: #5a379c;
-    border-color: #5a379c;
-    color: white;
-  }
-
-  .table th {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-  }
-
-  .badge-success {
-    background-color: #28a745;
-  }
-
-  .badge-danger {
-    background-color: #dc3545;
-  }
-
-  .badge-warning {
-    background-color: #ffc107;
-    color: #212529;
-  }
-
-  .badge-secondary {
-    background-color: #6c757d;
-  }
-
-  .info-box {
-    box-shadow: 0 0 1px rgba(0, 0, 0, .125), 0 1px 3px rgba(0, 0, 0, .2);
-    border-radius: 0.25rem;
-    background: #fff;
-    display: flex;
-    margin-bottom: 1rem;
-    min-height: 80px;
-    padding: 0.5rem;
-    position: relative;
-    width: 100%;
-  }
-
-  .info-box .info-box-icon {
-    border-radius: 0.25rem;
-    align-items: center;
-    display: flex;
-    font-size: 1.875rem;
-    justify-content: center;
-    text-align: center;
-    width: 70px;
-  }
-
-  .info-box .info-box-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    line-height: 1.8;
-    flex: 1;
-    padding: 0 10px;
+  /* Transición suave para cambios en la tabla */
+  #cuerpoTablaEstados tr {
+    transition: all 0.3s ease;
   }
 </style>
-
-<script>
-  // Inicializar tooltips
-  $(function() {
-    $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
 
 <?php
 // Cerrar conexión
