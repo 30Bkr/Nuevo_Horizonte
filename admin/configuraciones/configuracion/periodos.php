@@ -46,7 +46,7 @@ try {
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
               <button class="btn btn-primary mr-2" onclick="abrirModalCrear()">
-                <i class="fas fa-plus mr-1"></i> Crear Periodo
+                <i class="fas fa-plus mr-1"></i> Crear
               </button>
             </div>
           </div>
@@ -98,7 +98,7 @@ try {
               <div class="card-header">
                 <h3 class="card-title">
                   <i class="fas fa-star mr-2"></i>
-                  Periodo Académico Activo Actual
+                  Periodo Académico Activo
                 </h3>
               </div>
               <div class="card-body">
@@ -336,7 +336,7 @@ try {
             <i class="fas fa-times mr-1"></i> Cancelar
           </button>
           <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save mr-1"></i> Crear Periodo
+            <i class="fas fa-save mr-1"></i> Crear
           </button>
         </div>
       </form>
