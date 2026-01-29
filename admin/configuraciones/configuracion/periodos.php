@@ -336,7 +336,7 @@ try {
             <i class="fas fa-times mr-1"></i> Cancelar
           </button>
           <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save mr-1"></i> Crear
+            <i class="fas fa-save mr-1"></i> Guardar
           </button>
         </div>
       </form>

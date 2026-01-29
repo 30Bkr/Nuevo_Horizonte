@@ -188,7 +188,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
             <div>
               <a href="historial_institucion.php" class="btn btn-info">
                 <i class="fas fa-history mr-2"></i>
-                Ver Historial de Modificaciones
+                Ver Historial
               </a>
               <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary ml-2">
                 <i class="fas fa-arrow-left mr-2"></i>

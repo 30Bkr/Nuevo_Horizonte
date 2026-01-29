@@ -128,7 +128,7 @@ try {
 
                 <div class="form-group mt-4">
                   <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save mr-1"></i> Guardar Configuración
+                    <i class="fas fa-save mr-1"></i> Guardar
                   </button>
                   <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Volver

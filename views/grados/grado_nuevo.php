@@ -164,7 +164,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                     <!-- Formulario Principal para Crear Grado/Sección -->
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h3 class="card-title">Registrar Nuevo Grado/Año/Sección</h3>
+                            <h3 class="card-title">Crear Nuevo Grado/Año/Sección</h3>
                         </div>
                         <form method="post" action="grado_nuevo.php" id="formGrado">
                             <div class="card-body">
@@ -232,7 +232,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                             </div>
                             <div class="card-footer">
                                 <button type="submit" name="guardar_grado" class="btn btn-primary" id="btnGuardar">
-                                    <i class="fas fa-save"></i> Guardar Grado/Año/Sección
+                                    <i class="fas fa-save"></i> Guardar
                                 </button>
                                 <a href="grados_list.php" class="btn btn-default">
                                     <i class="fas fa-arrow-left"></i> Cancelar
@@ -323,7 +323,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" name="crear_nivel" class="btn btn-primary" id="btnCrearNivel" disabled>
-                        <i class="fas fa-save"></i> Crear Grado/Año
+                        <i class="fas fa-save"></i> Guardar
                     </button>
                 </div>
             </form>
@@ -360,7 +360,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="submit" name="crear_seccion" class="btn btn-primary" id="btnCrearSeccion" disabled>
-                        <i class="fas fa-save"></i> Crear Sección
+                        <i class="fas fa-save"></i> Guardar
                     </button>
                 </div>
             </form>

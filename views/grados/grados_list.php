@@ -89,7 +89,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                     <i class="fas fa-arrow-left"></i> Volver
                                 </a>
                                 <a href="grado_nuevo.php" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Nuevo Grado/Año/Sección
+                                    <i class="fas fa-plus"></i> Crear
                                 </a>
                                 <a href="grados_pdf.php" class="btn btn-success btn-sm" target="_blank">
                                     <i class="fas fa-print"></i> Imprimir PDF General
