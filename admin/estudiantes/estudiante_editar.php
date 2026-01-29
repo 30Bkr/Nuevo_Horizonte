@@ -618,7 +618,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
               <div class="card-footer">
                 <button type="submit" class="btn btn-warning">
-                  <i class="fas fa-save"></i> Actualizar Estudiante
+                  <i class="fas fa-save"></i> Guardar
                 </button>
                 <a href="estudiantes_list.php" class="btn btn-default">
                   <i class="fas fa-arrow-left"></i> Cancelar

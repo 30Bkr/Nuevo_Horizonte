@@ -359,7 +359,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                 <i class="fas fa-edit"></i> Editar
                             </a>
                             <a href="estudiantes_list.php" class="btn btn-default">
-                                <i class="fas fa-arrow-left"></i> Volver al Listado
+                                <i class="fas fa-arrow-left"></i> Volver
                             </a>
                         </div>
                     </div>

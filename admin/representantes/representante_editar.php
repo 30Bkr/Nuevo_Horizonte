@@ -404,7 +404,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                                             <i class="fas fa-times"></i> Cancelar
                                         </a>
                                         <button type="submit" class="btn btn-warning">
-                                            <i class="fas fa-save"></i> Actualizar Representante
+                                            <i class="fas fa-save"></i> Guardar
                                         </button>
                                     </div>
                                 </div>
