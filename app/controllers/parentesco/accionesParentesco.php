@@ -1,17 +1,33 @@
 <?php
 // admin/configuraciones/configuracion/accionesParentesco.php
-session_start();
-header('Content-Type: application/json');
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+// Establecer cabeceras JSON primero
+header('Content-Type: application/json; charset=utf-8');
+
+// Limpiar buffer de salida
+while (ob_get_level()) {
+  ob_end_clean();
+}
 
 include_once '/xampp/htdocs/final/app/conexion.php';
 include_once("parentescoController.php");
 
 try {
+  if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    throw new Exception('Método no permitido');
+  }
   $conexion = new Conexion();
   $pdo = $conexion->conectar();
   $parentescoController = new ParentescoController($pdo);
 
   $action = $_POST['action'] ?? '';
+
+  if (empty($action)) {
+    throw new Exception('Acción no especificada');
+  }
 
   switch ($action) {
     case 'agregar':

@@ -128,9 +128,9 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                        <li class="breadcrumb-item"><a href="grados_list.php">Grados/Años</a></li>
-                        <li class="breadcrumb-item active">Nuevo</li>
+                        <li class="breadcrumb-item"><a href="grados_list.php">Inicio</a></li>
+                        <li class="breadcrumb-item"><a href="grados_list.php">Configuraciones</a></li>
+                        <li class="breadcrumb-item active">Niveles</li>
                     </ol>
                 </div>
             </div>

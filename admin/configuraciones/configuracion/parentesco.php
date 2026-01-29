@@ -602,6 +602,39 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     }
   }
 
+  // async function confirmarCambioEstatus() {
+  //   if (!parentescoSeleccionado) return;
+
+  //   const {
+  //     id,
+  //     nombre,
+  //     nuevoEstatus
+  //   } = parentescoSeleccionado;
+
+  //   try {
+  //     const response = await fetch('<?= URL; ?>/app/controllers/parentesco/accionesParentesco.php', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/x-www-form-urlencoded',
+  //       },
+  //       body: `action=actualizar&id=${id}&nombre=${encodeURIComponent(nombre)}&estatus=${nuevoEstatus}`
+  //     });
+
+  //     const result = await response.json();
+
+  //     if (result.success) {
+  //       mostrarNotificacion(result.message, 'success');
+  //       $('#modalConfirmacion').modal('hide');
+  //       recargarParentescos();
+  //     } else {
+  //       mostrarNotificacion(result.message, 'error');
+  //       $('#modalConfirmacion').modal('hide');
+  //     }
+  //   } catch (error) {
+  //     mostrarNotificacion('Error de conexión: ' + error.message, 'error');
+  //   }
+  // }
+  // En parentesco.php, prueba cambiar:
   async function confirmarCambioEstatus() {
     if (!parentescoSeleccionado) return;
 
@@ -625,7 +658,9 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
       if (result.success) {
         mostrarNotificacion(result.message, 'success');
         $('#modalConfirmacion').modal('hide');
-        recargarParentescos();
+
+        // En lugar de recargarParentescos(), usa location.reload() temporalmente
+        location.reload();
       } else {
         mostrarNotificacion(result.message, 'error');
         $('#modalConfirmacion').modal('hide');

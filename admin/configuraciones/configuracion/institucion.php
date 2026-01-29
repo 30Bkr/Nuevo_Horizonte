@@ -310,10 +310,10 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                   <i class="fas fa-save mr-2"></i>
                   Guardar
                 </button>
-                <button type="reset" class="btn btn-default">
+                <!-- <button type="reset" class="btn btn-default">
                   <i class="fas fa-undo mr-2"></i>
                   Limpiar
-                </button>
+                </button> -->
               </div>
             </form>
           </div>

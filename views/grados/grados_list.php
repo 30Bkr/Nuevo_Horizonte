@@ -42,7 +42,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="/final/index.php">Inicio</a></li>
-                        <li class="breadcrumb-item active">Grados/Años</li>
+                        <li class="breadcrumb-item active">Configuraciones</li>
                     </ol>
                 </div>
             </div>

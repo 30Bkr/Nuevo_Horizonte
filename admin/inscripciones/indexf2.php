@@ -36,7 +36,7 @@ try {
   $profesiones = $profesionesController->obtenerProfesiones();
   $ubicacionController = new UbicacionController($pdo);
   $parentesco = new ParentescoController($pdo);
-  $parentescos = $parentesco->mostrarParentescos();
+  $parentescos = $parentesco->mostrarParentescosOn();
   $patologiaController = new PatologiaController($pdo);
 
   $discapacidadController = new DiscapacidadController($pdo);
