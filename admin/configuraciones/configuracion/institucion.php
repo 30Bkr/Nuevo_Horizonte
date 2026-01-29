@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (empty($nom_instituto)) {
     Notification::set("El nombre de la institución es obligatorio", "error");
   } elseif (empty($motivo_cambio)) {
-    Notification::set("Debe especificar un motivo para el cambio", "error");
+    Notification::set("Debe especificar un motivo para la modificación", "error");
   } else {
     try {
       // Iniciar transacción
@@ -188,7 +188,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
             <div>
               <a href="historial_institucion.php" class="btn btn-info">
                 <i class="fas fa-history mr-2"></i>
-                Ver Historial de Cambios
+                Ver Historial de Modificaciones
               </a>
               <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary ml-2">
                 <i class="fas fa-arrow-left mr-2"></i>
@@ -233,7 +233,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                     <div class="form-group">
                       <label for="nom_directora">
                         <i class="fas fa-user-tie mr-1"></i>
-                        Nombre de la Directora
+                        Nombre del Director(a)
                       </label>
                       <input type="text"
                         class="form-control"
@@ -241,14 +241,14 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                         name="nom_directora"
                         placeholder="Ej: María Rodríguez"
                         value="<?php echo htmlspecialchars($infoInstitucion['nom_directora'] ?? ''); ?>">
-                      <small class="text-muted">Nombre completo de la directora actual</small>
+                      <small class="text-muted">Nombre completo del director(a) actual</small>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
                       <label for="ci_directora">
                         <i class="fas fa-id-card mr-1"></i>
-                        Cédula de la Directora
+                        Cédula del Director(a)
                       </label>
                       <input type="text"
                         class="form-control"
@@ -277,7 +277,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                 <div class="form-group">
                   <label for="motivo_cambio">
                     <i class="fas fa-sticky-note mr-1"></i>
-                    Motivo del Cambio *
+                    Motivo de la modificación *
                   </label>
                   <textarea class="form-control"
                     id="motivo_cambio"
@@ -308,7 +308,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
               <div class="card-footer">
                 <button type="submit" class="btn btn-primary">
                   <i class="fas fa-save mr-2"></i>
-                  Guardar Nueva Versión
+                  Guardar
                 </button>
                 <button type="reset" class="btn btn-default">
                   <i class="fas fa-undo mr-2"></i>
@@ -330,20 +330,20 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
             <div class="card-body">
               <p><strong>¿Cómo funciona?</strong></p>
               <ul class="mb-3">
-                <li>✅ Cada cambio crea una nueva versión</li>
+                <li>✅ Cada modificación crea una nueva versión</li>
                 <li>✅ Se mantiene el historial completo</li>
                 <li>✅ Solo la última versión está activa</li>
-                <li>✅ Puedes ver cambios anteriores</li>
+                <li>✅ Puedes ver modificaciones anteriores</li>
               </ul>
 
               <hr>
 
               <p><strong>Beneficios:</strong></p>
               <ul class="mb-3">
-                <li>📋 Auditoría de cambios</li>
+                <li>📋 Auditoría de modificaciones</li>
                 <li>↩️ Recuperación de versiones anteriores</li>
                 <li>👤 Control de quién modificó qué</li>
-                <li>📝 Registro de motivos de cambio</li>
+                <li>📝 Registro de motivos de modificaciones</li>
               </ul>
 
               <hr>
