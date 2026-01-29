@@ -214,16 +214,21 @@ try {
                               </span>
                             </td>
                             <td class="col-acciones">
-                              <form method="POST" class="d-inline">
-                                <input type="hidden" name="id_parroquia" value="<?php echo $parroquia['id_parroquia']; ?>">
-                                <input type="hidden" name="estatus" value="<?php echo $parroquia['estatus'] == 1 ? 0 : 1; ?>">
-                                <button type="submit" name="actualizar_parroquia"
-                                  class="btn btn-sm btn-<?php echo $parroquia['estatus'] == 1 ? 'warning' : 'success'; ?>"
-                                  onclick="return confirm('¿Estás seguro de <?php echo $parroquia['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> esta parroquia?<?php echo $en_uso && $parroquia['estatus'] == 1 ? '\n\nADVERTENCIA: Esta parroquia está siendo usada en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarla, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.' : ''; ?>')">
-                                  <i class="fas fa-<?php echo $parroquia['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
-                                  <?php echo $parroquia['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
-                                </button>
-                              </form>
+                              <button type="button"
+                                class="btn btn-sm btn-<?php echo $parroquia['estatus'] == 1 ? 'warning' : 'success'; ?> btn-confirmar-parroquia"
+                                data-id="<?php echo $parroquia['id_parroquia']; ?>"
+                                data-nombre="<?php echo htmlspecialchars($parroquia['nom_parroquia']); ?>"
+                                data-municipio="<?php echo htmlspecialchars($parroquia['nom_municipio']); ?>"
+                                data-estado="<?php echo htmlspecialchars($parroquia['nom_estado']); ?>"
+                                data-estatus="<?php echo $parroquia['estatus']; ?>"
+                                data-en-uso="<?php echo $en_uso ? '1' : '0'; ?>"
+                                data-conteo-usos="<?php echo $conteo_usos; ?>"
+                                data-accion="<?php echo $parroquia['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?>"
+                                data-toggle="modal"
+                                data-target="#modalConfirmacionParroquia">
+                                <i class="fas fa-<?php echo $parroquia['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
+                                <?php echo $parroquia['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
+                              </button>
                             </td>
                           </tr>
                         <?php endforeach; ?>
@@ -434,6 +439,50 @@ try {
     content: " ▼";
     font-size: 0.8em;
     opacity: 0.7;
+  }
+
+  /* Estilos específicos para el modal de parroquias */
+  .btn-confirmar-parroquia {
+    transition: all 0.3s ease;
+    min-width: 100px;
+  }
+
+  .btn-confirmar-parroquia:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Animación para el icono del modal */
+  #modalIconoParroquia i {
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.2));
+    animation: pulseParroquia 2s infinite;
+  }
+
+  @keyframes pulseParroquia {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Mejora responsiva para el modal de parroquias */
+  @media (max-width: 576px) {
+    .btn-confirmar-parroquia {
+      min-width: 90px;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .modal-body .alert {
+      font-size: 0.9rem;
+    }
   }
 </style>
 
@@ -742,29 +791,28 @@ try {
         // Agregar parroquias a la tabla
         parroquiasPagina.forEach(parroquia => {
           const fila = document.createElement('tr');
+          // Usar el HTML completo ORIGINAL
+          fila.innerHTML = parroquia.htmlCompleto;
 
-          // Resaltar término de búsqueda si existe
+          // Solo si hay término de búsqueda, aplicar resaltado
           if (terminoBusqueda) {
-            // Reconstruir cada celda con resaltado
-            const idHTML = resaltarTexto(parroquia.datos.id, terminoBusqueda);
-            const nombreHTML = resaltarTexto(parroquia.datos.nombre, terminoBusqueda);
-            const municipioHTML = resaltarTexto(parroquia.datos.municipio, terminoBusqueda);
-            const estadoHTML = resaltarTexto(parroquia.datos.estado, terminoBusqueda);
-
-            fila.innerHTML = `
-                        <td>${idHTML}</td>
-                        <td>${nombreHTML}</td>
-                        <td>${municipioHTML}</td>
-                        <td>${estadoHTML}</td>
-                        <td>${parroquia.datos.creacion}</td>
-                        <td>${parroquia.datos.actualizacion}</td>
-                        <td>${parroquia.datos.enUsoHTML}</td>
-                        <td>${parroquia.datos.estatusHTML}</td>
-                        <td>${parroquia.datos.accionesHTML}</td>
-                    `;
-          } else {
-            // Usar el HTML completo original
-            fila.innerHTML = parroquia.htmlCompleto;
+            const celdas = fila.querySelectorAll('td');
+            // Resaltar en ID
+            if (celdas[0]) {
+              celdas[0].innerHTML = resaltarTexto(parroquia.datos.id, terminoBusqueda);
+            }
+            // Resaltar en Nombre
+            if (celdas[1]) {
+              celdas[1].innerHTML = resaltarTexto(parroquia.datos.nombre, terminoBusqueda);
+            }
+            // Resaltar en Municipio
+            if (celdas[2]) {
+              celdas[2].innerHTML = resaltarTexto(parroquia.datos.municipio, terminoBusqueda);
+            }
+            // Resaltar en Estado
+            if (celdas[3]) {
+              celdas[3].innerHTML = resaltarTexto(parroquia.datos.estado, terminoBusqueda);
+            }
           }
 
           cuerpoTabla.appendChild(fila);
@@ -908,9 +956,224 @@ try {
   })
 </script>
 
+
+<!-- Modal de Confirmación para Parroquias -->
+<div id="modalConfirmacionParroquia" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          <span id="modalTituloParroquia">Confirmar Acción</span>
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="modalIconoParroquia" class="text-center mb-3" style="font-size: 48px;">
+          <!-- Icono dinámico -->
+        </div>
+        <h6 id="modalPreguntaParroquia" class="text-center mb-3"></h6>
+        <div id="modalDetalleParroquia" class="alert alert-info" style="display: none;">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span id="modalDetalleTextoParroquia"></span>
+        </div>
+        <div id="modalAdvertenciaParroquia" class="alert alert-danger" style="display: none;">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          <strong>¡ADVERTENCIA!</strong>
+          <span id="modalAdvertenciaTextoParroquia"></span>
+        </div>
+        <div id="modalUbicacionParroquia" class="alert alert-primary" style="display: none;">
+          <i class="fas fa-map-marker-alt mr-2"></i>
+          <strong>Ubicación:</strong>
+          <span id="modalUbicacionTextoParroquia"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times mr-1"></i> Cancelar
+        </button>
+        <form id="modalFormParroquia" method="POST" class="d-inline">
+          <input type="hidden" name="id_parroquia" id="modalIdParroquia">
+          <input type="hidden" name="estatus" id="modalEstatusParroquia">
+          <button type="submit" name="actualizar_parroquia" class="btn btn-success" id="modalBotonConfirmarParroquia">
+            <i class="fas fa-check mr-1"></i>
+            <span id="modalBotonTextoParroquia">Confirmar</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <?php
 // Cerrar conexión
 $conexion->desconectar();
 include_once("/xampp/htdocs/final/layout/layaout2.php");
 include_once("/xampp/htdocs/final/layout/mensajes.php");
 ?>
+
+<script>
+  // Script para el modal de confirmación de parroquias CON EVENT DELEGATION
+  document.addEventListener('DOMContentLoaded', function() {
+    // Configurar el modal de confirmación para parroquias usando EVENT DELEGATION
+    const modalParroquia = document.getElementById('modalConfirmacionParroquia');
+    const cuerpoTabla = document.getElementById('cuerpoTablaParroquias');
+
+    // Usar event delegation en el contenedor de la tabla
+    cuerpoTabla.addEventListener('click', function(e) {
+      // Verificar si el click fue en un botón de confirmación
+      const boton = e.target.closest('.btn-confirmar-parroquia');
+
+      if (boton) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const id = boton.getAttribute('data-id');
+        const nombre = boton.getAttribute('data-nombre');
+        const municipio = boton.getAttribute('data-municipio');
+        const estado = boton.getAttribute('data-estado');
+        const estatus = parseInt(boton.getAttribute('data-estatus'));
+        const enUso = boton.getAttribute('data-en-uso') === '1';
+        const conteoUsos = parseInt(boton.getAttribute('data-conteo-usos'));
+        const accion = boton.getAttribute('data-accion');
+
+        // Determinar el nuevo estado
+        const nuevoEstatus = estatus === 1 ? 0 : 1;
+
+        // Configurar el modal
+        configurarModalParroquia({
+          id: id,
+          nombre: nombre,
+          municipio: municipio,
+          estado: estado,
+          estatusActual: estatus,
+          nuevoEstatus: nuevoEstatus,
+          enUso: enUso,
+          conteoUsos: conteoUsos,
+          accion: accion
+        });
+
+        // Mostrar el modal usando jQuery (ya que estás usando Bootstrap)
+        $('#modalConfirmacionParroquia').modal('show');
+      }
+    });
+
+    // Configurar el modal con los datos de la parroquia
+    function configurarModalParroquia(datos) {
+      const modalTitulo = document.getElementById('modalTituloParroquia');
+      const modalIcono = document.getElementById('modalIconoParroquia');
+      const modalPregunta = document.getElementById('modalPreguntaParroquia');
+      const modalDetalle = document.getElementById('modalDetalleParroquia');
+      const modalDetalleTexto = document.getElementById('modalDetalleTextoParroquia');
+      const modalAdvertencia = document.getElementById('modalAdvertenciaParroquia');
+      const modalAdvertenciaTexto = document.getElementById('modalAdvertenciaTextoParroquia');
+      const modalUbicacion = document.getElementById('modalUbicacionParroquia');
+      const modalUbicacionTexto = document.getElementById('modalUbicacionTextoParroquia');
+      const modalIdParroquia = document.getElementById('modalIdParroquia');
+      const modalEstatus = document.getElementById('modalEstatusParroquia');
+      const modalBotonConfirmar = document.getElementById('modalBotonConfirmarParroquia');
+      const modalBotonTexto = document.getElementById('modalBotonTextoParroquia');
+
+      // Configurar según la acción
+      if (datos.accion === 'inhabilitar') {
+        // INHABILITAR PARROQUIA
+        modalTitulo.textContent = 'Confirmar Inhabilitación de Parroquia';
+        modalIcono.innerHTML = '<i class="fas fa-ban text-warning"></i>';
+        modalPregunta.innerHTML = `
+        ¿Estás seguro que deseas <strong>INHABILITAR</strong> la parroquia:<br>
+        <span class="text-primary">"${datos.nombre}"</span>?
+      `;
+
+        // Botón de advertencia
+        modalBotonConfirmar.className = 'btn btn-warning';
+        modalBotonTexto.textContent = 'Sí, inhabilitar parroquia';
+
+        // Mostrar ubicación
+        modalUbicacion.style.display = 'block';
+        modalUbicacionTexto.textContent = `${datos.municipio}, ${datos.estado}`;
+
+        if (datos.enUso) {
+          // ADVERTENCIA si está en uso
+          modalDetalle.style.display = 'block';
+          modalDetalleTexto.textContent = `Esta parroquia está siendo usada en ${datos.conteoUsos} dirección(es) activa(s).`;
+
+          modalAdvertencia.style.display = 'block';
+          modalAdvertenciaTexto.innerHTML = `
+          <ul class="mb-0 pl-3">
+            <li>No aparecerá en nuevos registros</li>
+            <li>Las direcciones existentes seguirán funcionando</li>
+            <li>No se perderán datos asociados</li>
+            <li>Se puede habilitar nuevamente cuando sea necesario</li>
+          </ul>
+        `;
+        } else {
+          modalDetalle.style.display = 'block';
+          modalDetalleTexto.textContent = 'Esta parroquia no está en uso actualmente.';
+
+          modalAdvertencia.style.display = 'block';
+          modalAdvertencia.className = 'alert alert-warning';
+          modalAdvertenciaTexto.innerHTML = `
+          <strong>Recuerda:</strong>
+          <ul class="mb-0 pl-3">
+            <li>No afectará a direcciones existentes</li>
+            <li>No aparecerá en formularios de nuevos registros</li>
+            <li>Se puede habilitar nuevamente cuando sea necesario</li>
+          </ul>
+        `;
+        }
+
+      } else {
+        // HABILITAR PARROQUIA
+        modalTitulo.textContent = 'Confirmar Habilitación de Parroquia';
+        modalIcono.innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+        modalPregunta.innerHTML = `
+        ¿Estás seguro que deseas <strong>HABILITAR</strong> la parroquia:<br>
+        <span class="text-primary">"${datos.nombre}"</span>?
+      `;
+
+        // Botón de éxito
+        modalBotonConfirmar.className = 'btn btn-success';
+        modalBotonTexto.textContent = 'Sí, habilitar parroquia';
+
+        modalDetalle.style.display = 'block';
+        modalDetalle.className = 'alert alert-success';
+        modalDetalleTexto.innerHTML = `
+        <i class="fas fa-check-circle mr-2"></i>
+        Esta parroquia volverá a estar disponible para:
+        <ul class="mb-0 pl-3 mt-2">
+          <li>Nuevos registros de dirección</li>
+          <li>Edición de direcciones existentes</li>
+          <li>Todos los formularios del sistema</li>
+        </ul>
+      `;
+
+        modalAdvertencia.style.display = 'none';
+        modalUbicacion.style.display = 'block';
+        modalUbicacionTexto.textContent = `${datos.municipio}, ${datos.estado}`;
+      }
+
+      // Configurar valores del formulario
+      modalIdParroquia.value = datos.id;
+      modalEstatus.value = datos.nuevoEstatus;
+    }
+
+    // Resetear el modal cuando se cierre
+    $('#modalConfirmacionParroquia').on('hidden.bs.modal', function() {
+      const modalDetalle = document.getElementById('modalDetalleParroquia');
+      const modalAdvertencia = document.getElementById('modalAdvertenciaParroquia');
+      const modalUbicacion = document.getElementById('modalUbicacionParroquia');
+
+      modalDetalle.style.display = 'none';
+      modalAdvertencia.style.display = 'none';
+      modalUbicacion.style.display = 'none';
+    });
+
+    // También necesitas asegurar que el formulario dentro del modal funcione
+    document.getElementById('modalFormParroquia').addEventListener('submit', function(e) {
+      // El formulario se enviará normalmente, el modal se cerrará automáticamente
+      console.log('Formulario de parroquia enviado');
+    });
+  });
+</script>
