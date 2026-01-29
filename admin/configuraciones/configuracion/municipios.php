@@ -210,9 +210,17 @@ try {
                               <form method="POST" class="d-inline">
                                 <input type="hidden" name="id_municipio" value="<?php echo $municipio['id_municipio']; ?>">
                                 <input type="hidden" name="estatus" value="<?php echo $municipio['estatus'] == 1 ? 0 : 1; ?>">
-                                <button type="submit" name="actualizar_municipio"
-                                  class="btn btn-sm btn-<?php echo $municipio['estatus'] == 1 ? 'warning' : 'success'; ?>"
-                                  onclick="return confirm('¿Estás seguro de <?php echo $municipio['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> este municipio?<?php echo $en_uso && $municipio['estatus'] == 1 ? '\n\nADVERTENCIA: Este municipio está siendo usado en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarlo, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.\n\nNOTA: Al inhabilitar un municipio, todas sus parroquias también se inhabilitarán.' : ''; ?>')">
+                                <button type="button"
+                                  class="btn btn-sm btn-<?php echo $municipio['estatus'] == 1 ? 'warning' : 'success'; ?> btn-confirmar-municipio"
+                                  data-id="<?php echo $municipio['id_municipio']; ?>"
+                                  data-nombre="<?php echo htmlspecialchars($municipio['nom_municipio']); ?>"
+                                  data-estado="<?php echo htmlspecialchars($municipio['nom_estado']); ?>"
+                                  data-estatus="<?php echo $municipio['estatus']; ?>"
+                                  data-en-uso="<?php echo $en_uso ? '1' : '0'; ?>"
+                                  data-conteo-usos="<?php echo $conteo_usos; ?>"
+                                  data-accion="<?php echo $municipio['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?>"
+                                  data-toggle="modal"
+                                  data-target="#modalConfirmacionMunicipio">
                                   <i class="fas fa-<?php echo $municipio['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
                                   <?php echo $municipio['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
                                 </button>
@@ -353,6 +361,61 @@ try {
     color: #0056b3;
     background-color: #e9ecef;
     border-color: #dee2e6;
+  }
+
+  /* Estilos específicos para el modal de municipios */
+  .btn-confirmar-municipio {
+    transition: all 0.3s ease;
+    min-width: 100px;
+  }
+
+  .btn-confirmar-municipio:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Animación para el icono del modal */
+  #modalIconoMunicipio i {
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.2));
+    animation: pulseMunicipio 2s infinite;
+  }
+
+  @keyframes pulseMunicipio {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Estilos para las alertas dentro del modal */
+  .modal-body .alert ul {
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .modal-body .alert li {
+    padding-left: 5px;
+    margin-bottom: 3px;
+  }
+
+  /* Mejora responsiva para el modal de municipios */
+  @media (max-width: 576px) {
+    .btn-confirmar-municipio {
+      min-width: 90px;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .modal-body .alert {
+      font-size: 0.9rem;
+    }
   }
 </style>
 
@@ -622,6 +685,78 @@ try {
     }
 
     // Actualizar tabla
+    // function actualizarTabla() {
+    //   // Si no hay municipios originales, salir
+    //   if (todosMunicipios.length === 0) {
+    //     return;
+    //   }
+
+    //   // Aplicar filtro si hay término de búsqueda
+    //   if (terminoBusqueda) {
+    //     aplicarFiltro();
+    //   } else {
+    //     municipiosFiltrados = [...todosMunicipios];
+    //   }
+
+    //   // Paginar resultados
+    //   paginarResultados();
+
+    //   // Limpiar tabla
+    //   cuerpoTabla.innerHTML = '';
+
+    //   // Mostrar mensaje si no hay resultados después del filtro
+    //   if (municipiosPagina.length === 0) {
+    //     cuerpoTabla.innerHTML = `
+    //             <tr>
+    //                 <td colspan="8" class="text-center py-4">
+    //                     <i class="fas fa-search fa-2x text-muted mb-2"></i>
+    //                     <p class="mb-0">No se encontraron municipios que coincidan con "${terminoBusqueda}"</p>
+    //                 </td>
+    //             </tr>
+    //         `;
+    //   } else {
+    //     // Agregar municipios a la tabla
+    //     municipiosPagina.forEach(municipio => {
+    //       const fila = document.createElement('tr');
+
+    //       // Resaltar término de búsqueda si existe
+    //       if (terminoBusqueda) {
+    //         // Reconstruir cada celda con resaltado
+    //         const idHTML = resaltarTexto(municipio.datos.id, terminoBusqueda);
+    //         const nombreHTML = resaltarTexto(municipio.datos.nombre, terminoBusqueda);
+    //         const estadoHTML = resaltarTexto(municipio.datos.estado, terminoBusqueda);
+
+    //         fila.innerHTML = `
+    //                     <td>${idHTML}</td>
+    //                     <td>${nombreHTML}</td>
+    //                     <td>${estadoHTML}</td>
+    //                     <td>${municipio.datos.creacion}</td>
+    //                     <td>${municipio.datos.actualizacion}</td>
+    //                     <td>${municipio.datos.enUsoHTML}</td>
+    //                     <td>${municipio.datos.estatusHTML}</td>
+    //                     <td>${municipio.datos.accionesHTML}</td>
+    //                 `;
+    //       } else {
+    //         // Usar el HTML completo original
+    //         fila.innerHTML = municipio.htmlCompleto;
+    //       }
+
+    //       cuerpoTabla.appendChild(fila);
+    //     });
+
+    //     // Re-inicializar tooltips
+    //     if (typeof $ !== 'undefined' && $.fn.tooltip) {
+    //       setTimeout(() => {
+    //         $('[data-toggle="tooltip"]').tooltip();
+    //       }, 100);
+    //     }
+    //   }
+
+    //   // Actualizar paginación
+    //   actualizarPaginacion();
+    // }
+
+    // Actualizar tabla - VERSIÓN MEJORADA
     function actualizarTabla() {
       // Si no hay municipios originales, salir
       if (todosMunicipios.length === 0) {
@@ -644,38 +779,36 @@ try {
       // Mostrar mensaje si no hay resultados después del filtro
       if (municipiosPagina.length === 0) {
         cuerpoTabla.innerHTML = `
-                <tr>
-                    <td colspan="8" class="text-center py-4">
-                        <i class="fas fa-search fa-2x text-muted mb-2"></i>
-                        <p class="mb-0">No se encontraron municipios que coincidan con "${terminoBusqueda}"</p>
-                    </td>
-                </tr>
-            `;
+      <tr>
+        <td colspan="8" class="text-center py-4">
+          <i class="fas fa-search fa-2x text-muted mb-2"></i>
+          <p class="mb-0">No se encontraron municipios que coincidan con "${terminoBusqueda}"</p>
+        </td>
+      </tr>
+    `;
       } else {
         // Agregar municipios a la tabla
         municipiosPagina.forEach(municipio => {
           const fila = document.createElement('tr');
 
-          // Resaltar término de búsqueda si existe
-          if (terminoBusqueda) {
-            // Reconstruir cada celda con resaltado
-            const idHTML = resaltarTexto(municipio.datos.id, terminoBusqueda);
-            const nombreHTML = resaltarTexto(municipio.datos.nombre, terminoBusqueda);
-            const estadoHTML = resaltarTexto(municipio.datos.estado, terminoBusqueda);
+          // Usar el HTML completo ORIGINAL que incluye los botones con data attributes
+          fila.innerHTML = municipio.htmlCompleto;
 
-            fila.innerHTML = `
-                        <td>${idHTML}</td>
-                        <td>${nombreHTML}</td>
-                        <td>${estadoHTML}</td>
-                        <td>${municipio.datos.creacion}</td>
-                        <td>${municipio.datos.actualizacion}</td>
-                        <td>${municipio.datos.enUsoHTML}</td>
-                        <td>${municipio.datos.estatusHTML}</td>
-                        <td>${municipio.datos.accionesHTML}</td>
-                    `;
-          } else {
-            // Usar el HTML completo original
-            fila.innerHTML = municipio.htmlCompleto;
+          // Solo si hay término de búsqueda, aplicar resaltado
+          if (terminoBusqueda) {
+            const celdas = fila.querySelectorAll('td');
+            // Resaltar en ID
+            if (celdas[0]) {
+              celdas[0].innerHTML = resaltarTexto(municipio.datos.id, terminoBusqueda);
+            }
+            // Resaltar en Nombre
+            if (celdas[1]) {
+              celdas[1].innerHTML = resaltarTexto(municipio.datos.nombre, terminoBusqueda);
+            }
+            // Resaltar en Estado
+            if (celdas[2]) {
+              celdas[2].innerHTML = resaltarTexto(municipio.datos.estado, terminoBusqueda);
+            }
           }
 
           cuerpoTabla.appendChild(fila);
@@ -812,7 +945,223 @@ try {
   });
 </script>
 
-<!-- Mantén el resto del código igual -->
+<!-- Modal de Confirmación para Municipios -->
+<div id="modalConfirmacionMunicipio" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          <span id="modalTituloMunicipio">Confirmar Acción</span>
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="modalIconoMunicipio" class="text-center mb-3" style="font-size: 48px;">
+          <!-- Icono dinámico -->
+        </div>
+        <h6 id="modalPreguntaMunicipio" class="text-center mb-3"></h6>
+        <div id="modalDetalleMunicipio" class="alert alert-info" style="display: none;">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span id="modalDetalleTextoMunicipio"></span>
+        </div>
+        <div id="modalAdvertenciaMunicipio" class="alert alert-danger" style="display: none;">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          <strong>¡ADVERTENCIA!</strong>
+          <span id="modalAdvertenciaTextoMunicipio"></span>
+        </div>
+        <div id="modalParroquiasMunicipio" class="alert alert-warning" style="display: none;">
+          <i class="fas fa-map-signs mr-2"></i>
+          <strong>Importante:</strong>
+          <span id="modalParroquiasTextoMunicipio"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times mr-1"></i> Cancelar
+        </button>
+        <form id="modalFormMunicipio" method="POST" class="d-inline">
+          <input type="hidden" name="id_municipio" id="modalIdMunicipio">
+          <input type="hidden" name="estatus" id="modalEstatusMunicipio">
+          <button type="submit" name="actualizar_municipio" class="btn btn-success" id="modalBotonConfirmarMunicipio">
+            <i class="fas fa-check mr-1"></i>
+            <span id="modalBotonTextoMunicipio">Confirmar</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Script para el modal de confirmación de municipios CON EVENT DELEGATION
+  document.addEventListener('DOMContentLoaded', function() {
+    // Configurar el modal de confirmación para municipios usando EVENT DELEGATION
+    const modalMunicipio = document.getElementById('modalConfirmacionMunicipio');
+    const cuerpoTabla = document.getElementById('cuerpoTablaMunicipios');
+
+    // Usar event delegation en el contenedor de la tabla
+    cuerpoTabla.addEventListener('click', function(e) {
+      // Verificar si el click fue en un botón de confirmación
+      const boton = e.target.closest('.btn-confirmar-municipio');
+
+      if (boton) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const id = boton.getAttribute('data-id');
+        const nombre = boton.getAttribute('data-nombre');
+        const estado = boton.getAttribute('data-estado');
+        const estatus = parseInt(boton.getAttribute('data-estatus'));
+        const enUso = boton.getAttribute('data-en-uso') === '1';
+        const conteoUsos = parseInt(boton.getAttribute('data-conteo-usos'));
+        const accion = boton.getAttribute('data-accion');
+
+        // Determinar el nuevo estado
+        const nuevoEstatus = estatus === 1 ? 0 : 1;
+
+        // Configurar el modal
+        configurarModalMunicipio({
+          id: id,
+          nombre: nombre,
+          estado: estado,
+          estatusActual: estatus,
+          nuevoEstatus: nuevoEstatus,
+          enUso: enUso,
+          conteoUsos: conteoUsos,
+          accion: accion
+        });
+
+        // Mostrar el modal usando jQuery (ya que estás usando Bootstrap)
+        $('#modalConfirmacionMunicipio').modal('show');
+      }
+    });
+
+    // Configurar el modal con los datos del municipio
+    function configurarModalMunicipio(datos) {
+      const modalTitulo = document.getElementById('modalTituloMunicipio');
+      const modalIcono = document.getElementById('modalIconoMunicipio');
+      const modalPregunta = document.getElementById('modalPreguntaMunicipio');
+      const modalDetalle = document.getElementById('modalDetalleMunicipio');
+      const modalDetalleTexto = document.getElementById('modalDetalleTextoMunicipio');
+      const modalAdvertencia = document.getElementById('modalAdvertenciaMunicipio');
+      const modalAdvertenciaTexto = document.getElementById('modalAdvertenciaTextoMunicipio');
+      const modalParroquias = document.getElementById('modalParroquiasMunicipio');
+      const modalParroquiasTexto = document.getElementById('modalParroquiasTextoMunicipio');
+      const modalIdMunicipio = document.getElementById('modalIdMunicipio');
+      const modalEstatus = document.getElementById('modalEstatusMunicipio');
+      const modalBotonConfirmar = document.getElementById('modalBotonConfirmarMunicipio');
+      const modalBotonTexto = document.getElementById('modalBotonTextoMunicipio');
+
+      // Configurar según la acción
+      if (datos.accion === 'inhabilitar') {
+        // INHABILITAR MUNICIPIO
+        modalTitulo.textContent = 'Confirmar Inhabilitación de Municipio';
+        modalIcono.innerHTML = '<i class="fas fa-ban text-warning"></i>';
+        modalPregunta.innerHTML = `
+        ¿Estás seguro que deseas <strong>INHABILITAR</strong> el municipio:<br>
+        <span class="text-primary">"${datos.nombre}"</span><br>
+        del estado: <span class="text-info">${datos.estado}</span>?
+      `;
+
+        // Botón de advertencia
+        modalBotonConfirmar.className = 'btn btn-warning';
+        modalBotonTexto.textContent = 'Sí, inhabilitar municipio';
+
+        // Mostrar información sobre parroquias
+        modalParroquias.style.display = 'block';
+        modalParroquiasTexto.textContent = 'Al inhabilitar este municipio, todas sus parroquias también se inhabilitarán automáticamente.';
+
+        if (datos.enUso) {
+          // ADVERTENCIA si está en uso
+          modalDetalle.style.display = 'block';
+          modalDetalleTexto.textContent = `Este municipio está siendo usado en ${datos.conteoUsos} dirección(es) activa(s).`;
+
+          modalAdvertencia.style.display = 'block';
+          modalAdvertenciaTexto.innerHTML = `
+          <ul class="mb-0 pl-3">
+            <li>No aparecerá en nuevos registros</li>
+            <li>Las direcciones existentes seguirán funcionando</li>
+            <li>No se perderán datos asociados</li>
+            <li>Las parroquias del municipio también se inhabilitarán</li>
+          </ul>
+        `;
+        } else {
+          modalDetalle.style.display = 'block';
+          modalDetalleTexto.textContent = 'Este municipio no está en uso actualmente.';
+
+          modalAdvertencia.style.display = 'block';
+          modalAdvertencia.className = 'alert alert-warning';
+          modalAdvertenciaTexto.innerHTML = `
+          <strong>Recuerda:</strong>
+          <ul class="mb-0 pl-3">
+            <li>Todas las parroquias se inhabilitarán automáticamente</li>
+            <li>No afectará a direcciones existentes</li>
+            <li>Se puede habilitar nuevamente cuando sea necesario</li>
+          </ul>
+        `;
+        }
+
+      } else {
+        // HABILITAR MUNICIPIO
+        modalTitulo.textContent = 'Confirmar Habilitación de Municipio';
+        modalIcono.innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+        modalPregunta.innerHTML = `
+        ¿Estás seguro que deseas <strong>HABILITAR</strong> el municipio:<br>
+        <span class="text-primary">"${datos.nombre}"</span><br>
+        del estado: <span class="text-info">${datos.estado}</span>?
+      `;
+
+        // Botón de éxito
+        modalBotonConfirmar.className = 'btn btn-success';
+        modalBotonTexto.textContent = 'Sí, habilitar municipio';
+
+        modalDetalle.style.display = 'block';
+        modalDetalle.className = 'alert alert-success';
+        modalDetalleTexto.innerHTML = `
+        <i class="fas fa-check-circle mr-2"></i>
+        Este municipio volverá a estar disponible para:
+        <ul class="mb-0 pl-3 mt-2">
+          <li>Nuevos registros de dirección</li>
+          <li>Edición de direcciones existentes</li>
+          <li>Selección de parroquias</li>
+          <li>Todos los formularios del sistema</li>
+        </ul>
+      `;
+
+        modalAdvertencia.style.display = 'none';
+        modalParroquias.style.display = 'block';
+        modalParroquias.className = 'alert alert-info';
+        modalParroquiasTexto.textContent = 'Nota: Las parroquias de este municipio permanecerán con su estado actual (habilitadas o inhabilitadas) y deberán gestionarse por separado.';
+      }
+
+      // Configurar valores del formulario
+      modalIdMunicipio.value = datos.id;
+      modalEstatus.value = datos.nuevoEstatus;
+    }
+
+    // Resetear el modal cuando se cierre
+    $('#modalConfirmacionMunicipio').on('hidden.bs.modal', function() {
+      const modalDetalle = document.getElementById('modalDetalleMunicipio');
+      const modalAdvertencia = document.getElementById('modalAdvertenciaMunicipio');
+      const modalParroquias = document.getElementById('modalParroquiasMunicipio');
+
+      modalDetalle.style.display = 'none';
+      modalAdvertencia.style.display = 'none';
+      modalParroquias.style.display = 'none';
+    });
+
+    // También necesitas asegurar que el formulario dentro del modal funcione
+    document.getElementById('modalFormMunicipio').addEventListener('submit', function(e) {
+      // El formulario se enviará normalmente, el modal se cerrará automáticamente
+      console.log('Formulario de municipio enviado');
+    });
+  });
+</script>
+
+
 
 <?php
 // Cerrar conexión

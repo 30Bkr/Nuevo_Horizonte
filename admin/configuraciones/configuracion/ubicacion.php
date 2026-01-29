@@ -181,9 +181,16 @@ try {
                               <form method="POST" class="d-inline">
                                 <input type="hidden" name="id_estado" value="<?php echo $estado['id_estado']; ?>">
                                 <input type="hidden" name="estatus" value="<?php echo $estado['estatus'] == 1 ? 0 : 1; ?>">
-                                <button type="submit" name="actualizar_estado"
-                                  class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?>"
-                                  onclick="return confirm('¿Estás seguro de <?php echo $estado['estatus'] == 1 ? 'INHABILITAR' : 'HABILITAR'; ?> este estado?<?php echo $en_uso && $estado['estatus'] == 1 ? '\n\nADVERTENCIA: Este estado está siendo usado en ' . $conteo_usos . ' dirección(es) activa(s).\nAl inhabilitarlo, no aparecerá en nuevos registros pero las direcciones existentes seguirán funcionando.' : ''; ?>')">
+                                <button type="button"
+                                  class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?> btn-confirmar"
+                                  data-id="<?php echo $estado['id_estado']; ?>"
+                                  data-nombre="<?php echo htmlspecialchars($estado['nom_estado']); ?>"
+                                  data-estatus="<?php echo $estado['estatus']; ?>"
+                                  data-en-uso="<?php echo $en_uso ? '1' : '0'; ?>"
+                                  data-conteo-usos="<?php echo $conteo_usos; ?>"
+                                  data-accion="<?php echo $estado['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?>"
+                                  data-toggle="modal"
+                                  data-target="#modalConfirmacion">
                                   <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
                                   <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
                                 </button>
@@ -538,6 +545,227 @@ try {
   /* Transición suave para cambios en la tabla */
   #cuerpoTablaEstados tr {
     transition: all 0.3s ease;
+  }
+</style>
+
+<!-- Modal de Confirmación Personalizado -->
+<div id="modalConfirmacion" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          <span id="modalTitulo">Confirmar Acción</span>
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="modalIcono" class="text-center mb-3" style="font-size: 48px;">
+          <!-- Icono dinámico -->
+        </div>
+        <h6 id="modalPregunta" class="text-center mb-3"></h6>
+        <div id="modalDetalle" class="alert alert-info" style="display: none;">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span id="modalDetalleTexto"></span>
+        </div>
+        <div id="modalAdvertencia" class="alert alert-danger" style="display: none;">
+          <i class="fas fa-exclamation-circle mr-2"></i>
+          <strong>¡ADVERTENCIA!</strong>
+          <span id="modalAdvertenciaTexto"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times mr-1"></i> Cancelar
+        </button>
+        <form id="modalForm" method="POST" class="d-inline">
+          <input type="hidden" name="id_estado" id="modalIdEstado">
+          <input type="hidden" name="estatus" id="modalEstatus">
+          <button type="submit" name="actualizar_estado" class="btn btn-success" id="modalBotonConfirmar">
+            <i class="fas fa-check mr-1"></i>
+            <span id="modalBotonTexto">Confirmar</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Configurar el modal de confirmación
+    const botonesConfirmar = document.querySelectorAll('.btn-confirmar');
+    const modalConfirmacion = document.getElementById('modalConfirmacion');
+
+    botonesConfirmar.forEach(boton => {
+      boton.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const id = this.getAttribute('data-id');
+        const nombre = this.getAttribute('data-nombre');
+        const estatus = parseInt(this.getAttribute('data-estatus'));
+        const enUso = this.getAttribute('data-en-uso') === '1';
+        const conteoUsos = parseInt(this.getAttribute('data-conteo-usos'));
+        const accion = this.getAttribute('data-accion');
+
+        // Determinar el nuevo estado
+        const nuevoEstatus = estatus === 1 ? 0 : 1;
+        const esInhabilitar = accion === 'inhabilitar';
+
+        // Configurar el modal
+        configurarModal({
+          id: id,
+          nombre: nombre,
+          estatusActual: estatus,
+          nuevoEstatus: nuevoEstatus,
+          enUso: enUso,
+          conteoUsos: conteoUsos,
+          accion: accion
+        });
+      });
+    });
+
+    // Configurar el modal con los datos
+    function configurarModal(datos) {
+      const modalTitulo = document.getElementById('modalTitulo');
+      const modalIcono = document.getElementById('modalIcono');
+      const modalPregunta = document.getElementById('modalPregunta');
+      const modalDetalle = document.getElementById('modalDetalle');
+      const modalDetalleTexto = document.getElementById('modalDetalleTexto');
+      const modalAdvertencia = document.getElementById('modalAdvertencia');
+      const modalAdvertenciaTexto = document.getElementById('modalAdvertenciaTexto');
+      const modalIdEstado = document.getElementById('modalIdEstado');
+      const modalEstatus = document.getElementById('modalEstatus');
+      const modalBotonConfirmar = document.getElementById('modalBotonConfirmar');
+      const modalBotonTexto = document.getElementById('modalBotonTexto');
+
+      // Configurar según la acción
+      if (datos.accion === 'inhabilitar') {
+        // INHABILITAR
+        modalTitulo.textContent = 'Confirmar Inhabilitación';
+        modalIcono.innerHTML = '<i class="fas fa-ban text-warning"></i>';
+        modalPregunta.textContent = `¿Estás seguro que deseas INHABILITAR el estado "${datos.nombre}"?`;
+
+        // Botón de advertencia
+        modalBotonConfirmar.className = 'btn btn-warning';
+        modalBotonTexto.textContent = 'Sí, inhabilitar';
+
+        if (datos.enUso) {
+          // ADVERTENCIA si está en uso
+          modalDetalle.style.display = 'block';
+          modalDetalleTexto.textContent = `Este estado está siendo usado en ${datos.conteoUsos} dirección(es) activa(s).`;
+
+          modalAdvertencia.style.display = 'block';
+          modalAdvertenciaTexto.innerHTML = `
+          <ul class="mb-0 pl-3">
+            <li>No aparecerá en nuevos registros</li>
+            <li>Las direcciones existentes seguirán funcionando</li>
+            <li>No se perderán datos asociados</li>
+          </ul>
+        `;
+        } else {
+          modalDetalle.style.display = 'none';
+          modalAdvertencia.style.display = 'block';
+          modalAdvertencia.className = 'alert alert-warning';
+          modalAdvertenciaTexto.textContent = 'Este estado no está en uso actualmente. Puede ser inhabilitado sin problemas.';
+        }
+
+      } else {
+        // HABILITAR
+        modalTitulo.textContent = 'Confirmar Habilitación';
+        modalIcono.innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+        modalPregunta.textContent = `¿Estás seguro que deseas HABILITAR el estado "${datos.nombre}"?`;
+
+        // Botón de éxito
+        modalBotonConfirmar.className = 'btn btn-success';
+        modalBotonTexto.textContent = 'Sí, habilitar';
+
+        modalDetalle.style.display = 'block';
+        modalDetalle.className = 'alert alert-success';
+        modalDetalleTexto.innerHTML = `
+        <i class="fas fa-check-circle mr-2"></i>
+        Este estado volverá a estar disponible para:
+        <ul class="mb-0 pl-3 mt-2">
+          <li>Nuevos registros de dirección</li>
+          <li>Edición de direcciones existentes</li>
+          <li>Todos los formularios del sistema</li>
+        </ul>
+      `;
+
+        modalAdvertencia.style.display = 'none';
+      }
+
+      // Configurar valores del formulario
+      modalIdEstado.value = datos.id;
+      modalEstatus.value = datos.nuevoEstatus;
+    }
+
+    // Resetear el modal cuando se cierre
+    $('#modalConfirmacion').on('hidden.bs.modal', function() {
+      const modalDetalle = document.getElementById('modalDetalle');
+      const modalAdvertencia = document.getElementById('modalAdvertencia');
+
+      modalDetalle.style.display = 'none';
+      modalAdvertencia.style.display = 'none';
+    });
+  });
+</script>
+<style>
+  /* Estilos para el modal personalizado */
+  .modal-header.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #212529;
+  }
+
+  .btn-confirmar {
+    transition: all 0.3s ease;
+  }
+
+  .btn-confirmar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  #modalIcono i {
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.2));
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Animación para el modal */
+  .modal.fade .modal-dialog {
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease-out;
+  }
+
+  .modal.show .modal-dialog {
+    transform: translate(0, 0);
+  }
+
+  /* Responsividad */
+  @media (max-width: 576px) {
+    .modal-dialog {
+      margin: 10px;
+    }
+
+    .modal-content {
+      border-radius: 8px;
+    }
   }
 </style>
 
