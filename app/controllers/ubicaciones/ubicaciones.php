@@ -28,7 +28,7 @@ class UbicacionController
     try {
       $sql = "SELECT m.*, e.nom_estado 
               FROM municipios m
-              INNER JOIN estados e ON m.id_estado = e.id_estado";
+              INNER JOIN estados e ON m.id_estado = e.id_estado WHERE e.estatus = 1";
 
       if ($id_estado) {
         $sql .= " WHERE m.id_estado = :id_estado";
@@ -163,7 +163,7 @@ class UbicacionController
       $sql = "SELECT p.*, m.nom_municipio, e.nom_estado 
               FROM parroquias p
               INNER JOIN municipios m ON p.id_municipio = m.id_municipio
-              INNER JOIN estados e ON m.id_estado = e.id_estado";
+              INNER JOIN estados e ON m.id_estado = e.id_estado WHERE m.estatus = 1 AND e.estatus = 1 ";
 
       $conditions = [];
       $params = [];

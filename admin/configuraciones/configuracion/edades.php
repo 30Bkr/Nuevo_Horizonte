@@ -168,7 +168,6 @@ try {
                   <i class="fas fa-exclamation-triangle"></i>
                 </div>
               </div>
-
               <div class="small-box bg-success mb-3">
                 <div class="inner">
                   <h3 id="rangoConfigurado"><?php echo $configuracion['edad_max'] - $configuracion['edad_min']; ?></h3>
