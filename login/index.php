@@ -34,7 +34,7 @@ require_once '/xampp/htdocs/final/global/notifications.php';
             Nuevo Horizonte
           </i>
         </h1>
-        <p>Plataforma integral de gestión educativa con herramientas avanzadas para administrar estudiantes, profesores y procesos académicos.</p>
+        <p>Plataforma integral de gestión educativa con herramientas avanzadas para administrar estudiantes, representantes y procesos académicos.</p>
       </div>
     </div>
 
