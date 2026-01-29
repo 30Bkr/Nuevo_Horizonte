@@ -31,10 +31,10 @@ require_once '/xampp/htdocs/final/global/notifications.php';
         <h1>
           <i>
             <img src="../public/images/graduado.svg" alt="">
-            Nuevo Horizonte
+            SISTEMA DE INSCRIPCIÓN NUEVO HORIZONTE
           </i>
         </h1>
-        <p>Plataforma integral de gestión educativa con herramientas avanzadas para administrar estudiantes, representantes y procesos académicos.</p>
+        <p>Modernizando la gestión educativa mediante tecnología web eficiente, segura y soberana.</p>
       </div>
     </div>
 
@@ -45,8 +45,8 @@ require_once '/xampp/htdocs/final/global/notifications.php';
           <h2>Bienvenido</h2>
           <p>a</p>
           <!-- <div class="d-flex justify-content-center mt-1 flex-column"> -->
-          <h3>Nuevo Horizonte</h3>
-          <img src="../public/images/insignia_escuela.png" alt="insignia-escuela" style="height: 7rem;">
+          <h3><strong>SINHO</strong></h3>
+          <img src="../public/images/logo_sistema2.png" alt="logo-sistema" style="height: 9rem;">
           <!-- </div> -->
         </div>
 
