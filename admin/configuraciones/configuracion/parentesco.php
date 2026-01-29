@@ -87,7 +87,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                 <i class="fas fa-arrow-left"></i> Volver
               </a>
               <button class="btn btn-primary" onclick="abrirModalAgregar()">
-                <i class="fas fa-plus mr-1"></i> Agregar Parentesco
+                <i class="fas fa-plus mr-1"></i> Crear
               </button>
             </div>
           </div>
@@ -337,7 +337,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
             <i class="fas fa-times mr-1"></i> Cancelar
           </button>
           <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save mr-1"></i> Guardar Parentesco
+            <i class="fas fa-save mr-1"></i> Guardar
           </button>
         </div>
       </form>

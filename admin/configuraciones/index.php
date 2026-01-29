@@ -134,7 +134,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
             <div class="card-body">
               <p class="card-text">Gestiona el catálogo de profesiones para representantes y docentes.</p>
               <div class="d-flex justify-content-between align-items-center">
-                <small class="text-muted">Catálogo de oficios</small>
+                <small class="text-muted">Catálogo de profesiones</small>
                 <a href="configuracion/profesiones.php" class="btn btn-secondary btn-sm">
                   <i class="fas fa-cog mr-1"></i> Configurar
                 </a>
