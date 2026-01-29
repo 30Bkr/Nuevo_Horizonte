@@ -55,7 +55,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                             <h3 class="card-title">Listado de Docentes</h3>
                             <div class="card-tools">
                                 <a href="docente_nuevo.php" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Nuevo Docente
+                                    <i class="fas fa-plus"></i> Registrar
                                 </a>
                             </div>
                         </div>

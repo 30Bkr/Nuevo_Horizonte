@@ -34,7 +34,7 @@ require_once '/xampp/htdocs/final/global/notifications.php';
             SISTEMA DE INSCRIPCIÓN NUEVO HORIZONTE
           </i>
         </h1>
-        <p>Modernizando la gestión educativa mediante tecnología web eficiente, segura y soberana.</p>
+        <p>Modernizando la gestión educativa mediante tecnología web eficiente, segura y autónoma.</p>
       </div>
     </div>
 

@@ -262,7 +262,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
 
                             <div class="card-footer">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Guardar Docente
+                                    <i class="fas fa-save"></i> Guardar
                                 </button>
                                 <a href="docentes_list.php" class="btn btn-default">
                                     <i class="fas fa-arrow-left"></i> Cancelar
