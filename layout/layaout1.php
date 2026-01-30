@@ -342,7 +342,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   <img src="<?= URL; ?>/public/images/shield.svg" alt="Seguridad">
                 </i>
                 <p>
-                  Roles y Permisos
+                  Seguridad
                   <i class="right fas fa-angle-left"></i>
                 </p>
               </a>
@@ -350,7 +350,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <li class="nav-item">
                   <a href="<?= URL; ?>/admin/roles_permisos/index.php" class="nav-link">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Listado</p>
+                    <p>Roles y Permisos</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?= URL; ?>/admin/roles_permisos/usuarios_list.php" class="nav-link">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Contraseñas</p>
                   </a>
                 </li>
               </ul>

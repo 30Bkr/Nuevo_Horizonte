@@ -118,6 +118,8 @@ class Usuarios
       return array();
     }
   }
+
+
   public function info($aqui)
   {
     try {
