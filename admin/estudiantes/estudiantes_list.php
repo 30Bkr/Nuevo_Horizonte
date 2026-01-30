@@ -1,6 +1,5 @@
 <?php
 session_start();
-include_once("/xampp/htdocs/final/layout/layaout1.php");
 
 // Incluir archivos
 include_once __DIR__ . '/../../app/conexion.php';
@@ -8,6 +7,9 @@ include_once __DIR__ . '/../../app/controllers/estudiantes/EstudianteController.
 
 // Obtener el filtro de estado (activo/inactivo)
 $filtro_activo = isset($_GET['filtro']) ? (int)$_GET['filtro'] : 1;
+
+include_once("/xampp/htdocs/final/layout/layaout1.php");
+
 ?>
 
 <div class="content-wrapper">
