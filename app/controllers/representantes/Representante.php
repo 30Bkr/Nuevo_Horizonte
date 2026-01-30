@@ -1,5 +1,6 @@
 <?php
-class Representante {
+class Representante
+{
     private $conn;
     private $table_name = "representantes";
 
@@ -35,12 +36,14 @@ class Representante {
     public $calle;
     public $casa;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
     // Listar todos los representantes
-    public function listarRepresentantes() {
+    public function listarRepresentantes()
+    {
         $query = "SELECT 
                     r.id_representante,
                     r.estatus,
@@ -70,7 +73,8 @@ class Representante {
     }
 
     // Obtener representante por ID
-    public function obtenerPorId($id) {
+    public function obtenerPorId($id)
+    {
         $query = "SELECT 
                     r.*, p.*, dir.*,
                     parr.id_municipio,
@@ -88,7 +92,7 @@ class Representante {
 
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             // Asignar propiedades del representante
             $this->id_representante = $row['id_representante'];
             $this->id_persona = $row['id_persona'];
@@ -96,7 +100,7 @@ class Representante {
             $this->lugar_trabajo = $row['lugar_trabajo'];
             $this->id_profesion = $row['id_profesion'];
             $this->estatus = $row['estatus'];
-            
+
             // Datos de persona
             $this->primer_nombre = $row['primer_nombre'];
             $this->segundo_nombre = $row['segundo_nombre'];
@@ -110,7 +114,7 @@ class Representante {
             $this->fecha_nac = $row['fecha_nac'];
             $this->sexo = $row['sexo'];
             $this->nacionalidad = $row['nacionalidad'];
-            
+
             // Datos de dirección
             $this->id_direccion = $row['id_direccion'];
             $this->id_parroquia = $row['id_parroquia'];
@@ -126,7 +130,8 @@ class Representante {
     }
 
     // Crear nuevo representante
-    public function crear() {
+    public function crear()
+    {
         try {
             // Validaciones
             $this->validarDatosRepresentante();
@@ -137,14 +142,14 @@ class Representante {
             $queryDireccion = "INSERT INTO direcciones 
                               (id_parroquia, direccion, calle, casa, creacion, estatus) 
                               VALUES (?, ?, ?, ?, NOW(), 1)";
-            
+
             $stmtDireccion = $this->conn->prepare($queryDireccion);
             $stmtDireccion->bindParam(1, $this->id_parroquia);
             $stmtDireccion->bindParam(2, $this->direccion);
             $stmtDireccion->bindParam(3, $this->calle);
             $stmtDireccion->bindParam(4, $this->casa);
             $stmtDireccion->execute();
-            
+
             $this->id_direccion = $this->conn->lastInsertId();
 
             // 2. Insertar persona
@@ -152,7 +157,7 @@ class Representante {
                             (id_direccion, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, 
                              cedula, telefono, telefono_hab, correo, lugar_nac, fecha_nac, sexo, nacionalidad, creacion, estatus) 
                             VALUES (?, UPPER(?), UPPER(?), UPPER(?), UPPER(?), ?, ?, ?, LOWER(?), UPPER(?), ?, UPPER(?), UPPER(?), NOW(), 1)";
-            
+
             $stmtPersona = $this->conn->prepare($queryPersona);
             $stmtPersona->bindParam(1, $this->id_direccion);
             $stmtPersona->bindParam(2, $this->primer_nombre);
@@ -168,26 +173,25 @@ class Representante {
             $stmtPersona->bindParam(12, $this->sexo);
             $stmtPersona->bindParam(13, $this->nacionalidad);
             $stmtPersona->execute();
-            
+
             $this->id_persona = $this->conn->lastInsertId();
 
             // 3. Insertar representante
             $queryRepresentante = "INSERT INTO representantes 
                                   (id_persona, id_profesion, ocupacion, lugar_trabajo, creacion, estatus) 
                                   VALUES (?, ?, UPPER(?), UPPER(?), NOW(), 1)";
-            
+
             $stmtRepresentante = $this->conn->prepare($queryRepresentante);
             $stmtRepresentante->bindParam(1, $this->id_persona);
             $stmtRepresentante->bindParam(2, $this->id_profesion);
             $stmtRepresentante->bindParam(3, $this->ocupacion);
             $stmtRepresentante->bindParam(4, $this->lugar_trabajo);
             $stmtRepresentante->execute();
-            
+
             $this->id_representante = $this->conn->lastInsertId();
 
             $this->conn->commit();
             return true;
-
         } catch (Exception $e) {
             $this->conn->rollBack();
             throw $e;
@@ -195,7 +199,8 @@ class Representante {
     }
 
     // Actualizar representante
-    public function actualizar() {
+    public function actualizar()
+    {
         try {
             // Validar datos antes de actualizar
             $this->validarDatosRepresentante();
@@ -206,7 +211,7 @@ class Representante {
             $queryDireccion = "UPDATE direcciones 
                               SET id_parroquia = ?, direccion = ?, calle = ?, casa = ?, actualizacion = NOW() 
                               WHERE id_direccion = ?";
-            
+
             $stmtDireccion = $this->conn->prepare($queryDireccion);
             $stmtDireccion->bindParam(1, $this->id_parroquia);
             $stmtDireccion->bindParam(2, $this->direccion);
@@ -221,7 +226,7 @@ class Representante {
                                 cedula = ?, telefono = ?, telefono_hab = ?, correo = LOWER(?), lugar_nac = UPPER(?), 
                                 fecha_nac = ?, sexo = UPPER(?), nacionalidad = UPPER(?), actualizacion = NOW()
                             WHERE id_persona = ?";
-            
+
             $stmtPersona = $this->conn->prepare($queryPersona);
             $stmtPersona->bindParam(1, $this->primer_nombre);
             $stmtPersona->bindParam(2, $this->segundo_nombre);
@@ -242,7 +247,7 @@ class Representante {
             $queryRepresentante = "UPDATE representantes 
                                   SET id_profesion = ?, ocupacion = UPPER(?), lugar_trabajo = UPPER(?), actualizacion = NOW()
                                   WHERE id_representante = ?";
-            
+
             $stmtRepresentante = $this->conn->prepare($queryRepresentante);
             $stmtRepresentante->bindParam(1, $this->id_profesion);
             $stmtRepresentante->bindParam(2, $this->ocupacion);
@@ -252,7 +257,6 @@ class Representante {
 
             $this->conn->commit();
             return true;
-
         } catch (Exception $e) {
             $this->conn->rollBack();
             throw $e;
@@ -260,13 +264,14 @@ class Representante {
     }
 
     // Cambiar estado del representante
-    public function cambiarEstado($id, $estado) {
+    public function cambiarEstado($id, $estado)
+    {
         $query = "UPDATE representantes SET estatus = ?, actualizacion = NOW() WHERE id_representante = ?";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $estado);
         $stmt->bindParam(2, $id);
-        
+
         if ($stmt->execute()) {
             return true;
         }
@@ -274,24 +279,25 @@ class Representante {
     }
 
     // Métodos auxiliares privados
-    private function validarDatosRepresentante() {
+    private function validarDatosRepresentante()
+    {
         // Validar campos obligatorios
         if (empty($this->nacionalidad)) {
             throw new Exception("La nacionalidad es obligatoria");
         }
-        
+
         if (empty($this->cedula)) {
             throw new Exception("La cédula es obligatoria");
         }
-        
+
         if (empty($this->primer_nombre)) {
             throw new Exception("El primer nombre es obligatorio");
         }
-        
+
         if (empty($this->primer_apellido)) {
             throw new Exception("El primer apellido es obligatorio");
         }
-        
+
         if (empty($this->sexo)) {
             throw new Exception("El sexo es obligatorio");
         }
@@ -400,7 +406,8 @@ class Representante {
     }
 
     // Obtener lista de estados
-    public function obtenerEstados() {
+    public function obtenerEstados()
+    {
         $query = "SELECT id_estado, nom_estado FROM estados WHERE estatus = 1 ORDER BY nom_estado";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -408,7 +415,8 @@ class Representante {
     }
 
     // Obtener municipios por estado
-    public function obtenerMunicipiosPorEstado($id_estado) {
+    public function obtenerMunicipiosPorEstado($id_estado)
+    {
         $query = "SELECT id_municipio, nom_municipio FROM municipios WHERE id_estado = ? AND estatus = 1 ORDER BY nom_municipio";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id_estado);
@@ -417,7 +425,8 @@ class Representante {
     }
 
     // Obtener parroquias por municipio
-    public function obtenerParroquiasPorMunicipio($id_municipio) {
+    public function obtenerParroquiasPorMunicipio($id_municipio)
+    {
         $query = "SELECT id_parroquia, nom_parroquia FROM parroquias WHERE id_municipio = ? AND estatus = 1 ORDER BY nom_parroquia";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $id_municipio);
@@ -426,7 +435,8 @@ class Representante {
     }
 
     // Obtener lista de profesiones
-    public function obtenerProfesiones() {
+    public function obtenerProfesiones()
+    {
         $query = "SELECT id_profesion, profesion FROM profesiones WHERE estatus = 1 ORDER BY profesion";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -434,7 +444,8 @@ class Representante {
     }
 
     // Obtener lista de parroquias
-    public function obtenerParroquias() {
+    public function obtenerParroquias()
+    {
         $query = "SELECT p.id_parroquia, p.nom_parroquia, m.nom_municipio, e.nom_estado 
                   FROM parroquias p
                   INNER JOIN municipios m ON p.id_municipio = m.id_municipio
@@ -447,19 +458,19 @@ class Representante {
     }
 
     // Verificar si cédula ya existe
-    public function cedulaExiste($cedula, $id_persona_excluir = null) {
+    public function cedulaExiste($cedula, $id_persona_excluir = null)
+    {
         $query = "SELECT id_persona FROM personas WHERE cedula = ? AND estatus = 1";
         $params = [$cedula];
-        
+
         if ($id_persona_excluir) {
             $query .= " AND id_persona != ?";
             $params[] = $id_persona_excluir;
         }
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute($params);
-        
+
         return $stmt->rowCount() > 0;
     }
 }
-?>

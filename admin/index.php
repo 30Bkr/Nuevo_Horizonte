@@ -18,7 +18,6 @@ try {
 
   // Obtener semanas disponibles
   $semanas_disponibles = $dashboardController->obtenerMesesDisponibles();
-  // $lista_semanas = $semanas_disponibles['success'] ? $semanas_disponibles['semanas'] : [];
 } catch (Exception $e) {
   $datos_estadisticas = null;
   $datos_semana = null;
@@ -75,13 +74,64 @@ try {
     background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
     color: white;
   }
+
+  /* FIX para DataTables y layout */
+  .dataTables_wrapper {
+    margin-top: 15px;
+  }
+
+  .dataTables_filter input {
+    margin-left: 10px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+  }
+
+  .dataTables_length select {
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+  }
+
+  .dataTables_info {
+    padding-top: 10px !important;
+  }
+
+  .dataTables_paginate .paginate_button {
+    margin: 0 2px !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+  }
+
+  /* Asegurar que la tabla ocupe el 100% */
+  #tabla-inscripciones {
+    width: 100% !important;
+  }
+
+  /* Espaciado para el contenido */
+  .chart-wrapper {
+    margin-bottom: 20px;
+    height: 300px;
+  }
+
+  canvas {
+    width: 100% !important;
+    height: 300px !important;
+  }
 </style>
 
 <div class="content-wrapper">
   <div class="content">
     <div class="container-fluid">
       <!-- Header -->
-
+      <div class="row mt-3">
+        <div class="col-12">
+          <div class="page-header">
+            <h1><i class="fas fa-tachometer-alt mr-2"></i>Dashboard </h1>
+            <p class="text-muted">Panel de estadísticas </p>
+          </div>
+        </div>
+      </div>
 
       <!-- Estadísticas Generales -->
       <div class="row mt-4">
@@ -136,7 +186,6 @@ try {
           </div>
         </div>
 
-        <!-- Inscripciones del Mes -->
         <!-- Inscripciones del Periodo -->
         <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
           <div class="stat-card bg-inscriptions p-3 text-white">
@@ -154,352 +203,108 @@ try {
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Gráfico de Inscripciones por Semana -->
-        <!-- <div class="row">
+      <!-- Gráfico de Inscripciones por Mes -->
+      <div class="row">
         <div class="col-12">
           <div class="chart-container">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="mb-0">
                 <i class="fas fa-chart-line mr-2 text-primary"></i>
-                Inscripciones por Semana
+                Inscripciones por Mes - Periodo Activo
               </h4>
-              <div class="week-selector">
-                <select class="form-control" id="select-semana">
-                  <option value="">Cargando semanas...</option>
+              <div class="month-selector">
+                <select class="form-control" id="select-mes">
+                  <option value="">Cargando meses...</option>
                 </select>
               </div>
             </div>
 
-            <div id="info-semana" class="mb-3">
-              <?php if ($datos_semana): ?>
+            <div id="info-mes" class="mb-3">
+              <?php if ($datos_estadisticas): ?>
                 <p class="text-muted mb-2">
-                  <strong>Semana <?php echo $datos_semana['semana']; ?> del <?php echo $datos_semana['anio']; ?></strong> |
-                  <?php echo $datos_semana['rango_semana']; ?>
+                  <strong>Periodo: <?php echo $datos_estadisticas['periodo_activo']; ?></strong>
                 </p>
               <?php endif; ?>
             </div>
 
-            Gráfico
+            <!-- Gráfico -->
             <div class="chart-wrapper">
               <canvas id="chart-inscripciones" height="100"></canvas>
             </div>
 
-            Tabla de datos
+            <!-- Tabla de datos CON DATATABLES -->
             <div class="mt-4">
               <h5>Detalle por día</h5>
               <div class="table-responsive">
-                <table class="table table-sm table-bordered" id="tabla-inscripciones">
+                <table class="table table-sm table-bordered table-hover" id="tabla-inscripciones">
                   <thead class="thead-light">
                     <tr>
                       <th>Día</th>
                       <th>Fecha</th>
-                      <th>Inscripciones</th>
+                      <th>Día Semana</th>
+                      <th class="text-center">Inscripciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    Los datos se cargarán dinámicamente
+                    <!-- Los datos se cargarán dinámicamente -->
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
         </div>
-      </div> -->
-
-
-        <!-- Gráfico de Inscripciones por Mes -->
-        <div class="row">
-          <div class="col-12">
-            <div class="chart-container">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="mb-0">
-                  <i class="fas fa-chart-line mr-2 text-primary"></i>
-                  Inscripciones por Mes - Periodo Activo
-                </h4>
-                <div class="month-selector">
-                  <select class="form-control" id="select-mes">
-                    <option value="">Cargando meses...</option>
-                  </select>
-                </div>
-              </div>
-
-              <div id="info-mes" class="mb-3">
-                <?php if ($datos_estadisticas): ?>
-                  <p class="text-muted mb-2">
-                    <strong>Periodo: <?php echo $datos_estadisticas['periodo_activo']; ?></strong>
-                  </p>
-                <?php endif; ?>
-              </div>
-
-              <!-- Gráfico -->
-              <div class="chart-wrapper">
-                <canvas id="chart-inscripciones" height="100"></canvas>
-              </div>
-
-              <!-- Tabla de datos -->
-              <div class="mt-4">
-                <h5>Detalle por día</h5>
-                <div class="table-responsive">
-                  <table class="table table-sm table-bordered" id="tabla-inscripciones">
-                    <thead class="thead-light">
-                      <tr>
-                        <th>Día</th>
-                        <th>Fecha</th>
-                        <th>Día Semana</th>
-                        <th>Inscripciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <!-- Los datos se cargarán dinámicamente -->
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
+
     </div>
   </div>
+</div>
 
-  <!-- Incluir Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Incluir Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      let chartInstance = null;
-      const ctx = document.getElementById('chart-inscripciones').getContext('2d');
-
-      // ========== CARGAR MESES DISPONIBLES ==========
-      function cargarMesesDisponibles() {
-        fetch('/final/app/controllers/dashboard/obtener_estadisticas.php?action=meses_disponibles')
-          .then(response => response.json())
-          .then(data => {
-            const select = document.getElementById('select-mes');
-            select.innerHTML = '';
-
-            if (data.success && data.meses.length > 0) {
-              data.meses.forEach(mes => {
-                const option = document.createElement('option');
-                option.value = `${mes.mes}-${mes.anio}`;
-                option.textContent = `${mes.mes_nombre} ${mes.anio} - ${mes.total_inscripciones} inscripciones`;
-
-                // Seleccionar el mes actual por defecto
-                const mesActual = '<?php echo date("n-Y"); ?>';
-                if (`${mes.mes}-${mes.anio}` === mesActual) {
-                  option.selected = true;
-                }
-
-                select.appendChild(option);
-              });
-            } else {
-              select.innerHTML = '<option value="">No hay meses disponibles</option>';
-            }
-          })
-          .catch(error => {
-            console.error('Error al cargar meses:', error);
-            document.getElementById('select-mes').innerHTML = '<option value="">Error al cargar</option>';
-          });
-      }
-
-      // ========== CARGAR DATOS DEL MES ==========
-      function cargarDatosMes(mes, anio) {
-        const url = `/final/app/controllers/dashboard/obtener_estadisticas.php?action=inscripciones_mes&mes=${mes}&anio=${anio}`;
-
-        fetch(url)
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              actualizarGrafico(data.data);
-              actualizarTabla(data.data);
-              actualizarInfoMes(data.data);
-            } else {
-              console.error('Error al cargar datos:', data.message);
-              mostrarMensajeError('Error al cargar los datos del mes');
-            }
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            mostrarMensajeError('Error de conexión');
-          });
-      }
-
-      // ========== ACTUALIZAR GRÁFICO ==========
-      function actualizarGrafico(datos) {
-        // Destruir gráfico anterior si existe
-        if (chartInstance) {
-          chartInstance.destroy();
-        }
-
-        const labels = datos.inscripciones.map(item => item.dia);
-        const data = datos.inscripciones.map(item => item.cantidad);
-        const diasSemana = datos.inscripciones.map(item => item.dia_semana);
-
-        chartInstance = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Inscripciones',
-              data: data,
-              backgroundColor: 'rgba(54, 162, 235, 0.6)',
-              borderColor: 'rgba(54, 162, 235, 1)',
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const index = context.dataIndex;
-                    return `Inscripciones: ${context.parsed.y} (${diasSemana[index]})`;
-                  }
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  stepSize: 1
-                },
-                title: {
-                  display: true,
-                  text: 'Cantidad de Inscripciones'
-                }
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Días del Mes'
-                }
-              }
-            }
-          }
-        });
-      }
-
-      // ========== ACTUALIZAR TABLA ==========
-      function actualizarTabla(datos) {
-        const tbody = document.querySelector('#tabla-inscripciones tbody');
-        tbody.innerHTML = '';
-
-        datos.inscripciones.forEach(item => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-                <td>${item.dia}</td>
-                <td>${item.fecha_formateada}</td>
-                <td>${item.dia_semana}</td>
-                <td class="text-center">
-                    <span class="badge ${item.cantidad > 0 ? 'badge-success' : 'badge-secondary'}">
-                        ${item.cantidad}
-                    </span>
-                </td>
-            `;
-          tbody.appendChild(row);
-        });
-
-        // Agregar fila de total
-        const totalRow = document.createElement('tr');
-        totalRow.className = 'table-info font-weight-bold';
-        totalRow.innerHTML = `
-            <td colspan="3"><strong>Total del mes</strong></td>
-            <td class="text-center">
-                <span class="badge badge-primary">${datos.total_mes}</span>
-            </td>
-        `;
-        tbody.appendChild(totalRow);
-      }
-
-      // ========== ACTUALIZAR INFORMACIÓN DEL MES ==========
-      function actualizarInfoMes(datos) {
-        const infoDiv = document.getElementById('info-mes');
-        infoDiv.innerHTML = `
-            <p class="text-muted mb-2">
-                <strong>${datos.mes_nombre} ${datos.anio}</strong> | 
-                Periodo: ${datos.periodo_activo} | 
-                Total: ${datos.total_mes} inscripciones
-            </p>
-        `;
-      }
-
-      // ========== MOSTRAR MENSAJE DE ERROR ==========
-      function mostrarMensajeError(mensaje) {
-        const infoDiv = document.getElementById('info-mes');
-        infoDiv.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                ${mensaje}
-            </div>
-        `;
-      }
-
-      // ========== EVENT LISTENERS ==========
-      document.getElementById('select-mes').addEventListener('change', function() {
-        const valor = this.value;
-        if (valor) {
-          const [mes, anio] = valor.split('-');
-          cargarDatosMes(mes, anio);
-        }
-      });
-
-      // ========== INICIALIZACIÓN ==========
-      cargarMesesDisponibles();
-
-      // Cargar datos del mes actual inicialmente
-      const mesActual = '<?php echo date("n"); ?>';
-      const anioActual = '<?php echo date("Y"); ?>';
-      cargarDatosMes(mesActual, anioActual);
-    });
-  </script>
-  <!-- <script>
+<script>
   document.addEventListener('DOMContentLoaded', function() {
     let chartInstance = null;
+    let dataTableInstance = null;
     const ctx = document.getElementById('chart-inscripciones').getContext('2d');
 
-    // ========== CARGAR SEMANAS DISPONIBLES ==========
-    function cargarSemanasDisponibles() {
-      fetch('/final/app/controllers/dashboard/obtener_estadisticas.php?action=semanas_disponibles')
+    // ========== CARGAR MESES DISPONIBLES ==========
+    function cargarMesesDisponibles() {
+      fetch('/final/app/controllers/dashboard/obtener_estadisticas.php?action=meses_disponibles')
         .then(response => response.json())
         .then(data => {
-          const select = document.getElementById('select-semana');
+          const select = document.getElementById('select-mes');
           select.innerHTML = '';
 
-          if (data.success && data.semanas.length > 0) {
-            data.semanas.forEach(semana => {
-              const fechaInicio = new Date(semana.fecha_inicio).toLocaleDateString('es-ES');
+          if (data.success && data.meses.length > 0) {
+            data.meses.forEach(mes => {
               const option = document.createElement('option');
-              option.value = `${semana.semana}-${semana.anio}`;
-              option.textContent = `Semana ${semana.semana} del ${semana.anio} (${fechaInicio}) - ${semana.total_inscripciones} inscripciones`;
+              option.value = `${mes.mes}-${mes.anio}`;
+              option.textContent = `${mes.mes_nombre} ${mes.anio} - ${mes.total_inscripciones} inscripciones`;
 
-              // Seleccionar la semana actual por defecto
-              const semanaActual = '<?php echo date("W-Y"); ?>';
-              if (`${semana.semana}-${semana.anio}` === semanaActual) {
+              // Seleccionar el mes actual por defecto
+              const mesActual = '<?php echo date("n-Y"); ?>';
+              if (`${mes.mes}-${mes.anio}` === mesActual) {
                 option.selected = true;
               }
 
               select.appendChild(option);
             });
           } else {
-            select.innerHTML = '<option value="">No hay semanas disponibles</option>';
+            select.innerHTML = '<option value="">No hay meses disponibles</option>';
           }
         })
         .catch(error => {
-          console.error('Error al cargar semanas:', error);
-          document.getElementById('select-semana').innerHTML = '<option value="">Error al cargar</option>';
+          console.error('Error al cargar meses:', error);
+          document.getElementById('select-mes').innerHTML = '<option value="">Error al cargar</option>';
         });
     }
 
-    // ========== CARGAR DATOS DE LA SEMANA ==========
-    function cargarDatosSemana(semana, anio) {
-      const url = `/final/app/controllers/dashboard/obtener_estadisticas.php?action=inscripciones_semana&semana=${semana}&anio=${anio}`;
+    // ========== CARGAR DATOS DEL MES ==========
+    function cargarDatosMes(mes, anio) {
+      const url = `/final/app/controllers/dashboard/obtener_estadisticas.php?action=inscripciones_mes&mes=${mes}&anio=${anio}`;
 
       fetch(url)
         .then(response => response.json())
@@ -507,10 +312,10 @@ try {
           if (data.success) {
             actualizarGrafico(data.data);
             actualizarTabla(data.data);
-            actualizarInfoSemana(data.data);
+            actualizarInfoMes(data.data);
           } else {
             console.error('Error al cargar datos:', data.message);
-            mostrarMensajeError('Error al cargar los datos de la semana');
+            mostrarMensajeError('Error al cargar los datos del mes');
           }
         })
         .catch(error => {
@@ -528,7 +333,7 @@ try {
 
       const labels = datos.inscripciones.map(item => item.dia);
       const data = datos.inscripciones.map(item => item.cantidad);
-      const fechas = datos.inscripciones.map(item => item.fecha_formateada);
+      const diasSemana = datos.inscripciones.map(item => item.dia_semana);
 
       chartInstance = new Chart(ctx, {
         type: 'bar',
@@ -537,29 +342,14 @@ try {
           datasets: [{
             label: 'Inscripciones',
             data: data,
-            backgroundColor: [
-              'rgba(102, 126, 234, 0.8)',
-              'rgba(240, 147, 251, 0.8)',
-              'rgba(79, 172, 254, 0.8)',
-              'rgba(67, 233, 123, 0.8)',
-              'rgba(255, 193, 7, 0.8)',
-              'rgba(220, 53, 69, 0.8)',
-              'rgba(108, 117, 125, 0.8)'
-            ],
-            borderColor: [
-              'rgba(102, 126, 234, 1)',
-              'rgba(240, 147, 251, 1)',
-              'rgba(79, 172, 254, 1)',
-              'rgba(67, 233, 123, 1)',
-              'rgba(255, 193, 7, 1)',
-              'rgba(220, 53, 69, 1)',
-              'rgba(108, 117, 125, 1)'
-            ],
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               display: false
@@ -568,7 +358,7 @@ try {
               callbacks: {
                 label: function(context) {
                   const index = context.dataIndex;
-                  return `Inscripciones: ${context.parsed.y} (${fechas[index]})`;
+                  return `Inscripciones: ${context.parsed.y} (${diasSemana[index]})`;
                 }
               }
             }
@@ -587,7 +377,7 @@ try {
             x: {
               title: {
                 display: true,
-                text: 'Días de la Semana'
+                text: 'Días del Mes'
               }
             }
           }
@@ -595,84 +385,175 @@ try {
       });
     }
 
-    // ========== ACTUALIZAR TABLA ==========
+    // ========== ACTUALIZAR TABLA CON DATATABLES ==========
+
+
+    // ========== ACTUALIZAR TABLA CON DATATABLES (VERSIÓN ROBUSTA) ==========
     function actualizarTabla(datos) {
-      const tbody = document.querySelector('#tabla-inscripciones tbody');
-      tbody.innerHTML = '';
+      // Obtener la tabla y su contenedor
+      const tableContainer = document.querySelector('.table-responsive');
+      const oldTable = document.getElementById('tabla-inscripciones');
 
-      let totalInscripciones = 0;
+      // Destruir DataTable anterior
+      if (dataTableInstance) {
+        try {
+          dataTableInstance.destroy();
+        } catch (e) {
+          console.log('Error al destruir DataTable:', e);
+        }
+        dataTableInstance = null;
+      }
 
-      datos.inscripciones.forEach(item => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-                <td>${item.dia}</td>
-                <td>${item.fecha_formateada}</td>
-                <td class="text-center">
-                    <span class="badge ${item.cantidad > 0 ? 'badge-success' : 'badge-secondary'}">
-                        ${item.cantidad}
-                    </span>
-                </td>
-            `;
-        tbody.appendChild(row);
-        totalInscripciones += item.cantidad;
-      });
-
-      // Agregar fila de total
-      const totalRow = document.createElement('tr');
-      totalRow.className = 'table-info font-weight-bold';
-      totalRow.innerHTML = `
-            <td colspan="2"><strong>Total de la semana</strong></td>
+      // Crear nueva tabla HTML
+      const newTableHTML = `
+    <table class="table table-sm table-bordered table-hover" id="tabla-inscripciones">
+      <thead class="thead-light">
+        <tr>
+          <th>Día</th>
+          <th>Fecha</th>
+          <th>Día Semana</th>
+          <th class="text-center">Inscripciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${datos.inscripciones.map(item => `
+          <tr>
+            <td>${item.dia}</td>
+            <td>${item.fecha_formateada}</td>
+            <td>${item.dia_semana}</td>
             <td class="text-center">
-                <span class="badge badge-primary">${totalInscripciones}</span>
+              <span class="badge ${item.cantidad > 0 ? 'badge-success' : 'badge-secondary'}">
+                ${item.cantidad}
+              </span>
             </td>
-        `;
-      tbody.appendChild(totalRow);
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+
+      // Reemplazar la tabla completa
+      tableContainer.innerHTML = newTableHTML;
+
+      // Inicializar DataTable en la nueva tabla
+      setTimeout(function() {
+        if (typeof $.fn.DataTable !== 'undefined') {
+          dataTableInstance = $('#tabla-inscripciones').DataTable({
+            "responsive": true,
+            "autoWidth": false,
+            "pageLength": 10,
+            "lengthMenu": [
+              [10, 25, 50, -1],
+              [10, 25, 50, "Todos"]
+            ],
+            "language": {
+              "decimal": "",
+              "emptyTable": "No hay inscripciones para este mes",
+              "info": "Mostrando _START_ a _END_ de _TOTAL_ días",
+              "infoEmpty": "Mostrando 0 a 0 de 0 días",
+              "infoFiltered": "(filtrado de _MAX_ días totales)",
+              "infoPostFix": "",
+              "thousands": ",",
+              "lengthMenu": "Mostrar _MENU_ días por página",
+              "loadingRecords": "Cargando...",
+              "processing": "Procesando...",
+              "search": "Buscar día:",
+              "zeroRecords": "No se encontraron días coincidentes",
+              "paginate": {
+                "first": "Primero",
+                "last": "Último",
+                "next": "Siguiente",
+                "previous": "Anterior"
+              }
+            },
+            "order": [
+              [0, "asc"]
+            ],
+            "drawCallback": function(settings) {
+              $('.dataTables_length, .dataTables_filter').show();
+            }
+          });
+
+          console.log('DataTable inicializado con', datos.inscripciones.length, 'días');
+        }
+      }, 100);
     }
 
-    // ========== ACTUALIZAR INFORMACIÓN DE LA SEMANA ==========
-    function actualizarInfoSemana(datos) {
-      const infoDiv = document.getElementById('info-semana');
+    // ========== CARGAR DATATABLES DINÁMICAMENTE SI NO ESTÁ DISPONIBLE ==========
+    function cargarDataTables() {
+      // Verificar si ya está cargado
+      if (typeof $.fn.DataTable !== 'undefined') {
+        return;
+      }
+
+      console.log('Cargando DataTables dinámicamente...');
+
+      // Cargar DataTables JS
+      const script = document.createElement('script');
+      script.src = '/final/public/plugins/datatables/jquery.dataTables.min.js';
+      script.onload = function() {
+        // Cargar DataTables Bootstrap 4 JS
+        const script2 = document.createElement('script');
+        script2.src = '/final/public/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js';
+        script2.onload = function() {
+          // Cargar CSS de DataTables
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = '/final/public/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css';
+          document.head.appendChild(link);
+
+          console.log('DataTables cargado dinámicamente');
+        };
+        document.body.appendChild(script2);
+      };
+      document.body.appendChild(script);
+    }
+
+    // ========== ACTUALIZAR INFORMACIÓN DEL MES ==========
+    function actualizarInfoMes(datos) {
+      const infoDiv = document.getElementById('info-mes');
       infoDiv.innerHTML = `
-            <p class="text-muted mb-2">
-                <strong>Semana ${datos.semana} del ${datos.anio}</strong> | 
-                ${datos.rango_semana}
-            </p>
-        `;
+        <p class="text-muted mb-2">
+          <strong>${datos.mes_nombre} ${datos.anio}</strong> | 
+          Periodo: ${datos.periodo_activo} | 
+          Total: ${datos.total_mes} inscripciones
+        </p>
+      `;
     }
 
     // ========== MOSTRAR MENSAJE DE ERROR ==========
     function mostrarMensajeError(mensaje) {
-      const infoDiv = document.getElementById('info-semana');
+      const infoDiv = document.getElementById('info-mes');
       infoDiv.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                ${mensaje}
-            </div>
-        `;
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle mr-2"></i>
+          ${mensaje}
+        </div>
+      `;
     }
 
     // ========== EVENT LISTENERS ==========
-    document.getElementById('select-semana').addEventListener('change', function() {
+    document.getElementById('select-mes').addEventListener('change', function() {
       const valor = this.value;
       if (valor) {
-        const [semana, anio] = valor.split('-');
-        cargarDatosSemana(semana, anio);
+        const [mes, anio] = valor.split('-');
+        cargarDatosMes(mes, anio);
       }
     });
 
     // ========== INICIALIZACIÓN ==========
-    cargarSemanasDisponibles();
+    cargarMesesDisponibles();
 
-    // Cargar datos de la semana actual inicialmente
-    const semanaActual = '<?php echo date("W"); ?>';
+    // Cargar datos del mes actual inicialmente
+    const mesActual = '<?php echo date("n"); ?>';
     const anioActual = '<?php echo date("Y"); ?>';
-    cargarDatosSemana(semanaActual, anioActual);
+    cargarDatosMes(mesActual, anioActual);
+
+    // Verificar y cargar DataTables si es necesario
+    setTimeout(cargarDataTables, 500);
   });
-</script> -->
+</script>
 
-  <?php
-  include_once("/xampp/htdocs/final/layout/layaout2.php");
-  ?>
-
-  <!-- TABLA DE PARENTEZCO  PARA PARENTEZCO DEL REPRESENTANTE ESTUDIANTE -->
-  <!-- Modificar fecha para que tambien sea por mes -->
+<?php
+include_once("/xampp/htdocs/final/layout/layaout2.php");
+?>

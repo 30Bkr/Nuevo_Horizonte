@@ -17,6 +17,7 @@ Notification::show();
 include_once("/xampp/htdocs/final/app/controllers/personas/personas.php");
 include_once("/xampp/htdocs/final/app/controllers/estudiantes/estudiantes.php");
 include_once("/xampp/htdocs/final/app/controllers/representantes/representantes.php");
+include_once("/xampp/htdocs/final/app/controllers/representantes/Representante.php");
 include_once("/xampp/htdocs/final/app/controllers/ubicaciones/ubicaciones.php");
 include_once("/xampp/htdocs/final/app/controllers/inscripciones/inscripciones.php");
 include_once("/xampp/htdocs/final/app/controllers/parentesco/parentesco.php");
@@ -32,7 +33,7 @@ try {
   $pdo = $conexion->conectar();
   $inscripcionesController = new InscripcionController($pdo);
   $periodos = $inscripcionesController->obtenerPeriodosActivos();
-  $profesionesController = new RepresentanteController($pdo);
+  $profesionesController = new Representante($pdo);
   $profesiones = $profesionesController->obtenerProfesiones();
   $ubicacionController = new UbicacionController($pdo);
   $parentesco = new ParentescoController($pdo);

@@ -185,9 +185,10 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                       </td>
                     </tr>
                   <?php else : ?>
+                    <?php $contador = 1; ?>
                     <?php foreach ($profesiones as $profesion) : ?>
                       <tr id="profesion-<?php echo $profesion['id_profesion']; ?>">
-                        <td><?php echo $profesion['id_profesion']; ?></td>
+                        <td><?php echo $contador++ ?></td>
                         <td>
                           <div class="d-flex align-items-center">
                             <i class="fas fa-user-tie text-primary mr-2"></i>
@@ -775,7 +776,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         `;
       return;
     }
-
+    let contador = 1;
     // Construir la tabla con la información de uso que ya viene del servidor
     tbody.innerHTML = profesiones.map(profesion => {
       const enUso = profesion.en_uso || false;
@@ -785,7 +786,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
 
       return `
             <tr id="profesion-${profesion.id_profesion}">
-                <td>${profesion.id_profesion}</td>
+                <td>${contador++}</td>
                 <td>
                     <div class="d-flex align-items-center">
                         <i class="fas fa-user-tie text-primary mr-2"></i>
