@@ -11,7 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $esto = $_SESSION['usuario_email'];
 $user = new Usuarios;
-$info = $user->consultar($esto);
+$info = $user->info($esto);
 
 $nombreUsuario = $_SESSION['usuario_nombre_completo'] ?? $_SESSION['usuario_email'] ?? 'Usuario';
 $rolUsuario = $_SESSION['usuario_nombre'] ?? 'Usuario';
@@ -118,7 +118,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <img src="<?= URL; ?>/public/images/perfil.svg" class="img-circle elevation-2" alt="User Image">
           </div>
           <div class="info">
-            <a href="#" class="d-block"><?php echo $info[0]->usuario ?></a>
+            <a href="#" class="d-block"><?php echo $info[0]->nombre . ' ' . $info[0]->apellido  ?></a>
           </div>
         </div>
 

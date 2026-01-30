@@ -40,6 +40,19 @@ class PatologiaController
     }
   }
 
+  public function obtenerPatologiasActivas2()
+  {
+    try {
+      $sql = "SELECT * FROM patologias ORDER BY nom_patologia";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error en obtenerPatologiasActivas: " . $e->getMessage());
+      return [];
+    }
+  }
+
   /**
    * Obtiene una patología por ID
    */

@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
+
 // Establecer título de página
 $_SESSION['page_title'] = 'Gestión de Profesiones';
 
@@ -220,7 +221,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
                             <?php if ($profesion['estatus'] == 1) : ?>
                               <?php if ($profesion['en_uso']) : ?>
                                 <!-- Permite desactivar pero con advertencia -->
-                                <button class="btn btn-sm btn-outline-warning" data-toggle="tooltip" title="Desactivar (en uso en <?php echo $conteo_usos; ?> registro(s))" onclick="cambiarEstatusConAdvertencia(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0, <?php echo $conteo_usos; ?>)">
+                                <button class="btn btn-sm btn-outline-warning" data-toggle="tooltip" title="Desactivar (en uso en <?php echo $profesion['conteo_usos']; ?> registro(s))" onclick="cambiarEstatusConAdvertencia(<?php echo $profesion['id_profesion']; ?>, '<?php echo htmlspecialchars($profesion['profesion']); ?>', 0, <?php echo $profesion['conteo_usos']; ?>)">
                                   <i class="fas fa-exclamation-triangle"></i>
                                 </button>
                               <?php else : ?>

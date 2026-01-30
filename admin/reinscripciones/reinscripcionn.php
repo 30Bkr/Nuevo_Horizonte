@@ -34,7 +34,7 @@ try {
   $parentescos = $parentesco->mostrarParentescos();
   $patologiaController = new PatologiaController($pdo);
   $discapacidadController = new DiscapacidadController($pdo);
-  $estados = $ubicacionController->obtenerEstados2();
+  $estados = $ubicacionController->obtenerEstados();
 } catch (PDOException $e) {
   die("Error de conexión: " . $e->getMessage());
 }
@@ -303,11 +303,7 @@ try {
                           <option value="">Seleccione Profesión</option>
                           <?php
                           foreach ($profesiones as $profesion) {
-                            $disabled = $profesion['estatus'] == 0 ? 'disabled' : '';
-
-                            echo $profesion['estatus'] == 1
-                              ? "<option value='{$profesion['id_profesion']}'>{$profesion['profesion']}</option>"
-                              : "<option value='{$profesion['id_profesion']}' $disabled class='text-muted'>{$profesion['profesion']} (Inactiva)</option>";
+                            echo "<option value='{$profesion['id_profesion']}'>{$profesion['profesion']}</option>";
                           }
                           ?>
                         </select>
@@ -335,19 +331,12 @@ try {
                     <div class="row">
                       <div class="col-md-3">
                         <div class="form-group">
-                          <label for="estado_r">Estado2 <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
+                          <label for="estado_r">Estado <span class="text-danger required-asterisk">* <small>(Obligatorio)</small></span></label>
                           <select name="estado_r" id="estado_r" class="form-control" required>
                             <option value="">Seleccionar Estado</option>
                             <?php
                             foreach ($estados as $estado) {
-                              $clase = $estado['estatus'] == 1 ? '' : 'class="text-muted"';
-                              $texto = $estado['estatus'] == 1 ? $estado['nom_estado'] : $estado['nom_estado'] . ' (Inactivo)';
-
-                              if ($estado['estatus'] == 1) {
-                                echo "<option value='{$estado['id_estado']}'>{$texto}</option>";
-                              } else {
-                                echo "<option value='{$estado['id_estado']}' {$clase} disabled>{$texto}</option>";
-                              }
+                              echo "<option value='{$estado['id_estado']}'>{$estado['nom_estado']}</option>";
                             }
                             ?>
                           </select>
@@ -599,15 +588,10 @@ try {
                                   <option value="">Seleccione una patología...</option>
                                   <option value="0">Ninguna</option>
                                   <?php
-                                  $patologias = $patologiaController->obtenerPatologiasActivas2();
+                                  $patologias = $patologiaController->obtenerPatologiasActivas();
                                   if (!empty($patologias)) {
                                     foreach ($patologias as $patologia) {
-                                      $selected = $patologia['id_patologia'];
-                                      $disabled = $patologia['estatus'] == 0 ? 'disabled' : '';
-
-                                      echo $patologia['estatus'] == 1
-                                        ? "<option value='{$patologia['id_patologia']}' $selected>{$patologia['nom_patologia']}</option>"
-                                        : "<option value='{$patologia['id_patologia']}' $disabled class='text-muted'>{$patologia['nom_patologia']} (Inactiva)</option>";
+                                      echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
                                     }
                                   }
                                   ?>
@@ -629,15 +613,10 @@ try {
                                   <option value="">Seleccione una discapacidad...</option>
                                   <option value="0">Ninguna</option>
                                   <?php
-                                  $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas2();
+                                  $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas();
                                   if (!empty($discapacidades)) {
                                     foreach ($discapacidades as $discapacidad) {
-                                      $selected = $discapacidad['id_discapacidad'];
-                                      $disabled = $discapacidad['estatus'] == 0 ? 'disabled' : '';
-
-                                      echo $discapacidad['estatus'] == 1
-                                        ? "<option value='{$discapacidad['id_discapacidad']}' $selected>{$discapacidad['nom_discapacidad']}</option>"
-                                        : "<option value='{$discapacidad['id_discapacidad']}' $disabled class='text-muted'>{$discapacidad['nom_discapacidad']} (Inactiva)</option>";
+                                      echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
                                     }
                                   }
                                   ?>
@@ -676,14 +655,7 @@ try {
                               <option value="">Seleccionar Estado</option>
                               <?php
                               foreach ($estados as $estado) {
-                                $clase = $estado['estatus'] == 1 ? '' : 'class="text-muted"';
-                                $texto = $estado['estatus'] == 1 ? $estado['nom_estado'] : $estado['nom_estado'] . ' (Inactivo)';
-
-                                if ($estado['estatus'] == 1) {
-                                  echo "<option value='{$estado['id_estado']}'>{$texto}</option>";
-                                } else {
-                                  echo "<option value='{$estado['id_estado']}' {$clase} disabled>{$texto}</option>";
-                                }
+                                echo "<option value='{$estado['id_estado']}'>{$estado['nom_estado']}</option>";
                               }
                               ?>
                             </select>
@@ -1205,12 +1177,17 @@ try {
 
         const botonHTML = puedeReinscribir ?
           `<button type="button" class="btn btn-primary btn-sm btn-seleccionar-estudiante" 
-            data-id="${estudiante.id_estudiante}">
-        <i class="fas fa-sync-alt"></i> Seleccionar
-    </button>` :
+     data-id="${estudiante.id_estudiante}">
+     <i class="fas fa-sync-alt"></i> Seleccionar
+   </button>
+   <button type="button" class="btn btn-warning btn-sm btn-cambiar-representante mt-1" 
+     data-id="${estudiante.id_estudiante}"
+     data-nombre="${estudiante.primer_nombre} ${estudiante.primer_apellido}">
+     <i class="fas fa-exchange-alt"></i> Cambiar Rep.
+   </button>` :
           `<button type="button" class="btn btn-secondary btn-sm" disabled>
-        <i class="fas fa-check"></i> Ya Inscrito
-    </button>`;
+     <i class="fas fa-check"></i> Ya Inscrito
+   </button>`;
 
         html += `
             <div class="col-md-6 col-lg-4 mb-4">
@@ -1535,15 +1512,10 @@ try {
                         <option value="">Seleccione una patología...</option>
                         <option value="0">Ninguna</option>
                         <?php
-                        $patologias = $patologiaController->obtenerPatologiasActivas2();
+                        $patologias = $patologiaController->obtenerPatologiasActivas();
                         if (!empty($patologias)) {
                           foreach ($patologias as $patologia) {
-                            $selected = $patologia['id_patologia'];
-                            $disabled = $patologia['estatus'] == 0 ? 'disabled' : '';
-
-                            echo $patologia['estatus'] == 1
-                              ? "<option value='{$patologia['id_patologia']}' $selected>{$patologia['nom_patologia']}</option>"
-                              : "<option value='{$patologia['id_patologia']}' $disabled class='text-muted'>{$patologia['nom_patologia']} (Inactiva)</option>";
+                            echo "<option value='{$patologia['id_patologia']}'>{$patologia['nom_patologia']}</option>";
                           }
                         }
                         ?>
@@ -1576,19 +1548,14 @@ try {
                     <select name="discapacidades[]" class="form-control select-discapacidad">
                         <option value="">Seleccione una discapacidad...</option>
                         <option value="0">Ninguna</option>
-<?php
-$discapacidades = $discapacidadController->obtenerDiscapacidadesActivas2();
-if (!empty($discapacidades)) {
-  foreach ($discapacidades as $discapacidad) {
-    $selected = $discapacidad['id_discapacidad'];
-    $disabled = $discapacidad['estatus'] == 0 ? 'disabled' : '';
-
-    echo $discapacidad['estatus'] == 1
-      ? "<option value='{$discapacidad['id_discapacidad']}' $selected>{$discapacidad['nom_discapacidad']}</option>"
-      : "<option value='{$discapacidad['id_discapacidad']}' $disabled class='text-muted'>{$discapacidad['nom_discapacidad']} (Inactiva)</option>";
-  }
-}
-?>
+                        <?php
+                        $discapacidades = $discapacidadController->obtenerDiscapacidadesActivas();
+                        if (!empty($discapacidades)) {
+                          foreach ($discapacidades as $discapacidad) {
+                            echo "<option value='{$discapacidad['id_discapacidad']}'>{$discapacidad['nom_discapacidad']}</option>";
+                          }
+                        }
+                        ?>
                     </select>
                 </div>
             `;

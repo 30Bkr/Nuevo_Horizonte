@@ -22,6 +22,19 @@ class UbicacionController
     }
   }
 
+  public function obtenerEstados2()
+  {
+    try {
+      $sql = "SELECT * FROM estados ORDER BY nom_estado";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      throw new Exception("Error al obtener estados: " . $e->getMessage());
+    }
+  }
+
   // Obtener todos los municipios para administración
   public function obtenerTodosLosMunicipios($id_estado = null)
   {

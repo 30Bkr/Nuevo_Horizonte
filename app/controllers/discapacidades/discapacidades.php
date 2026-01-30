@@ -39,6 +39,18 @@ class DiscapacidadController
       return [];
     }
   }
+  public function obtenerDiscapacidadesActivas2()
+  {
+    try {
+      $sql = "SELECT * FROM discapacidades ORDER BY nom_discapacidad";
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute();
+      return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+      error_log("Error en obtenerDiscapacidadesActivas: " . $e->getMessage());
+      return [];
+    }
+  }
 
   /**
    * Obtiene una discapacidad por ID
