@@ -127,8 +127,8 @@ try {
       <div class="row mt-3">
         <div class="col-12">
           <div class="page-header">
-            <h1><i class="fas fa-tachometer-alt mr-2"></i>Dashboard </h1>
-            <p class="text-muted">Panel de estadísticas </p>
+            <h1><i class="fas fa-tachometer-alt mr-2"></i>Panel de estadísticas </h1>
+            <p class="text-muted">Dashboard </p>
           </div>
         </div>
       </div>

@@ -164,86 +164,86 @@ try {
                     </thead>
                     <tbody id="cuerpoTablaMunicipios">
                       <?php if (count($municipios) > 0): ?>
-                      <?php 
-                      // Ordenar municipios alfabéticamente
-                      usort($municipios, function($a, $b) {
-                        return strcmp($a['nom_municipio'], $b['nom_municipio']);
-                      });
-                      
-                      $contador = 1;
-                      foreach ($municipios as $municipio):
-                        try {
-                          $en_uso = $ubicacionController->municipioEnUso($municipio['id_municipio']);
-                          $conteo_usos = $ubicacionController->obtenerConteoUsosMunicipio($municipio['id_municipio']);
-                        } catch (Exception $e) {
-                          $en_uso = false;
-                          $conteo_usos = 0;
-                        }
-                      ?>
-                        <tr data-id="<?php echo $municipio['id_municipio']; ?>"
-                          data-nombre="<?php echo htmlspecialchars(strtolower($municipio['nom_municipio'])); ?>"
-                          data-estado="<?php echo htmlspecialchars(strtolower($municipio['nom_estado'])); ?>"
-                          data-id-texto="<?php echo $municipio['id_municipio']; ?>">
-                          <!-- CAMBIA ESTA LÍNEA: -->
-                          <td class="col-id"><?php echo $contador; ?></td>
-                          <!-- FIN DEL CAMBIO -->
-                          <td class="col-nombre"><?php echo htmlspecialchars($municipio['nom_municipio']); ?></td>
-                          <td class="col-estado"><?php echo htmlspecialchars($municipio['nom_estado']); ?></td>
-                          <td class="col-creacion"><?php echo date('d/m/Y H:i', strtotime($municipio['creacion'])); ?></td>
-                          <td class="col-actualizacion">
-                            <?php
-                            if ($municipio['actualizacion']) {
-                              echo date('d/m/Y H:i', strtotime($municipio['actualizacion']));
-                            } else {
-                              echo 'No actualizado';
-                            }
-                            ?>
-                          </td>
-                          <td class="col-en-uso">
-                            <?php if ($en_uso): ?>
-                              <span class="badge badge-warning" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
+                        <?php
+                        // Ordenar municipios alfabéticamente
+                        usort($municipios, function ($a, $b) {
+                          return strcmp($a['nom_municipio'], $b['nom_municipio']);
+                        });
+
+                        $contador = 1;
+                        foreach ($municipios as $municipio):
+                          try {
+                            $en_uso = $ubicacionController->municipioEnUso($municipio['id_municipio']);
+                            $conteo_usos = $ubicacionController->obtenerConteoUsosMunicipio($municipio['id_municipio']);
+                          } catch (Exception $e) {
+                            $en_uso = false;
+                            $conteo_usos = 0;
+                          }
+                        ?>
+                          <tr data-id="<?php echo $municipio['id_municipio']; ?>"
+                            data-nombre="<?php echo htmlspecialchars(strtolower($municipio['nom_municipio'])); ?>"
+                            data-estado="<?php echo htmlspecialchars(strtolower($municipio['nom_estado'])); ?>"
+                            data-id-texto="<?php echo $municipio['id_municipio']; ?>">
+                            <!-- CAMBIA ESTA LÍNEA: -->
+                            <td class="col-id"><?php echo $contador; ?></td>
+                            <!-- FIN DEL CAMBIO -->
+                            <td class="col-nombre"><?php echo htmlspecialchars($municipio['nom_municipio']); ?></td>
+                            <td class="col-estado"><?php echo htmlspecialchars($municipio['nom_estado']); ?></td>
+                            <td class="col-creacion"><?php echo date('d/m/Y H:i', strtotime($municipio['creacion'])); ?></td>
+                            <td class="col-actualizacion">
+                              <?php
+                              if ($municipio['actualizacion']) {
+                                echo date('d/m/Y H:i', strtotime($municipio['actualizacion']));
+                              } else {
+                                echo 'No actualizado';
+                              }
+                              ?>
+                            </td>
+                            <td class="col-en-uso">
+                              <?php if ($en_uso): ?>
+                                <span class="badge badge-warning" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
+                                  <i class="fas fa-exclamation-triangle mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
+                                </span>
+                              <?php else: ?>
+                                <span class="badge badge-secondary">
+                                  <i class="fas fa-check-circle mr-1"></i>Sin uso
+                                </span>
+                              <?php endif; ?>
+                            </td>
+                            <td class="col-estatus">
+                              <span class="badge badge-<?php echo $municipio['estatus'] == 1 ? 'success' : 'danger'; ?>">
+                                <?php echo $municipio['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
                               </span>
-                            <?php else: ?>
-                              <span class="badge badge-secondary">
-                                <i class="fas fa-check-circle mr-1"></i>Sin uso
-                              </span>
-                            <?php endif; ?>
-                          </td>
-                          <td class="col-estatus">
-                            <span class="badge badge-<?php echo $municipio['estatus'] == 1 ? 'success' : 'danger'; ?>">
-                              <?php echo $municipio['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
-                            </span>
-                          </td>
-                          <td class="col-acciones">
-                            <form method="POST" class="d-inline">
-                              <input type="hidden" name="id_municipio" value="<?php echo $municipio['id_municipio']; ?>">
-                              <input type="hidden" name="estatus" value="<?php echo $municipio['estatus'] == 1 ? 0 : 1; ?>">
-                              <button type="button"
-                                class="btn btn-sm btn-<?php echo $municipio['estatus'] == 1 ? 'warning' : 'success'; ?> btn-confirmar-municipio"
-                                data-id="<?php echo $municipio['id_municipio']; ?>"
-                                data-nombre="<?php echo htmlspecialchars($municipio['nom_municipio']); ?>"
-                                data-estado="<?php echo htmlspecialchars($municipio['nom_estado']); ?>"
-                                data-estatus="<?php echo $municipio['estatus']; ?>"
-                                data-en-uso="<?php echo $en_uso ? '1' : '0'; ?>"
-                                data-conteo-usos="<?php echo $conteo_usos; ?>"
-                                data-accion="<?php echo $municipio['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?>"
-                                data-toggle="modal"
-                                data-target="#modalConfirmacionMunicipio">
-                                <i class="fas fa-<?php echo $municipio['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
-                                <?php echo $municipio['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
-                              </button>
-                            </form>
-                          </td>
+                            </td>
+                            <td class="col-acciones">
+                              <form method="POST" class="d-inline">
+                                <input type="hidden" name="id_municipio" value="<?php echo $municipio['id_municipio']; ?>">
+                                <input type="hidden" name="estatus" value="<?php echo $municipio['estatus'] == 1 ? 0 : 1; ?>">
+                                <button type="button"
+                                  class="btn btn-sm btn-<?php echo $municipio['estatus'] == 1 ? 'warning' : 'success'; ?> btn-confirmar-municipio"
+                                  data-id="<?php echo $municipio['id_municipio']; ?>"
+                                  data-nombre="<?php echo htmlspecialchars($municipio['nom_municipio']); ?>"
+                                  data-estado="<?php echo htmlspecialchars($municipio['nom_estado']); ?>"
+                                  data-estatus="<?php echo $municipio['estatus']; ?>"
+                                  data-en-uso="<?php echo $en_uso ? '1' : '0'; ?>"
+                                  data-conteo-usos="<?php echo $conteo_usos; ?>"
+                                  data-accion="<?php echo $municipio['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?>"
+                                  data-toggle="modal"
+                                  data-target="#modalConfirmacionMunicipio">
+                                  <i class="fas fa-<?php echo $municipio['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
+                                  <?php echo $municipio['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                        <?php
+                          $contador++;
+                        endforeach; ?>
+                      <?php else: ?>
+                        <tr>
+                          <td colspan="8" class="text-center">No hay municipios registrados</td>
                         </tr>
-                      <?php 
-                      $contador++;
-                      endforeach; ?>
-                    <?php else: ?>
-                      <tr>
-                        <td colspan="8" class="text-center">No hay municipios registrados</td>
-                      </tr>
-                    <?php endif; ?>
+                      <?php endif; ?>
                     </tbody>
                   </table>
                 </div>
@@ -306,6 +306,7 @@ try {
   }
 
   .badge-warning {
+
     background-color: #ffc107;
     color: #212529;
   }
@@ -960,7 +961,7 @@ try {
 <div id="modalConfirmacionMunicipio" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-warning">
+      <div class="modal-header " style="background-color: #ffd75f; color: #333">
         <h5 class="modal-title">
           <i class="fas fa-exclamation-triangle mr-2"></i>
           <span id="modalTituloMunicipio">Confirmar Acción</span>
@@ -978,12 +979,12 @@ try {
           <i class="fas fa-info-circle mr-2"></i>
           <span id="modalDetalleTextoMunicipio"></span>
         </div>
-        <div id="modalAdvertenciaMunicipio" class="alert alert-danger" style="display: none;">
+        <div id="modalAdvertenciaMunicipio" class="alert " style="display: none; background-color: #ffd75f; color: #333;">
           <i class="fas fa-exclamation-circle mr-2"></i>
           <strong>¡ADVERTENCIA!</strong>
           <span id="modalAdvertenciaTextoMunicipio"></span>
         </div>
-        <div id="modalParroquiasMunicipio" class="alert alert-warning" style="display: none;">
+        <div id="modalParroquiasMunicipio" class="alert " style="display: none; background-color: #ffd75f; color: #333">
           <i class="fas fa-map-signs mr-2"></i>
           <strong>Importante:</strong>
           <span id="modalParroquiasTextoMunicipio"></span>
@@ -1078,7 +1079,8 @@ try {
       `;
 
         // Botón de advertencia
-        modalBotonConfirmar.className = 'btn btn-warning';
+        modalBotonConfirmar.className = 'btn';
+        modalBotonConfirmar.style = "background-color: #ffd75f; color: #333;";
         modalBotonTexto.textContent = 'Sí, inhabilitar municipio';
 
         // Mostrar información sobre parroquias

@@ -442,6 +442,13 @@ class Representante
         $stmt->execute();
         return $stmt;
     }
+    public function obtenerProfesiones2()
+    {
+        $query = "SELECT id_profesion, profesion FROM profesiones ORDER BY profesion";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
 
     // Obtener lista de parroquias
     public function obtenerParroquias()

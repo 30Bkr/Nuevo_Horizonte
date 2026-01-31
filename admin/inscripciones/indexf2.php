@@ -35,6 +35,7 @@ try {
   $periodos = $inscripcionesController->obtenerPeriodosActivos();
   $profesionesController = new Representante($pdo);
   $profesiones = $profesionesController->obtenerProfesiones();
+  $profesiones2 = $profesionesController->obtenerProfesiones2();
   $ubicacionController = new UbicacionController($pdo);
   $parentesco = new ParentescoController($pdo);
   $parentescos = $parentesco->mostrarParentescosOn();
@@ -43,6 +44,7 @@ try {
   $discapacidadController = new DiscapacidadController($pdo);
 
   $estados = $ubicacionController->obtenerEstados();
+  $estados2 = $ubicacionController->obtenerEstados2();
 } catch (PDOException $e) {
   die("Error de conexión: " . $e->getMessage());
 }
@@ -294,11 +296,20 @@ try {
                         <label for="profesion_r">Profesión</label>
                         <select name="profesion_r" id="profesion_r" class="form-control" required>
                           <option value="">Seleccione Profesión</option>
-                          <?php
-                          foreach ($profesiones as $profesion) {
-                            echo "<option value='{$profesion['id_profesion']}'>{$profesion['profesion']}</option>";
-                          }
-                          ?>
+                          <optgroup id="optgroup-nuevo">
+                            <?php
+                            foreach ($profesiones as $profesion) {
+                              echo "<option value='{$profesion['id_profesion']}'>{$profesion['profesion']}</option>";
+                            }
+                            ?>
+                          </optgroup>
+                          <optgroup id="optgroup-existente" style="display: none;">
+                            <?php
+                            foreach ($profesiones2 as $profesion2) {
+                              echo "<option value='{$profesion2['id_profesion']}'>{$profesion2['profesion']}</option>";
+                            }
+                            ?>
+                          </optgroup>
                         </select>
                       </div>
                     </div>
@@ -340,11 +351,20 @@ try {
                           <label for="estado_r">Estado</label>
                           <select name="estado_r" id="estado_r" class="form-control" required>
                             <option value="">Seleccionar Estado</option>
-                            <?php
-                            foreach ($estados as $estado) {
-                              echo "<option value='{$estado['id_estado']}'>{$estado['nom_estado']}</option>";
-                            }
-                            ?>
+                            <optgroup id="optgroup-nuevoE">
+                              <?php
+                              foreach ($estados as $estado) {
+                                echo "<option value='{$estado['id_estado']}'>{$estado['nom_estado']}</option>";
+                              }
+                              ?>
+                            </optgroup>
+                            <optgroup id="optgroup-existenteE" style="display: none;">
+                              <?php
+                              foreach ($estados2 as $estado2) {
+                                echo "<option value='{$estado2['id_estado']}'>{$estado2['nom_estado']}</option>";
+                              }
+                              ?>
+                            </optgroup>
                           </select>
                         </div>
                       </div>
@@ -2185,6 +2205,12 @@ try {
             setValueSafe('sexo_r', data.sexo);
             setValueSafe('nacionalidad_r', data.nacionalidad);
 
+            document.getElementById('optgroup-existente').style.display = 'block';
+            document.getElementById('optgroup-nuevo').style.display = 'hidden';
+
+            document.getElementById('optgroup-existenteE').style.display = 'block';
+            document.getElementById('optgroup-nuevoE').style.display = 'hidden';
+
             // Cargar SELECT de profesión
             if (data.profesion) {
               setValueSafe('profesion_r', data.profesion);
@@ -2282,7 +2308,11 @@ try {
                 }
               });
             }
+            document.getElementById('optgroup-existente').style.display = 'block';
+            document.getElementById('optgroup-nuevo').style.display = 'hidden';
 
+            document.getElementById('optgroup-existenteE').style.display = 'block';
+            document.getElementById('optgroup-nuevoE').style.display = 'hidden';
             // Mostrar botón siguiente
             if (nextButton) {
               nextButton.style.display = 'inline-block';
@@ -2305,6 +2335,11 @@ try {
               element.disabled = false;
             });
 
+            document.getElementById('optgroup-nuevo').style.display = 'block';
+            document.getElementById('optgroup-existente').style.display = 'none';
+
+            document.getElementById('optgroup-existenteE').style.display = 'none';
+            document.getElementById('optgroup-nuevoE').style.display = 'block';
             // Mostrar botón siguiente después de 2 segundos
             setTimeout(() => {
               if (nextButton) {

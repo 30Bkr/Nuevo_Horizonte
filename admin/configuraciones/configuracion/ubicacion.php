@@ -136,84 +136,84 @@ try {
                       </tr>
                     </thead>
                     <tbody id="cuerpoTablaEstados">
-                     <?php if (count($estados) > 0): ?>
-                      <?php 
-                      // Ordenar estados alfabéticamente
-                      usort($estados, function($a, $b) {
-                        return strcmp($a['nom_estado'], $b['nom_estado']);
-                      });
-                      
-                      $contador = 1;
-                      foreach ($estados as $estado):
-                        try {
-                          $en_uso = $ubicacionController->estadoEnUso($estado['id_estado']);
-                          $conteo_usos = $ubicacionController->obtenerConteoUsosEstado($estado['id_estado']);
-                        } catch (Exception $e) {
-                          $en_uso = false;
-                          $conteo_usos = 0;
-                        }
-                      ?>
-                        <tr data-id="<?php echo $estado['id_estado']; ?>"
-                          data-nombre="<?php echo htmlspecialchars(strtolower($estado['nom_estado'])); ?>"
-                          data-id-texto="<?php echo $estado['id_estado']; ?>">
-                          <!-- CAMBIA ESTA LÍNEA: -->
-                          <td class="col-id"><?php echo $contador; ?></td>
-                          <!-- FIN DEL CAMBIO -->
-                          <td class="col-nombre"><?php echo htmlspecialchars($estado['nom_estado']); ?></td>
-                          <td><?php echo date('d/m/Y H:i', strtotime($estado['creacion'])); ?></td>
-                          <td>
-                            <?php
-                            if ($estado['actualizacion']) {
-                              echo date('d/m/Y H:i', strtotime($estado['actualizacion']));
-                            } else {
-                              echo 'No actualizado';
-                            }
-                            ?>
-                          </td>
-                          <td>
-                            <?php if ($en_uso): ?>
-                              <span class="badge badge-warning" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
+                      <?php if (count($estados) > 0): ?>
+                        <?php
+                        // Ordenar estados alfabéticamente
+                        usort($estados, function ($a, $b) {
+                          return strcmp($a['nom_estado'], $b['nom_estado']);
+                        });
+
+                        $contador = 1;
+                        foreach ($estados as $estado):
+                          try {
+                            $en_uso = $ubicacionController->estadoEnUso($estado['id_estado']);
+                            $conteo_usos = $ubicacionController->obtenerConteoUsosEstado($estado['id_estado']);
+                          } catch (Exception $e) {
+                            $en_uso = false;
+                            $conteo_usos = 0;
+                          }
+                        ?>
+                          <tr data-id="<?php echo $estado['id_estado']; ?>"
+                            data-nombre="<?php echo htmlspecialchars(strtolower($estado['nom_estado'])); ?>"
+                            data-id-texto="<?php echo $estado['id_estado']; ?>">
+                            <!-- CAMBIA ESTA LÍNEA: -->
+                            <td class="col-id"><?php echo $contador; ?></td>
+                            <!-- FIN DEL CAMBIO -->
+                            <td class="col-nombre"><?php echo htmlspecialchars($estado['nom_estado']); ?></td>
+                            <td><?php echo date('d/m/Y H:i', strtotime($estado['creacion'])); ?></td>
+                            <td>
+                              <?php
+                              if ($estado['actualizacion']) {
+                                echo date('d/m/Y H:i', strtotime($estado['actualizacion']));
+                              } else {
+                                echo 'No actualizado';
+                              }
+                              ?>
+                            </td>
+                            <td>
+                              <?php if ($en_uso): ?>
+                                <span class="badge badge-warning" data-toggle="tooltip" title="Usado en <?php echo $conteo_usos; ?> dirección(es) activa(s)">
+                                  <i class="fas fa-exclamation-triangle mr-1"></i>En uso (<?php echo $conteo_usos; ?>)
+                                </span>
+                              <?php else: ?>
+                                <span class="badge badge-secondary">
+                                  <i class="fas fa-check-circle mr-1"></i>Sin uso
+                                </span>
+                              <?php endif; ?>
+                            </td>
+                            <td>
+                              <span class="badge badge-<?php echo $estado['estatus'] == 1 ? 'success' : 'danger'; ?>">
+                                <?php echo $estado['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
                               </span>
-                            <?php else: ?>
-                              <span class="badge badge-secondary">
-                                <i class="fas fa-check-circle mr-1"></i>Sin uso
-                              </span>
-                            <?php endif; ?>
-                          </td>
-                          <td>
-                            <span class="badge badge-<?php echo $estado['estatus'] == 1 ? 'success' : 'danger'; ?>">
-                              <?php echo $estado['estatus'] == 1 ? 'Habilitado' : 'Inhabilitado'; ?>
-                            </span>
-                          </td>
-                          <td>
-                            <form method="POST" class="d-inline">
-                              <input type="hidden" name="id_estado" value="<?php echo $estado['id_estado']; ?>">
-                              <input type="hidden" name="estatus" value="<?php echo $estado['estatus'] == 1 ? 0 : 1; ?>">
-                              <button type="button"
-                                class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?> btn-confirmar"
-                                data-id="<?php echo $estado['id_estado']; ?>"
-                                data-nombre="<?php echo htmlspecialchars($estado['nom_estado']); ?>"
-                                data-estatus="<?php echo $estado['estatus']; ?>"
-                                data-en-uso="<?php echo $en_uso ? '1' : '0'; ?>"
-                                data-conteo-usos="<?php echo $conteo_usos; ?>"
-                                data-accion="<?php echo $estado['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?>"
-                                data-toggle="modal"
-                                data-target="#modalConfirmacion">
-                                <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
-                                <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
-                              </button>
-                            </form>
-                          </td>
+                            </td>
+                            <td>
+                              <form method="POST" class="d-inline">
+                                <input type="hidden" name="id_estado" value="<?php echo $estado['id_estado']; ?>">
+                                <input type="hidden" name="estatus" value="<?php echo $estado['estatus'] == 1 ? 0 : 1; ?>">
+                                <button type="button"
+                                  class="btn btn-sm btn-<?php echo $estado['estatus'] == 1 ? 'warning' : 'success'; ?> btn-confirmar"
+                                  data-id="<?php echo $estado['id_estado']; ?>"
+                                  data-nombre="<?php echo htmlspecialchars($estado['nom_estado']); ?>"
+                                  data-estatus="<?php echo $estado['estatus']; ?>"
+                                  data-en-uso="<?php echo $en_uso ? '1' : '0'; ?>"
+                                  data-conteo-usos="<?php echo $conteo_usos; ?>"
+                                  data-accion="<?php echo $estado['estatus'] == 1 ? 'inhabilitar' : 'habilitar'; ?>"
+                                  data-toggle="modal"
+                                  data-target="#modalConfirmacion">
+                                  <i class="fas fa-<?php echo $estado['estatus'] == 1 ? 'times' : 'check'; ?> mr-1"></i>
+                                  <?php echo $estado['estatus'] == 1 ? 'Inhabilitar' : 'Habilitar'; ?>
+                                </button>
+                              </form>
+                            </td>
+                          </tr>
+                        <?php
+                          $contador++;
+                        endforeach; ?>
+                      <?php else: ?>
+                        <tr>
+                          <td colspan="7" class="text-center">No hay estados registrados</td>
                         </tr>
-                      <?php 
-                      $contador++;
-                      endforeach; ?>
-                    <?php else: ?>
-                      <tr>
-                        <td colspan="7" class="text-center">No hay estados registrados</td>
-                      </tr>
-                    <?php endif; ?>   
+                      <?php endif; ?>
                     </tbody>
                   </table>
                 </div>
@@ -308,9 +308,6 @@ try {
           </div>
         </div>
       </div>
-      <!-- Resto de tu código se mantiene igual -->
-      <!-- ... (secciones de estadísticas, notas y leyenda) ... -->
-
     </div>
   </div>
 </div>
@@ -563,7 +560,7 @@ try {
 <div id="modalConfirmacion" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header bg-warning">
+      <div class="modal-header " style="background-color: #ffd75f; color: #333;">
         <h5 class="modal-title">
           <i class="fas fa-exclamation-triangle mr-2"></i>
           <span id="modalTitulo">Confirmar Acción</span>
@@ -660,7 +657,8 @@ try {
         modalPregunta.textContent = `¿Estás seguro que deseas INHABILITAR el estado "${datos.nombre}"?`;
 
         // Botón de advertencia
-        modalBotonConfirmar.className = 'btn btn-warning';
+        modalBotonConfirmar.style = 'background-color: #ffd75f; color: #333';
+        modalBotonConfirmar.className = 'btn';
         modalBotonTexto.textContent = 'Sí, inhabilitar';
 
         if (datos.enUso) {
@@ -679,7 +677,8 @@ try {
         } else {
           modalDetalle.style.display = 'none';
           modalAdvertencia.style.display = 'block';
-          modalAdvertencia.className = 'alert alert-warning';
+          modalAdvertencia.className = 'alert';
+          modalAdvertencia.style = 'background-color: #ffd75f; color: #333';
           modalAdvertenciaTexto.textContent = 'Este estado no está en uso actualmente. Puede ser inhabilitado sin problemas.';
         }
 
@@ -726,7 +725,7 @@ try {
 <style>
   /* Estilos para el modal personalizado */
   .modal-header.bg-warning {
-    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    background: linear-gradient(135deg, #ffd75f 0%, #ffd862 100%);
     color: #212529;
   }
 
