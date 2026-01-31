@@ -159,107 +159,180 @@ try {
                 </div>
               </div>
 
-              <div class="small-box bg-warning mb-3">
-                <div class="inner">
-                  <h3 id="estudiantesFueraRango"><?php echo count($estudiantesFueraRango); ?></h3>
-                  <p>Estudiantes Fuera del Rango</p>
-                </div>
-                <div class="icon">
-                  <i class="fas fa-exclamation-triangle"></i>
-                </div>
+              <div class="small-box mb-3" style="background-color: #ffd75f; color: #333;"">
+                <div class=" inner">
+                <h3 id="estudiantesFueraRango"><?php echo count($estudiantesFueraRango); ?></h3>
+                <p>Estudiantes Fuera del Rango</p>
               </div>
-              <div class="small-box bg-success mb-3">
-                <div class="inner">
-                  <h3 id="rangoConfigurado"><?php echo $configuracion['edad_max'] - $configuracion['edad_min']; ?></h3>
-                  <p>Años de Rango Permitido</p>
-                </div>
-                <div class="icon">
-                  <i class="fas fa-ruler-combined"></i>
-                </div>
+              <div class="icon">
+                <i class="fas fa-exclamation-triangle"></i>
               </div>
+            </div>
+            <div class="small-box bg-success mb-3">
+              <div class="inner">
+                <h3 id="rangoConfigurado"><?php echo $configuracion['edad_max'] - $configuracion['edad_min']; ?></h3>
+                <p>Años de Rango Permitido</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-ruler-combined"></i>
+              </div>
+            </div>
 
-              <?php if (isset($configuracion['version'])): ?>
-                <div class="small-box bg-secondary">
-                  <div class="inner">
-                    <h3>v<?php echo $configuracion['version']; ?></h3>
-                    <p>Versión Actual</p>
-                  </div>
-                  <div class="icon">
-                    <i class="fas fa-code-branch"></i>
-                  </div>
+            <?php if (isset($configuracion['version'])): ?>
+              <div class="small-box bg-secondary">
+                <div class="inner">
+                  <h3>v<?php echo $configuracion['version']; ?></h3>
+                  <p>Versión Actual</p>
                 </div>
-              <?php endif; ?>
+                <div class="icon">
+                  <i class="fas fa-code-branch"></i>
+                </div>
+              </div>
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribución por Edades -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-chart-pie mr-2"></i>
+              Distribución de Estudiantes por Edad
+            </h3>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Edad</th>
+                    <th>Cantidad de Estudiantes</th>
+                    <th>Porcentaje</th>
+                    <th>Estado</th>
+                    <th>Barra de Progreso</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaDistribucion">
+                  <?php
+                  $totalEstudiantes = array_sum(array_column($estadisticas, 'cantidad'));
+                  foreach ($estadisticas as $estadistica):
+                    $porcentaje = $totalEstudiantes > 0 ? ($estadistica['cantidad'] / $totalEstudiantes) * 100 : 0;
+                    $enRango = $estadistica['edad'] >= $configuracion['edad_min'] && $estadistica['edad'] <= $configuracion['edad_max'];
+                  ?>
+                    <tr class="<?php echo $enRango ? '' : 'table-warning'; ?>">
+                      <td>
+                        <strong><?php echo $estadistica['edad']; ?> años</strong>
+                      </td>
+                      <td>
+                        <?php echo $estadistica['cantidad']; ?> estudiantes
+                      </td>
+                      <td>
+                        <?php echo number_format($porcentaje, 1); ?>%
+                      </td>
+                      <td>
+                        <span class="badge badge-<?php echo $enRango ? 'success' : 'warning'; ?>">
+                          <?php echo $enRango ? 'Dentro del rango' : 'Fuera del rango'; ?>
+                        </span>
+                      </td>
+                      <td>
+                        <div class="progress" style="height: 20px;">
+                          <div class="progress-bar <?php echo $enRango ? 'bg-success' : 'bg-warning'; ?>"
+                            role="progressbar"
+                            style="width: <?php echo $porcentaje; ?>%"
+                            aria-valuenow="<?php echo $porcentaje; ?>"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                            <?php echo $estadistica['cantidad']; ?>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                  <?php if (empty($estadisticas)): ?>
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-4">
+                        <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                        <p>No hay datos de estudiantes disponibles</p>
+                      </td>
+                    </tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Distribución por Edades -->
+    <!-- Estudiantes Fuera del Rango -->
+    <?php if (!empty($estudiantesFueraRango)): ?>
       <div class="row mt-4">
         <div class="col-12">
-          <div class="card">
-            <div class="card-header">
+          <div class="card card-warning">
+
+            <div class="card-header" style="
+        background-color: #ffd75f;
+        color: #5a4a00;
+        border-bottom: 1px solid #ffc107;
+    ">>
               <h3 class="card-title">
-                <i class="fas fa-chart-pie mr-2"></i>
-                Distribución de Estudiantes por Edad
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                Estudiantes Fuera del Rango de Edad Configurado
               </h3>
             </div>
             <div class="card-body">
+              <div class="alert" style="
+        background-color: #ffd75f;
+        color: #5a4a00;
+        border-bottom: 1px solid #ffc107;
+    ">
+                <i class="fas fa-info-circle mr-2"></i>
+                Los siguientes estudiantes están fuera del rango de edad configurado
+                (<strong><?php echo $configuracion['edad_min']; ?> - <?php echo $configuracion['edad_max']; ?> años</strong>).
+                Esto puede requerir atención especial.
+              </div>
+
               <div class="table-responsive">
                 <table class="table table-bordered table-hover">
                   <thead class="thead-light">
                     <tr>
-                      <th>Edad</th>
-                      <th>Cantidad de Estudiantes</th>
-                      <th>Porcentaje</th>
+                      <th>Estudiante</th>
+                      <th>Fecha de Nacimiento</th>
+                      <th>Edad Actual</th>
+                      <th>Nivel/Sección</th>
                       <th>Estado</th>
-                      <th>Barra de Progreso</th>
                     </tr>
                   </thead>
-                  <tbody id="tablaDistribucion">
-                    <?php
-                    $totalEstudiantes = array_sum(array_column($estadisticas, 'cantidad'));
-                    foreach ($estadisticas as $estadistica):
-                      $porcentaje = $totalEstudiantes > 0 ? ($estadistica['cantidad'] / $totalEstudiantes) * 100 : 0;
-                      $enRango = $estadistica['edad'] >= $configuracion['edad_min'] && $estadistica['edad'] <= $configuracion['edad_max'];
+                  <tbody>
+                    <?php foreach ($estudiantesFueraRango as $estudiante):
+                      $esMenor = $estudiante['edad'] < $configuracion['edad_min'];
                     ?>
-                      <tr class="<?php echo $enRango ? '' : 'table-warning'; ?>">
+                      <tr>
                         <td>
-                          <strong><?php echo $estadistica['edad']; ?> años</strong>
+                          <strong><?php echo htmlspecialchars($estudiante['primer_nombre'] . ' ' . $estudiante['primer_apellido']); ?></strong>
                         </td>
                         <td>
-                          <?php echo $estadistica['cantidad']; ?> estudiantes
+                          <?php echo date('d/m/Y', strtotime($estudiante['fecha_nac'])); ?>
                         </td>
                         <td>
-                          <?php echo number_format($porcentaje, 1); ?>%
-                        </td>
-                        <td>
-                          <span class="badge badge-<?php echo $enRango ? 'success' : 'warning'; ?>">
-                            <?php echo $enRango ? 'Dentro del rango' : 'Fuera del rango'; ?>
+                          <span class="badge badge-<?php echo $esMenor ? 'info' : 'secondary'; ?>">
+                            <?php echo $estudiante['edad']; ?> años
                           </span>
                         </td>
                         <td>
-                          <div class="progress" style="height: 20px;">
-                            <div class="progress-bar <?php echo $enRango ? 'bg-success' : 'bg-warning'; ?>"
-                              role="progressbar"
-                              style="width: <?php echo $porcentaje; ?>%"
-                              aria-valuenow="<?php echo $porcentaje; ?>"
-                              aria-valuemin="0"
-                              aria-valuemax="100">
-                              <?php echo $estadistica['cantidad']; ?>
-                            </div>
-                          </div>
+                          <?php echo htmlspecialchars($estudiante['nom_nivel'] . ' - ' . $estudiante['nom_seccion']); ?>
+                        </td>
+                        <td>
+                          <span class="badge badge-<?php echo $esMenor ? 'info' : 'secondary'; ?>">
+                            <?php echo $esMenor ? 'Menor al mínimo' : 'Mayor al máximo'; ?>
+                          </span>
                         </td>
                       </tr>
                     <?php endforeach; ?>
-                    <?php if (empty($estadisticas)): ?>
-                      <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                          <i class="fas fa-chart-bar fa-3x mb-3"></i>
-                          <p>No hay datos de estudiantes disponibles</p>
-                        </td>
-                      </tr>
-                    <?php endif; ?>
                   </tbody>
                 </table>
               </div>
@@ -267,73 +340,9 @@ try {
           </div>
         </div>
       </div>
-
-      <!-- Estudiantes Fuera del Rango -->
-      <?php if (!empty($estudiantesFueraRango)): ?>
-        <div class="row mt-4">
-          <div class="col-12">
-            <div class="card card-warning">
-              <div class="card-header">
-                <h3 class="card-title">
-                  <i class="fas fa-exclamation-triangle mr-2"></i>
-                  Estudiantes Fuera del Rango de Edad Configurado
-                </h3>
-              </div>
-              <div class="card-body">
-                <div class="alert alert-warning">
-                  <i class="fas fa-info-circle mr-2"></i>
-                  Los siguientes estudiantes están fuera del rango de edad configurado
-                  (<strong><?php echo $configuracion['edad_min']; ?> - <?php echo $configuracion['edad_max']; ?> años</strong>).
-                  Esto puede requerir atención especial.
-                </div>
-
-                <div class="table-responsive">
-                  <table class="table table-bordered table-hover">
-                    <thead class="thead-light">
-                      <tr>
-                        <th>Estudiante</th>
-                        <th>Fecha de Nacimiento</th>
-                        <th>Edad Actual</th>
-                        <th>Nivel/Sección</th>
-                        <th>Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <?php foreach ($estudiantesFueraRango as $estudiante):
-                        $esMenor = $estudiante['edad'] < $configuracion['edad_min'];
-                      ?>
-                        <tr>
-                          <td>
-                            <strong><?php echo htmlspecialchars($estudiante['primer_nombre'] . ' ' . $estudiante['primer_apellido']); ?></strong>
-                          </td>
-                          <td>
-                            <?php echo date('d/m/Y', strtotime($estudiante['fecha_nac'])); ?>
-                          </td>
-                          <td>
-                            <span class="badge badge-<?php echo $esMenor ? 'info' : 'secondary'; ?>">
-                              <?php echo $estudiante['edad']; ?> años
-                            </span>
-                          </td>
-                          <td>
-                            <?php echo htmlspecialchars($estudiante['nom_nivel'] . ' - ' . $estudiante['nom_seccion']); ?>
-                          </td>
-                          <td>
-                            <span class="badge badge-<?php echo $esMenor ? 'info' : 'secondary'; ?>">
-                              <?php echo $esMenor ? 'Menor al mínimo' : 'Mayor al máximo'; ?>
-                            </span>
-                          </td>
-                        </tr>
-                      <?php endforeach; ?>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      <?php endif; ?>
-    </div>
+    <?php endif; ?>
   </div>
+</div>
 </div>
 
 <style>

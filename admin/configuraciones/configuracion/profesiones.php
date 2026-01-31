@@ -122,7 +122,7 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
           </div>
         </div>
         <div class="col-lg-3 col-6">
-          <div class="small-box bg-warning">
+          <div class="small-box " style="background-color: #ffd75f; color: #333;">
             <div class="inner">
               <h3 id="profesionesInactivas"><?php echo count(array_filter($profesiones, function ($p) {
                                               return $p['estatus'] == 0;
