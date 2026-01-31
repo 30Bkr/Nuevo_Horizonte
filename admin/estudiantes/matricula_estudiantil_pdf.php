@@ -1,11 +1,6 @@
 <?php
 session_start();
 
-// // Verificar permisos (Descomentar si es necesario en producción)
-// if (!isset($_SESSION['usuario_id'])) {
-//      die('Acceso no autorizado');
-// }
-
 // Incluir autoload de Composer para HTML2PDF
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -25,6 +20,17 @@ try {
     // Obtener datos de la base de datos
     $database = new Conexion();
     $db = $database->conectar();
+    
+    // Obtener el período académico activo
+    $query_periodo = "SELECT descripcion_periodo FROM periodos WHERE estatus = 1 ORDER BY id_periodo DESC LIMIT 1";
+    $stmt_periodo = $db->prepare($query_periodo);
+    $stmt_periodo->execute();
+    $periodo_result = $stmt_periodo->fetch(PDO::FETCH_ASSOC);
+    
+    // Obtener el título del período (si no hay activo, usar uno por defecto)
+    $titulo_periodo = isset($periodo_result['descripcion_periodo']) 
+        ? $periodo_result['descripcion_periodo'] 
+        : 'AÑO ESCOLAR ' . date('Y') . '-' . (date('Y') + 1);
     
     // Obtener la matrícula completa
     $estudianteController = new EstudianteController($db);
@@ -51,10 +57,10 @@ try {
     <head>
         <meta charset="UTF-8">
         <title>Matrícula Estudiantil</title>
-       <style>
+        <style>
     body { 
         font-family: DejaVu Sans, Arial, sans-serif; 
-        font-size: 10px; /* Aumentado ligeramente para mejor lectura */
+        font-size: 10px;
         line-height: 1.2; 
         margin: 0;
         padding: 0;
@@ -71,7 +77,7 @@ try {
         margin-bottom: 5px;
     }
     .cintillo-img {
-        width: 100%; /* Ocupar todo el ancho disponible */
+        width: 100%;
         height: auto;
     }
     .cintillo-texto {
@@ -84,7 +90,7 @@ try {
         border: 1px solid #003366;
         margin-bottom: 5px;
     }
-    /* TÍTULO DEL REPORTE */
+    /* TÍTULO DEL REPORTE - MODIFICADO PARA USAR PERIODO DINÁMICO */
     .report-title {
         text-align: center;
         color: #003366;
@@ -180,8 +186,9 @@ try {
                 UNIDAD EDUCATIVA NACIONAL "NUEVO HORIZONTE"
             </div>') . '
             
+            <!-- TÍTULO ACTUALIZADO CON PERIODO DINÁMICO -->
             <div class="report-title">
-                MATRÍCULA ESTUDIANTIL - AÑO ESCOLAR 2025-2026
+                MATRÍCULA ESTUDIANTIL - ' . htmlspecialchars($titulo_periodo) . '
             </div>
             
             <div class="report-info">
@@ -190,53 +197,52 @@ try {
                 <strong>Reporte:</strong> Listado General por Grados, Años y Secciones
             </div>';
 
-   if ($totalEstudiantes > 0) {
-    // Definimos style="width: 100%" explícitamente en la tabla
-    $html .= '
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th style="width: 5%;">N°</th>
-                    <th style="width: 15%;">CÉDULA</th>
-                    <th style="width: 45%;">NOMBRE COMPLETO</th>
-                    <th style="width: 35%;">GRADO/AÑO Y SECCIÓN</th>
-                </tr>
-            </thead>
-            <tbody>';
+    if ($totalEstudiantes > 0) {
+        $html .= '
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">N°</th>
+                        <th style="width: 15%;">CÉDULA</th>
+                        <th style="width: 45%;">NOMBRE COMPLETO</th>
+                        <th style="width: 35%;">GRADO/AÑO Y SECCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>';
 
-    $contador = 1;
-    $nivel_actual = '';
-    
-    while ($estudiante = $matricula->fetch(PDO::FETCH_ASSOC)) {
-        $grado_seccion = $estudiante['grado_seccion'];
+        $contador = 1;
+        $nivel_actual = '';
         
-        if ($estudiante['nombre_nivel'] != $nivel_actual) {
+        while ($estudiante = $matricula->fetch(PDO::FETCH_ASSOC)) {
+            $grado_seccion = $estudiante['grado_seccion'];
+            
+            if ($estudiante['nombre_nivel'] != $nivel_actual) {
+                $html .= '
+                    <tr>
+                        <td colspan="4" class="grado-separator">
+                            ' . htmlspecialchars($estudiante['nombre_nivel']) . '
+                        </td>
+                    </tr>';
+                $nivel_actual = $estudiante['nombre_nivel'];
+            }
+            
+            $rowClass = ($contador % 2 == 0) ? 'even-row' : 'odd-row';
+            
             $html .= '
-                <tr>
-                    <td colspan="4" class="grado-separator">
-                        ' . htmlspecialchars($estudiante['nombre_nivel']) . '
-                    </td>
-                </tr>';
-            $nivel_actual = $estudiante['nombre_nivel'];
+                    <tr class="' . $rowClass . '">
+                        <td class="text-center">' . $contador . '</td>
+                        <td class="text-center">' . htmlspecialchars($estudiante['cedula']) . '</td>
+                        <td class="text-left">' . htmlspecialchars($estudiante['nombre_completo']) . '</td>
+                        <td class="text-center">' . htmlspecialchars($grado_seccion) . '</td>
+                    </tr>';
+            
+            $contador++;
         }
         
-        $rowClass = ($contador % 2 == 0) ? 'even-row' : 'odd-row';
-        
         $html .= '
-                <tr class="' . $rowClass . '">
-                    <td class="text-center">' . $contador . '</td>
-                    <td class="text-center">' . htmlspecialchars($estudiante['cedula']) . '</td>
-                    <td class="text-left">' . htmlspecialchars($estudiante['nombre_completo']) . '</td>
-                    <td class="text-center">' . htmlspecialchars($grado_seccion) . '</td>
-                </tr>';
-        
-        $contador++;
-    }
-    
-    $html .= '
-            </tbody>
-        </table>';
-        
+                </tbody>
+            </table>';
+            
         // Total
         $html .= '
             <div class="total-container">
@@ -259,8 +265,7 @@ try {
     </body>
     </html>';
 
-    // Configuración PDF: REDUJE LOS MÁRGENES de 15 a 5mm (Izquierda/Derecha) para maximizar ancho
-    // Array: (Izquierda, Arriba, Derecha, Abajo)
+    // Configuración PDF
     $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', array(5, 10, 5, 10));
     $html2pdf->setDefaultFont('dejavusans');
     $html2pdf->setTestTdInOnePage(false);
