@@ -1144,13 +1144,13 @@ try {
       const edad = calcularEdad(fechaNacimiento);
       console.log(`🎯 Edad calculada: ${edad} años`);
 
-      if (edad < 3) {
-        mostrarErrorEdad('El estudiante debe tener al menos 4 años para ser inscrito');
+      if (edad < 2) {
+        mostrarErrorEdad('El estudiante no cumple con requisitos de edad para ser inscrito');
         return;
       }
 
-      if (edad > 20) {
-        mostrarErrorEdad('El estudiante no puede tener más de 18 años');
+      if (edad > 21) {
+        mostrarErrorEdad('El estudiante excede los requisitos de edad para ser inscrito');
         return;
       }
 
@@ -1534,6 +1534,27 @@ try {
 <!-- Validadndo edad para creacion de cedula escolar -->
 <!-- Validadndo edad para creacion de cedula escolar -->
 
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const fechaInput = document.getElementById('fecha_nac_r');
+    const añoActual = new Date().getFullYear();
+
+    // Calcular años mínimo y máximo (18 años antes del actual)
+    const añoMaximo = añoActual - 18;
+    const añoMinimo = añoMaximo - 78; // Para cubrir desde 1930 hasta 2008 en 2026
+
+    // Formatear fechas como YYYY-MM-DD
+    const fechaMinima = `${añoMinimo}-01-01`;
+    const fechaMaxima = `${añoMaximo}-12-31`;
+
+    // Establecer atributos min y max
+    fechaInput.setAttribute('min', fechaMinima);
+    fechaInput.setAttribute('max', fechaMaxima);
+
+    console.log(`Rango de fechas: ${fechaMinima} a ${fechaMaxima}`);
+  });
+</script>
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
