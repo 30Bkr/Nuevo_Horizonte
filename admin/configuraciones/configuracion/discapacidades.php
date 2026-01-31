@@ -53,9 +53,9 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
     Notification::show();
     ?>
     <div class="container-fluid">
-      <div class="row mb-2">
+      <div class="row mb-0">
         <div class="col-sm-6">
-          <h1 class="m-0">Gestión de Discapacidades</h1>
+          
         </div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
@@ -76,11 +76,11 @@ require_once '/xampp/htdocs/final/layout/layaout1.php';
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h1 class="mb-0">
-                <i class="fas fa-wheelchair mr-2"></i>
+              <h1 class="m-0">
+            <i class="fas fa-wheelchair mr-2"></i>
                 Gestión de Discapacidades
-              </h1>
-              <p class="text-muted">Administra el catálogo de discapacidades y condiciones especiales</p>
+          </h1>
+            <p class="text-muted">Administra el catálogo de discapacidades y condiciones especiales</p>
             </div>
             <div>
               <a href="<?= URL; ?>/admin/configuraciones/index.php" class="btn btn-secondary">

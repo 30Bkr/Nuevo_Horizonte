@@ -37,7 +37,9 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Gestión de Grados, Años y Secciones</h1>
+                    <h1 class="mb-0">
+                        <i class="bi bi-123 mr-2"></i>
+                    Gestión de Niveles y Secciones</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -83,7 +85,7 @@ include_once("/xampp/htdocs/final/layout/layaout1.php");
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Listado de Grados, Años y Secciones</h3>
+                            <h3 class="card-title"></h3>
                             <div class="card-tools">
                                 <a href="http://localhost/final/admin/configuraciones/index.php" class="btn btn-secondary btn-sm">
                                     <i class="fas fa-arrow-left"></i> Volver
