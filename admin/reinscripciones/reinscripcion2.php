@@ -855,6 +855,260 @@ try {
     const periodoSelect = document.querySelector('select[name="id_periodo"]');
     const submitBtn = document.querySelector('button[type="submit"]');
 
+    /**
+     * Muestra una notificación idéntica al sistema PHP
+     * @param {string} mensaje - El mensaje a mostrar
+     * @param {string} tipo - 'success', 'error', 'warning', 'info'
+     * @param {number} tiempoAutoCierre - Milisegundos antes de auto-cerrar (0 para no auto-cerrar)
+     */
+    function mostrarNotificacion(mensaje, tipo = 'info', tiempoAutoCierre = 5000) {
+      // Verificar que tipo sea válido
+      const tiposValidos = ['success', 'error', 'warning', 'info'];
+      if (!tiposValidos.includes(tipo)) {
+        tipo = 'info';
+      }
+
+      // Colores según tipo - IDÉNTICOS a PHP
+      const colores = {
+        'success': {
+          'header': '#28a745',
+          'body': '#e8f5e9',
+          'text': '#155724',
+          'border': '#1e7e34'
+        },
+        'error': {
+          'header': '#dc3545',
+          'body': '#f8d7da',
+          'text': '#721c24',
+          'border': '#c82333'
+        },
+        'warning': {
+          'header': '#ffc107',
+          'body': '#fff3cd',
+          'text': '#856404',
+          'border': '#e0a800'
+        },
+        'info': {
+          'header': '#17a2b8',
+          'body': '#d1ecf1',
+          'text': '#0c5460',
+          'border': '#117a8b'
+        }
+      };
+
+      // Iconos según tipo - IDÉNTICOS a PHP
+      const iconos = {
+        'success': '✓',
+        'error': '✗',
+        'warning': '⚠',
+        'info': 'ℹ'
+      };
+
+      // Títulos según tipo - IDÉNTICOS a PHP
+      const titulos = {
+        'success': 'Éxito',
+        'error': 'Error',
+        'warning': 'Advertencia',
+        'info': 'Información'
+      };
+
+      // Obtener valores según tipo
+      const colors = colores[tipo];
+      const icono = iconos[tipo] || 'ℹ';
+      const titulo = titulos[tipo] || 'Notificación';
+
+      // ID único para la notificación
+      const idNotificacion = 'js-notif-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+
+      // Crear elemento de notificación
+      const notificacion = document.createElement('div');
+      notificacion.id = idNotificacion;
+
+      // Estilos IDÉNTICOS a PHP
+      notificacion.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        z-index: 1050;
+        width: 350px;
+        background: ${colors.body};
+        border-left: 4px solid ${colors.border};
+        border-radius: 6px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        animation: slideIn 0.4s ease;
+        margin-bottom: 10px;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border: 1px solid rgba(0,0,0,0.1);
+    `;
+
+      // Contenido HTML IDÉNTICO a PHP
+      notificacion.innerHTML = `
+        <!-- Encabezado con color fuerte -->
+        <div style="
+            padding: 12px 16px;
+            background: ${colors.header};
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 18px; font-weight: bold; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));">${icono}</span>
+                <strong style="font-size: 16px; text-shadow: 0 1px 1px rgba(0,0,0,0.1);">${titulo}</strong>
+            </div>
+            <button onclick="cerrarNotificacionJS('${idNotificacion}')" style="
+                background: rgba(255,255,255,0.2);
+                border: none;
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                line-height: 1;
+                padding: 0;
+            " onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.1)'" 
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">
+                &times;
+            </button>
+        </div>
+        
+        <!-- Cuerpo con color suave que coincide con el tipo -->
+        <div style="
+            padding: 16px;
+            color: ${colors.text};
+            font-size: 14px;
+            line-height: 1.5;
+            background: ${colors.body};
+            border-top: 1px solid rgba(0,0,0,0.05);
+        ">
+            ${mensaje.replace(/\n/g, '<br>')}
+        </div>
+    `;
+
+      // Agregar al documento
+      document.body.appendChild(notificacion);
+
+      // Asegurar que los estilos CSS existan
+      agregarEstilosNotificacionesJS();
+
+      // Auto-cerrar después del tiempo especificado
+      if (tiempoAutoCierre > 0) {
+        setTimeout(() => {
+          cerrarNotificacionJS(idNotificacion);
+        }, tiempoAutoCierre);
+      }
+
+      return idNotificacion;
+    }
+
+    /**
+     * Cierra una notificación específica
+     */
+    function cerrarNotificacionJS(id) {
+      const elemento = document.getElementById(id);
+      if (elemento) {
+        elemento.style.animation = 'fadeOutJS 0.4s ease forwards';
+        setTimeout(() => {
+          if (elemento.parentNode) {
+            elemento.parentNode.removeChild(elemento);
+          }
+        }, 400);
+      }
+    }
+
+    /**
+     * Cierra todas las notificaciones JS
+     */
+    function cerrarTodasNotificacionesJS() {
+      document.querySelectorAll('[id^="js-notif-"]').forEach(notif => {
+        cerrarNotificacionJS(notif.id);
+      });
+    }
+
+    /**
+     * Agrega los estilos CSS necesarios para las animaciones
+     */
+    function agregarEstilosNotificacionesJS() {
+      // Solo agregar estilos si no existen
+      if (document.getElementById('estilos-notificaciones-js')) {
+        return;
+      }
+
+      const estilo = document.createElement('style');
+      estilo.id = 'estilos-notificaciones-js';
+      estilo.textContent = `
+        @keyframes slideInJS {
+            from { 
+                transform: translateX(100%); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateX(0); 
+                opacity: 1; 
+            }
+        }
+        
+        @keyframes fadeOutJS {
+            from { 
+                opacity: 1; 
+                transform: translateX(0);
+            }
+            to { 
+                opacity: 0; 
+                transform: translateX(100%);
+            }
+        }
+        
+        /* Mejora para móviles */
+        @media (max-width: 768px) {
+            [id^="js-notif-"] {
+                width: calc(100% - 40px) !important;
+                left: 20px !important;
+                right: 20px !important;
+                top: 20px !important;
+            }
+            
+            @keyframes slideInJS {
+                from { 
+                    transform: translateY(-20px); 
+                    opacity: 0; 
+                }
+                to { 
+                    transform: translateY(0); 
+                    opacity: 1; 
+                }
+            }
+            
+            @keyframes fadeOutJS {
+                from { 
+                    opacity: 1; 
+                    transform: translateY(0);
+                }
+                to { 
+                    opacity: 0; 
+                    transform: translateY(-20px);
+                }
+            }
+        }
+    `;
+
+      document.head.appendChild(estilo);
+    }
+
+    /**
+     * Versión corta para uso rápido (igual que PHP Notification::set)
+     */
+    function notificar(mensaje, tipo = 'info') {
+      return mostrarNotificacion(mensaje, tipo, 5000);
+    }
+
 
     function inicializar() {
       console.log('🔄 Inicializando sistema...');
@@ -2034,7 +2288,12 @@ if (!empty($discapacidades)) {
 
       if (camposFaltantesBasicos.length > 0) {
         e.preventDefault();
-        alert('Por favor complete todos los campos requeridos de información académica.');
+        mostrarNotificacion(
+          'Por favor complete todos los campos requeridos de información académica',
+          'error',
+          5000
+        );
+        // alert('Por favor complete todos los campos requeridos de información académica.');
         return false;
       }
 
@@ -2059,7 +2318,11 @@ if (!empty($discapacidades)) {
 
         if (camposFaltantesDireccion.length > 0) {
           e.preventDefault();
-          alert('Cuando el estudiante no vive con el representante, debe completar todos los datos de dirección del estudiante.');
+          mostrarNotificacion(
+            'Cuando el estudiante no vive con el representante, debe completar todos los datos de dirección del estudiante.',
+            5000
+          );
+          // alert('Cuando el estudiante no vive con el representante, debe completar todos los datos de dirección del estudiante.');
           document.getElementById('direccion_representante').style.display = 'block';
           return false;
         }
